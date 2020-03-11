@@ -1,0 +1,48 @@
+Package: Ramses
+Type: Package
+Title: R Package for Antimicrobial Stewardship & Surveillance 
+Version: 0.0.1
+Authors@R: 
+    person(given = "Peter",
+           family = "Dutey",
+           role = c("aut", "cre"),
+           email = "p.dutey-magni@ucl.ac.uk",
+           comment = c(ORCID = "0000-0002-8942-9836"))
+Description: Ramses is a one-stop shop for antimicrobial stewardship data warehousing for hospitals. 
+    It supports the modelling and analysis of hospital electronic health records 
+    (episode of care, prescriptions, administration, pathology and investigations) to help
+    keep antibiotics working for years to come.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Depends: 
+    R (>= 2.10)
+Imports: 
+    RSQLite,
+    DBI,
+    dplyr (>= 0.8.3),
+    dbplyr (>= 1.4.2),
+    ggplot2,
+    magrittr,
+    rlang,
+    purrr,
+    stringr,
+    lubridate,
+    Rdpack (>= 0.7),
+    data.table,
+    readr,
+    XML,
+    units (>= 0.6-1),
+    AMR,
+    xml2,
+    rvest,
+    curl,
+    methods
+RdMacros: Rdpack
+RoxygenNote: 7.0.2
+Suggests: 
+    testthat (>= 2.1.0),
+    knitr,
+    rmarkdown,
+    covr
+VignetteBuilder: knitr

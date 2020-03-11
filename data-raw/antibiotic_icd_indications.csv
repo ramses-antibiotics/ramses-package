@@ -1,0 +1,276 @@
+icd_root,infection_group1_label,infection_group2_label,antibiotics_indicated
+K61,Abdominal infections,"Abscess of anal and rectal regions, intestine, and liver",usually
+K630,Abdominal infections,"Abscess of anal and rectal regions, intestine, and liver",usually
+K750,Abdominal infections,"Abscess of anal and rectal regions, intestine, and liver",usually
+K35,Abdominal infections,Acute appendicitis,usually
+K800,Abdominal infections,Cholecystitis and cholangitis,usually
+K801,Abdominal infections,Cholecystitis and cholangitis,usually
+K803,Abdominal infections,Cholecystitis and cholangitis,usually
+K804,Abdominal infections,Cholecystitis and cholangitis,usually
+K810,Abdominal infections,Cholecystitis and cholangitis,usually
+K819,Abdominal infections,Cholecystitis and cholangitis,usually
+K830,Abdominal infections,Cholecystitis and cholangitis,usually
+K57,Abdominal infections,Diverticulitis of intestine,usually
+K65,Abdominal infections,Peritonitis,usually
+J85,Miscellaneous bacterial infections,"Abscess of lung and mediastinum, pyothorax",usually
+J86,Miscellaneous bacterial infections,"Abscess of lung and mediastinum, pyothorax",usually
+J051,Miscellaneous bacterial infections,Acute epiglottitis,usually
+G00,Miscellaneous bacterial infections,"Bacterial meningitis, encephalitis, and intercranial abscess",usually
+G042,Miscellaneous bacterial infections,"Bacterial meningitis, encephalitis, and intercranial abscess",usually
+G049,Miscellaneous bacterial infections,"Bacterial meningitis, encephalitis, and intercranial abscess",usually
+G06,Miscellaneous bacterial infections,"Bacterial meningitis, encephalitis, and intercranial abscess",usually
+J13,Miscellaneous bacterial infections,Bacterial pneumonia,usually
+J14,Miscellaneous bacterial infections,Bacterial pneumonia,usually
+J15,Miscellaneous bacterial infections,Bacterial pneumonia,usually
+J16,Miscellaneous bacterial infections,Bacterial pneumonia,usually
+J17,Miscellaneous bacterial infections,Bacterial pneumonia,usually
+J18,Miscellaneous bacterial infections,Bacterial pneumonia,usually
+A20,Miscellaneous bacterial infections,Certain zoonotic bacterial diseases,usually
+A21,Miscellaneous bacterial infections,Certain zoonotic bacterial diseases,usually
+A22,Miscellaneous bacterial infections,Certain zoonotic bacterial diseases,usually
+A23,Miscellaneous bacterial infections,Certain zoonotic bacterial diseases,usually
+A24,Miscellaneous bacterial infections,Certain zoonotic bacterial diseases,usually
+A25,Miscellaneous bacterial infections,Certain zoonotic bacterial diseases,usually
+A26,Miscellaneous bacterial infections,Certain zoonotic bacterial diseases,usually
+A27,Miscellaneous bacterial infections,Certain zoonotic bacterial diseases,usually
+A28,Miscellaneous bacterial infections,Certain zoonotic bacterial diseases,usually
+J36,Miscellaneous bacterial infections,Deep neck space infections,usually
+J390,Miscellaneous bacterial infections,Deep neck space infections,usually
+J391,Miscellaneous bacterial infections,Deep neck space infections,usually
+T857,Miscellaneous bacterial infections,"Infection due to internal prothetic devices, implants and grafts",usually
+T827,Miscellaneous bacterial infections,Infections due to cardiac and vacular devices,usually
+O23,Miscellaneous bacterial infections,Infections of genitourinary tract in pregnancy,usually
+K102,Miscellaneous bacterial infections,Infections of the jaws and mouth,usually
+K122,Miscellaneous bacterial infections,Infections of the jaws and mouth,usually
+A50,Miscellaneous bacterial infections,Infections with a predominantly sexual mode of transmission,usually
+A51,Miscellaneous bacterial infections,Infections with a predominantly sexual mode of transmission,usually
+A52,Miscellaneous bacterial infections,Infections with a predominantly sexual mode of transmission,usually
+A53,Miscellaneous bacterial infections,Infections with a predominantly sexual mode of transmission,usually
+A54,Miscellaneous bacterial infections,Infections with a predominantly sexual mode of transmission,usually
+A55,Miscellaneous bacterial infections,Infections with a predominantly sexual mode of transmission,usually
+A56,Miscellaneous bacterial infections,Infections with a predominantly sexual mode of transmission,usually
+A57,Miscellaneous bacterial infections,Infections with a predominantly sexual mode of transmission,usually
+A58,Miscellaneous bacterial infections,Infections with a predominantly sexual mode of transmission,usually
+A59,Miscellaneous bacterial infections,Infections with a predominantly sexual mode of transmission,usually
+A60,Miscellaneous bacterial infections,Infections with a predominantly sexual mode of transmission,usually
+A61,Miscellaneous bacterial infections,Infections with a predominantly sexual mode of transmission,usually
+A62,Miscellaneous bacterial infections,Infections with a predominantly sexual mode of transmission,usually
+A63,Miscellaneous bacterial infections,Infections with a predominantly sexual mode of transmission,usually
+A64,Miscellaneous bacterial infections,Infections with a predominantly sexual mode of transmission,usually
+I33,Miscellaneous bacterial infections,Infective endocarditis,usually
+T826,Miscellaneous bacterial infections,Infective endocarditis,usually
+M600,Miscellaneous bacterial infections,"Infective myositis, synovitis and bursitis",usually
+M650,Miscellaneous bacterial infections,"Infective myositis, synovitis and bursitis",usually
+M651,Miscellaneous bacterial infections,"Infective myositis, synovitis and bursitis",usually
+M710,Miscellaneous bacterial infections,"Infective myositis, synovitis and bursitis",usually
+M711,Miscellaneous bacterial infections,"Infective myositis, synovitis and bursitis",usually
+H70,Miscellaneous bacterial infections,Mastoiditis,usually
+M462,Miscellaneous bacterial infections,Osteomyelitis,usually
+M463,Miscellaneous bacterial infections,Osteomyelitis,usually
+M464,Miscellaneous bacterial infections,Osteomyelitis,usually
+M465,Miscellaneous bacterial infections,Osteomyelitis,usually
+M86,Miscellaneous bacterial infections,Osteomyelitis,usually
+A30,Miscellaneous bacterial infections,Other bacterial disease,usually
+A31,Miscellaneous bacterial infections,Other bacterial disease,usually
+A32,Miscellaneous bacterial infections,Other bacterial disease,usually
+A33,Miscellaneous bacterial infections,Other bacterial disease,usually
+A34,Miscellaneous bacterial infections,Other bacterial disease,usually
+A35,Miscellaneous bacterial infections,Other bacterial disease,usually
+A36,Miscellaneous bacterial infections,Other bacterial disease,usually
+A37,Miscellaneous bacterial infections,Other bacterial disease,usually
+A39,Miscellaneous bacterial infections,Other bacterial disease,usually
+A40,Miscellaneous bacterial infections,Other bacterial disease,usually
+A41,Miscellaneous bacterial infections,Other bacterial disease,usually
+A42,Miscellaneous bacterial infections,Other bacterial disease,usually
+A43,Miscellaneous bacterial infections,Other bacterial disease,usually
+A44,Miscellaneous bacterial infections,Other bacterial disease,usually
+A45,Miscellaneous bacterial infections,Other bacterial disease,usually
+A46,Miscellaneous bacterial infections,Other bacterial disease,usually
+A47,Miscellaneous bacterial infections,Other bacterial disease,usually
+A48,Miscellaneous bacterial infections,Other bacterial disease,usually
+A49,Miscellaneous bacterial infections,Other bacterial disease,usually
+A75,Miscellaneous bacterial infections,Other bacterial disease,usually
+A76,Miscellaneous bacterial infections,Other bacterial disease,usually
+A77,Miscellaneous bacterial infections,Other bacterial disease,usually
+A78,Miscellaneous bacterial infections,Other bacterial disease,usually
+A79,Miscellaneous bacterial infections,Other bacterial disease,usually
+A70,Miscellaneous bacterial infections,Other diseases caused by chlamydia,usually
+A71,Miscellaneous bacterial infections,Other diseases caused by chlamydia,usually
+A72,Miscellaneous bacterial infections,Other diseases caused by chlamydia,usually
+A73,Miscellaneous bacterial infections,Other diseases caused by chlamydia,usually
+A74,Miscellaneous bacterial infections,Other diseases caused by chlamydia,usually
+A65,Miscellaneous bacterial infections,Other spirochetal diseases,usually
+A66,Miscellaneous bacterial infections,Other spirochetal diseases,usually
+A67,Miscellaneous bacterial infections,Other spirochetal diseases,usually
+A68,Miscellaneous bacterial infections,Other spirochetal diseases,usually
+A69,Miscellaneous bacterial infections,Other spirochetal diseases,usually
+N70,Miscellaneous bacterial infections,Pelvic inflammatory diseases,usually
+N71,Miscellaneous bacterial infections,Pelvic inflammatory diseases,usually
+N72,Miscellaneous bacterial infections,Pelvic inflammatory diseases,usually
+N73,Miscellaneous bacterial infections,Pelvic inflammatory diseases,usually
+N751,Miscellaneous bacterial infections,Pelvic inflammatory diseases,usually
+N760,Miscellaneous bacterial infections,Pelvic inflammatory diseases,usually
+N761,Miscellaneous bacterial infections,Pelvic inflammatory diseases,usually
+N762,Miscellaneous bacterial infections,Pelvic inflammatory diseases,usually
+N763,Miscellaneous bacterial infections,Pelvic inflammatory diseases,usually
+N764,Miscellaneous bacterial infections,Pelvic inflammatory diseases,usually
+M00,Miscellaneous bacterial infections,Pyogenic arthritis and prosthetic joint infection,usually
+T845,Miscellaneous bacterial infections,Pyogenic arthritis and prosthetic joint infection,usually
+A15,Miscellaneous bacterial infections,Tuberculosis,usually
+A16,Miscellaneous bacterial infections,Tuberculosis,usually
+A17,Miscellaneous bacterial infections,Tuberculosis,usually
+A18,Miscellaneous bacterial infections,Tuberculosis,usually
+A19,Miscellaneous bacterial infections,Tuberculosis,usually
+N300,Urinary tract infections,Acute cystitis,usually
+N10,Urinary tract infections,Acute pyelonephritis/pyonephrosis,usually
+N12,Urinary tract infections,Acute pyelonephritis/pyonephrosis,usually
+N136,Urinary tract infections,Acute pyelonephritis/pyonephrosis,usually
+T835,Urinary tract infections,Catheter-associated urinary tract infections,usually
+N308,Urinary tract infections,"Cystitis, unspecified",usually
+N309,Urinary tract infections,"Cystitis, unspecified",usually
+N159,Urinary tract infections,"Kidney infection, unspecified",usually
+N45,Urinary tract infections,Orchitis and epididymitis,usually
+N41,Urinary tract infections,Prostatitis and abscess of prostate,usually
+N151,Urinary tract infections,Renal abscess,usually
+N34,Urinary tract infections,Urethritis and urethral abscess,usually
+N390,Urinary tract infections,"Urinary tract infections, unspecified",usually
+J21,Bronchitis and bronchiolitis,Acute bronchiolitis,rarely
+J20,Bronchitis and bronchiolitis,Acute bronchitis,rarely
+J22,Bronchitis and bronchiolitis,Unspecified acute lower respiratory infection,rarely
+L70,Acne,Acne,potentially
+A00,Gastrointestinal infections,Intestinal infectious diseases,potentially
+A01,Gastrointestinal infections,Intestinal infectious diseases,potentially
+A02,Gastrointestinal infections,Intestinal infectious diseases,potentially
+A03,Gastrointestinal infections,Intestinal infectious diseases,potentially
+A04,Gastrointestinal infections,Intestinal infectious diseases,potentially
+A05,Gastrointestinal infections,Intestinal infectious diseases,potentially
+A06,Gastrointestinal infections,Intestinal infectious diseases,potentially
+A07,Gastrointestinal infections,Intestinal infectious diseases,potentially
+A09,Gastrointestinal infections,Intestinal infectious diseases,potentially
+J029,Pharyngitis,"Acute pharyngitis/tonsillitis, unspecified",potentially
+J039,Pharyngitis,"Acute pharyngitis/tonsillitis, unspecified",potentially
+A38,Pharyngitis,Scarlet fever,potentially
+J020,Pharyngitis,Streptococcal pharyngitis/tonsillitis,potentially
+J030,Pharyngitis,Streptococcal pharyngitis/tonsillitis,potentially
+J01,Sinusitis,Acute sinusitis,potentially
+J32,Sinusitis,Chronic sinusitis,potentially
+H050,"Skin, cutaneous and mucosal infections","Infections of other skin and subcutaneous tissue including cellulitis, cutaneous abscess, furuncle, carbuncle, impetigo, acute lymphadenitis, folliculitis, mastitis",potentially
+J340,"Skin, cutaneous and mucosal infections","Infections of other skin and subcutaneous tissue including cellulitis, cutaneous abscess, furuncle, carbuncle, impetigo, acute lymphadenitis, folliculitis, mastitis",potentially
+L000,"Skin, cutaneous and mucosal infections","Infections of other skin and subcutaneous tissue including cellulitis, cutaneous abscess, furuncle, carbuncle, impetigo, acute lymphadenitis, folliculitis, mastitis",potentially
+L001,"Skin, cutaneous and mucosal infections","Infections of other skin and subcutaneous tissue including cellulitis, cutaneous abscess, furuncle, carbuncle, impetigo, acute lymphadenitis, folliculitis, mastitis",potentially
+L002,"Skin, cutaneous and mucosal infections","Infections of other skin and subcutaneous tissue including cellulitis, cutaneous abscess, furuncle, carbuncle, impetigo, acute lymphadenitis, folliculitis, mastitis",potentially
+L003,"Skin, cutaneous and mucosal infections","Infections of other skin and subcutaneous tissue including cellulitis, cutaneous abscess, furuncle, carbuncle, impetigo, acute lymphadenitis, folliculitis, mastitis",potentially
+L004,"Skin, cutaneous and mucosal infections","Infections of other skin and subcutaneous tissue including cellulitis, cutaneous abscess, furuncle, carbuncle, impetigo, acute lymphadenitis, folliculitis, mastitis",potentially
+L005,"Skin, cutaneous and mucosal infections","Infections of other skin and subcutaneous tissue including cellulitis, cutaneous abscess, furuncle, carbuncle, impetigo, acute lymphadenitis, folliculitis, mastitis",potentially
+L006,"Skin, cutaneous and mucosal infections","Infections of other skin and subcutaneous tissue including cellulitis, cutaneous abscess, furuncle, carbuncle, impetigo, acute lymphadenitis, folliculitis, mastitis",potentially
+L007,"Skin, cutaneous and mucosal infections","Infections of other skin and subcutaneous tissue including cellulitis, cutaneous abscess, furuncle, carbuncle, impetigo, acute lymphadenitis, folliculitis, mastitis",potentially
+L008,"Skin, cutaneous and mucosal infections","Infections of other skin and subcutaneous tissue including cellulitis, cutaneous abscess, furuncle, carbuncle, impetigo, acute lymphadenitis, folliculitis, mastitis",potentially
+N61,"Skin, cutaneous and mucosal infections","Infections of other skin and subcutaneous tissue including cellulitis, cutaneous abscess, furuncle, carbuncle, impetigo, acute lymphadenitis, folliculitis, mastitis",potentially
+T814,"Skin, cutaneous and mucosal infections","Infections of other skin and subcutaneous tissue including cellulitis, cutaneous abscess, furuncle, carbuncle, impetigo, acute lymphadenitis, folliculitis, mastitis",potentially
+H600,"Skin, cutaneous and mucosal infections",Infective otitis externa,potentially
+H601,"Skin, cutaneous and mucosal infections",Infective otitis externa,potentially
+H602,"Skin, cutaneous and mucosal infections",Infective otitis externa,potentially
+H603,"Skin, cutaneous and mucosal infections",Infective otitis externa,potentially
+M726,"Skin, cutaneous and mucosal infections",Necrotizing fasciitis,potentially
+H66,Suppurative otitis media,Suppurative and unspecified otitis media,potentially
+R50,Fever,Fever of unknown origin,rarely
+H00,Infections of the eye and adnexa,Hordeolum,rarely
+H010,Infections of the eye and adnexa,Blepharitis,rarely
+H040,Infections of the eye and adnexa,Dacryoadenitis,rarely
+H043,Infections of the eye and adnexa,Dacryocystitis,rarely
+H044,Infections of the eye and adnexa,Dacryocystitis,rarely
+H10,Infections of the eye and adnexa,Conjunctivitis,rarely
+H15,Infections of the eye and adnexa,Infections of sclera,rarely
+H16,Infections of the eye and adnexa,Keratitis,rarely
+H20,Infections of the eye and adnexa,Iridocyclitis,rarely
+H440,Infections of the eye and adnexa,Purulent endophthalmitis,rarely
+J10,Influenza,Influenza,rarely
+J11,Influenza,Influenza,rarely
+K529,Noninfective diarrhea,"Noninfective gastroenteritis and colitis, unspecified",rarely
+S00,Trauma and burns,"Open wounds, superficial injuries",rarely
+S01,Trauma and burns,"Open wounds, superficial injuries",rarely
+S07,Trauma and burns,"Open wounds, superficial injuries",rarely
+S10,Trauma and burns,"Open wounds, superficial injuries",rarely
+S11,Trauma and burns,"Open wounds, superficial injuries",rarely
+S16,Trauma and burns,"Open wounds, superficial injuries",rarely
+S17,Trauma and burns,"Open wounds, superficial injuries",rarely
+S20,Trauma and burns,"Open wounds, superficial injuries",rarely
+S21,Trauma and burns,"Open wounds, superficial injuries",rarely
+S28,Trauma and burns,"Open wounds, superficial injuries",rarely
+S30,Trauma and burns,"Open wounds, superficial injuries",rarely
+S31,Trauma and burns,"Open wounds, superficial injuries",rarely
+S38,Trauma and burns,"Open wounds, superficial injuries",rarely
+S40,Trauma and burns,"Open wounds, superficial injuries",rarely
+S41,Trauma and burns,"Open wounds, superficial injuries",rarely
+S47,Trauma and burns,"Open wounds, superficial injuries",rarely
+S50,Trauma and burns,"Open wounds, superficial injuries",rarely
+S51,Trauma and burns,"Open wounds, superficial injuries",rarely
+S57,Trauma and burns,"Open wounds, superficial injuries",rarely
+S60,Trauma and burns,"Open wounds, superficial injuries",rarely
+S61,Trauma and burns,"Open wounds, superficial injuries",rarely
+S67,Trauma and burns,"Open wounds, superficial injuries",rarely
+S70,Trauma and burns,"Open wounds, superficial injuries",rarely
+S71,Trauma and burns,"Open wounds, superficial injuries",rarely
+S77,Trauma and burns,"Open wounds, superficial injuries",rarely
+S80,Trauma and burns,"Open wounds, superficial injuries",rarely
+S81,Trauma and burns,"Open wounds, superficial injuries",rarely
+S87,Trauma and burns,"Open wounds, superficial injuries",rarely
+S90,Trauma and burns,"Open wounds, superficial injuries",rarely
+S91,Trauma and burns,"Open wounds, superficial injuries",rarely
+S97,Trauma and burns,"Open wounds, superficial injuries",rarely
+T00,Trauma and burns,"Open wounds, superficial injuries",rarely
+T01,Trauma and burns,"Open wounds, superficial injuries",rarely
+T04,Trauma and burns,"Open wounds, superficial injuries",rarely
+T09,Trauma and burns,"Open wounds, superficial injuries",rarely
+T110,Trauma and burns,"Open wounds, superficial injuries",rarely
+T111,Trauma and burns,"Open wounds, superficial injuries",rarely
+T130,Trauma and burns,"Open wounds, superficial injuries",rarely
+T131,Trauma and burns,"Open wounds, superficial injuries",rarely
+T140,Trauma and burns,"Open wounds, superficial injuries",rarely
+T141,Trauma and burns,"Open wounds, superficial injuries",rarely
+T146,Trauma and burns,"Open wounds, superficial injuries",rarely
+T147,Trauma and burns,"Open wounds, superficial injuries",rarely
+T200,Trauma and burns,Burns,rarely
+T201,Trauma and burns,Burns,rarely
+T202,Trauma and burns,Burns,rarely
+T203,Trauma and burns,Burns,rarely
+T210,Trauma and burns,Burns,rarely
+T211,Trauma and burns,Burns,rarely
+T212,Trauma and burns,Burns,rarely
+T213,Trauma and burns,Burns,rarely
+T220,Trauma and burns,Burns,rarely
+T221,Trauma and burns,Burns,rarely
+T222,Trauma and burns,Burns,rarely
+T223,Trauma and burns,Burns,rarely
+T230,Trauma and burns,Burns,rarely
+T231,Trauma and burns,Burns,rarely
+T232,Trauma and burns,Burns,rarely
+T233,Trauma and burns,Burns,rarely
+T240,Trauma and burns,Burns,rarely
+T241,Trauma and burns,Burns,rarely
+T242,Trauma and burns,Burns,rarely
+T243,Trauma and burns,Burns,rarely
+T250,Trauma and burns,Burns,rarely
+T251,Trauma and burns,Burns,rarely
+T252,Trauma and burns,Burns,rarely
+T253,Trauma and burns,Burns,rarely
+T290,Trauma and burns,Burns,rarely
+T291,Trauma and burns,Burns,rarely
+T292,Trauma and burns,Burns,rarely
+T293,Trauma and burns,Burns,rarely
+T300,Trauma and burns,Burns,rarely
+T301,Trauma and burns,Burns,rarely
+T302,Trauma and burns,Burns,rarely
+T303,Trauma and burns,Burns,rarely
+T31,Trauma and burns,Burns,rarely
+J12,Viral pneumonia,Viral pneumonia,rarely
+J00,Viral upper respiratory infection,Acute nasopharyngitis,rarely
+J028,Viral upper respiratory infection,Acute pharyngitis/tonsillitis due to other specified organisms,rarely
+J038,Viral upper respiratory infection,Acute pharyngitis/tonsillitis due to other specified organisms,rarely
+J04,Viral upper respiratory infection,Acute laryngitis and tracheitis,rarely
+J050,Viral upper respiratory infection,Acute obstructive laryngitis,rarely
+J06,Viral upper respiratory infection,Acute upper respiratory infections of multiple and unspecified sites,rarely
+J31,Viral upper respiratory infection,"Chronic rhinitis, nasopharyngitis and pharyngitis",rarely
+J350,Viral upper respiratory infection,Chronic tonsillitis,rarely
+J37,Viral upper respiratory infection,Chronic laryngitis and laryngotracheitis,rarely
+R05,Viral upper respiratory infection,Cough,rarely

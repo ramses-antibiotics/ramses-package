@@ -1,0 +1,129 @@
+date1 <- Sys.time()
+library(lubridate)
+
+
+test_that("inpatient episode records are validated", {
+  expect_false(expect_warning(validate_variable_no_missing(data.frame(foo = c("1", "")), "foo")))
+  expect_false(expect_warning(validate_variable_no_missing(data.frame(foo = c("1", NA)), "foo")))
+  expect_false(expect_warning(validate_variable_no_missing(data.frame(bar = c("1", NA)), "foo")))
+  
+  faulty_spells <- data.frame(list(
+    patient_id = c(1, 2, 2),
+    spell_id = c(1, 2, 3),
+    admission_date = c(date1, date1, date1 %m+% hours(3)),
+    discharge_date = c(date1 %m-% hours(12), 
+                       date1 %m+% hours(6),
+                       date1 %m+% hours(6))
+  ))
+  
+  expect_false(expect_warning(validate_inpatient_spells(faulty_spells[1, ])))
+  expect_false(expect_warning(validate_inpatient_spells(faulty_spells[-1, ])))
+  
+  healthy_episodes <- data.frame(list(
+    patient_id = 1,
+    spell_id = 2,
+    admission_date = date1,
+    discharge_date = date1 %m+% hours(3),
+    episode_number = 1:3,
+    last_episode_in_spell_indicator = 2,
+    episode_start = c(date1, date1 %m+% hours(1), date1 %m+% hours(2)),
+    episode_end = c(date1 %m+% hours(1), date1 %m+% hours(2), date1 %m+% hours(3))
+  ))
+  
+  expect_equal(validate_inpatient_episodes(healthy_episodes), TRUE)
+  
+  overlap_episode <- data.frame(list(
+    patient_id = 1,
+    spell_id = 2,
+    admission_date = date1,
+    discharge_date = date1 %m+% hours(3),
+    episode_number = 1:3,
+    last_episode_in_spell_indicator = 2,
+    episode_start = c(date1, date1 %m+% minutes(30), date1 %m+% hours(2)),
+    episode_end = c(date1 %m+% hours(1), date1 %m+% hours(2), date1 %m+% hours(3))
+  ))
+  
+  missing_first_episode <- data.frame(list(
+    patient_id = 1,
+    spell_id = 2,
+    admission_date = date1,
+    discharge_date = date1 %m+% hours(4),
+    episode_number = 2:4,
+    last_episode_in_spell_indicator = 2,
+    episode_start = c(date1 %m+% hours(1), date1 %m+% hours(2), date1 %m+% hours(3)),
+    episode_end = c(date1 %m+% hours(2), date1 %m+% hours(3), date1 %m+% hours(4))
+  ))
+  
+  missing_intermediate_episode <- data.frame(list(
+    patient_id = 1,
+    spell_id = 2,
+    admission_date = date1,
+    discharge_date = date1 %m+% hours(4),
+    episode_number = c(1, 3, 4),
+    last_episode_in_spell_indicator = 2,
+    episode_start = c(date1, date1 %m+% hours(2), date1 %m+% hours(3)),
+    episode_end = c(date1 %m+% hours(1), date1 %m+% hours(3), date1 %m+% hours(4))
+  ))
+  
+  missing_final_episode <- data.frame(list( 
+    patient_id = 1,
+    spell_id = 2,
+    admission_date = date1,
+    discharge_date = date1 %m+% hours(4),
+    episode_number = 1:3,
+    last_episode_in_spell_indicator = 2,
+    episode_start = c(date1, date1 %m+% hours(1), date1 %m+% hours(2)),
+    episode_end = c(date1 %m+% hours(1), date1 %m+% hours(2), date1 %m+% hours(3))
+  ))
+  
+  expect_true(expect_warning(validate_inpatient_episodes(missing_first_episode)))
+  expect_true(expect_warning(validate_inpatient_episodes(missing_intermediate_episode)))
+  expect_true(expect_warning(validate_inpatient_episodes(missing_final_episode)))
+  expect_false(expect_warning(validate_inpatient_episodes(overlap_episode)))
+ 
+})
+
+test_that("inpatient diagnosis records are validated", {
+  test_diagnoses <- data.frame(list(
+    patient_id = 1,
+    spell_id = 1,
+    episode_number = 1,
+    icd_code = c("J440", "N39", "N81", NA),
+    diagnosis_position = 1
+  ))
+  test_lookup <- data.frame(list(
+    icd_code = c("J44", "N39"),
+    icd_label = c("Other chronic obstructive pulmonary disease",
+                  "Other disorders of urinary system")
+  ))
+  
+  expect_true(expect_warning(
+    validate_inpatient_diagnoses(diagnoses_data = test_diagnoses[1,], 
+                                 diagnoses_lookup = test_lookup)))
+  expect_true(validate_inpatient_diagnoses(diagnoses_data = test_diagnoses[2,], 
+                                           diagnoses_lookup = test_lookup))
+  expect_true(expect_warning(
+    validate_inpatient_diagnoses(diagnoses_data = test_diagnoses[3,], 
+                                 diagnoses_lookup = test_lookup)))
+  expect_false(expect_warning(
+    validate_inpatient_diagnoses(diagnoses_data = test_diagnoses[3,], 
+                                 diagnoses_lookup = dplyr::select(test_lookup, icd_code))))
+  expect_false(expect_warning(
+    validate_inpatient_diagnoses(diagnoses_data = test_diagnoses[4,], 
+                                 diagnoses_lookup = test_lookup)
+  ))
+  
+})
+
+test_that("variables are rearranged", {
+  testdf <- data.frame(list(
+    misc = 3,
+    spell_id = 2,
+    patient_id = 1
+  ))
+
+  expect_error(arrange_variables(testdf, "missing variable"))
+  expect_equal(
+    colnames(arrange_variables(testdf, c("patient_id", "spell_id"))), 
+    c("patient_id", "spell_id", "misc"))
+})

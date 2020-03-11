@@ -1,0 +1,22 @@
+language: minimal
+
+env:
+  - COMPOSE_FILE="inst/docker/docker-compose.yml"
+
+services:
+  - docker
+
+before_install:
+  - echo $BASH_VERSION
+  - echo $PWD
+  - docker-compose --version
+  - docker-compose up --no-start
+  - docker-compose start
+  - docker-compose ps
+
+script:
+  - docker-compose exec -w /mnt/Ramses/ r Rscript inst/docker/hello_world.R
+  - docker-compose exec -w /mnt/Ramses/ r Rscript inst/docker/script-devtools.R
+
+after_deploy:
+  - ls
