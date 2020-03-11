@@ -30,7 +30,7 @@ services:
     volumes:
      - type: bind
        target: /mnt/Ramses
-       source: /home/travis/build/PASS-antibiotics/ramses-test
+       source: /home/travis/build/ramses-antibiotics/ramses-package
   # adminer:
     # image: adminer
     # restart: always
