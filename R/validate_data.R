@@ -289,8 +289,42 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'      \item \code{ATC_route}
 #'      \item \code{authoring_date}: timestamp when the prescription was issued
 #'      \item \code{prescription_start}: timestamp of the prescription start
-#'      \item \code{prescription_end}: timestamp of the prescription end
+#'      \item \code{prescription_end}: timestamp of the prescription end (mandated except
+#'      for one-off prescriptions with \code{daily_frequency} == -1, )
 #'      \item \code{prescription_context}: either 'inpatient', 'opat', 'discharge'
+#'      \item \code{prescription_status}: one value from the following 
+#'      \href{https://hl7.org/fhir/R4/valueset-medicationrequest-status.html}{FHIR R4}
+#'      reference set:
+#'      \itemize{ 
+#'         \item \code{`active`} the prescription is 'actionable', but not all actions 
+#'         that are implied by it have occurred yet.
+#'         \item \code{`on-hold`} actions implied by the prescription are to be 
+#'         temporarily halted, but are expected to continue later. 
+#'         \item \code{`cancelled`} the prescription has been withdrawn before any 
+#'         administrations have occurred.
+#'         \item \code{`completed`} all actions that are implied by the prescription 
+#'         have occurred.
+#'         \item \code{`entered-in-error`} some of the actions that are implied by the 
+#'         medication request may have occurred. For example, the medication may have 
+#'         been dispensed and the patient may have taken some of the medication. 
+#'         Clinical decision support systems should take this status into account.
+#'         \item \code{`stopped`} actions implied by the prescription are to be 
+#'         permanently halted, before all of the administrations occurred. This should 
+#'         not be used if the original order was entered in error.
+#'         \item \code{`draft`} the prescription is not yet 'actionable', e.g. it is a 
+#'         work in progress, requires sign-off, verification or needs to be run through 
+#'         decision support process.
+#'         \item \code{`unknown`} the authoring/source system does not know which of the 
+#'         status values currently applies for this observation. \textit{Note:} This 
+#'         concept is not to be used for 'other' - one of the listed statuses is presumed 
+#'         to apply, but the authoring/source system does not know which.         
+#'      }
+#'      \item \code{daily_frequency}: a numeric value indicating the number of times the drug 
+#'      is to be administered per day. The following values are considered valid:
+#'      \itemize{ 
+#'         \item -1 for a single one-off administration
+#'         \item -9 for 'as required' (\emph{Pro Re Nata}) prescriptions
+#'      }  
 #'     }
 #'    
 #'   Optional columns include:
@@ -306,7 +340,7 @@ validate_prescriptions <- function(data) {
   # TODO: write validate_prescriptions() and check uniqueness
   # TODO: check for lonely OOF
   # TODO: validate prescriptions and administrations together... potentially?
-  exists_non_missing <- list(
+  variable_exists <- list(
     "patient_id", 
     "prescription_id", 
     "drug_id", 
@@ -318,8 +352,6 @@ validate_prescriptions <- function(data) {
     "prescription_status",
     "prescription_context",
     "authoring_date",
-    "prescription_start",
-    "prescription_end",
     "dose",
     "unit",
     "frequency",
@@ -331,9 +363,41 @@ validate_prescriptions <- function(data) {
     "ddd"
   )
   
-  !any(!sapply(exists_non_missing, 
+  variable_exists_non_missing <- c(
+    "patient_id", 
+    "prescription_id", 
+    "drug_id", 
+    "drug_name",
+    "drug_display_name",
+    "ATC_code",
+    "ATC_group",
+    "prescription_status",
+    "prescription_context",
+    "authoring_date",
+    "prescription_start",
+    "daily_frequency"
+  )
+  
+  if( !all(sapply(variable_exists, exists, where = data)) ){
+    
+  }
+    
+    
+  !any(!sapply(variable_exists_non_missing, 
                FUN = validate_variable_no_missing,
                data = data))
+  
+  if( is.na(data$prescription_end))
+  
+  if( !all(data$daily_frequency == -999 | 
+           between(data$daily_frequency, 0, 48)) ){
+    stop(
+      simpleError(paste(
+        "Prescription `daily_frequency` must be between",
+        "0 and 48, or -999 for PRN 'as required' and one-off prescriptions"
+        )))
+    
+  }
   
 
 }

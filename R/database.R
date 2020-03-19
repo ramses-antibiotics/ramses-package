@@ -298,6 +298,37 @@ load_medications <- function(
       "prescription_end"
     )
     )
+  
+build_table_drug_prescriptions_edges <- function() {
+  
+}
+
+build_table_drug_prescriptions_edges.SQLiteConnection <- function() {
+  
+}
+
+build_table_drug_prescriptions_edges.PostgreSQLConnection <- function() {
+  
+}
+
+build_table_drug_prescriptions_edges.MSSQLConnection <- function() {
+  
+}
+
+
+build_temp_table_rx_combinations <- function() {
+  
+}
+
+build_temp_table_rx_therapy <- function() {
+  
+}
+
+built_table_drug_prescriptions <- function() {
+  
+}
+  
+  
   # 
   # 
   # dplyr::db_write_table(
