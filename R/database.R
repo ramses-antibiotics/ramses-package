@@ -267,7 +267,17 @@ transitive_closure_control <- function(max_continuation_gap = 36,
 load_medications <- function(
   conn, prescriptions, administrations, overwrite = FALSE,
   transitive_closure_controls = transitive_closure_control()) {
+  UseMethod("load_medications")
+}
 
+load_medications.SQLiteConnection <- function(
+  conn, prescriptions, administrations, overwrite = FALSE,
+  transitive_closure_controls = transitive_closure_control()) {
+  
+  prescriptions$authoring_date <- as.character(prescriptions$authoring_date)
+  prescriptions$prescription_start <- as.character(prescriptions$prescription_start)
+  prescriptions$prescription_end <- as.character(prescriptions$prescription_end)
+  
   prescriptions <- arrange_variables(
     prescriptions, 
     first_column_names = c(
@@ -299,8 +309,20 @@ load_medications <- function(
     )
     )
   
-build_table_drug_prescriptions_edges <- function() {
+  if( DBI::dbExistsTable(conn, "drug_prescriptions_edges") ){
+    DBI::dbRemoveTable(conn, "drug_prescriptions_edges")
+  }
   
+  ignore <- DBI::dbExecute(
+    conSQLite, 
+    paste(readLines("inst/SQL/create_drug_prescription_edges_SQLite.sql"),
+          collapse = " "),
+  )
+  
+}
+  
+build_table_drug_prescriptions_edges <- function(transitive_closure_controls) {
+
 }
 
 build_table_drug_prescriptions_edges.SQLiteConnection <- function() {
@@ -339,8 +361,7 @@ built_table_drug_prescriptions <- function() {
   # )
   
   # dplyr::db_drop_table(con = conn, prescriptions, force = TRUE)
-    
-}
+
   
 
 

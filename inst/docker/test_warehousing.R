@@ -19,15 +19,14 @@ conSQLite <- connect_db_local("inst/ramses-db.sqlite")
 drug_data <- prepare_drugs()
 
 validate_prescriptions(drug_data$drug_rx)
-
-select(drug_data$drug_rx, patient_id, drug_id, dose, route, prescription_start) %>% 
-duplicated() %>% 
-  any()
+ 
 
 test_that("Ramses on SQLite", {
   test_warehousing(conSQLite, drug_data, overwrite = T)
   
 })
+
+
 
 test_that("Ramses on PosgreSQL", {
   test_warehousing(conPostgreSQL, drug_data, overwrite = T)
@@ -53,7 +52,7 @@ prepare_drugs <- function() {
   ## recoding route of administration
   drug_rx <- mutate(
     drug_rx, 
-    route_atc = case_when(
+    ATC_route = case_when(
       route %in% c(NULL) ~ "Implant", 
       route %in% c("NEB", "INHAL") ~ "Inhal", 
       route %in% c("TOP", "EYE", "EYEL", "EYER", "EYEB", 
@@ -95,7 +94,7 @@ prepare_drugs <- function() {
     mutate(daily_dose = strength * daily_freq) %>% 
     mutate(DDD = compute_DDDs(
       ab = basis_of_strength,
-      administration = route_atc,
+      administration = ATC_route,
       dose = daily_dose,
       unit = units),
       duration_days = if_else(
@@ -113,6 +112,7 @@ prepare_drugs <- function() {
               drug_display_name = drug_name,
               ATC_code,
               ATC_group, 
+              ATC_route,
               authoring_date = authored_on,
               prescription_start,
               prescription_end,
@@ -127,7 +127,8 @@ prepare_drugs <- function() {
   
   
   ## prepare_drug_admin
-  drug_admins$ab <- as.character(AMR::as.ab(drug_admins$tr_DESC))
+  drug_admins$ab <- gsub("Vancomycin protocol", "Vancomycin", drug_admins$tr_DESC)
+  drug_admins$ab <- as.character(AMR::as.ab(drug_admins$ab))
   drug_admins$drug_name <- AMR::ab_name(drug_admins$ab)
   # recoding route of administration
   drug_admins <- mutate(
@@ -173,14 +174,9 @@ prepare_drugs <- function() {
 
 
 test_warehousing <- function(con, drugs = prepare_drugs(), overwrite = T){
-  
-  # test that there are bugs if...???
-  
+
   load_medications(conn = con, 
                    prescriptions = drugs$drug_rx,
                    administrations = drugs$drug_admins,
                    overwrite = overwrite)
-  
-  
 }
-

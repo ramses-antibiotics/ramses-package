@@ -284,9 +284,10 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'       from \code{\link{AMR}{as.ab}()})
 #'      \item \code{drug_name}: preferred name of the drug in the drug dictionary
 #'      \item \code{drug_display_name}: drug name to display in reports (can be the same as \code{drug_name})
-#'      \item \code{ATC_code}
-#'      \item \code{ATC_group}
-#'      \item \code{ATC_route}
+#'      \item \code{ATC_code}: the ATC code, see \code{\link{AMR}{ab_atc}()}
+#'      \item \code{ATC_group}: the ATC group, see \code{\link{AMR}{ab_group1}()}
+#'      \item \code{ATC_route}: route of administration as defined in the ATC ("O" = oral; 
+#'      "P" = parenteral; "R" = rectal; "V" = vaginal)
 #'      \item \code{authoring_date}: timestamp when the prescription was issued
 #'      \item \code{prescription_start}: timestamp of the prescription start
 #'      \item \code{prescription_end}: timestamp of the prescription end (mandated except
@@ -319,6 +320,9 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'         concept is not to be used for 'other' - one of the listed statuses is presumed 
 #'         to apply, but the authoring/source system does not know which.         
 #'      }
+#'      \item \code{dose} a numeric vector of dosage quantities
+#'      \item \code{unit} a character vector of dosage units 
+#'      \item \code{route} the route of administration value natively assigned by system
 #'      \item \code{daily_frequency}: a numeric value indicating the number of times the drug 
 #'      is to be administered per day. The following values are considered valid:
 #'      \itemize{ 
