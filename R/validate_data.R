@@ -315,7 +315,7 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'         work in progress, requires sign-off, verification or needs to be run through 
 #'         decision support process.
 #'         \item \code{`unknown`} the authoring/source system does not know which of the 
-#'         status values currently applies for this observation. \textit{Note:} This 
+#'         status values currently applies for this observation. \emph{Note:} This 
 #'         concept is not to be used for 'other' - one of the listed statuses is presumed 
 #'         to apply, but the authoring/source system does not know which.         
 #'      }
@@ -329,65 +329,88 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'    
 #'   Optional columns include:
 #'   \itemize{
-#'      \item \code{ddd}: the number of defined daily doses, see \code{\link{compute_DDDs}()}.
+#'      \item \code{combination_id}: system-issued identifiers for drugs 
+#'        prescribed as a bundle to treat the same indication either 
+#'        simultaneously (eg clarithromycin and amoxiclav) or consecutively 
+#'        (eg doxicycline 200mg followed by 100mg). Unless provided, 
+#'        such identifiers will be created by \code{Ramses} using 
+#'        transitive closure. 
+#'      \item \code{DDD}: the number of prescribed defined daily doses, 
+#'      see \code{\link{compute_DDDs}()}.
 #'   }
-#'   
+#' 
+
 #' @return NULL if the dataset is valid
 #' @export
 validate_prescriptions <- function(data) {
   
   # TODO: Indication data should be loaded separately, see \code{\link{load_indications}()}
-  # TODO: write validate_prescriptions() and check uniqueness
+  # TODO: check uniqueness
   # TODO: check for lonely OOF
   # TODO: validate prescriptions and administrations together... potentially?
-  variable_exists <- list(
-    "patient_id", 
-    "prescription_id", 
-    "drug_id", 
-    "drug_name",
-    "drug_display_name",
-    "ATC_code",
-    "ATC_group",
-    "prescription_text",
-    "prescription_status",
-    "prescription_context",
-    "authoring_date",
-    "dose",
-    "unit",
-    "frequency",
-    "daily_frequency",
-    "route",
-    "authoring_date",
-    "prescription_start",
-    "prescription_end",
-    "ddd"
-  )
+  variable_exists <- Ramses::drug_prescriptions_variables[["variable_name"]]
+  variable_exists <- variable_exists[which(
+    Ramses::drug_prescriptions_variables[["must_exist"]]
+  )]
   
-  variable_exists_non_missing <- c(
-    "patient_id", 
-    "prescription_id", 
-    "drug_id", 
-    "drug_name",
-    "drug_display_name",
-    "ATC_code",
-    "ATC_group",
-    "prescription_status",
-    "prescription_context",
-    "authoring_date",
-    "prescription_start",
-    "daily_frequency"
-  )
+  variable_exists_non_missing <- 
+    Ramses::drug_prescriptions_variables[["variable_name"]]
+  variable_exists_non_missing <- variable_exists_non_missing[which(
+    Ramses::drug_prescriptions_variables[["must_be_nonmissing"]]
+  )]
   
-  if( !all(sapply(variable_exists, exists, where = data)) ){
-    
+  not_exist <- !sapply(variable_exists, exists, where = data)
+  if( any(not_exist) ){
+    stop(
+      simpleError(paste(
+        "The following variables must exist:",
+        paste(paste0("`", variable_exists[not_exist], "`"), collapse = ", "))
+        )
+    )
   }
-    
-    
-  !any(!sapply(variable_exists_non_missing, 
-               FUN = validate_variable_no_missing,
-               data = data))
   
-  if( is.na(data$prescription_end))
+  missing_data <- suppressWarnings(
+    !sapply(variable_exists_non_missing, 
+            FUN = validate_variable_no_missing,
+            data = data)
+  )
+  
+  if( any(missing_data) ){
+    stop(
+      simpleError(paste(
+        "Some variables must not contain missing data:",
+        paste(paste0("`", 
+                     variable_exists_non_missing[missing_data],
+                     "`"), collapse = ", "))
+      )
+    )
+  }
+  
+  invalid_status <- !data$prescription_status %in% c(
+    "active", "on-hold", "cancelled", "completed", 
+    "entered-in-error", "stopped", "draft", "unknown"
+  )
+  
+  if( any(invalid_status) ) {
+    stop(
+      simpleError(
+        '`prescription_status` must be one of: "active", "on-hold", "cancelled", "completed", 
+    "entered-in-error", "stopped", "draft", or "unknown"'
+      )
+    )
+  }
+  
+  if( any(is.na(data$prescription_end) & data$daily_frequency != -1) ) {
+    stop(
+      simpleError(paste(
+        "`prescription_end` must contain valid data", 
+        "except for one-off prescriptions\n",
+        .print_and_capture(utils::head(
+          dplyr::select(dplyr::filter(
+            data, is.na(prescription_data) & daily_frequency != -1),
+            patient_id, daily_frequency, prescription_end)))
+    )))
+  }
   
   if( !all(data$daily_frequency == -999 | 
            between(data$daily_frequency, 0, 48)) ){
@@ -396,9 +419,28 @@ validate_prescriptions <- function(data) {
         "Prescription `daily_frequency` must be between",
         "0 and 48, or -999 for PRN 'as required' and one-off prescriptions"
         )))
-    
   }
   
+  duplicates <- data %>% 
+    dplyr::group_by(patient_id, drug_id, dose, route, prescription_start) %>% 
+    dplyr::summarise(n = n()) %>% 
+    dplyr::filter(n > 1)
+  duplicates <- merge(data, duplicates)
+  
+  if( nrow(duplicates) > 0 ) {
+    warning(
+      simpleWarning("There may be some duplicate records")
+    )
+    warning(simpleWarning(
+      .print_and_capture(utils::head(
+        select(dplyr::arrange(duplicates, 
+                              patient_id, drug_id, prescription_start),
+               patient_id, prescription_id, 
+               prescription_text, prescription_start))
+    )))
+  }
+  
+  NULL
 
 }
 
@@ -443,3 +485,4 @@ arrange_variables <- function(data, first_column_names) {
   other_names <- colnames(data)[!colnames(data) %in% first_column_names]
   data[, c(first_column_names, other_names)]
 }
+

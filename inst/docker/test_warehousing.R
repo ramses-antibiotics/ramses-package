@@ -6,16 +6,28 @@ library(dbplyr)
 library(dplyr)
 devtools::load_all()
 
+# conPostgreSQL <- DBI::dbConnect(RPostgreSQL::PostgreSQL(), 
+#                                 user = "user", password = "password", 
+#                                 host = "db-postgres", dbname="RamsesDB")
+# 
+# conSQLServer <- dbConnect(
+#   odbc::odbc(),
+#   .connection_string = "Driver={ODBC Driver 17 for SQL Server}; Server=db-mssql,1433;Uid=Sa; Pwd=bidultrukCestLeurTruc!;", timeout = 10)
 
-conPostgreSQL <- DBI::dbConnect(RPostgreSQL::PostgreSQL(), 
-                                user = "user", password = "password", 
-                                host = "db-postgres", dbname="RamsesDB")
-
-conMS <- dbConnect(odbc::odbc(), 
-                   .connection_string = "Driver={ODBC Driver 17 for SQL Server}; Server=db-mssql,1433;Uid=Sa; Pwd=bidultrukCestLeurTruc!;", timeout = 10)
+conSQLite <- connect_db_local("inst/ramses-db.sqlite")
 
 drug_data <- prepare_drugs()
 
+validate_prescriptions(drug_data$drug_rx)
+
+select(drug_data$drug_rx, patient_id, drug_id, dose, route, prescription_start) %>% 
+duplicated() %>% 
+  any()
+
+test_that("Ramses on SQLite", {
+  test_warehousing(conSQLite, drug_data, overwrite = T)
+  
+})
 
 test_that("Ramses on PosgreSQL", {
   test_warehousing(conPostgreSQL, drug_data, overwrite = T)
@@ -35,9 +47,10 @@ prepare_drugs <- function() {
   drug_rx <- Ramses::drug_prescriptions
   drug_admins <- Ramses::drug_administrations
   
-  drug_rx$ab <- as.character(AMR::as.ab(drug_rx$tr_DESC))
+  drug_rx$ab <- gsub("Vancomycin protocol", "Vancomycin", drug_rx$tr_DESC)
+  drug_rx$ab <- as.character(AMR::as.ab(drug_rx$ab))
   drug_rx$drug_name <- AMR::ab_name(drug_rx$ab)
-  # recoding route of administration
+  ## recoding route of administration
   drug_rx <- mutate(
     drug_rx, 
     route_atc = case_when(
@@ -55,7 +68,7 @@ prepare_drugs <- function() {
       TRUE ~ "NA_character_"
     ))
   
-  ## ----compute_ddd---------------------------------------------------------
+  ## compute_ddd
   drug_rx$ATC_code <- AMR::ab_atc(drug_rx$ab)
   drug_rx$ATC_group <- AMR::ab_atc_group1(drug_rx$ab)
   
@@ -84,14 +97,22 @@ prepare_drugs <- function() {
       ab = basis_of_strength,
       administration = route_atc,
       dose = daily_dose,
-      unit = units)) %>% 
+      unit = units),
+      duration_days = if_else(
+        daily_freq == -1,
+        "one-off", paste( difftime(
+          prescription_end, prescription_start, units = "days"),
+        "days"))) %>% 
     transmute(patient_id,
               prescription_id,
+              prescription_text = paste0(
+                drug_name, " ", route, " ", dose, units,
+                " ",  duration_days),
               drug_id = ab,
               drug_name = drug_name,
               drug_display_name = drug_name,
               ATC_code,
-              ATC_group,
+              ATC_group, 
               authoring_date = authored_on,
               prescription_start,
               prescription_end,
@@ -105,7 +126,7 @@ prepare_drugs <- function() {
               DDD)
   
   
-  ## ----prepare_drug_admin--------------------------------------------------
+  ## prepare_drug_admin
   drug_admins$ab <- as.character(AMR::as.ab(drug_admins$tr_DESC))
   drug_admins$drug_name <- AMR::ab_name(drug_admins$ab)
   # recoding route of administration
@@ -149,11 +170,7 @@ prepare_drugs <- function() {
   
 }
 
-# ## ----create_local_db-----------------------------------------------------
-# ramses_db <- connect_db_local("ramses-db.sqlite")
-# load_diagnoses(conn = ramses_db, 
-#                diagnoses = inpatient_diagnoses, lookup = icd10cm, 
-#                overwrite = TRUE)
+
 
 test_warehousing <- function(con, drugs = prepare_drugs(), overwrite = T){
   
@@ -166,3 +183,4 @@ test_warehousing <- function(con, drugs = prepare_drugs(), overwrite = T){
   
   
 }
+

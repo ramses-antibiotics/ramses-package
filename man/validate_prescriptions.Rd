@@ -30,12 +30,53 @@ In order to pass the validation, prescription data should contain the following 
      \item \code{ATC_route}
      \item \code{authoring_date}: timestamp when the prescription was issued
      \item \code{prescription_start}: timestamp of the prescription start
-     \item \code{prescription_end}: timestamp of the prescription end
+     \item \code{prescription_end}: timestamp of the prescription end (mandated except
+     for one-off prescriptions with \code{daily_frequency} == -1, )
      \item \code{prescription_context}: either 'inpatient', 'opat', 'discharge'
+     \item \code{prescription_status}: one value from the following 
+     \href{https://hl7.org/fhir/R4/valueset-medicationrequest-status.html}{FHIR R4}
+     reference set:
+     \itemize{ 
+        \item \code{`active`} the prescription is 'actionable', but not all actions 
+        that are implied by it have occurred yet.
+        \item \code{`on-hold`} actions implied by the prescription are to be 
+        temporarily halted, but are expected to continue later. 
+        \item \code{`cancelled`} the prescription has been withdrawn before any 
+        administrations have occurred.
+        \item \code{`completed`} all actions that are implied by the prescription 
+        have occurred.
+        \item \code{`entered-in-error`} some of the actions that are implied by the 
+        medication request may have occurred. For example, the medication may have 
+        been dispensed and the patient may have taken some of the medication. 
+        Clinical decision support systems should take this status into account.
+        \item \code{`stopped`} actions implied by the prescription are to be 
+        permanently halted, before all of the administrations occurred. This should 
+        not be used if the original order was entered in error.
+        \item \code{`draft`} the prescription is not yet 'actionable', e.g. it is a 
+        work in progress, requires sign-off, verification or needs to be run through 
+        decision support process.
+        \item \code{`unknown`} the authoring/source system does not know which of the 
+        status values currently applies for this observation. \emph{Note:} This 
+        concept is not to be used for 'other' - one of the listed statuses is presumed 
+        to apply, but the authoring/source system does not know which.         
+     }
+     \item \code{daily_frequency}: a numeric value indicating the number of times the drug 
+     is to be administered per day. The following values are considered valid:
+     \itemize{ 
+        \item -1 for a single one-off administration
+        \item -9 for 'as required' (\emph{Pro Re Nata}) prescriptions
+     }  
     }
    
   Optional columns include:
   \itemize{
-     \item \code{ddd}: the number of defined daily doses, see \code{\link{compute_DDDs}()}.
+     \item \code{combination_id}: system-issued identifiers for drugs 
+       prescribed as a bundle to treat the same indication either 
+       simultaneously (eg clarithromycin and amoxiclav) or consecutively 
+       (eg doxicycline 200mg followed by 100mg). Unless provided, 
+       such identifiers will be created by \code{Ramses} using 
+       transitive closure. 
+     \item \code{DDD}: the number of prescribed defined daily doses, 
+     see \code{\link{compute_DDDs}()}.
   }
 }

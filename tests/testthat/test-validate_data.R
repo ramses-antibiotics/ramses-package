@@ -115,6 +115,107 @@ test_that("inpatient diagnosis records are validated", {
   
 })
 
+test_that("Prescriptions are validated", {
+  
+  expect_error(validate_prescriptions(
+    data.frame(list(
+      prescription_id = "6025e96e1cc750dc6ec7fb9aadca0dbd", 
+      prescription_text = "Flucloxacillin IV 2g 3 days", 
+      drug_id = "FLC", drug_name = "Flucloxacillin", 
+      drug_display_name = "Flucloxacillin", 
+      ATC_code = "J01CF05",
+      ATC_group = "Beta-lactam antibacterials, penicillins", 
+      authoring_date = structure(1421048831, 
+                                 class = c("POSIXct", "POSIXt"), 
+                                 tzone = ""), 
+      prescription_start = structure(1421051891, 
+                                     class = c("POSIXct", "POSIXt"), 
+                                     tzone = ""), 
+      prescription_end = structure(1421311091, 
+                                   class = c("POSIXct", "POSIXt"), 
+                                   tzone = ""), 
+      prescription_status = "completed", 
+      prescription_context = "inpatient", 
+      dose = 2, unit = "g", route = "IV", frequency = "6H", 
+      daily_frequency = 4, DDD = 4), stringsAsFactors = F)
+  ))
+  
+  expect_error(validate_prescriptions(
+    data.frame(list(
+      patient_id = NA, 
+      prescription_id = "6025e96e1cc750dc6ec7fb9aadca0dbd", 
+      prescription_text = "Flucloxacillin IV 2g 3 days", 
+      drug_id = "FLC", drug_name = "Flucloxacillin", 
+      drug_display_name = "Flucloxacillin", 
+      ATC_code = "J01CF05",
+      ATC_group = "Beta-lactam antibacterials, penicillins", 
+      authoring_date = structure(1421048831, 
+                                 class = c("POSIXct", "POSIXt"), 
+                                 tzone = ""), 
+      prescription_start = structure(1421051891, 
+                                     class = c("POSIXct", "POSIXt"), 
+                                     tzone = ""), 
+      prescription_end = structure(1421311091, 
+                                   class = c("POSIXct", "POSIXt"), 
+                                   tzone = ""), 
+      prescription_status = "completed", 
+      prescription_context = "inpatient", 
+      dose = 2, unit = "g", route = "IV", frequency = "6H", 
+      daily_frequency = 4, DDD = 4), stringsAsFactors = F)
+  ))
+  
+  expect_null(validate_prescriptions(
+    data.frame(list(
+      patient_id = "5593245762", 
+      prescription_id = "6025e96e1cc750dc6ec7fb9aadca0dbd", 
+      prescription_text = "Flucloxacillin IV 2g 3 days", 
+      drug_id = "FLC", drug_name = "Flucloxacillin", 
+      drug_display_name = "Flucloxacillin", 
+      ATC_code = "J01CF05",
+      ATC_group = "Beta-lactam antibacterials, penicillins", 
+      authoring_date = structure(1421048831, 
+                                 class = c("POSIXct", "POSIXt"), 
+                                 tzone = ""), 
+      prescription_start = structure(1421051891, 
+                                     class = c("POSIXct", "POSIXt"), 
+                                     tzone = ""), 
+      prescription_end = structure(1421311091, 
+                                   class = c("POSIXct", "POSIXt"), 
+                                   tzone = ""), 
+      prescription_status = "completed", 
+      prescription_context = "inpatient", 
+      dose = 2, unit = "g", route = "IV", frequency = "6H", 
+      daily_frequency = 4, DDD = 4), stringsAsFactors = F)
+  ))
+  
+  expect_warning(validate_prescriptions(
+    data.frame(list(
+      patient_id = c("5593245762", "5593245762"),
+      prescription_id = c("6025e96e1cc750dc6ec7fb9aadca0dbd", "2"),
+      prescription_text = c("Flucloxacillin IV 2g 3 days", "Flucloxacillin IV 2g 4 days"), 
+      drug_id = c("FLC","FLC"), drug_name = c("Flucloxacillin", "Flucloxacillin"), 
+      drug_display_name = c("Flucloxacillin", "Flucloxacillin"), 
+      ATC_code = c("J01CF05","J01CF05"),
+      ATC_group = c("Beta-lactam antibacterials, penicillins",
+                    "Beta-lactam antibacterials, penicillins"), 
+      authoring_date = rep(structure(1421048831, 
+                                     class = c("POSIXct", "POSIXt"), 
+                                     tzone = ""), 2), 
+      prescription_start = rep(structure(1421051891, 
+                                         class = c("POSIXct", "POSIXt"), 
+                                         tzone = ""), 2), 
+      prescription_end = rep(structure(1421311091, 
+                                       class = c("POSIXct", "POSIXt"), 
+                                       tzone = ""),2), 
+      prescription_status = c("completed", "completed"), 
+      prescription_context = c("inpatient", "inpatient"), 
+      dose = c(2, 2), unit = c("g", "g"), route = c("IV", "IV"), 
+      frequency = c("6H", "6H"), 
+      daily_frequency = c(4, 4), DDD = c( 4,  4)), stringsAsFactors = F)
+  ))
+  
+})
+
 test_that("variables are rearranged", {
   testdf <- data.frame(list(
     misc = 3,
