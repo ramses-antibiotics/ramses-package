@@ -296,7 +296,7 @@ load_medications.SQLiteConnection <- function(
  
   prescriptions <- dbplyr::db_copy_to(
     con = conn,
-    table = "temp_prescriptions",
+    table = "ramses_temp_prescriptions",
     values = prescriptions,
     temporary = FALSE,
     overwrite = TRUE,
@@ -321,8 +321,85 @@ load_medications.SQLiteConnection <- function(
   
 }
   
-build_table_drug_prescriptions_edges <- function(transitive_closure_controls) {
 
+
+
+
+
+
+#' Manage internal tables used for transitive closures
+#'
+#' @description This attempts to remove all `Ramses_TC_*`
+#' tables in the database connection if they exist.
+#' @param conn a database connection
+#'
+#' @return NULL if ran to the end
+#' @noRd
+.remove_Ramses_TC_tables <- function(conn){
+  
+  for( i in c("ramses_TC_input",
+              "ramses_TC_init") ) {
+    DBI::dbRemoveTable(conn = conn,
+                       name = i, 
+                       fail_if_missing = FALSE)
+  }
+  
+  NULL
+}
+
+.create_ramses_TC_graphs <- function(conn){
+  UseMethod(".create_ramses_TC_graphs")
+}
+.create_ramses_TC_graphs.SQLiteConnection <- function(conn){
+  DBI::dbRemoveTable(conn = conn,
+                     name = "ramses_TC_graphs",
+                     fail_if_missing = FALSE)
+  .execute_sql_file(
+    conn = conn,
+    file.path = "inst/SQL/create_ramses_TC_graphs_SQLite.sql")
+}
+
+
+.execute_sql_file <- function(conn, file.path) {
+  
+  statement <- readLines(file.path)
+  statement <- paste(statement, collapse = " ")
+  
+  DBI::dbExecute(conn = conn,
+                 statement = statement)
+}
+
+
+#' Run transitive closure
+#'
+#' @param conn a database connection
+#' @param edges a table of class `tbl_dbi` containing two columns
+#' named `from_id` and `to_id` 
+#' @param tablename a table name where to store the output. Any 
+#' existing table under this name will be overwritten.
+#' @return a connection to a non-temporary table of class `tbl_dbi`
+#' under the name `tablename`. 
+#' @noRD
+.run_transitive_closure <- function(conn, edges, tablename) {
+  
+  .remove_Ramses_TC_tables(conn)
+  .create_ramses_TC_graphs(conn)
+  
+  
+  #edges must have two text variables from_id and to_id
+  Ramses_closure_input <- edges %>% 
+    select(from_id, to_id) %>% 
+    compute(.data, name = "ramses_TC_input")
+  
+  Ramses_closure_init <- Ramses_closure_input %>% 
+    top_n(1) %>% 
+    compute(.data, name = "ramses_TC_init")
+  
+  
+}
+
+build_table_drug_prescriptions_edges <- function(transitive_closure_controls) {
+  
 }
 
 build_table_drug_prescriptions_edges.SQLiteConnection <- function() {
@@ -337,7 +414,6 @@ build_table_drug_prescriptions_edges.MSSQLConnection <- function() {
   
 }
 
-
 build_temp_table_rx_combinations <- function() {
   
 }
@@ -349,19 +425,6 @@ build_temp_table_rx_therapy <- function() {
 built_table_drug_prescriptions <- function() {
   
 }
-  
-  
-  # 
-  # 
-  # dplyr::db_write_table(
-  #   con = conn,
-  #   table = "ramses_rx_edges",
-  #   types = 
-  #   temporary = FALSE
-  # )
-  
-  # dplyr::db_drop_table(con = conn, prescriptions, force = TRUE)
 
-  
 
 
