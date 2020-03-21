@@ -1,6 +1,11 @@
 
+.drug_prescriptions_variables <- function() {
+  utils::read.csv(
+    system.file("Schema", 
+                "drug_prescriptions_variables.csv", 
+                package = "Ramses"), stringsAsFactors = F)
+}
 global_vars <- c(
-  "patient_id", 
   "spell_id", 
   "admission_date", 
   "discharge_date",
@@ -8,14 +13,19 @@ global_vars <- c(
   "last_episode_in_spell_indicator",
   "episode_start",
   "episode_end",
-  "DDD",
   "ddd_value",
   "ddd_unit",
   "valid_ab",
-  "icd_code"
+  "icd_code",
+  "from_id", 
+  "to_id"
 )
 
-utils::globalVariables(global_vars)
+utils::globalVariables(c(
+  global_vars, 
+  .drug_prescriptions_variables()[["variable_name"]]
+))
+
 utils::globalVariables(paste0(global_vars, ".x"))
 utils::globalVariables(paste0(global_vars, ".y"))
 
@@ -353,15 +363,18 @@ validate_prescriptions <- function(data) {
   # TODO: check uniqueness
   # TODO: check for lonely OOF
   # TODO: validate prescriptions and administrations together... potentially?
-  variable_exists <- Ramses::drug_prescriptions_variables[["variable_name"]]
+  
+  drug_prescriptions_variables <- .drug_prescriptions_variables()
+  
+  variable_exists <- drug_prescriptions_variables[["variable_name"]]
   variable_exists <- variable_exists[which(
-    Ramses::drug_prescriptions_variables[["must_exist"]]
+    drug_prescriptions_variables[["must_exist"]]
   )]
   
   variable_exists_non_missing <- 
-    Ramses::drug_prescriptions_variables[["variable_name"]]
+    drug_prescriptions_variables[["variable_name"]]
   variable_exists_non_missing <- variable_exists_non_missing[which(
-    Ramses::drug_prescriptions_variables[["must_be_nonmissing"]]
+    drug_prescriptions_variables[["must_be_nonmissing"]]
   )]
   
   not_exist <- !sapply(variable_exists, exists, where = data)
@@ -412,7 +425,7 @@ validate_prescriptions <- function(data) {
         "except for one-off prescriptions\n",
         .print_and_capture(utils::head(
           dplyr::select(dplyr::filter(
-            data, is.na(prescription_data) & daily_frequency != -1),
+            data, is.na(prescription_end) & daily_frequency != -1),
             patient_id, daily_frequency, prescription_end)))
     )))
   }

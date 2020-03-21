@@ -6,7 +6,7 @@ test_that("transitive closure parameters are set", {
   expect_error(transitive_closure_control(1, -2, 1))
   expect_error(transitive_closure_control(1, 1, -2))
   expect_error(transitive_closure_control(1, 1, c(-2, 0)))
-  expect_is(transitive_closure_control()$max_continuation_gap, "Period")
+  expect_is(transitive_closure_control()$max_continuation_gap, "integer")
 
 })
 
@@ -17,13 +17,13 @@ test_edges <- tibble(
 )
 
 
-test_that("SQLite does transitive closure", {
-  
-  conSQLite <- connect_db_local("inst/ramses-db.sqlite")
-  dbplyr::db_copy_to(conSQLite,
-                     "test_edges",
-                     test_edges,
-                     overwrite = T,
-                     temporary = F)
-  
-}) 
+# test_that("SQLite does transitive closure", {
+#   
+#   conSQLite <- connect_db_local("inst/ramses-db.sqlite")
+#   dbplyr::db_copy_to(conSQLite,
+#                      "ramses_test_edges",
+#                      test_edges,
+#                      overwrite = T,
+#                      temporary = F)
+#   
+# }) 

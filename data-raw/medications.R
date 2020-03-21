@@ -17,9 +17,9 @@ drug_administrations$dose <- as.numeric(drug_administrations$dose)
 
 usethis::use_data(drug_administrations, overwrite = T)
 
-drug_prescriptions_variables <- read.csv(
-  file = "data-raw/drug_prescriptions_variables.csv", stringsAsFactors = F,
-  colClasses = c("integer", "character", "logical", "logical")
-)
-
-usethis::use_data(drug_prescriptions_variables, overwrite = T)
+# drug_prescriptions_variables <- read.csv(
+#   file = "data-raw/drug_prescriptions_variables.csv", stringsAsFactors = F,
+#   colClasses = c("integer", "character", "logical", "logical")
+# )
+# 
+# usethis::use_data(drug_prescriptions_variables, overwrite = T)

@@ -26,6 +26,14 @@ test_that("Ramses on SQLite", {
   
 })
 
+statement <- readLines("inst/SQL/drug_prescriptions_edges_SQLite.sql")
+# remove comments
+statement <- sapply(statement, gsub, pattern = "--.*", replacement = "")
+# concatenate on single line
+statement <- paste(statement, collapse = " ")
+
+
+
 
 
 test_that("Ramses on PosgreSQL", {

@@ -135,3 +135,4 @@ ORDER BY [patient_id], [from_id], [from_authoring], [to_start];
 --               ((a.[daily_frequency] = -1) and (b.[daily_frequency] <> -1) and (a.[drug_id] = b.[drug_id])) --2
 --           )
 -- ORDER BY a.[patient_id], a.[prescription_id], a.[authoring_date], b.[prescription_start];
+

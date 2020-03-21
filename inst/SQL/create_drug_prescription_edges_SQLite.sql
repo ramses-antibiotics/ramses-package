@@ -6,6 +6,6 @@ CREATE TABLE [drug_prescriptions_edges]
     [therapy_rank]     INTEGER,
     [combination_rank] INTEGER,
     [relation_type]    TEXT,
-    [switch_oral]      INTEGER
-    PRIMARY KEY([from_id], [to_id]])
+    [switch_oral]      INTEGER,
+    PRIMARY KEY([from_id], [to_id])
 );

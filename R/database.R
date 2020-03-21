@@ -208,7 +208,7 @@ load_diagnoses <- function(conn, diagnoses_data, diagnoses_lookup, overwrite = F
 #' @param max_combination_authoring_gap a positive integer setting the maximum number
 #' of hours tolerated between the time of authoring of two prescriptions 
 #' administered as combination therapy. The default is 6 hours.
-#' @param max_combination_start_gap a positive integer setting the maximum number of 
+  #' @param max_combination_start_gap a positive integer setting the maximum number of 
 #' hours tolerated between the start of administration of two prescriptions
 #' administred as combination therapy. The default is 24 hours.
 #'
@@ -241,9 +241,9 @@ transitive_closure_control <- function(max_continuation_gap = 36,
     stop(simpleError("Parameters must be >= 0"))
   }
   
-  list(max_combination_authoring_gap = lubridate::hours(max_continuation_gap),
-       max_combination_start_gap = lubridate::hours(max_combination_start_gap),
-       max_continuation_gap = lubridate::hours(max_continuation_gap))
+  list(max_combination_authoring_gap = as.integer(max_continuation_gap),
+       max_combination_start_gap = as.integer(max_combination_start_gap),
+       max_continuation_gap = as.integer(max_continuation_gap))
   
 }
 
@@ -263,13 +263,14 @@ transitive_closure_control <- function(max_continuation_gap = 36,
 #'
 #' @return `TRUE` if the function ran successfully, otherwise object of class
 #' "try-error" containing error messages trigger during warehouse data loading.
+#' @rdname load_medications
 #' @export
 load_medications <- function(
   conn, prescriptions, administrations, overwrite = FALSE,
   transitive_closure_controls = transitive_closure_control()) {
   UseMethod("load_medications")
 }
-
+#' @export
 load_medications.SQLiteConnection <- function(
   conn, prescriptions, administrations, overwrite = FALSE,
   transitive_closure_controls = transitive_closure_control()) {
@@ -277,22 +278,13 @@ load_medications.SQLiteConnection <- function(
   prescriptions$authoring_date <- as.character(prescriptions$authoring_date)
   prescriptions$prescription_start <- as.character(prescriptions$prescription_start)
   prescriptions$prescription_end <- as.character(prescriptions$prescription_end)
-  
-  prescriptions <- arrange_variables(
-    prescriptions, 
-    first_column_names = c(
-      "patient_id",
-      "prescription_id",
-      #"combination_id",
-      "drug_id", 
-      "drug_name",
-      "drug_display_name",
-      "authoring_date",
-      "prescription_start",
-      "prescription_end",
-      "prescription_status",
-      "daily_frequency"
-    ))
+
+  first_column_names <- .drug_prescriptions_variables()[["variable_name"]]
+  first_column_names <- first_column_names[
+    first_column_names %in% names(prescriptions)
+  ]
+  prescriptions <- arrange_variables(prescriptions, 
+                                     first_column_names = first_column_names)
  
   prescriptions <- dbplyr::db_copy_to(
     con = conn,
@@ -313,11 +305,30 @@ load_medications.SQLiteConnection <- function(
     DBI::dbRemoveTable(conn, "drug_prescriptions_edges")
   }
   
+  DBI::dbExecute(
+    conn = conn,
+    statement = .read_sql_syntax(
+      system.file("SQL", 
+                  "create_drug_prescription_edges_SQLite.sql", 
+                  package = "Ramses")))
+ 
+  
+  statement_edges <- .read_sql_syntax(
+    system.file("SQL", 
+                "drug_prescriptions_edges_SQLite.sql", 
+                package = "Ramses"))
+  
+  # replace variables in SQL code by their value
+  for(i in seq_along(transitive_closure_controls)) {
+    statement_edges <- gsub(
+      paste0("@", names(transitive_closure_controls[i])),
+      transitive_closure_controls[[i]], statement_edges)
+  }
+
   ignore <- DBI::dbExecute(
-    conSQLite, 
-    paste(readLines("inst/SQL/create_drug_prescription_edges_SQLite.sql"),
-          collapse = " "),
-  )
+    conn = conn,
+    statement = statement_edges)
+  
   
 }
   
@@ -354,19 +365,23 @@ load_medications.SQLiteConnection <- function(
   DBI::dbRemoveTable(conn = conn,
                      name = "ramses_TC_graphs",
                      fail_if_missing = FALSE)
-  .execute_sql_file(
+  
+  DBI::dbExecute(
     conn = conn,
-    file.path = "inst/SQL/create_ramses_TC_graphs_SQLite.sql")
+    statement = .read_sql_syntax("inst/SQL/create_ramses_TC_graphs_SQLite.sql"))
+
 }
 
 
-.execute_sql_file <- function(conn, file.path) {
+.read_sql_syntax <- function(file.path) {
   
   statement <- readLines(file.path)
+  # remove comments
+  statement <- sapply(statement, gsub, pattern = "--.*", replacement = "")
+  # concatenate on single line
   statement <- paste(statement, collapse = " ")
   
-  DBI::dbExecute(conn = conn,
-                 statement = statement)
+  statement
 }
 
 
@@ -379,7 +394,7 @@ load_medications.SQLiteConnection <- function(
 #' existing table under this name will be overwritten.
 #' @return a connection to a non-temporary table of class `tbl_dbi`
 #' under the name `tablename`. 
-#' @noRD
+#' @noRd
 .run_transitive_closure <- function(conn, edges, tablename) {
   
   .remove_Ramses_TC_tables(conn)
