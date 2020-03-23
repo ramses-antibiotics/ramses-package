@@ -10,11 +10,19 @@ test_that("transitive closure parameters are set", {
 
 })
 
+test_that("Batch SQL scripts get split", {
+  expect_equal(.split_sql_batch("blah1; blah2; WHILE stuff BEGIN balh3; balh3; END; blah4;"),
+               c("blah1;", " blah2;", "WHILE stuff BEGIN balh3; balh3; END;", " blah4;"))
+  
+  expect_equal(.split_sql_batch("blah1; blah2; WHILE stuff BEGIN balh3; balh3; END; blah4; WHILE i'm bored BEGIN AH END;"),
+               c("blah1;", " blah2;", "WHILE stuff BEGIN balh3; balh3; END;", " blah4;", "WHILE i'm bored BEGIN AH END;"))
+  
+})
 
-test_edges <- tibble(
-  from_id = as.character(c(1,1,2,5,6,7)),
-  to_id = as.character(c(2,3,4,6,7,8))
-)
+# test_edges <- tibble(
+#   from_id = as.character(c(1,1,2,5,6,7)),
+#   to_id = as.character(c(2,3,4,6,7,8))
+# )
 
 
 # test_that("SQLite does transitive closure", {

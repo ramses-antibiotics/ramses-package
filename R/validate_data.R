@@ -18,7 +18,9 @@ global_vars <- c(
   "valid_ab",
   "icd_code",
   "from_id", 
-  "to_id"
+  "to_id",
+  "id1",
+  "id2"
 )
 
 utils::globalVariables(c(

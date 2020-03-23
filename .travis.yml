@@ -15,8 +15,9 @@ before_install:
   - docker-compose ps
 
 script:
-  - docker-compose exec -w /mnt/Ramses/ r Rscript inst/docker/hello_world.R
-  - docker-compose exec -w /mnt/Ramses/ r Rscript inst/docker/script-devtools.R
+  - docker-compose exec -w /mnt/Ramses/ r Rscript inst/docker/script_hello_world.R
+  - docker-compose exec -w /mnt/Ramses/ r Rscript inst/docker/script_devtools.R
+  - docker-compose exec -w /mnt/Ramses/ r Rscript inst/docker/script_unit_tests.R
 
 after_deploy:
   - ls
