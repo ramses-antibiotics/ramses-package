@@ -422,7 +422,7 @@ load_medications.SQLiteConnection <- function(
   # recoding route of administration
   drug_admins <- mutate(
     drug_admins, 
-    route_atc = case_when(
+    ATC_route = case_when(
       route %in% c(NULL) ~ "Implant", 
       route %in% c("NEB", "INHAL") ~ "Inhal", 
       route %in% c("TOP", "EYE", "EYEL", "EYER", "EYEB", 
@@ -448,7 +448,7 @@ load_medications.SQLiteConnection <- function(
   drug_admins <- drug_admins %>% 
     mutate(ddd = compute_DDDs(
       ab = basis_of_strength,
-      administration = route_atc,
+      administration = ATC_route,
       dose = dose,
       unit = units 
     ))

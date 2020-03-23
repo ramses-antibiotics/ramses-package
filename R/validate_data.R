@@ -20,7 +20,17 @@ global_vars <- c(
   "from_id", 
   "to_id",
   "id1",
-  "id2"
+  "id2",
+  "ab",
+  "strength",
+  "basis_of_strength",
+  "authored_on",
+  "duration",
+  "freq",
+  "LU_frequency",
+  "daily_freq",
+  "daily_dose",
+  "duration_days"
 )
 
 utils::globalVariables(c(
