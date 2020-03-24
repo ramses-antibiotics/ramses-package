@@ -8,7 +8,7 @@ library(odbc)
 
 test_that("Ramses on SQLite", {
   
-  drug_data <- Ramses:::.prepare_drugs()
+  drug_data <- Ramses:::.prepare_example_drug_records()
   conSQLite <- suppressWarnings(connect_db_local("ramses-db.sqlite"))
   
   expect_null(validate_prescriptions(drug_data$drug_rx))
@@ -18,18 +18,10 @@ test_that("Ramses on SQLite", {
                    administrations = drug_data$drug_admins,
                    overwrite = TRUE)
 
-  DBI::dbRemoveTable(conSQLite, "ramses_TC_edges", fail_if_missing = F)
-  
-  edges_table <- tbl(conSQLite, "drug_prescriptions_edges") %>% 
-    # filter(patient_id %in% c("1374569474", "2775668346")) %>%
-    transmute(id1 = from_id, id2 = to_id) %>% 
-    compute(name = "ramses_TC_edges", temporary = F)
-  
-  DBI::dbExecute(conSQLite, "CREATE INDEX ramses_TC_edges_idx1 ON ramses_TC_edges (id1, id2);")
-  DBI::dbExecute(conSQLite, "CREATE INDEX ramses_TC_edges_idx2 ON ramses_TC_edges (id2, id1);")
-  tutu <- Ramses:::.do_TC_SQLITE(conn = conSQLite, edge_table = "ramses_TC_edges")
-  tutu <- collect(filter(tutu, grp == 2))$id
-  expect_equal(tutu, 1:2)
+  # tutu <- tbl(conSQlite,
+  #             "drug_prescriptions") %>% 
+  #   filter(grp == 2))$id
+  # expect_equal(tutu, 1:2)
   
   DBI::dbDisconnect(conSQLite)
   file.remove("ramses-db.sqlite")
@@ -37,6 +29,38 @@ test_that("Ramses on SQLite", {
 })
 
 
+test_that("SQLite does transitive closure", {
+  
+  test_edges <- tibble(
+    id1 = as.character(c(1,1,2,5,6,7)),
+    id2 = as.character(c(2,3,4,6,7,8))
+  )
+  
+  test_solution <- tibble(
+    id =  as.integer(c(1,2,3,4,5,6,7,8)),
+    grp = as.integer(c(1,1,1,1,5,5,5,5))
+  )
+  
+  conSQLite <- suppressWarnings(
+    connect_db_local("test.sqlite"))
+  
+  dbplyr::db_copy_to(conSQLite,
+                     "ramses_test_edges",
+                     test_edges,
+                     overwrite = T,
+                     temporary = F)
+  
+  test_output <- Ramses:::.run_transitive_closure.SQLiteConnection(
+    conSQLite,"ramses_test_edges") %>% 
+    dplyr::select(id, grp) %>% 
+    dplyr::arrange(id) %>% 
+    dplyr::collect()
+  
+  expect_equal(test_output,
+               test_solution)
+  DBI::dbDisconnect(conSQLite)
+  file.remove("test.sqlite")  
+})
 
 # PostgreSQL --------------------------------------------------------------
 
