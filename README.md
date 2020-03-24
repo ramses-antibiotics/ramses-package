@@ -22,17 +22,17 @@
 ## Funders
 
 <div style="display: table-cell;">
-<a href="https://www.nihr.ac.uk/" ><img height="60px" style="vertical-align: bottom;" alt="National Institute of Health Research" src="pkgdown/partner-logos/NIHR.svg" ></a> &nbsp;&nbsp;
-<a href="https://www.esrc.ukri.org" ><img height="50px" style="vertical-align: bottom;" alt="Economic and Social Research Council" src="pkgdown/partner-logos/ESRC.svg" ></a> &nbsp;&nbsp;
-<a href="https://rosetreestrust.co.uk/"><img style="vertical-align: bottom;margin-bottom: -5px;" alt="Rosetree Trust" src="pkgdown/partner-logos/rosetree.png" height="50px"></a>
+<a href="https://www.nihr.ac.uk/" ><img height="60px" style="vertical-align: bottom;" alt="National Institute of Health Research" src="man/figures/partner-logos/NIHR.svg" ></a> &nbsp;&nbsp;
+<a href="https://www.esrc.ukri.org" ><img height="50px" style="vertical-align: bottom;" alt="Economic and Social Research Council" src="man/figures/partner-logos/ESRC.svg" ></a> &nbsp;&nbsp;
+<a href="https://rosetreestrust.co.uk/"><img style="vertical-align: bottom;margin-bottom: -5px;" alt="Rosetree Trust" src="man/figures/partner-logos/rosetree.png" height="50px"></a>
 </div>
 
 ## Partners
 
 <div style="display: table-cell;">
-<a href="https://pass-antibiotics.github.io/" ><img height="60px" style="vertical-align: bottom;" alt="Preserving Antibiotics through Safe Stewardship" src="pkgdown/partner-logos/PASS.svg" ></a> &nbsp;&nbsp;
-<a href="https://www.ucl.ac.uk/health-informatics" ><img height="60px" style="vertical-align: bottom;" alt="University College London" src="pkgdown/partner-logos/UCL.svg" ></a> &nbsp;&nbsp;&nbsp;
-<a href="https://uhb.nhs.uk" ><img height="60px" style="vertical-align: bottom;" alt="University Hospitals Birmingham NHS Foundation Trust" src="pkgdown/partner-logos/UHBwide.png" ></a>  
+<a href="https://pass-antibiotics.github.io/" ><img height="50px" style="vertical-align: bottom;" alt="Preserving Antibiotics through Safe Stewardship" src="man/figures/partner-logos/PASS.svg" ></a> &nbsp;&nbsp;
+<a href="https://www.ucl.ac.uk/health-informatics" ><img height="50px" style="vertical-align: bottom;" alt="University College London" src="man/figures/partner-logos/UCL.svg" ></a> &nbsp;&nbsp;&nbsp;
+<a href="https://uhb.nhs.uk" ><img height="50px" style="vertical-align: bottom;" alt="University Hospitals Birmingham NHS Foundation Trust" src="man/figures/partner-logos/UHBwide.png" ></a>  
 </div>
 
 ## Licence 
