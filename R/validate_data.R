@@ -1,6 +1,11 @@
 
+.drug_prescriptions_variables <- function() {
+  utils::read.csv(
+    system.file("Schema", 
+                "drug_prescriptions_variables.csv", 
+                package = "Ramses"), stringsAsFactors = F)
+}
 global_vars <- c(
-  "patient_id", 
   "spell_id", 
   "admission_date", 
   "discharge_date",
@@ -8,14 +13,31 @@ global_vars <- c(
   "last_episode_in_spell_indicator",
   "episode_start",
   "episode_end",
-  "DDD",
   "ddd_value",
   "ddd_unit",
   "valid_ab",
-  "icd_code"
+  "icd_code",
+  "from_id", 
+  "to_id",
+  "id1",
+  "id2",
+  "ab",
+  "strength",
+  "basis_of_strength",
+  "authored_on",
+  "duration",
+  "freq",
+  "LU_frequency",
+  "daily_freq",
+  "daily_dose",
+  "duration_days"
 )
 
-utils::globalVariables(global_vars)
+utils::globalVariables(c(
+  global_vars, 
+  .drug_prescriptions_variables()[["variable_name"]]
+))
+
 utils::globalVariables(paste0(global_vars, ".x"))
 utils::globalVariables(paste0(global_vars, ".y"))
 
@@ -284,9 +306,10 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'       from \code{\link{AMR}{as.ab}()})
 #'      \item \code{drug_name}: preferred name of the drug in the drug dictionary
 #'      \item \code{drug_display_name}: drug name to display in reports (can be the same as \code{drug_name})
-#'      \item \code{ATC_code}
-#'      \item \code{ATC_group}
-#'      \item \code{ATC_route}
+#'      \item \code{ATC_code}: the ATC code, see \code{\link{AMR}{ab_atc}()}
+#'      \item \code{ATC_group}: the ATC group, see \code{\link{AMR}{ab_group1}()}
+#'      \item \code{ATC_route}: route of administration as defined in the ATC ("O" = oral; 
+#'      "P" = parenteral; "R" = rectal; "V" = vaginal)
 #'      \item \code{authoring_date}: timestamp when the prescription was issued
 #'      \item \code{prescription_start}: timestamp of the prescription start
 #'      \item \code{prescription_end}: timestamp of the prescription end (mandated except
@@ -319,6 +342,9 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'         concept is not to be used for 'other' - one of the listed statuses is presumed 
 #'         to apply, but the authoring/source system does not know which.         
 #'      }
+#'      \item \code{dose} a numeric vector of dosage quantities
+#'      \item \code{unit} a character vector of dosage units 
+#'      \item \code{route} the route of administration value natively assigned by system
 #'      \item \code{daily_frequency}: a numeric value indicating the number of times the drug 
 #'      is to be administered per day. The following values are considered valid:
 #'      \itemize{ 
@@ -344,19 +370,23 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #' @export
 validate_prescriptions <- function(data) {
   
+  # TODO: prescription id is unique
   # TODO: Indication data should be loaded separately, see \code{\link{load_indications}()}
   # TODO: check uniqueness
   # TODO: check for lonely OOF
   # TODO: validate prescriptions and administrations together... potentially?
-  variable_exists <- Ramses::drug_prescriptions_variables[["variable_name"]]
+  
+  drug_prescriptions_variables <- .drug_prescriptions_variables()
+  
+  variable_exists <- drug_prescriptions_variables[["variable_name"]]
   variable_exists <- variable_exists[which(
-    Ramses::drug_prescriptions_variables[["must_exist"]]
+    drug_prescriptions_variables[["must_exist"]]
   )]
   
   variable_exists_non_missing <- 
-    Ramses::drug_prescriptions_variables[["variable_name"]]
+    drug_prescriptions_variables[["variable_name"]]
   variable_exists_non_missing <- variable_exists_non_missing[which(
-    Ramses::drug_prescriptions_variables[["must_be_nonmissing"]]
+    drug_prescriptions_variables[["must_be_nonmissing"]]
   )]
   
   not_exist <- !sapply(variable_exists, exists, where = data)
@@ -407,7 +437,7 @@ validate_prescriptions <- function(data) {
         "except for one-off prescriptions\n",
         .print_and_capture(utils::head(
           dplyr::select(dplyr::filter(
-            data, is.na(prescription_data) & daily_frequency != -1),
+            data, is.na(prescription_end) & daily_frequency != -1),
             patient_id, daily_frequency, prescription_end)))
     )))
   }

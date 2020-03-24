@@ -240,6 +240,7 @@ drug_prescriptions <- drug_prescriptions %>%
             drug_display_name = drug_name,
             ATC_code,
             ATC_group,
+            ATC_route,
             authoring_date = authored_on,
             prescription_start,
             prescription_end,
