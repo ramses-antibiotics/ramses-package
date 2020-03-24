@@ -6,3 +6,6 @@
 ^LICENSE\.md$
 ^.travis.yml
 ^\.idea
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

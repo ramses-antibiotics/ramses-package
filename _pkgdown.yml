@@ -1,0 +1,12 @@
+destination: docs
+title: RAMSES
+url: https://ramses-antibiotics.github.io
+
+home:
+  description: >
+    RAMSES is an analytical software package enabling hospitals to 
+    monitor and query their use of antibiotics and the management of 
+    infections.
+template:
+  params:
+    bootswatch: sandstone
