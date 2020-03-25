@@ -19,14 +19,15 @@ test_that("Ramses on SQLite", {
                    overwrite = TRUE)
 
   test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
-    filter(prescription_id == "60caeda91f36308ba857100193d2f504") %>% 
-    select(prescription_id, therapy_id) %>% 
+    filter(prescription_id %in% c("60caeda91f36308ba857100193d2f504", "fb7d0847a420d38a5ccc10c017ec91e6")) %>% 
+    select(prescription_id, combination_id, therapy_id) %>% 
     collect()
 
   expect_equivalent(
     test_output, 
-    tibble(prescription_id = c("60caeda91f36308ba857100193d2f504"),
-           therapy_id = c("15f7c729771ea989617e6ff97c3caa8a")))
+    tibble(prescription_id = c("60caeda91f36308ba857100193d2f504", "fb7d0847a420d38a5ccc10c017ec91e6"),
+           combination_id = c(NA_character_, "717e21dcc485b7366ed825177e74c907"),
+           therapy_id = c("15f7c729771ea989617e6ff97c3caa8a", "15f7c729771ea989617e6ff97c3caa8a")))
   
   DBI::dbDisconnect(conSQLite)
   file.remove("inst/ramses-db.sqlite")

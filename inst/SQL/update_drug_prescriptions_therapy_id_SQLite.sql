@@ -1,9 +1,9 @@
 UPDATE [drug_prescriptions]
 SET [therapy_id] = (SELECT [therapy_id]
-                    FROM @@@ramses_TC_therapy
+                    FROM @@@ramses_TC_table
                     WHERE [prescription_id] = [drug_prescriptions].[prescription_id])
 WHERE EXISTS(SELECT [therapy_id]
-             FROM @@@ramses_TC_therapy
+             FROM @@@ramses_TC_table
              WHERE [prescription_id] = [drug_prescriptions].[prescription_id]);
 UPDATE [drug_prescriptions]
 SET [therapy_id] = [prescription_id]

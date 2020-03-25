@@ -76,8 +76,11 @@ FROM (SELECT *,
                  END AS [edge_type]
       FROM rx_edges) final
 
-WHERE final.[edge_type] IS NOT NULL
-  AND final.[from_status] NOT IN ('cancelled', 'draft', 'entered-in-error')
-  AND final.[to_status] NOT IN ('cancelled', 'draft', 'entered-in-error')
+WHERE
+      (final.edge_type = 'combination')
+      OR
+      (final.edge_type = 'continuation'
+           AND (final.[from_status] NOT IN ('cancelled', 'draft', 'entered-in-error')
+        AND final.[to_status] NOT IN ('cancelled', 'draft', 'entered-in-error')))
 
 ORDER BY [patient_id], [from_id], [from_authoring], [to_start];

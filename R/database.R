@@ -294,6 +294,7 @@ load_medications.SQLiteConnection <- function(
   create_therapy_id <- !exists("therapy_id", prescriptions)
   create_combination_id <- !exists("combination_id", prescriptions)
   
+  prescriptions <- dplyr::arrange(prescriptions, patient_id, prescription_start)
   prescriptions$id <- 1:nrow(prescriptions)
   prescriptions$authoring_date <- as.character(prescriptions$authoring_date)
   prescriptions$prescription_start <- as.character(prescriptions$prescription_start)
@@ -308,8 +309,7 @@ load_medications.SQLiteConnection <- function(
   )
   prescriptions <- arrange_variables(
     prescriptions, 
-    first_column_names = first_column_names) %>% 
-    dplyr::arrange(patient_id, prescription_start)
+    first_column_names = first_column_names) 
   
   prescriptions <- dbplyr::db_copy_to(
     con = conn,
@@ -331,39 +331,11 @@ load_medications.SQLiteConnection <- function(
   .create_table_drug_prescriptions_edges.SQLiteConnection(
     conn = conn, transitive_closure_controls)
   
-  DBI::dbRemoveTable(conn, "ramses_TC_edges", fail_if_missing = F)
-  
-  edges_table <- tbl(conn, "drug_prescriptions_edges") %>% 
-    dplyr::transmute(id1 = from_id, id2 = to_id) %>% 
-    dplyr::compute(name = "ramses_TC_edges", temporary = F)
-  
-  DBI::dbExecute(conn, "CREATE INDEX ramses_TC_edges_idx1 ON ramses_TC_edges (id1, id2);")
-  DBI::dbExecute(conn, "CREATE INDEX ramses_TC_edges_idx2 ON ramses_TC_edges (id2, id1);")
-  
-  therapy_grps <- .run_transitive_closure(conn = conn, 
-                                          edge_table = "ramses_TC_edges")
-  
-  therapy_grps <- tbl(conn, "ramses_TC_group") %>% 
-    dplyr::left_join(
-      dplyr::select(tbl(conn, "drug_prescriptions"), 
-                    id, prescription_id), 
-      by = c("id" = "id")
-    ) %>% 
-    group_by(grp) %>% 
-    mutate(therapy_id = min(prescription_id)) %>% 
-    ungroup() %>% 
-    distinct(prescription_id, therapy_id) %>% 
-    compute(name = "ramses_TC_therapy")
-  
-  update_therapy_id <- .read_sql_syntax("update_drug_prescriptions_SQLite.sql")
-  update_therapy_id <- gsub("@@@ramses_TC_therapy", "ramses_TC_therapy", update_therapy_id)
-  update_therapy_id <- .split_sql_batch(update_therapy_id)
-  for(i in update_therapy_id) {
-    DBI::dbExecute(conn, i)
-  }
-  .remove_db_tables(conn, c("ramses_TC_group", "ramses_TC_therapy"))
+  if(create_therapy_id) .create_therapy_id.SQLiteConnection(conn)
+  if(create_combination_id) .create_combination_id.SQLiteConnection(conn)
 
 }
+
 
 
 #' Create table `drug_prescriptions_edges`
@@ -410,7 +382,87 @@ load_medications.SQLiteConnection <- function(
 }
 
 
+#' Populate `drug_prescription.therapy_id`
+#'
+#' @param conn a data source with a table `drug_prescriptions_edges`
+#' already populated
+#' @noRd
+.create_therapy_id.SQLiteConnection <- function(conn) {
+  
+  DBI::dbRemoveTable(conn, "ramses_TC_edges", fail_if_missing = F)
+  
+  edges_table <- tbl(conn, "drug_prescriptions_edges") %>% 
+    dplyr::transmute(id1 = from_id, id2 = to_id) %>% 
+    dplyr::compute(name = "ramses_TC_edges", temporary = F)
+  
+  DBI::dbExecute(conn, "CREATE INDEX ramses_TC_edges_idx1 ON ramses_TC_edges (id1, id2);")
+  DBI::dbExecute(conn, "CREATE INDEX ramses_TC_edges_idx2 ON ramses_TC_edges (id2, id1);")
+  
+  therapy_grps <- .run_transitive_closure(conn = conn, 
+                                          edge_table = "ramses_TC_edges")
+  
+  therapy_grps <- tbl(conn, "ramses_TC_group") %>% 
+    dplyr::left_join(
+      dplyr::select(tbl(conn, "drug_prescriptions"), 
+                    id, prescription_id), 
+      by = c("id" = "id")
+    ) %>% 
+    group_by(grp) %>% 
+    mutate(therapy_id = min(prescription_id)) %>% 
+    ungroup() %>% 
+    distinct(prescription_id, therapy_id) %>% 
+    compute(name = "ramses_TC_therapy")
+  
+  update_therapy_id <- .read_sql_syntax("update_drug_prescriptions_therapy_id_SQLite.sql")
+  update_therapy_id <- gsub("@@@ramses_TC_table", "ramses_TC_therapy", update_therapy_id)
+  update_therapy_id <- .split_sql_batch(update_therapy_id)
+  for(i in update_therapy_id) {
+    DBI::dbExecute(conn, i)
+  }
+  .remove_db_tables(conn, c("ramses_TC_group", "ramses_TC_therapy"))
+}
 
+
+#' Populate `drug_prescription.combination_id`
+#'
+#' @param conn a data source with a table `drug_prescriptions_edges`
+#' already populated
+#' @noRd
+.create_combination_id.SQLiteConnection <- function(conn) {
+  
+  DBI::dbRemoveTable(conn, "ramses_TC_edges", fail_if_missing = F)
+  
+  edges_table <- tbl(conn, "drug_prescriptions_edges") %>% 
+    dplyr::filter(edge_type == "combination") %>% 
+    dplyr::transmute(id1 = from_id, id2 = to_id) %>% 
+    dplyr::compute(name = "ramses_TC_edges", temporary = F)
+  
+  DBI::dbExecute(conn, "CREATE INDEX ramses_TC_edges_idx1 ON ramses_TC_edges (id1, id2);")
+  DBI::dbExecute(conn, "CREATE INDEX ramses_TC_edges_idx2 ON ramses_TC_edges (id2, id1);")
+  
+  therapy_grps <- .run_transitive_closure(conn = conn, 
+                                          edge_table = "ramses_TC_edges")
+  
+  therapy_grps <- tbl(conn, "ramses_TC_group") %>% 
+    dplyr::left_join(
+      dplyr::select(tbl(conn, "drug_prescriptions"), 
+                    id, prescription_id), 
+      by = c("id" = "id")
+    ) %>% 
+    group_by(grp) %>% 
+    mutate(combination_id = min(prescription_id)) %>% 
+    ungroup() %>% 
+    distinct(prescription_id, combination_id) %>% 
+    compute(name = "ramses_TC_combination")
+  
+  update_combination_id <- .read_sql_syntax("update_drug_prescriptions_combination_id_SQLite.sql")
+  update_combination_id <- gsub("@@@ramses_TC_table", "ramses_TC_combination", update_combination_id)
+  update_combination_id <- .split_sql_batch(update_combination_id)
+  for(i in update_combination_id) {
+    DBI::dbExecute(conn, i)
+  }
+  .remove_db_tables(conn, c("ramses_TC_group", "ramses_TC_combination"))
+}
   
 #' Read SQL scripts
 #'
@@ -422,7 +474,7 @@ load_medications.SQLiteConnection <- function(
 .read_sql_syntax <- function(script.name) {
   
   statement <- readLines(
-    system.file("SQL", script.name, package = "Ramses")
+    system.file("SQL", script.name, package = "Ramses", mustWork = TRUE)
   )
   # remove comments
   statement <- sapply(statement, gsub, pattern = "--.*", replacement = "")

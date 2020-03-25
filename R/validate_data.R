@@ -32,7 +32,8 @@ global_vars <- c(
   "daily_dose",
   "duration_days",
   "grp",
-  "id"
+  "id",
+  "edge_type"
 )
 
 utils::globalVariables(c(
