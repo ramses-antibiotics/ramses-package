@@ -820,7 +820,7 @@ load_medications.SQLiteConnection <- function(
   drug_admins$administration_id <- drug_admins %>%
     dplyr::group_indices(
       patient_id,
-      drug_id,
+      ab,
       route,
       dose,
       units,
