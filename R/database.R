@@ -269,7 +269,7 @@ transitive_closure_control <- function(max_continuation_gap = 36,
 #' @rdname load_medications
 #' @export
 load_medications <- function(
-  conn, prescriptions, administrations, overwrite = FALSE,
+  conn, prescriptions, administrations = NULL, overwrite = FALSE,
   transitive_closure_controls = transitive_closure_control()) {
   UseMethod("load_medications")
 }
@@ -284,6 +284,12 @@ load_medications.SQLiteConnection <- function(
     overwrite = overwrite,
     transitive_closure_controls)
   
+  if(!is.null(administrations)) {
+    .load_administrations.SQLiteConnection(
+      conn = conn, 
+      administrations = administrations, 
+      overwrite = overwrite)
+  }
   
 }
 
@@ -323,6 +329,9 @@ load_medications.SQLiteConnection <- function(
       "prescription_id",
       "combination_id",
       "therapy_id",
+      "drug_id",
+      "ATC_code",
+      "ATC_route",
       "authoring_date",
       "prescription_start", 
       "prescription_end"
@@ -350,7 +359,7 @@ load_medications.SQLiteConnection <- function(
 #' @param transitive_closure_controls parameters controlling the creation
 #' of edges between prescriptions
 #' @return NULL
-#' @noRD
+#' @noRd
 .create_table_drug_prescriptions_edges <- function(conn, transitive_closure_controls) {
   UseMethod(".create_table_drug_prescriptions_edges")
 }
@@ -462,6 +471,41 @@ load_medications.SQLiteConnection <- function(
     DBI::dbExecute(conn, i)
   }
   .remove_db_tables(conn, c("ramses_TC_group", "ramses_TC_combination"))
+}
+
+
+
+.load_administrations.SQLiteConnection <- function(
+  conn, administrations, overwrite) {
+  
+  administrations <- dplyr::arrange(administrations, 
+                                    patient_id, administration_date)
+  administrations$id <- 1:nrow(administrations)
+   
+  first_column_names <- .drug_administrations_variables()[["variable_name"]]
+  first_column_names <- c(
+    "id",
+    first_column_names[first_column_names %in% names(administrations)]
+  )
+  administrations <- arrange_variables(
+    administrations, 
+    first_column_names = first_column_names) 
+  
+  administrations <- dbplyr::db_copy_to(
+    con = conn,
+    table = "drug_administrations",
+    values = administrations,
+    temporary = FALSE,
+    overwrite = overwrite,
+    indexes = list(
+      "id",
+      "patient_id", 
+      "administration_id",
+      "drug_id",
+      "ATC_code",
+      "ATC_route",
+      "administration_date"
+    ))
 }
   
 #' Read SQL scripts
@@ -766,12 +810,40 @@ load_medications.SQLiteConnection <- function(
                                        as.character(ab), basis_of_strength))
   
   drug_admins <- drug_admins %>% 
-    mutate(ddd = compute_DDDs(
+    mutate(DDD = compute_DDDs(
       ab = basis_of_strength,
       administration = ATC_route,
       dose = dose,
       unit = units 
     ))
+  
+  drug_admins$administration_id <- drug_admins %>%
+    dplyr::group_indices(
+      patient_id,
+      drug_id,
+      route,
+      dose,
+      units,
+      administration_date)
+  drug_admins <- transmute(drug_admins,
+      patient_id,
+      administration_id = as.character(administration_id),
+      prescription_id,
+      administration_text = paste0(
+          drug_name, " ", route, " ", dose, units),
+      drug_id = ab,
+      drug_name,
+      drug_display_name = drug_name,
+      ATC_code,
+      ATC_group,
+      ATC_route,
+      dose,
+      unit = units,
+      route,
+      administration_date,
+      administration_status = "completed",
+      DDD
+    )
   
   return(list(
     drug_rx = drug_rx,

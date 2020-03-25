@@ -38,19 +38,28 @@ library(dplyr)
 
 
 ## Medication records
-### Prescriptions
+### Drug prescriptions
 
 ```{r print_prescriptions}
 str(drug_prescriptions)
 ```
 
 
-We begin by mapping drug concepts thanks to the `as.ab()` function provided by the AMR package. This function takes a character variable as input and returns a three-letter code EARS-Net code. For more information, refer to the documentation for the `as.ab` function.
+We begin by mapping drug concepts thanks to the `as.ab()` function provided by the AMR package. This function takes a character variable as input and returns a three-letter code EARS-Net code. For more information, refer to the documentation for the `as.ab` function. Some manual editing may be required when drugs are not successfully mapped, as shown in the example below.
+
+```{r map_drug_failing}
+# attempting to map drug name using AMR package
+drug_prescriptions$drug_id <- AMR::as.ab(drug_prescriptions$tr_DESC)
+```
 
 ```{r map_drug}
+# editing drug names
+drug_prescriptions$drug_id <- gsub("Vancomycin protocol", 
+                                   "Vancomycin",
+                                   drug_prescriptions$tr_DESC)
 # mapping drug name using AMR package
-drug_prescriptions$ab <- AMR::as.ab(drug_prescriptions$tr_DESC)
-drug_prescriptions$drug_name <- AMR::ab_name(drug_prescriptions$ab)
+drug_prescriptions$drug_id <- AMR::as.ab(drug_prescriptions$drug_id)
+drug_prescriptions$drug_name <- AMR::ab_name(drug_prescriptions$drug_id)
 # recoding route of administration
 drug_prescriptions <- mutate(drug_prescriptions, 
   ATC_route = 
@@ -82,14 +91,15 @@ In this example, however, we use a look-up table for the strength of compound me
 
 ```{r compute_ddd}
 # extracting the ATC code (eg J01CR02) group (eg Beta-lactam antibacterials, penicillins)
-drug_prescriptions$ATC_code <- AMR::ab_atc(drug_prescriptions$ab)
-drug_prescriptions$ATC_group <- AMR::ab_atc_group1(drug_prescriptions$ab)
+drug_prescriptions$ATC_code <- AMR::ab_atc(drug_prescriptions$drug_id)
+drug_prescriptions$ATC_group <- AMR::ab_atc_group1(drug_prescriptions$drug_id)
 # removing antifungal drug, if applicable
-drug_prescriptions <- filter(drug_prescriptions, ATC_group != "Antimycotics for systemic use")
+drug_prescriptions <- filter(drug_prescriptions, 
+                             ATC_group != "Antimycotics for systemic use")
 
 # prepare DDD extraction
 compound_strength_lookup <- data.frame(list(
-  ab = c("AMC", "AMC", "TZP", "SMX"),
+  drug_id = c("AMC", "AMC", "TZP", "SMX"),
   route = c("oral", "oral", "oral", "oral"),
   dose = c(625, 1.2, 4.5, 480),
   units = c("mg", "g", "g", "mg"),
@@ -97,13 +107,17 @@ compound_strength_lookup <- data.frame(list(
   basis_of_strength = c("AMX", "AMX", "PIP", "SMX")
 ), stringsAsFactors = F)
 
-drug_prescriptions <- merge(drug_prescriptions, compound_strength_lookup, all.x = T)
+drug_prescriptions <- merge(drug_prescriptions, 
+                            compound_strength_lookup, 
+                            all.x = T)
 drug_prescriptions <- drug_prescriptions %>% 
   mutate(strength = if_else(is.na(strength), dose, strength),  
          basis_of_strength = if_else(is.na(basis_of_strength),
-                                     as.character(ab), basis_of_strength))
+                                     as.character(drug_id),
+                                     basis_of_strength))
 
-drug_prescriptions <- merge(drug_prescriptions, LU_frequency, by = "freq", all.x = T)
+drug_prescriptions <- merge(drug_prescriptions, 
+                            LU_frequency, by = "freq", all.x = T)
 
 # computing the prescription DDD the reference DDD from the ATC
 drug_prescriptions <- drug_prescriptions %>% 
@@ -121,8 +135,11 @@ drug_prescriptions <- drug_prescriptions %>%
 An identical process is followed for drug administration, with the difference that DDDs do not rely on a daily frequency of administration variable
 
 ```{r prepare_drug_admin}
-drug_administrations$ab <- AMR::as.ab(drug_administrations$tr_DESC)
-drug_administrations$drug_name <- AMR::ab_name(drug_administrations$ab)
+drug_administrations$drug_id <- gsub("Vancomycin protocol", 
+                                     "Vancomycin", 
+                                     drug_administrations$tr_DESC)
+drug_administrations$drug_id <- AMR::as.ab(drug_administrations$drug_id)
+drug_administrations$drug_name <- AMR::ab_name(drug_administrations$drug_id)
 # recoding route of administration
 drug_administrations <- mutate(drug_administrations, 
   ATC_route = 
@@ -140,15 +157,17 @@ drug_administrations <- mutate(drug_administrations,
       route %in% c("PV") ~ "V", 
       TRUE ~ "NA_character_"
     ))
-drug_administrations$ATC_code <- AMR::ab_atc(drug_administrations$ab)
-drug_administrations$ATC_group <- AMR::ab_atc_group1(drug_administrations$ab)
-drug_administrations <- filter(drug_administrations, ATC_group != "Antimycotics for systemic use")
+drug_administrations$ATC_code <- AMR::ab_atc(drug_administrations$drug_id)
+drug_administrations$ATC_group <- AMR::ab_atc_group1(drug_administrations$drug_id)
+drug_administrations <- filter(drug_administrations, 
+                               ATC_group != "Antimycotics for systemic use")
 
 drug_administrations <- merge(drug_administrations, compound_strength_lookup, all.x = T)
 drug_administrations <- drug_administrations %>% 
   mutate(strength = if_else(is.na(strength), dose, strength),
          basis_of_strength = if_else(is.na(basis_of_strength),
-                                     as.character(ab), basis_of_strength))
+                                     as.character(drug_id),
+                                     basis_of_strength))
 
 drug_administrations <- drug_administrations %>% 
   mutate(DDD = compute_DDDs(
@@ -156,7 +175,43 @@ drug_administrations <- drug_administrations %>%
     administration = ATC_route,
     dose = dose,
     unit = units 
-  ))
+  )) 
+
+# Create an identifier
+# Note: An alternative is encryption using openssl::sha256()
+      
+drug_administrations$administration_id <- drug_administrations %>%
+  dplyr::group_indices(
+    patient_id,
+    drug_id,
+    route,
+    dose,
+    units,
+    administration_date)
+
+drug_administrations <- drug_administrations %>% 
+    transmute(
+      patient_id,
+      administration_id = as.character(administration_id),
+      prescription_id,
+      administration_text = paste0(
+          drug_name, " ", route, " ", dose, units),
+      drug_id,
+      drug_name,
+      drug_display_name = drug_name,
+      ATC_code,
+      ATC_group,
+      ATC_route,
+      dose,
+      unit = units,
+      route,
+      administration_date,
+      administration_status = "completed",
+      DDD
+    )
+
+
+
 ```
 
 
@@ -235,7 +290,7 @@ load_diagnoses(conn = ramses_db,
 drug_prescriptions <- drug_prescriptions %>% 
   transmute(patient_id,
             prescription_id,
-            drug_id = ab,
+            drug_id,
             drug_name = drug_name,
             drug_display_name = drug_name,
             ATC_code,

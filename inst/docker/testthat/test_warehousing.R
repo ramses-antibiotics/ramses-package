@@ -12,6 +12,7 @@ test_that("Ramses on SQLite", {
   conSQLite <- suppressWarnings(connect_db_local("inst/ramses-db.sqlite"))
   
   expect_null(validate_prescriptions(drug_data$drug_rx))
+  expect_null(validate_administrations(drug_data$drug_admins))
   
   load_medications(conn = conSQLite, 
                    prescriptions = drug_data$drug_rx,

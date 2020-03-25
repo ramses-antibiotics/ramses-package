@@ -5,6 +5,14 @@
                 "drug_prescriptions_variables.csv", 
                 package = "Ramses"), stringsAsFactors = F)
 }
+
+.drug_administrations_variables <- function() {
+  utils::read.csv(
+    system.file("Schema", 
+                "drug_administrations_variables.csv", 
+                package = "Ramses"), stringsAsFactors = F)
+}
+
 global_vars <- c(
   "spell_id", 
   "admission_date", 
@@ -36,14 +44,11 @@ global_vars <- c(
   "edge_type"
 )
 
-utils::globalVariables(c(
-  global_vars, 
-  .drug_prescriptions_variables()[["variable_name"]]
-))
-
+utils::globalVariables(global_vars)
 utils::globalVariables(paste0(global_vars, ".x"))
 utils::globalVariables(paste0(global_vars, ".y"))
-
+utils::globalVariables(.drug_prescriptions_variables()[["variable_name"]])
+utils::globalVariables(.drug_administrations_variables()[["variable_name"]])
 
 validate_variable_no_missing <- function(data, vectorname){
   
@@ -297,28 +302,32 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 
 #' Validate medication prescription records
 #'
-#' @param data a data frame containing one row per prescription. See Details for other conditions.
-#'
-#' @details 
-#'   In order to pass the validation, prescription data should contain the following columns with 
-#'   no missing data:
-#'   \itemize{
-#'      \item \code{patient_id}: a patient identifier with no missing value
-#'      \item \code{prescription_id}: a prescription identifier with no missing value
-#'      \item \code{drug_id}: identifier of the drug (from a dictionary such as SNOMED-CT or
-#'       from \code{\link{AMR}{as.ab}()})
-#'      \item \code{drug_name}: preferred name of the drug in the drug dictionary
-#'      \item \code{drug_display_name}: drug name to display in reports (can be the same as \code{drug_name})
-#'      \item \code{ATC_code}: the ATC code, see \code{\link{AMR}{ab_atc}()}
-#'      \item \code{ATC_group}: the ATC group, see \code{\link{AMR}{ab_group1}()}
-#'      \item \code{ATC_route}: route of administration as defined in the ATC ("O" = oral; 
-#'      "P" = parenteral; "R" = rectal; "V" = vaginal)
-#'      \item \code{authoring_date}: timestamp when the prescription was issued
-#'      \item \code{prescription_start}: timestamp of the prescription start
-#'      \item \code{prescription_end}: timestamp of the prescription end (mandated except
-#'      for one-off prescriptions with \code{daily_frequency} == -1, )
-#'      \item \code{prescription_context}: either 'inpatient', 'opat', 'discharge'
-#'      \item \code{prescription_status}: one value from the following 
+#' @description This function performs a series of checks for mandatory and
+#' optional requirements on prescriptions data.
+#' @param data a data frame containing one row per prescription.
+#' @section Mandatory fields:
+#' These fields are required in order to pass the validation:
+#'   \describe{
+#'      \item{\code{patient_id}}{a patient identifier with no missing value}
+#'      \item{\code{prescription_id}}{a prescription identifier with no missing value}
+#'      \item{\code{prescription_text}}{a character string summarising the prescription 
+#'      (to be displayed in user interfaces, eg: \code{'Amoxicillin Oral 500mg BDS'})}
+#'      \item{\code{drug_id}}{identifier of the drug (from a dictionary such as SNOMED-CT or
+#'       from \code{\link{AMR}{as.ab}()})}
+#'      \item{\code{drug_name}}{preferred name of the drug in the drug dictionary}
+#'      \item{\code{drug_display_name}}{drug name to display in reports and user interfaces
+#'      (can be the same as \code{drug_name})}
+#'      \item{\code{ATC_code}}{the ATC code, see \code{\link{AMR}{ab_atc}()}}
+#'      \item{\code{ATC_group}}{the ATC group, see \code{\link{AMR}{ab_group1}()}}
+#'      \item{\code{ATC_route}}{route of administration as defined in the ATC ("O" = oral; 
+#'      "P" = parenteral; "R" = rectal; "V" = vaginal)}
+#'      \item{\code{authoring_date}}{timestamp for when the prescription was issued}
+#'      \item{\code{prescription_start}}{timestamp for the prescription start}
+#'      \item{\code{prescription_end}}{timestamp for the prescription end (mandated except
+#'      for one-off prescriptions with \code{daily_frequency} == -1, )}
+#'      \item{\code{prescription_context}}{either \code{'inpatient'}, \code{'opat'}, or 
+#'      \code{'discharge'}}
+#'      \item{\code{prescription_status}}{one value from the following 
 #'      \href{https://hl7.org/fhir/R4/valueset-medicationrequest-status.html}{FHIR R4}
 #'      reference set:
 #'      \itemize{ 
@@ -344,32 +353,30 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'         status values currently applies for this observation. \emph{Note:} This 
 #'         concept is not to be used for 'other' - one of the listed statuses is presumed 
 #'         to apply, but the authoring/source system does not know which.         
-#'      }
-#'      \item \code{dose} a numeric vector of dosage quantities
-#'      \item \code{unit} a character vector of dosage units 
-#'      \item \code{route} the route of administration value natively assigned by system
-#'      \item \code{daily_frequency}: a numeric value indicating the number of times the drug 
+#'      }}
+#'      \item{\code{dose}}{a numeric vector of dosage quantities}
+#'      \item{\code{unit}}{a character vector of dosage units}
+#'      \item{\code{route}}{the route of administration value natively assigned by system}
+#'      \item{\code{daily_frequency}}{a numeric value indicating the number of times the drug 
 #'      is to be administered per day. The following values are considered valid:
 #'      \itemize{ 
 #'         \item -1 for a single one-off administration
 #'         \item -9 for 'as required' (\emph{Pro Re Nata}) prescriptions
-#'      }  
-#'     }
-#'    
-#'   Optional columns include:
-#'   \itemize{
-#'      \item \code{combination_id}: system-issued identifiers for drugs 
+#'      }}}
+#' @section Optional fields:
+#' \describe{
+#'   \item{\code{combination_id}}{system-issued identifiers for drugs 
 #'        prescribed as a bundle to treat the same indication either 
 #'        simultaneously (eg clarithromycin and amoxiclav) or consecutively 
 #'        (eg doxicycline 200mg followed by 100mg). Unless provided, 
 #'        such identifiers will be created by \code{Ramses} using 
-#'        transitive closure. 
-#'      \item \code{DDD}: the number of prescribed defined daily doses, 
-#'      see \code{\link{compute_DDDs}()}.
-#'   }
-#' 
-
-#' @return NULL if the dataset is valid
+#'        transitive closure.}
+#'   \item{\code{DDD}}{the number of prescribed defined daily doses, 
+#'        see \code{\link{compute_DDDs}()}}
+#'   \item{\code{...}}{any other field, as desired, can be loaded into the database}
+#' }
+#' @return NULL if the `data` passes the validation. The function will trigger errors
+#' for mandatory requirements and warnings for optional requirements.
 #' @export
 validate_prescriptions <- function(data) {
   
@@ -480,38 +487,136 @@ validate_prescriptions <- function(data) {
 
 
 #' Validate medication administration records
-#'
-#' @param data a data frame containing one row per prescription. See Details for other conditions.
-#'
-#' @details 
-#'   In order to pass the validation, prescription data should contain the following columns with 
-#'   no missing data:
-#'   \itemize{
-#'      \item \code{patient_id}: a patient identifier with no missing value
-#'      \item \code{prescription_id}: a prescription identifier with no missing value
-#'      \item \code{administration_id}: an administration identifier with no missing value
-#'      \item \code{drug_id}: identifier of the drug (from a dictionary such as SNOMED-CT or
-#'       from \code{\link{AMR}{as.ab}()})
-#'      \item \code{drug_name}: preferred name of the drug in the drug dictionary
-#'      \item \code{drug_display_name}: drug name to display in reports (can be the same as \code{drug_name})
-#'      \item \code{ATC_code}
-#'      \item \code{ATC_group}
-#'      \item \code{ATC_route}
-#'      \item \code{administration_time}: timestamp of the drug administration
-#'      \item \code{administration_context}: either 'inpatient', 'opat', 'discharge'
-#'     }
-#'    
-#'   Optional columns include:
-#'   \itemize{
-#'      \item \code{dose}: dose administered
-#'      \item \code{unit}: dose unit, see \code{\link[units]{ud_units}}
-#'      \item \code{route}: route of administration of the drug
-#'      \item \code{ddd}: the number of defined daily doses, see \code{\link{compute_DDDs}()}.
-#'   }
-#'   
-#' @return NULL if the dataset is valid
+#' 
+#' @description This function performs a series of checks for mandatory and
+#' optional requirements on drug administrations data.
+#' @param data a data frame containing one row per drug administration
+#' @section Mandatory fields:
+#' The following fields are required in order to pass the validation:
+#' \describe{
+#'      \item{\code{patient_id}}{a patient identifier with no missing value}
+#'      \item{\code{prescription_id}}{a prescription identifier with no missing value}
+#'      \item{\code{administration_id}}{an administration identifier with no missing value}
+#'      \item{\code{administration_text}}{a character string summarising the drug to administer 
+#'      (to be displayed in user interfaces, eg: \code{'Amoxicillin Oral 500mg'})}
+#'      \item{\code{drug_id}}{identifier of the drug (from a dictionary such as SNOMED-CT or
+#'       from \code{\link{AMR}{as.ab}()})}
+#'      \item{\code{drug_name}}{preferred name of the drug in the drug dictionary}
+#'      \item{\code{drug_display_name}}{drug name to display in reports and user interfaces
+#'      (can be the same as \code{drug_name})}
+#'      \item{\code{ATC_code}}{the ATC code, see \code{\link{AMR}{ab_atc}()}}
+#'      \item{\code{ATC_group}}{the ATC group, see \code{\link{AMR}{ab_group1}()}}
+#'      \item{\code{ATC_route}}{route of administration as defined in the ATC ("O" = oral; 
+#'      "P" = parenteral; "R" = rectal; "V" = vaginal)}
+#'      \item{\code{dose}}{a numeric vector of dosage quantities}
+#'      \item{\code{unit}}{a character vector of dosage units}
+#'      \item{\code{route}}{the route of administration value natively assigned by system}
+#'      \item{\code{administration_date}}{timestamp of the drug administration}
+#'      \item{\code{administration_status}}{one value from the following 
+#'      \href{https://hl7.org/fhir/R4/valueset-medicationrequest-status.html}{FHIR R4}
+#'      reference set:
+#'      \itemize{ 
+#'         \item \code{`in-progess`} the administration has started but has not yet completed.
+#'         \item \code{`not-done`} the administration was terminated prior to any impact on 
+#'         the subject (though preparatory actions may have been taken). 
+#'         \item \code{`on-hold`} actions implied by the administration have been 
+#'         temporarily halted, but are expected to continue later.
+#'         \item \code{`completed`} all actions that are implied by the administration 
+#'         have occurred.
+#'         \item \code{`entered-in-error`} the administration was entered in error and 
+#'         therefore nullified. 
+#'         \item \code{`stopped`} actions implied by the administration have been permanently 
+#'         halted, before all of them occurred.
+#'         \item \code{`unknown`} the authoring/source system does not know which of the 
+#'         status values currently applies for this request. \emph{Note:} This concept 
+#'         is not to be used for 'other' - one of the listed statuses is presumed 
+#'         to apply, but the authoring/source system does not know which.         
+#' }}}
+#' @section Optional fields:
+#' \describe{
+#'      \item{\code{DDD}}{the number of defined daily doses (as administered),
+#'       see \code{\link{compute_DDDs}()}}
+#'      \item{\code{...}}{any other field, as desired, can be loaded into the database.}}
+#' @return NULL if the `data` passes the validation. The function will trigger errors
+#' for mandatory requirements and warnings for optional requirements.
 #' @export
 validate_administrations <- function(data) {
+  
+  drug_administrations_variables <- .drug_administrations_variables()
+  
+  variable_exists <- drug_administrations_variables[["variable_name"]]
+  variable_exists <- variable_exists[which(
+    drug_administrations_variables[["must_exist"]]
+  )]
+  
+  variable_exists_non_missing <- 
+    drug_administrations_variables[["variable_name"]]
+  variable_exists_non_missing <- variable_exists_non_missing[which(
+    drug_administrations_variables[["must_be_nonmissing"]]
+  )]
+  
+  not_exist <- !sapply(variable_exists, exists, where = data)
+  if( any(not_exist) ){
+    stop(
+      simpleError(paste(
+        "The following variables must exist:",
+        paste(paste0("`", variable_exists[not_exist], "`"), collapse = ", "))
+      )
+    )
+  }
+  
+  missing_data <- suppressWarnings(
+    !sapply(variable_exists_non_missing, 
+            FUN = validate_variable_no_missing,
+            data = data)
+  )
+  
+  if( any(missing_data) ){
+    stop(
+      simpleError(paste(
+        "Some variables must not contain missing data:",
+        paste(paste0("`", 
+                     variable_exists_non_missing[missing_data],
+                     "`"), collapse = ", "))
+      )
+    )
+  }
+  
+  invalid_status <- !data$administration_status %in% c(
+    "in-progress", "not-done", "on-hold", "completed", 
+    "entered-in-error", "stopped", "unknown"
+  )
+  
+  if( any(invalid_status) ) {
+    stop(
+      simpleError(
+        '`prescription_status` must be one of: "in-progress", "not-done", 
+        "on-hold", "completed", "entered-in-error", "stopped", or "unknown"'
+      )
+    )
+  }
+  
+  
+  duplicates <- data %>% 
+    dplyr::group_by(patient_id, drug_id, dose, route, administration_date) %>% 
+    dplyr::summarise(n = n()) %>% 
+    dplyr::filter(n > 1)
+  duplicates <- merge(data, duplicates)
+  
+  if( nrow(duplicates) > 0 ) {
+    warning(
+      simpleWarning("There may be some duplicate records")
+    )
+    warning(simpleWarning(
+      .print_and_capture(utils::head(
+        select(dplyr::arrange(duplicates, 
+                              patient_id, drug_id, administration_date),
+               patient_id, prescription_id, administration_id,
+               administration_text, administration_date))
+      )))
+  }
+  
+  NULL
 }
 
 arrange_variables <- function(data, first_column_names) {
