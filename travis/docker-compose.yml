@@ -31,8 +31,3 @@ services:
      - type: bind
        target: /mnt/Ramses
        source: /home/travis/build/ramses-antibiotics/ramses-package
-  # adminer:
-    # image: adminer
-    # restart: always
-    # ports:
-      # - 8080:8080

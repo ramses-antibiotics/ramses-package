@@ -7,7 +7,7 @@
 load_medications(
   conn,
   prescriptions,
-  administrations,
+  administrations = NULL,
   overwrite = FALSE,
   transitive_closure_controls = transitive_closure_control()
 )
@@ -16,7 +16,9 @@ load_medications(
 \item{conn}{a database connection}
 
 \item{prescriptions}{a data frame of prescriptions passing the 
-\code{\link{validate_prescriptions}()} function}
+\code{\link{validate_prescriptions}()} function. Note: if variables 
+`therapy_id` or `combination_id` are provided, they will be preserved
+as they are instead of being populated by `Ramses`}
 
 \item{administrations}{a data frame of drug administrations passing the 
 \code{\link{validate_administrations}()} function}

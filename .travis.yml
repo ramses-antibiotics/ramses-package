@@ -1,7 +1,7 @@
 language: minimal
 
 env:
-  - COMPOSE_FILE="inst/docker/docker-compose.yml"
+  - COMPOSE_FILE="travis/docker-compose.yml"
 
 services:
   - docker
@@ -15,9 +15,9 @@ before_install:
   - docker-compose ps
 
 script:
-  - docker-compose exec -w /mnt/Ramses/ r Rscript inst/docker/script_hello_world.R
-  - docker-compose exec -w /mnt/Ramses/ r Rscript inst/docker/script_devtools.R
-  - docker-compose exec -w /mnt/Ramses/ r Rscript inst/docker/script_unit_tests.R
+  - docker-compose exec -w /mnt/Ramses/ r Rscript travis/script_hello_world.R
+  - docker-compose exec -w /mnt/Ramses/ r Rscript travis/script_devtools.R
+  - docker-compose exec -w /mnt/Ramses/ r Rscript travis/script_unit_tests.R
 
 after_deploy:
   - ls

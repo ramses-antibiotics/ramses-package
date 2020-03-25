@@ -1,0 +1,17 @@
+position,variable_name,must_exist,must_be_nonmissing
+1,patient_id,TRUE,TRUE
+2,prescription_id,TRUE,TRUE
+3,administration_id,TRUE,TRUE
+4,administration_text,TRUE,FALSE
+5,drug_id,TRUE,TRUE
+6,drug_name,TRUE,TRUE
+7,drug_display_name,TRUE,FALSE
+8,ATC_code,TRUE,TRUE
+9,ATC_group,TRUE,TRUE
+10,ATC_route,TRUE,TRUE
+11,dose,TRUE,FALSE
+12,unit,TRUE,FALSE
+13,route,TRUE,FALSE
+14,administration_date,TRUE,TRUE
+15,administration_status,TRUE,TRUE
+16,DDD,FALSE,FALSE

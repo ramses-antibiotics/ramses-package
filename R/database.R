@@ -1,3 +1,6 @@
+
+
+
 #' Create a local database
 #'
 #' @description Create a local database in memory or on disk using RSQLite. This is 
@@ -33,7 +36,7 @@
 #'     DBI::dbDisconnect(con)
 connect_db_local <- function(file) {
   con <- DBI::dbConnect(RSQLite::SQLite(), file)
-  build_tally_table(con)
+  .build_tally_table(con)
   warning(paste0("SQLite database created in ", con@dbname, 
                  "\nPlease do not use real patient data."))
   
@@ -74,23 +77,21 @@ get_warehouse_status <- function(conn) {
  
 #' Build the RAMSES schema
 #' 
-#' The RAMSES schema is the set of tables required to import health records
+#' @description The RAMSES schema is the set of tables required to import health records
 #' for curation and analysis 
-#'
 #' @param conn a database connection
-#'
+#' @rdname build_ramses_schema
+#' @export
 build_ramses_schema <- function(conn) {
-  
   UseMethod("build_ramses_schema")
-  
 }
-
-
+#' @export
 build_ramses_schema.SQLiteConnection <- function(conn) {
   
 }
 
-build_tally_table <- function(conn) {
+.build_tally_table <- function(conn) {
+  # Build table to use in joins to create therapy tables
   dbplyr::db_copy_to(conn, 
                      table = "ramses_tally",
                      values = data.frame(t = 1:20000),
@@ -253,7 +254,9 @@ transitive_closure_control <- function(max_continuation_gap = 36,
 #'
 #' @param conn a database connection
 #' @param prescriptions a data frame of prescriptions passing the 
-#' \code{\link{validate_prescriptions}()} function
+#' \code{\link{validate_prescriptions}()} function. Note: if variables 
+#' `therapy_id` or `combination_id` are provided, they will be preserved
+#' as they are instead of being populated by `Ramses`
 #' @param administrations a data frame of drug administrations passing the 
 #' \code{\link{validate_administrations}()} function
 #' @param overwrite if `TRUE` (the default), will overwrite an existing 
@@ -266,7 +269,7 @@ transitive_closure_control <- function(max_continuation_gap = 36,
 #' @rdname load_medications
 #' @export
 load_medications <- function(
-  conn, prescriptions, administrations, overwrite = FALSE,
+  conn, prescriptions, administrations = NULL, overwrite = FALSE,
   transitive_closure_controls = transitive_closure_control()) {
   UseMethod("load_medications")
 }
@@ -275,43 +278,101 @@ load_medications.SQLiteConnection <- function(
   conn, prescriptions, administrations, overwrite = FALSE,
   transitive_closure_controls = transitive_closure_control()) {
   
-  prescriptions$rxid <- 1:nrow(prescriptions)
+  .load_prescriptions.SQLiteConnection(
+    conn = conn, 
+    prescriptions = prescriptions, 
+    overwrite = overwrite,
+    transitive_closure_controls)
+  
+  if(!is.null(administrations)) {
+    .load_administrations.SQLiteConnection(
+      conn = conn, 
+      administrations = administrations, 
+      overwrite = overwrite)
+  }
+  
+}
+
+
+.load_prescriptions.SQLiteConnection <- function(
+  conn, prescriptions, overwrite, transitive_closure_controls) {
+  
+  create_therapy_id <- !exists("therapy_id", prescriptions)
+  create_combination_id <- !exists("combination_id", prescriptions)
+  
+  prescriptions <- dplyr::arrange(prescriptions, patient_id, prescription_start)
+  prescriptions$id <- 1:nrow(prescriptions)
   prescriptions$authoring_date <- as.character(prescriptions$authoring_date)
   prescriptions$prescription_start <- as.character(prescriptions$prescription_start)
   prescriptions$prescription_end <- as.character(prescriptions$prescription_end)
-
+  if(create_combination_id) prescriptions$combination_id <- NA_character_
+  if(create_therapy_id) prescriptions$therapy_id <- NA_character_
+  
   first_column_names <- .drug_prescriptions_variables()[["variable_name"]]
   first_column_names <- c(
-    "rxid",
+    "id",
     first_column_names[first_column_names %in% names(prescriptions)]
   )
-  prescriptions <- arrange_variables(prescriptions, 
-                                     first_column_names = first_column_names)
- 
+  prescriptions <- arrange_variables(
+    prescriptions, 
+    first_column_names = first_column_names) 
+  
   prescriptions <- dbplyr::db_copy_to(
     con = conn,
-    table = "ramses_temp_prescriptions",
+    table = "drug_prescriptions",
     values = prescriptions,
     temporary = FALSE,
-    overwrite = TRUE,
+    overwrite = overwrite,
     indexes = list(
-      "rxid",
+      "id",
       "patient_id", 
       "prescription_id",
+      "combination_id",
+      "therapy_id",
+      "drug_id",
+      "ATC_code",
+      "ATC_route",
       "authoring_date",
       "prescription_start", 
       "prescription_end"
-    )
-    )
+    ))
+  
+  .create_table_drug_prescriptions_edges.SQLiteConnection(
+    conn = conn, transitive_closure_controls)
+  
+  if(create_therapy_id) .create_therapy_id.SQLiteConnection(conn)
+  if(create_combination_id) .create_combination_id.SQLiteConnection(conn)
+
+}
+
+
+
+#' Create table `drug_prescriptions_edges`
+#'
+#' @description Create or reoverwrite the database table 
+#' `drug_prescriptions_edges` and populate by drawing edges between
+#' prescriptions in the `drug_prescriptions` table based on 
+#' patterns of overlap determined by `transitive_closure_controls`
+#' TODO:put link to online documentation describing the classification
+#' of patterns of prescription overlap  
+#' @param conn a database connection
+#' @param transitive_closure_controls parameters controlling the creation
+#' of edges between prescriptions
+#' @return NULL
+#' @noRd
+.create_table_drug_prescriptions_edges <- function(conn, transitive_closure_controls) {
+  UseMethod(".create_table_drug_prescriptions_edges")
+}
+
+.create_table_drug_prescriptions_edges.SQLiteConnection <- 
+  function(conn, transitive_closure_controls) {
   
   if( DBI::dbExistsTable(conn, "drug_prescriptions_edges") ){
     DBI::dbRemoveTable(conn, "drug_prescriptions_edges")
   }
-  
   DBI::dbExecute(
     conn = conn,
     statement = .read_sql_syntax("create_drug_prescription_edges_SQLite.sql"))
- 
   
   statement_edges <- .read_sql_syntax("drug_prescriptions_edges_SQLite.sql")
   
@@ -321,16 +382,319 @@ load_medications.SQLiteConnection <- function(
       paste0("@", names(transitive_closure_controls[i])),
       transitive_closure_controls[[i]], statement_edges)
   }
-
+  
   ignore <- DBI::dbExecute(
     conn = conn,
     statement = statement_edges)
   
-  
+  NULL
 }
 
 
-.prepare_drugs <- function() {
+#' Populate `drug_prescription.therapy_id`
+#'
+#' @param conn a data source with a table `drug_prescriptions_edges`
+#' already populated
+#' @noRd
+.create_therapy_id.SQLiteConnection <- function(conn) {
+  
+  DBI::dbRemoveTable(conn, "ramses_TC_edges", fail_if_missing = F)
+  
+  edges_table <- tbl(conn, "drug_prescriptions_edges") %>% 
+    dplyr::transmute(id1 = from_id, id2 = to_id) %>% 
+    dplyr::compute(name = "ramses_TC_edges", temporary = F)
+  
+  DBI::dbExecute(conn, "CREATE INDEX ramses_TC_edges_idx1 ON ramses_TC_edges (id1, id2);")
+  DBI::dbExecute(conn, "CREATE INDEX ramses_TC_edges_idx2 ON ramses_TC_edges (id2, id1);")
+  
+  therapy_grps <- .run_transitive_closure(conn = conn, 
+                                          edge_table = "ramses_TC_edges")
+  
+  therapy_grps <- tbl(conn, "ramses_TC_group") %>% 
+    dplyr::left_join(
+      dplyr::select(tbl(conn, "drug_prescriptions"), 
+                    id, prescription_id), 
+      by = c("id" = "id")
+    ) %>% 
+    group_by(grp) %>% 
+    mutate(therapy_id = min(prescription_id)) %>% 
+    ungroup() %>% 
+    distinct(prescription_id, therapy_id) %>% 
+    compute(name = "ramses_TC_therapy")
+  
+  update_therapy_id <- .read_sql_syntax("update_drug_prescriptions_therapy_id_SQLite.sql")
+  update_therapy_id <- gsub("@@@ramses_TC_table", "ramses_TC_therapy", update_therapy_id)
+  update_therapy_id <- .split_sql_batch(update_therapy_id)
+  for(i in update_therapy_id) {
+    DBI::dbExecute(conn, i)
+  }
+  .remove_db_tables(conn, c("ramses_TC_group", "ramses_TC_therapy"))
+}
+
+
+#' Populate `drug_prescription.combination_id`
+#'
+#' @param conn a data source with a table `drug_prescriptions_edges`
+#' already populated
+#' @noRd
+.create_combination_id.SQLiteConnection <- function(conn) {
+  
+  DBI::dbRemoveTable(conn, "ramses_TC_edges", fail_if_missing = F)
+  
+  edges_table <- tbl(conn, "drug_prescriptions_edges") %>% 
+    dplyr::filter(edge_type == "combination") %>% 
+    dplyr::transmute(id1 = from_id, id2 = to_id) %>% 
+    dplyr::compute(name = "ramses_TC_edges", temporary = F)
+  
+  DBI::dbExecute(conn, "CREATE INDEX ramses_TC_edges_idx1 ON ramses_TC_edges (id1, id2);")
+  DBI::dbExecute(conn, "CREATE INDEX ramses_TC_edges_idx2 ON ramses_TC_edges (id2, id1);")
+  
+  therapy_grps <- .run_transitive_closure(conn = conn, 
+                                          edge_table = "ramses_TC_edges")
+  
+  therapy_grps <- tbl(conn, "ramses_TC_group") %>% 
+    dplyr::left_join(
+      dplyr::select(tbl(conn, "drug_prescriptions"), 
+                    id, prescription_id), 
+      by = c("id" = "id")
+    ) %>% 
+    group_by(grp) %>% 
+    mutate(combination_id = min(prescription_id)) %>% 
+    ungroup() %>% 
+    distinct(prescription_id, combination_id) %>% 
+    compute(name = "ramses_TC_combination")
+  
+  update_combination_id <- .read_sql_syntax("update_drug_prescriptions_combination_id_SQLite.sql")
+  update_combination_id <- gsub("@@@ramses_TC_table", "ramses_TC_combination", update_combination_id)
+  update_combination_id <- .split_sql_batch(update_combination_id)
+  for(i in update_combination_id) {
+    DBI::dbExecute(conn, i)
+  }
+  .remove_db_tables(conn, c("ramses_TC_group", "ramses_TC_combination"))
+}
+
+
+
+.load_administrations.SQLiteConnection <- function(
+  conn, administrations, overwrite) {
+  
+  administrations <- dplyr::arrange(administrations, 
+                                    patient_id, administration_date)
+  administrations$id <- 1:nrow(administrations)
+   
+  first_column_names <- .drug_administrations_variables()[["variable_name"]]
+  first_column_names <- c(
+    "id",
+    first_column_names[first_column_names %in% names(administrations)]
+  )
+  administrations <- arrange_variables(
+    administrations, 
+    first_column_names = first_column_names) 
+  
+  administrations <- dbplyr::db_copy_to(
+    con = conn,
+    table = "drug_administrations",
+    values = administrations,
+    temporary = FALSE,
+    overwrite = overwrite,
+    indexes = list(
+      "id",
+      "patient_id", 
+      "administration_id",
+      "drug_id",
+      "ATC_code",
+      "ATC_route",
+      "administration_date"
+    ))
+}
+  
+#' Read SQL scripts
+#'
+#' @description Reads SQL script, remove comments and concatenate
+#' all script lines into one line ready for parsing.
+#' @param script.name file name of a script located under `inst/SQL/`
+#' @return A character string
+#' @noRd
+.read_sql_syntax <- function(script.name) {
+  
+  statement <- readLines(
+    system.file("SQL", script.name, package = "Ramses", mustWork = TRUE)
+  )
+  # remove comments
+  statement <- sapply(statement, gsub, pattern = "--.*", replacement = "")
+  # concatenate on single line
+  statement <- paste(statement, collapse = " ")
+  
+  statement
+}
+
+#' Split SQL statements from a batch script
+#'
+#' @description Reads SQL script, remove comments and concatenate
+#' all script lines into one line ready for parsing.
+#' @note IMPORTANT: This function may not be used for statements containing
+#' nested loops (WHILE, BEGIN, END; within a loop)
+#' @param script.name file name of a script located under `inst/SQL/`
+#' @return A character vector of SQL statements
+#' @noRd
+.split_sql_batch <- function(string) {
+  unlist(regmatches(
+    string,
+    gregexpr("(WHILE(?:(?!WHILE|END;).)*END;)|((?:(?!WHILE|END;|;).)*;)",
+             string,
+             perl = TRUE)))
+}
+
+#' Remove database tables
+#'
+#' @description This attempts to remove one or more tables
+#' in the database connection if they exist. Does t
+#' @param conn a database connection
+#' @param tables a character vector of table names
+#'
+#' @return NULL if ran to the end
+#' @noRd
+.remove_db_tables <- function(conn, table_names){
+  
+  for( i in table_names) {
+    DBI::dbRemoveTable(conn = conn,
+                       name = i, 
+                       fail_if_missing = FALSE)
+  }
+  
+  NULL
+}
+
+.create_ramses_TC_graphs <- function(conn){
+  UseMethod(".create_ramses_TC_graphs")
+}
+.create_ramses_TC_graphs.SQLiteConnection <- function(conn){
+  .remove_db_tables(conn, "ramses_TC_group")
+  job <- .split_sql_batch(.read_sql_syntax("create_ramses_TC_group_SQLite.sql"))
+  for(i in seq_along(job)) {
+    DBI::dbExecute(conn, job[i])
+  }
+}
+
+
+#' Run transitive closure
+#'
+#' @param conn a database connection
+#' @param edge_table a table of class `tbl_dbi` containing two columns
+#' named `id1` and `id2`
+#' @return a connection to a non-temporary table of class `tbl_dbi`
+#' under the name `ramses_TC_group`.
+#' @references Inspired by Itzik Ben-Gan's T-SQL challenge solution
+#' https://www.itprotoday.com/sql-server/t-sql-puzzle-challenge-grouping-connected-items
+#' @noRd
+.run_transitive_closure <- function(conn, edge_table) {
+  UseMethod(".run_transitive_closure")
+}
+#' @export
+.run_transitive_closure.SQLiteConnection <- function(conn, edge_table) {
+  
+  .create_ramses_TC_graphs(conn)
+  
+  var_lvl <- 1
+  var_ids <- tbl(conn, edge_table) %>% 
+    dplyr::arrange(id1, id2) %>% 
+    utils::head(.data, n = 1) %>% 
+    dplyr::collect() %>% 
+    data.frame()
+  
+  var_rowcount <- nrow(var_ids)
+  
+  while (var_rowcount > 0) {
+    
+    DBI::dbAppendTable(conn = conn, 
+                       name = "ramses_TC_group",
+                       value = data.frame(cbind(
+                         id = c(var_ids$id1, var_ids$id2),
+                         grp = c(var_ids$id1, var_ids$id1),
+                         lvl = c(var_lvl, var_lvl)
+                       ), stringsAsFactors = F))
+    
+    DBI::dbExecute(
+      conn, 
+      paste("DELETE FROM", edge_table, 
+            "WHERE id1 =", var_ids$id1,
+            "AND id2 =", var_ids$id2, ";"))
+    
+    while(var_rowcount > 0) {  
+      
+      var_lvl <- var_lvl + 1
+      
+      .remove_db_tables(conn, "ramses_TC_CurIds")
+      DBI::dbExecute(conn,
+                     "CREATE TEMPORARY TABLE ramses_TC_CurIds(id INTEGER NOT NULL);")
+      
+      DBI::dbExecute(conn, paste(
+        "INSERT INTO ramses_TC_CurIds",
+        "SELECT T1.id2",
+        "FROM ramses_TC_group AS G",
+        " INNER JOIN", edge_table, "AS T1",
+        " ON G.id = T1.id1",
+        "WHERE lvl =", var_lvl - 1, ";"))
+      
+      DBI::dbExecute(conn, paste(
+        "DELETE FROM", edge_table,
+        "WHERE id1 IN(", 
+        "  SELECT id",
+        "  FROM ramses_TC_group",
+        "  WHERE lvl =", var_lvl - 1,");"))
+      
+      var_rowcount <- DBI::dbExecute(conn, paste(
+        "INSERT INTO ramses_TC_group",
+        "SELECT DISTINCT id,", var_ids$id1, "AS grp,", var_lvl, "AS lvl",
+        "FROM ramses_TC_CurIds AS C",
+        "WHERE NOT EXISTS (",
+        "   SELECT * FROM ramses_TC_group AS G",
+        "   WHERE G.id = C.id);"))
+      
+      .remove_db_tables(conn, "ramses_TC_CurIds")
+      DBI::dbExecute(conn,
+                     "CREATE TEMPORARY TABLE ramses_TC_CurIds(id INTEGER NOT NULL);")
+      
+      DBI::dbExecute(conn, paste(
+        "INSERT INTO ramses_TC_CurIds",
+        "SELECT T1.id1",
+        "FROM ramses_TC_group AS G",
+        " INNER JOIN", edge_table, "AS T1",
+        " ON G.id = T1.id2",
+        "WHERE lvl =", var_lvl - 1, ";"))
+      
+      DBI::dbExecute(conn, paste(
+        "DELETE FROM", edge_table,
+        "WHERE id2 IN(", 
+        "  SELECT id",
+        "  FROM ramses_TC_group",
+        "  WHERE lvl =", var_lvl - 1,");"))
+      
+      var_rowcount <- var_rowcount + DBI::dbExecute(conn, paste(
+        "INSERT INTO ramses_TC_group",
+        "SELECT DISTINCT id,", var_ids$id1, "AS grp,", var_lvl, "AS lvl",
+        "FROM ramses_TC_CurIds AS C",
+        "WHERE NOT EXISTS (",
+        "   SELECT * FROM ramses_TC_group AS G",
+        "   WHERE G.id = C.id);"))
+    }
+    
+    var_ids <- tbl(conn, edge_table) %>% 
+      dplyr::arrange(id1, id2) %>% 
+      utils::head(.data, n = 1) %>% 
+      dplyr::collect() %>% 
+      data.frame()
+    
+    var_rowcount <- nrow(var_ids)
+  }
+  
+  .remove_db_tables(conn, "ramses_TC_CurIds")
+  
+  tbl(conn, "ramses_TC_group")
+}
+
+
+.prepare_example_drug_records <- function() {
   
   drug_rx <- Ramses::drug_prescriptions
   drug_admins <- Ramses::drug_administrations
@@ -446,12 +810,40 @@ load_medications.SQLiteConnection <- function(
                                        as.character(ab), basis_of_strength))
   
   drug_admins <- drug_admins %>% 
-    mutate(ddd = compute_DDDs(
+    mutate(DDD = compute_DDDs(
       ab = basis_of_strength,
       administration = ATC_route,
       dose = dose,
       unit = units 
     ))
+  
+  drug_admins$administration_id <- drug_admins %>%
+    dplyr::group_indices(
+      patient_id,
+      ab,
+      route,
+      dose,
+      units,
+      administration_date)
+  drug_admins <- transmute(drug_admins,
+      patient_id,
+      administration_id = as.character(administration_id),
+      prescription_id,
+      administration_text = paste0(
+          drug_name, " ", route, " ", dose, units),
+      drug_id = ab,
+      drug_name,
+      drug_display_name = drug_name,
+      ATC_code,
+      ATC_group,
+      ATC_route,
+      dose,
+      unit = units,
+      route,
+      administration_date,
+      administration_status = "completed",
+      DDD
+    )
   
   return(list(
     drug_rx = drug_rx,
@@ -459,237 +851,3 @@ load_medications.SQLiteConnection <- function(
   ))
   
 }
-.do_TC_SQLITE <- function(conn, edge_table) {
-  
-  DBI::dbRemoveTable(conn = conn,
-                     name = "ramses_TC_group",
-                     fail_if_missing = FALSE)
-    job <- .split_sql_batch(.read_sql_syntax("create_ramses_TC_group_SQLite.sql"))
-  for(i in seq_along(job)) {
-    DBI::dbExecute(conn, job[i])
-  }
-
-  var_lvl <- 1
-  var_ids <- tbl(conn, edge_table) %>% 
-    dplyr::arrange(id1, id2) %>% 
-    utils::head(.data, n = 1) %>% 
-    dplyr::collect() %>% 
-    data.frame()
-  
-  var_rowcount <- nrow(var_ids)
-  
-  while (var_rowcount > 0) {
-    
-    DBI::dbAppendTable(conn = conn, 
-                  name = "ramses_TC_group",
-                  value = data.frame(cbind(
-                    id = c(var_ids$id1, var_ids$id2),
-                    grp = c(var_ids$id1, var_ids$id1),
-                    lvl = c(var_lvl, var_lvl)
-                  ), stringsAsFactors = F))
-    
-    DBI::dbExecute(
-      conn, 
-      paste("DELETE FROM", edge_table, 
-            "WHERE id1 =", var_ids$id1,
-            "AND id2 =", var_ids$id2, ";"))
-    
-    while(var_rowcount > 0) {  
-      
-      var_lvl <- var_lvl + 1
-      
-      DBI::dbRemoveTable(conn = conn,
-                         name = "ramses_TC_CurIds",
-                         fail_if_missing = FALSE)
-      DBI::dbExecute(conn,
-        "CREATE TEMPORARY TABLE ramses_TC_CurIds(id INTEGER NOT NULL);")
-      
-      DBI::dbExecute(conn, paste(
-        "INSERT INTO ramses_TC_CurIds",
-        "SELECT T1.id2",
-        "FROM ramses_TC_group AS G",
-        " INNER JOIN", edge_table, "AS T1",
-        " ON G.id = T1.id1",
-        "WHERE lvl =", var_lvl - 1, ";"))
-      
-      DBI::dbExecute(conn, paste(
-        "DELETE FROM", edge_table,
-        "WHERE id1 IN(", 
-        "  SELECT id",
-        "  FROM ramses_TC_group",
-        "  WHERE lvl =", var_lvl - 1,");"))
-      
-      var_rowcount <- DBI::dbExecute(conn, paste(
-          "INSERT INTO ramses_TC_group",
-          "SELECT DISTINCT id,", var_ids$id1, "AS grp,", var_lvl, "AS lvl",
-          "FROM ramses_TC_CurIds AS C",
-          "WHERE NOT EXISTS (",
-          "   SELECT * FROM ramses_TC_group AS G",
-          "   WHERE G.id = C.id);"))
-      
-      DBI::dbRemoveTable(conn = conn,
-                         name = "ramses_TC_CurIds",
-                         fail_if_missing = FALSE)
-      DBI::dbExecute(conn,
-                "CREATE TEMPORARY TABLE ramses_TC_CurIds(id INTEGER NOT NULL);")
-      
-      DBI::dbExecute(conn, paste(
-          "INSERT INTO ramses_TC_CurIds",
-          "SELECT T1.id1",
-          "FROM ramses_TC_group AS G",
-          " INNER JOIN", edge_table, "AS T1",
-          " ON G.id = T1.id2",
-          "WHERE lvl =", var_lvl - 1, ";"))
-      
-      DBI::dbExecute(conn, paste(
-          "DELETE FROM", edge_table,
-          "WHERE id2 IN(", 
-          "  SELECT id",
-          "  FROM ramses_TC_group",
-          "  WHERE lvl =", var_lvl - 1,");"))
-      
-      var_rowcount <- var_rowcount + DBI::dbExecute(conn, paste(
-            "INSERT INTO ramses_TC_group",
-            "SELECT DISTINCT id,", var_ids$id1, "AS grp,", var_lvl, "AS lvl",
-            "FROM ramses_TC_CurIds AS C",
-            "WHERE NOT EXISTS (",
-            "   SELECT * FROM ramses_TC_group AS G",
-            "   WHERE G.id = C.id);"))
-    }
-    
-    var_ids <- tbl(conn, edge_table) %>% 
-      dplyr::arrange(id1, id2) %>% 
-      utils::head(.data, n = 1) %>% 
-      dplyr::collect() %>% 
-      data.frame()
-    
-    var_rowcount <- nrow(var_ids)
-  }
-  
-  DBI::dbRemoveTable(conn = conn,
-                     name = "ramses_TC_CurIds",
-                     fail_if_missing = FALSE)
-  
-  tbl(conn, "ramses_TC_group")
-}
-  
-.read_sql_syntax <- function(script.name) {
-  
-  statement <- readLines(
-    system.file("SQL", script.name, package = "Ramses")
-  )
-  # remove comments
-  statement <- sapply(statement, gsub, pattern = "--.*", replacement = "")
-  # concatenate on single line
-  statement <- paste(statement, collapse = " ")
-  
-  statement
-}
-
-.split_sql_batch <- function(string) {
-  # This may not be used for statements that include nested loops WHILE...END... !!!
-  # 
-  unlist(regmatches(
-    string,
-    gregexpr("(WHILE(?:(?!WHILE|END;).)*END;)|((?:(?!WHILE|END;|;).)*;)",
-             string,
-             perl = TRUE)))
-  
-}
-
-#' Manage internal tables used for transitive closures
-#'
-#' @description This attempts to remove all `Ramses_TC_*`
-#' tables in the database connection if they exist.
-#' @param conn a database connection
-#'
-#' @return NULL if ran to the end
-#' @noRd
-.remove_Ramses_TC_tables <- function(conn){
-  
-  for( i in c("ramses_TC_input",
-              "ramses_TC_init") ) {
-    DBI::dbRemoveTable(conn = conn,
-                       name = i, 
-                       fail_if_missing = FALSE)
-  }
-  
-  NULL
-}
-
-.create_ramses_TC_graphs <- function(conn){
-  UseMethod(".create_ramses_TC_graphs")
-}
-.create_ramses_TC_graphs.SQLiteConnection <- function(conn){
-  DBI::dbRemoveTable(conn = conn,
-                     name = "ramses_TC_graphs",
-                     fail_if_missing = FALSE)
-  
-  DBI::dbExecute(
-    conn = conn,
-    statement = .read_sql_syntax("create_ramses_TC_graphs_SQLite.sql"))
-
-}
-
-
-
-
-
-#' Run transitive closure
-#'
-#' @param conn a database connection
-#' @param edges a table of class `tbl_dbi` containing two columns
-#' named `from_id` and `to_id` 
-#' @param tablename a table name where to store the output. Any 
-#' existing table under this name will be overwritten.
-#' @return a connection to a non-temporary table of class `tbl_dbi`
-#' under the name `tablename`. 
-#' @noRd
-.run_transitive_closure <- function(conn, edges, tablename) {
-  
-  .remove_Ramses_TC_tables(conn)
-  .create_ramses_TC_graphs(conn)
-  
-  
-  #edges must have two text variables from_id and to_id
-  Ramses_closure_input <- edges %>% 
-    select(from_id, to_id) %>% 
-    compute(.data, name = "ramses_TC_input")
-  
-  Ramses_closure_init <- Ramses_closure_input %>% 
-    top_n(1) %>% 
-    compute(.data, name = "ramses_TC_init")
-  
-  
-}
-
-build_table_drug_prescriptions_edges <- function(transitive_closure_controls) {
-  
-}
-
-build_table_drug_prescriptions_edges.SQLiteConnection <- function() {
-  
-}
-
-build_table_drug_prescriptions_edges.PostgreSQLConnection <- function() {
-  
-}
-
-build_table_drug_prescriptions_edges.MSSQLConnection <- function() {
-  
-}
-
-build_temp_table_rx_combinations <- function() {
-  
-}
-
-build_temp_table_rx_therapy <- function() {
-  
-}
-
-built_table_drug_prescriptions <- function() {
-  
-}
-
-
-

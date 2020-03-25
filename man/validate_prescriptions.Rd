@@ -7,34 +7,40 @@
 validate_prescriptions(data)
 }
 \arguments{
-\item{data}{a data frame containing one row per prescription. See Details for other conditions.}
+\item{data}{a data frame containing one row per prescription.}
 }
 \value{
-NULL if the dataset is valid
+NULL if the `data` passes the validation. The function will trigger errors
+for mandatory requirements and warnings for optional requirements.
 }
 \description{
-Validate medication prescription records
+This function performs a series of checks for mandatory and
+optional requirements on prescriptions data.
 }
-\details{
-In order to pass the validation, prescription data should contain the following columns with 
-  no missing data:
-  \itemize{
-     \item \code{patient_id}: a patient identifier with no missing value
-     \item \code{prescription_id}: a prescription identifier with no missing value
-     \item \code{drug_id}: identifier of the drug (from a dictionary such as SNOMED-CT or
-      from \code{\link{AMR}{as.ab}()})
-     \item \code{drug_name}: preferred name of the drug in the drug dictionary
-     \item \code{drug_display_name}: drug name to display in reports (can be the same as \code{drug_name})
-     \item \code{ATC_code}: the ATC code, see \code{\link{AMR}{ab_atc}()}
-     \item \code{ATC_group}: the ATC group, see \code{\link{AMR}{ab_group1}()}
-     \item \code{ATC_route}: route of administration as defined in the ATC ("O" = oral; 
-     "P" = parenteral; "R" = rectal; "V" = vaginal)
-     \item \code{authoring_date}: timestamp when the prescription was issued
-     \item \code{prescription_start}: timestamp of the prescription start
-     \item \code{prescription_end}: timestamp of the prescription end (mandated except
-     for one-off prescriptions with \code{daily_frequency} == -1, )
-     \item \code{prescription_context}: either 'inpatient', 'opat', 'discharge'
-     \item \code{prescription_status}: one value from the following 
+\section{Mandatory fields}{
+
+These fields are required in order to pass the validation:
+  \describe{
+     \item{\code{patient_id}}{a patient identifier with no missing value}
+     \item{\code{prescription_id}}{a prescription identifier with no missing value}
+     \item{\code{prescription_text}}{a character string summarising the prescription 
+     (to be displayed in user interfaces, eg: \code{'Amoxicillin Oral 500mg BDS'})}
+     \item{\code{drug_id}}{identifier of the drug (from a dictionary such as SNOMED-CT or
+      from \code{\link{AMR}{as.ab}()})}
+     \item{\code{drug_name}}{preferred name of the drug in the drug dictionary}
+     \item{\code{drug_display_name}}{drug name to display in reports and user interfaces
+     (can be the same as \code{drug_name})}
+     \item{\code{ATC_code}}{the ATC code, see \code{\link{AMR}{ab_atc}()}}
+     \item{\code{ATC_group}}{the ATC group, see \code{\link{AMR}{ab_group1}()}}
+     \item{\code{ATC_route}}{route of administration as defined in the ATC ("O" = oral; 
+     "P" = parenteral; "R" = rectal; "V" = vaginal)}
+     \item{\code{authoring_date}}{timestamp for when the prescription was issued}
+     \item{\code{prescription_start}}{timestamp for the prescription start}
+     \item{\code{prescription_end}}{timestamp for the prescription end (mandated except
+     for one-off prescriptions with \code{daily_frequency} == -1, )}
+     \item{\code{prescription_context}}{either \code{'inpatient'}, \code{'opat'}, or 
+     \code{'discharge'}}
+     \item{\code{prescription_status}}{one value from the following 
      \href{https://hl7.org/fhir/R4/valueset-medicationrequest-status.html}{FHIR R4}
      reference set:
      \itemize{ 
@@ -60,27 +66,30 @@ In order to pass the validation, prescription data should contain the following 
         status values currently applies for this observation. \emph{Note:} This 
         concept is not to be used for 'other' - one of the listed statuses is presumed 
         to apply, but the authoring/source system does not know which.         
-     }
-     \item \code{dose} a numeric vector of dosage quantities
-     \item \code{unit} a character vector of dosage units 
-     \item \code{route} the route of administration value natively assigned by system
-     \item \code{daily_frequency}: a numeric value indicating the number of times the drug 
+     }}
+     \item{\code{dose}}{a numeric vector of dosage quantities}
+     \item{\code{unit}}{a character vector of dosage units}
+     \item{\code{route}}{the route of administration value natively assigned by system}
+     \item{\code{daily_frequency}}{a numeric value indicating the number of times the drug 
      is to be administered per day. The following values are considered valid:
      \itemize{ 
         \item -1 for a single one-off administration
         \item -9 for 'as required' (\emph{Pro Re Nata}) prescriptions
-     }  
-    }
-   
-  Optional columns include:
-  \itemize{
-     \item \code{combination_id}: system-issued identifiers for drugs 
+     }}}
+}
+
+\section{Optional fields}{
+
+\describe{
+  \item{\code{combination_id}}{system-issued identifiers for drugs 
        prescribed as a bundle to treat the same indication either 
        simultaneously (eg clarithromycin and amoxiclav) or consecutively 
        (eg doxicycline 200mg followed by 100mg). Unless provided, 
        such identifiers will be created by \code{Ramses} using 
-       transitive closure. 
-     \item \code{DDD}: the number of prescribed defined daily doses, 
-     see \code{\link{compute_DDDs}()}.
-  }
+       transitive closure.}
+  \item{\code{DDD}}{the number of prescribed defined daily doses, 
+       see \code{\link{compute_DDDs}()}}
+  \item{\code{...}}{any other field, as desired, can be loaded into the database}
 }
+}
+
