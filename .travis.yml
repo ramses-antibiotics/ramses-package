@@ -1,7 +1,7 @@
 language: minimal
 
 env:
-  - COMPOSE_FILE="inst/docker/docker-compose.yml"
+  - COMPOSE_FILE="travis/docker-compose.yml"
 
 services:
   - docker
