@@ -10,3 +10,46 @@ home:
 template:
   params:
     bootswatch: sandstone
+    font-family-monospaced: 
+reference:
+- title: Reference datasets
+  desc:  Metadata provided with `RAMSES`
+  contents:
+  - ccs
+  - ccsr
+  - antibiotic_icd_indications
+  - aware
+  - LU_frequency
+- title: Transform and validate data
+  desc:  Functions to enrich and validate data before loading into the warehouse.
+  contents:
+  - import_icd
+  - download_icd10cm
+  - starts_with("map_")
+  - compute_DDDs
+  - starts_with("validate_inpatient")
+  - validate_prescriptions
+  - validate_administrations
+- title: Load & link data
+  desc:  Load records into the warehouse and create secondary information.
+  contents:
+  - load_diagnoses
+#  - load_episodes
+  - transitive_closure_control
+  - load_medications
+- title: Simulated sets of electronic health records
+  contents:
+  - inpatient_episodes
+  - inpatient_diagnoses
+  - drug_prescriptions
+  - drug_administrations
+- title: Database administration
+  desc:  Functions to set up and manage the `RAMSES` database
+  contents:
+  - get_warehouse_status
+  - build_ramses_schema
+  - connect_db_local
+- title: Index
+  desc:  All functions in alphabetical order
+  contents:
+  - render_page
