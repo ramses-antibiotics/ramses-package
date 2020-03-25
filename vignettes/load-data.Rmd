@@ -257,6 +257,8 @@ load_medications(conn = ramses_db,
                  prescriptions = drug_prescriptions, 
                  administrations = drug_administrations, 
                  overwrite = TRUE)
+DBI::dbDisconnect(ramses_db)
+
 ```
 
 # References

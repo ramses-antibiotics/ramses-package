@@ -30,7 +30,9 @@ global_vars <- c(
   "LU_frequency",
   "daily_freq",
   "daily_dose",
-  "duration_days"
+  "duration_days",
+  "grp",
+  "id"
 )
 
 utils::globalVariables(c(

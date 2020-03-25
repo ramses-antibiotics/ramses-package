@@ -9,7 +9,7 @@ library(odbc)
 test_that("Ramses on SQLite", {
   
   drug_data <- Ramses:::.prepare_example_drug_records()
-  conSQLite <- suppressWarnings(connect_db_local("ramses-db.sqlite"))
+  conSQLite <- suppressWarnings(connect_db_local("inst/ramses-db.sqlite"))
   
   expect_null(validate_prescriptions(drug_data$drug_rx))
   
@@ -18,13 +18,18 @@ test_that("Ramses on SQLite", {
                    administrations = drug_data$drug_admins,
                    overwrite = TRUE)
 
-  # tutu <- tbl(conSQlite,
-  #             "drug_prescriptions") %>% 
-  #   filter(grp == 2))$id
-  # expect_equal(tutu, 1:2)
+  test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
+    filter(prescription_id == "60caeda91f36308ba857100193d2f504") %>% 
+    select(prescription_id, therapy_id) %>% 
+    collect()
+
+  expect_equivalent(
+    test_output, 
+    tibble(prescription_id = c("60caeda91f36308ba857100193d2f504"),
+           therapy_id = c("15f7c729771ea989617e6ff97c3caa8a")))
   
   DBI::dbDisconnect(conSQLite)
-  file.remove("ramses-db.sqlite")
+  file.remove("inst/ramses-db.sqlite")
   
 })
 

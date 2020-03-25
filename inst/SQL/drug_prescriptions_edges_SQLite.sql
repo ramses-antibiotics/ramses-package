@@ -1,7 +1,7 @@
 WITH rx_edges AS (
     SELECT a.[patient_id]                                                           AS [patient_id]
-         , a.[rxid]                                                      AS [from_id]
-         , b.[rxid]                                                      AS [to_id]
+         , a.[id]                                                      AS [from_id]
+         , b.[id]                                                      AS [to_id]
          , a.[prescription_status]                                                  AS [from_status]
          , b.[prescription_status]                                                  AS [to_status]
          , a.[prescription_start]                                                   AS [from_start]
@@ -32,9 +32,9 @@ WITH rx_edges AS (
                ELSE NULL
         END                                                                         AS [relation_type]
          , CASE WHEN a.[ATC_route] = 'P' and b.[ATC_route] <> 'P' THEN 1 ELSE 0 END AS switch_oral
-    FROM [ramses_temp_prescriptions] a
+    FROM [drug_prescriptions] a
              INNER JOIN
-         [ramses_temp_prescriptions] b
+         [drug_prescriptions] b
          ON a.[patient_id] = b.[patient_id]
              and a.[prescription_id] <> b.[prescription_id]
              and a.[prescription_context] = b.[prescription_context]

@@ -77,18 +77,15 @@ get_warehouse_status <- function(conn) {
  
 #' Build the RAMSES schema
 #' 
-#' The RAMSES schema is the set of tables required to import health records
+#' @description The RAMSES schema is the set of tables required to import health records
 #' for curation and analysis 
-#'
 #' @param conn a database connection
-#'
+#' @rdname build_ramses_schema
+#' @export
 build_ramses_schema <- function(conn) {
-  
   UseMethod("build_ramses_schema")
-  
 }
-
-
+#' @export
 build_ramses_schema.SQLiteConnection <- function(conn) {
   
 }
@@ -257,7 +254,9 @@ transitive_closure_control <- function(max_continuation_gap = 36,
 #'
 #' @param conn a database connection
 #' @param prescriptions a data frame of prescriptions passing the 
-#' \code{\link{validate_prescriptions}()} function
+#' \code{\link{validate_prescriptions}()} function. Note: if variables 
+#' `therapy_id` or `combination_id` are provided, they will be preserved
+#' as they are instead of being populated by `Ramses`
 #' @param administrations a data frame of drug administrations passing the 
 #' \code{\link{validate_administrations}()} function
 #' @param overwrite if `TRUE` (the default), will overwrite an existing 
@@ -279,29 +278,51 @@ load_medications.SQLiteConnection <- function(
   conn, prescriptions, administrations, overwrite = FALSE,
   transitive_closure_controls = transitive_closure_control()) {
   
-  prescriptions$rxid <- 1:nrow(prescriptions)
+  .load_prescriptions.SQLiteConnection(
+    conn = conn, 
+    prescriptions = prescriptions, 
+    overwrite = overwrite,
+    transitive_closure_controls)
+  
+  
+}
+
+
+.load_prescriptions.SQLiteConnection <- function(
+  conn, prescriptions, overwrite, transitive_closure_controls) {
+  
+  create_therapy_id <- !exists("therapy_id", prescriptions)
+  create_combination_id <- !exists("combination_id", prescriptions)
+  
+  prescriptions$id <- 1:nrow(prescriptions)
   prescriptions$authoring_date <- as.character(prescriptions$authoring_date)
   prescriptions$prescription_start <- as.character(prescriptions$prescription_start)
   prescriptions$prescription_end <- as.character(prescriptions$prescription_end)
-
+  if(create_combination_id) prescriptions$combination_id <- NA_character_
+  if(create_therapy_id) prescriptions$therapy_id <- NA_character_
+  
   first_column_names <- .drug_prescriptions_variables()[["variable_name"]]
   first_column_names <- c(
-    "rxid",
+    "id",
     first_column_names[first_column_names %in% names(prescriptions)]
   )
-  prescriptions <- arrange_variables(prescriptions, 
-                                     first_column_names = first_column_names)
- 
+  prescriptions <- arrange_variables(
+    prescriptions, 
+    first_column_names = first_column_names) %>% 
+    dplyr::arrange(patient_id, prescription_start)
+  
   prescriptions <- dbplyr::db_copy_to(
     con = conn,
-    table = "ramses_temp_prescriptions",
+    table = "drug_prescriptions",
     values = prescriptions,
     temporary = FALSE,
-    overwrite = TRUE,
+    overwrite = overwrite,
     indexes = list(
-      "rxid",
+      "id",
       "patient_id", 
       "prescription_id",
+      "combination_id",
+      "therapy_id",
       "authoring_date",
       "prescription_start", 
       "prescription_end"
@@ -319,21 +340,44 @@ load_medications.SQLiteConnection <- function(
   DBI::dbExecute(conn, "CREATE INDEX ramses_TC_edges_idx1 ON ramses_TC_edges (id1, id2);")
   DBI::dbExecute(conn, "CREATE INDEX ramses_TC_edges_idx2 ON ramses_TC_edges (id2, id1);")
   
-  therapy_grps <- .run_transitive_closure(conn = conn, edge_table = "ramses_TC_edges")
+  therapy_grps <- .run_transitive_closure(conn = conn, 
+                                          edge_table = "ramses_TC_edges")
   
+  therapy_grps <- tbl(conn, "ramses_TC_group") %>% 
+    dplyr::left_join(
+      dplyr::select(tbl(conn, "drug_prescriptions"), 
+                    id, prescription_id), 
+      by = c("id" = "id")
+    ) %>% 
+    group_by(grp) %>% 
+    mutate(therapy_id = min(prescription_id)) %>% 
+    ungroup() %>% 
+    distinct(prescription_id, therapy_id) %>% 
+    compute(name = "ramses_TC_therapy")
+  
+  update_therapy_id <- .read_sql_syntax("update_drug_prescriptions_SQLite.sql")
+  update_therapy_id <- gsub("@@@ramses_TC_therapy", "ramses_TC_therapy", update_therapy_id)
+  update_therapy_id <- .split_sql_batch(update_therapy_id)
+  for(i in update_therapy_id) {
+    DBI::dbExecute(conn, i)
+  }
+  .remove_db_tables(conn, c("ramses_TC_group", "ramses_TC_therapy"))
+
 }
 
 
-
-#' Title
+#' Create table `drug_prescriptions_edges`
 #'
-#' @param conn 
-#' @param transitive_closure_controls 
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @description Create or reoverwrite the database table 
+#' `drug_prescriptions_edges` and populate by drawing edges between
+#' prescriptions in the `drug_prescriptions` table based on 
+#' patterns of overlap determined by `transitive_closure_controls`
+#' TODO:put link to online documentation describing the classification
+#' of patterns of prescription overlap  
+#' @param conn a database connection
+#' @param transitive_closure_controls parameters controlling the creation
+#' of edges between prescriptions
+#' @return NULL
 #' @noRD
 .create_table_drug_prescriptions_edges <- function(conn, transitive_closure_controls) {
   UseMethod(".create_table_drug_prescriptions_edges")
@@ -345,14 +389,11 @@ load_medications.SQLiteConnection <- function(
   if( DBI::dbExistsTable(conn, "drug_prescriptions_edges") ){
     DBI::dbRemoveTable(conn, "drug_prescriptions_edges")
   }
-  
   DBI::dbExecute(
     conn = conn,
     statement = .read_sql_syntax("create_drug_prescription_edges_SQLite.sql"))
   
-  
   statement_edges <- .read_sql_syntax("drug_prescriptions_edges_SQLite.sql")
-  
   
   # replace variables in SQL code by their value
   for(i in seq_along(transitive_closure_controls)) {
@@ -364,6 +405,8 @@ load_medications.SQLiteConnection <- function(
   ignore <- DBI::dbExecute(
     conn = conn,
     statement = statement_edges)
+  
+  NULL
 }
 
 
@@ -445,6 +488,8 @@ load_medications.SQLiteConnection <- function(
 #' named `id1` and `id2`
 #' @return a connection to a non-temporary table of class `tbl_dbi`
 #' under the name `ramses_TC_group`.
+#' @references Inspired by Itzik Ben-Gan's T-SQL challenge solution
+#' https://www.itprotoday.com/sql-server/t-sql-puzzle-challenge-grouping-connected-items
 #' @noRd
 .run_transitive_closure <- function(conn, edge_table) {
   UseMethod(".run_transitive_closure")
