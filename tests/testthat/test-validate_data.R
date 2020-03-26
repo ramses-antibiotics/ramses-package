@@ -1,6 +1,4 @@
-date1 <- Sys.time()
-library(lubridate)
-
+date1 <- structure(1585220000, class = c("POSIXct", "POSIXt"))
 
 test_that("inpatient episode records are validated", {
   expect_false(expect_warning(validate_variable_no_missing(data.frame(foo = c("1", "")), "foo")))
@@ -10,10 +8,10 @@ test_that("inpatient episode records are validated", {
   faulty_spells <- data.frame(list(
     patient_id = c(1, 2, 2),
     spell_id = c(1, 2, 3),
-    admission_date = c(date1, date1, date1 %m+% hours(3)),
-    discharge_date = c(date1 %m-% hours(12), 
-                       date1 %m+% hours(6),
-                       date1 %m+% hours(6))
+    admission_date = c(date1, date1, date1 + 3*3600),
+    discharge_date = c(date1 - 12*3600, 
+                       date1 + 6*3600,
+                       date1 + 6*3600)
   ))
   
   expect_false(expect_warning(validate_inpatient_spells(faulty_spells[1, ])))
@@ -23,11 +21,11 @@ test_that("inpatient episode records are validated", {
     patient_id = 1,
     spell_id = 2,
     admission_date = date1,
-    discharge_date = date1 %m+% hours(3),
+    discharge_date = date1 + 3*3600,
     episode_number = 1:3,
     last_episode_in_spell_indicator = 2,
-    episode_start = c(date1, date1 %m+% hours(1), date1 %m+% hours(2)),
-    episode_end = c(date1 %m+% hours(1), date1 %m+% hours(2), date1 %m+% hours(3))
+    episode_start = c(date1, date1 + 3600, date1 + 2*3600),
+    episode_end = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600)
   ))
   
   expect_equal(validate_inpatient_episodes(healthy_episodes), TRUE)
@@ -36,44 +34,44 @@ test_that("inpatient episode records are validated", {
     patient_id = 1,
     spell_id = 2,
     admission_date = date1,
-    discharge_date = date1 %m+% hours(3),
+    discharge_date = date1 + 3*3600,
     episode_number = 1:3,
     last_episode_in_spell_indicator = 2,
-    episode_start = c(date1, date1 %m+% minutes(30), date1 %m+% hours(2)),
-    episode_end = c(date1 %m+% hours(1), date1 %m+% hours(2), date1 %m+% hours(3))
+    episode_start = c(date1, date1 + 0.5*3600, date1 + 2*3600),
+    episode_end = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600)
   ))
   
   missing_first_episode <- data.frame(list(
     patient_id = 1,
     spell_id = 2,
     admission_date = date1,
-    discharge_date = date1 %m+% hours(4),
+    discharge_date = date1 + 4*3600,
     episode_number = 2:4,
     last_episode_in_spell_indicator = 2,
-    episode_start = c(date1 %m+% hours(1), date1 %m+% hours(2), date1 %m+% hours(3)),
-    episode_end = c(date1 %m+% hours(2), date1 %m+% hours(3), date1 %m+% hours(4))
+    episode_start = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600),
+    episode_end = c(date1 + 2*3600, date1 + 3*3600, date1 + 4*3600)
   ))
   
   missing_intermediate_episode <- data.frame(list(
     patient_id = 1,
     spell_id = 2,
     admission_date = date1,
-    discharge_date = date1 %m+% hours(4),
+    discharge_date = date1 + 4*3600,
     episode_number = c(1, 3, 4),
     last_episode_in_spell_indicator = 2,
-    episode_start = c(date1, date1 %m+% hours(2), date1 %m+% hours(3)),
-    episode_end = c(date1 %m+% hours(1), date1 %m+% hours(3), date1 %m+% hours(4))
+    episode_start = c(date1, date1 + 2*3600, date1 + 3*3600),
+    episode_end = c(date1 + 3600, date1 + 3*3600, date1 + 4*3600)
   ))
   
   missing_final_episode <- data.frame(list( 
     patient_id = 1,
     spell_id = 2,
     admission_date = date1,
-    discharge_date = date1 %m+% hours(4),
+    discharge_date = date1 + 4*3600,
     episode_number = 1:3,
     last_episode_in_spell_indicator = 2,
-    episode_start = c(date1, date1 %m+% hours(1), date1 %m+% hours(2)),
-    episode_end = c(date1 %m+% hours(1), date1 %m+% hours(2), date1 %m+% hours(3))
+    episode_start = c(date1, date1 + 3600, date1 + 2*3600),
+    episode_end = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600)
   ))
   
   expect_true(expect_warning(validate_inpatient_episodes(missing_first_episode)))
