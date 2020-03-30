@@ -9,7 +9,7 @@ library(odbc)
 test_that("Ramses on SQLite", {
   
   drug_data <- Ramses:::.prepare_example_drug_records()
-  conSQLite <- suppressWarnings(connect_db_local("inst/ramses-db.sqlite"))
+  conSQLite <- suppressWarnings(connect_db_local("ramses-db.sqlite"))
   
   expect_null(validate_prescriptions(drug_data$drug_rx))
   expect_null(validate_administrations(drug_data$drug_admins))

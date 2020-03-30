@@ -7,11 +7,111 @@
 validate_inpatient_episodes(data)
 }
 \arguments{
-\item{data}{a data frame containing}
+\item{data}{data frame containing one row per episode of care}
 }
 \value{
-TODO
+A logical value indicating success
 }
 \description{
-Validate inpatient episode records
+This function performs a series of checks for mandatory and
+optional requirements on episodes of care records. The data definitions 
+closely follow those of the  
+\href{https://www.datadictionary.nhs.uk/data_dictionary/messages/cds_v6-2/data_sets/cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds_fr.asp}{English NHS Admitted Patient Care Commissioning Datasets}.
 }
+\section{Mandatory variables}{
+
+\describe{
+  \item{\code{patient_id}}{a patient identifier with no missing value}
+  \item{\code{spell_id}}{a hospital spell identifier with no missing value}
+  \item{\code{admission_method}}{a non-missing character code: \itemize{
+       \item \code{"1"} elective admission
+       \item \code{"2"} emergency admission
+       \item \code{"3"} transfer/other admission
+    }
+  \emph{Note:} \code{"1"} and \code{"2"} corresponds to the first character 
+  of the \href{https://www.datadictionary.nhs.uk/data_dictionary/attributes/a/add/admission_method_de.asp}{NHS admission method value set}; \code{"3"} corresponds to 
+  the remaining values starting with \code{3} or \code{8}.}
+  \item{\code{admission_date}}{a \code{POSIXct} timestamp for 
+  the hospital admission. Must not be missing.}
+  \item{\code{discharge_date}}{a \code{POSIXct} timestamp for 
+  the hospital discharge. Must not be missing.}
+  \item{\code{episode_number}}{a strictly positive integer indicating the
+  number of the episode within an admission. Must not be missing.}
+  \item{\code{last_episode_in_spell_indicator}}{a character indicating whether
+  the patient is discharged at the end of the episode: \itemize{
+       \item \code{"1"} the episode is the last episode in the spell
+       \item \code{"2"} the episode is \strong{not} the last episode in the spell
+   }
+   Must not be missing.}
+  \item{\code{episode_start}}{a \code{POSIXct} timestamp for 
+  the hospital start. Must not be missing.}
+  \item{\code{episode_end}}{a \code{POSIXct} timestamp for 
+  the hospital end Must not be missing.}
+  \item{\code{consultant_code}}{a code uniquely identifying the medical 
+  professional responsible for the episode of care. Must not be missing.}
+  \item{\code{care_professional_main_specialty_code}}{a code identifying
+  the main specialty of the medical professional responsible for the 
+  episode of care. Must not be missing.}
+}
+}
+
+\section{Optional variables}{
+
+\describe{
+  \item{\code{activity_treatment_function_code}}{0}
+  \item{\code{local_sub-specialty_code}}{0}
+  \item{\code{patient_forename}}{the patient's forename}
+  \item{\code{patient_surname}}{the patient's surname}
+  \item{\code{date_of_birth}}{a \code{Date} for the birth date}
+  \item{\code{date_of_death}}{a missing value or a \code{Date} of death}
+  \item{\code{patient_sex}}{the following values are valid: \itemize{
+       \item \code{"male"}  
+       \item \code{"female"}  
+       \item \code{"other"}
+       \item \code{"unknown"}
+   }
+  Must not be missing.}
+  \item{\code{age_on_admission}}{age in years at start of hospital spell}
+  \item{\code{ethnic_category_UK}}{Reserved for UK users for \code{Ramses} to compute
+  the empirical glomerular filtration rate (eGFR). The following codes are valid:
+  
+  White \itemize{
+      \item \code{"A"} British
+      \item \code{"B"} Irish
+      \item \code{"C"}	Any other White background
+  }
+  Mixed
+  \itemize{
+      \item \code{"D"} White and Black Caribbean
+      \item \code{"E"} White and Black African
+      \item \code{"F"} White and Asian
+      \item \code{"G"} Any other mixed background
+  }
+
+  Asian or Asian British
+  \itemize{
+      \item \code{"H"} Indian
+      \item \code{"J"} Pakistani
+      \item \code{"K"} Bangladeshi
+      \item \code{"L"} Any other Asian background
+  }
+
+  Black or Black British
+  \itemize{
+      \item \code{"M"} Caribbean
+      \item \code{"N"} African
+      \item \code{"P"} Any other Black background
+  }
+
+  Other Ethnic Groups
+  \itemize{
+      \item \code{"R"} Chinese
+      \item \code{"S"} Any other ethnic group
+  }
+  
+  Not stated \itemize{
+      \item \code{"Z"} Not stated
+  }}
+}
+}
+

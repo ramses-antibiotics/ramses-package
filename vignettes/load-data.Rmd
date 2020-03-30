@@ -123,8 +123,8 @@ drug_prescriptions <- merge(drug_prescriptions,
 drug_prescriptions <- drug_prescriptions %>% 
   mutate(daily_dose = strength * daily_freq) %>% 
   mutate(DDD = compute_DDDs(
-    ab = basis_of_strength,
-    administration = ATC_route,
+    ATC_code = AMR::ab_atc(basis_of_strength),
+    ATC_administration = ATC_route,
     dose = daily_dose,
     unit = units))
 
@@ -171,8 +171,8 @@ drug_administrations <- drug_administrations %>%
 
 drug_administrations <- drug_administrations %>% 
   mutate(DDD = compute_DDDs(
-    ab = basis_of_strength,
-    administration = ATC_route,
+    ATC_code = AMR::ab_atc(basis_of_strength),
+    ATC_administration = ATC_route,
     dose = dose,
     unit = units 
   )) 
@@ -214,8 +214,12 @@ drug_administrations <- drug_administrations %>%
 
 ```
 
+## Inpatient care records
 
-## Diagnosis codes (ICD-10)
+### Episodes of care
+
+
+### Diagnosis codes (ICD-10)
 
 In order to exploit clinical diagnoses coded by doctors during hospital admissions, Ramses relies on a range of look up tables which must be built to suit the precise ICD-10 version used by the data. Ramses uses three types of look up tables:
 
@@ -276,9 +280,10 @@ head(icd_infection_lkup)
 
 ```{r create_local_db}
 ramses_db <- connect_db_local("ramses-db.sqlite")
-load_diagnoses(conn = ramses_db, 
-               diagnoses_data = inpatient_diagnoses, diagnoses_lookup = icd10cm, 
-               overwrite = TRUE)
+load_inpatient_diagnoses(conn = ramses_db, 
+                         diagnoses_data = inpatient_diagnoses, 
+                         diagnoses_lookup = icd10cm, 
+                         overwrite = TRUE)
 
 # TODO: APC_Diagnoses_Infection_Summary
 ```

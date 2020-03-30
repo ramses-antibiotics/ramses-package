@@ -15,3 +15,9 @@ inpatient_diagnoses <- read.csv(
                  "POSIXct", "integer", "character",
                  "character", "integer"))
 usethis::use_data(inpatient_diagnoses, overwrite = T)
+
+inpatient_wards <- read.csv(
+  file = "data-raw/inpatient_wards.csv", stringsAsFactors = F, 
+  colClasses = c("character", "character", "character",
+                 "POSIXct", "POSIXct"))
+usethis::use_data(inpatient_wards, overwrite = T)

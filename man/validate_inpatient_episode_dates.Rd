@@ -9,6 +9,9 @@ validate_inpatient_episode_dates(data)
 \arguments{
 \item{data}{a data frame object}
 }
+\value{
+A logical value indicating success
+}
 \description{
 Validate the consistency of inpatient episode dates
 }

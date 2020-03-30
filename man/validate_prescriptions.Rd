@@ -7,7 +7,7 @@
 validate_prescriptions(data)
 }
 \arguments{
-\item{data}{a data frame containing one row per prescription.}
+\item{data}{a data frame containing one row per prescription}
 }
 \value{
 NULL if the `data` passes the validation. The function will trigger errors

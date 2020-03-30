@@ -4,13 +4,13 @@
 \alias{compute_DDDs}
 \title{Compute Defined Daily Doses (DDDs)}
 \usage{
-compute_DDDs(ab, administration, dose, unit)
+compute_DDDs(ATC_code, ATC_administration, dose, unit)
 }
 \arguments{
-\item{ab}{a character vector coercible to an antibiotic code using 
-\code{\link[AMR]{as.ab}()}}
+\item{ATC_code}{a character vector of ATC codes (can be easily obtained from)
+\code{\link[AMR]{ab_atc}() in the `AMR` package}}
 
-\item{administration}{a character vector indicating the route of 
+\item{ATC_administration}{a character vector indicating the ATC route of 
 administration (see Details)}
 
 \item{dose}{a numeric vector indicating the total dose for the basis 
@@ -27,6 +27,8 @@ a numeric vector containing the DDDs
 Compute Defined Daily Doses (DDDs) for a drug prescription 
 or administration record using the World Health Organisation Anatomical 
 Therapeutic Chemical (ATC) classification \insertCite{WHO-ATC2020}{Ramses}.
+This function includes modified source code by \code{
+\link[AMR]{atc_online_property}()}.
 }
 \details{
 This function queries the WHO ATC website for the most 
@@ -50,11 +52,35 @@ The `administration` parameter must be one of the following values:
 }
 \examples{
 # Three tablets of amoxicillin 500mg
-compute_DDDs("Amoxicillin", "O", 1.5, "g")
+compute_DDDs("J01CA04", "O", 3 * 500, "mg")
 
 # Three tablets of co-amoxiclav 625mg (containing 500mg amoxicillin each)
-compute_DDDs("Coamoxiclav", "O", 1.5, "g") 
+compute_DDDs("J01CR02", "O", 3 * 500, "mg") 
+
+# This function may also be used with `dplyr`
+library(dplyr)
+library(magrittr)
+library(AMR)
+
+Ramses::drug_prescriptions \%>\% 
+  head() \%>\% 
+  transmute(rxsummary, 
+            tr_DESC,
+            route,
+            dose, 
+            units,
+            daily_freq = case_when(
+              freq == "BD" ~ 2,
+              freq == "TDS" ~ 3,
+              freq == "6H" ~ 4
+            )) \%>\% 
+  mutate(DDD = compute_DDDs(
+    ATC_code = AMR::ab_atc(tr_DESC),
+    ATC_administration = if_else(route == "ORAL", "O", "P"),
+    dose = dose * daily_freq,
+    unit = units))
 }
 \references{
+With thanks to the AMR package authors.
 \insertAllCited{}
 }

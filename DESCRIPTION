@@ -22,21 +22,13 @@ Imports:
     DBI,
     dplyr (>= 0.8.3),
     dbplyr (>= 1.4.2),
-    ggplot2,
     magrittr,
-    rlang,
-    purrr,
     stringr,
-    lubridate,
     Rdpack (>= 0.7),
     data.table,
     readr,
-    XML,
-    units (>= 0.6-1),
     AMR,
-    xml2,
-    rvest,
-    curl,
+    units (>= 0.6-1),
     methods
 RdMacros: Rdpack
 RoxygenNote: 7.0.2
@@ -44,5 +36,8 @@ Suggests:
     testthat (>= 2.1.0),
     knitr,
     rmarkdown,
-    covr
+    covr,
+    rvest,
+    xml2,
+    curl
 VignetteBuilder: knitr
