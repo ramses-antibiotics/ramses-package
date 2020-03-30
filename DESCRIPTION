@@ -36,5 +36,8 @@ Suggests:
     testthat (>= 2.1.0),
     knitr,
     rmarkdown,
-    covr
+    covr,
+    rvest,
+    xml2,
+    curl
 VignetteBuilder: knitr

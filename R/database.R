@@ -808,8 +808,8 @@ load_medications.SQLiteConnection <- function(
   drug_rx <- drug_rx %>% 
     mutate(daily_dose = strength * daily_freq) %>% 
     mutate(DDD = compute_DDDs(
-      ab = basis_of_strength,
-      administration = ATC_route,
+      ATC_code = AMR::ab_atc(basis_of_strength),
+      ATC_administration = ATC_route,
       dose = daily_dose,
       unit = units),
       duration_days = if_else(
@@ -873,8 +873,8 @@ load_medications.SQLiteConnection <- function(
   
   drug_admins <- drug_admins %>% 
     mutate(DDD = compute_DDDs(
-      ab = basis_of_strength,
-      administration = ATC_route,
+      ATC_code = AMR::ab_atc(basis_of_strength),
+      ATC_administration = ATC_route,
       dose = dose,
       unit = units 
     ))

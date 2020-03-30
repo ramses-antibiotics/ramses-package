@@ -271,16 +271,17 @@ map_ICD10_CCSR <- function(df, icd_column) {
 #' @description Compute Defined Daily Doses (DDDs) for a drug prescription 
 #' or administration record using the World Health Organisation Anatomical 
 #' Therapeutic Chemical (ATC) classification \insertCite{WHO-ATC2020}{Ramses}.
-#' @param ab  a character vector coercible to an antibiotic code using 
-#' \code{\link[AMR]{as.ab}()} 
-#' @param administration a character vector indicating the route of 
+#' This function includes modified source code by \code{
+#' \link[AMR]{atc_online_property}()}.
+#' @param ATC_code a character vector of ATC codes (can be easily obtained from)
+#' \code{\link[AMR]{ab_atc}() in the `AMR` package} 
+#' @param ATC_administration a character vector indicating the ATC route of 
 #' administration (see Details)
 #' @param dose a numeric vector indicating the total dose for the basis 
 #' of strength of the ATC DDD: in the case of prescriptions, this should
 #' be the total dose given in one day
 #' @param unit a character vector coercible to a `units` object with 
 #' \code{\link[units]{as.units}()}. 
-#'
 #' @details This function queries the WHO ATC website for the most 
 #' up-to-date reference values of the DDDs.
 #'   
@@ -301,57 +302,181 @@ map_ICD10_CCSR <- function(df, icd_column) {
 #'  }
 #' @return a numeric vector containing the DDDs
 #' @export
-#' @importFrom AMR as.ab atc_online_property
 #' @importFrom units set_units
 #' @importFrom stats na.omit
-#' @references \insertAllCited{}
+#' @references With thanks to the AMR package authors.
+#' \insertAllCited{}
 #' @examples
 #' # Three tablets of amoxicillin 500mg
-#' compute_DDDs("Amoxicillin", "O", 1.5, "g")
+#' compute_DDDs("J01CA04", "O", 3 * 500, "mg")
 #' 
 #' # Three tablets of co-amoxiclav 625mg (containing 500mg amoxicillin each)
-#' compute_DDDs("Coamoxiclav", "O", 1.5, "g") 
-compute_DDDs <- function(ab, administration, dose, unit) {
+#' compute_DDDs("J01CR02", "O", 3 * 500, "mg") 
+#' 
+#' # This function may also be used with `dplyr`
+#' library(dplyr)
+#' library(magrittr)
+#' library(AMR)
+#' 
+#' Ramses::drug_prescriptions %>% 
+#'   head() %>% 
+#'   transmute(rxsummary, 
+#'             tr_DESC,
+#'             route,
+#'             dose, 
+#'             units,
+#'             daily_freq = case_when(
+#'               freq == "BD" ~ 2,
+#'               freq == "TDS" ~ 3,
+#'               freq == "6H" ~ 4
+#'             )) %>% 
+#'   mutate(DDD = compute_DDDs(
+#'     ATC_code = AMR::ab_atc(tr_DESC),
+#'     ATC_administration = if_else(route == "ORAL", "O", "P"),
+#'     dose = dose * daily_freq,
+#'     unit = units))
+compute_DDDs <- function(ATC_code, ATC_administration, dose, unit) {
   
+  if (any(!requireNamespace("curl", quietly = TRUE),
+          !requireNamespace("xml2", quietly = TRUE),
+          !requireNamespace("rvest", quietly = TRUE))) {
+    stop("Packages \"curl\", \"rvest\" and \"xml2\" are required for this function to work. Please install them.",
+         call. = FALSE)
+  }
+  
+  if (!curl::has_internet()) {
+    stop("An internet connection is required for this function to work.")
+  }
+  
+  check_units <- na.omit(unique(as.character(unit)))
+  invalid_units <- sapply(check_units, function(X) {
+    inherits(
+      try(units::as_units(X), silent = TRUE),
+      "try-error")
+  }, simplify = T)
+  
+  if(any(invalid_units)) {
+    stop(simpleError(paste(
+      "Invalid `unit` found:",
+      paste(paste0("`", check_units, "`"), collapse = ", ")
+    )))
+  }
+  
+  stopifnot(na.omit(ATC_administration) %in% 
+              c('Inhal', 'Instill', 'N', 'O', 
+                'P', 'R', 'SL', 'TD', 'V'))
+  
+  search_ATC <- na.omit(unique(ATC_code))
+  
+  if(length(search_ATC) == 0) {
+    stop("`ATC_code` must contain valid entries.")
+  }
+  
+  reference_DDD <- list()
+  who_url <- "https://www.whocc.no/atc_ddd_index/?code=%s&showdescription=no"
+  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Incorporating an adaptation of lines 126-180 
+  # of atc_online.R of the AMR package
+  # https://gitlab.com/msberends/AMR/-/blob/219cff403fa7515c07faab129f55f39ae648feb9/R/atc_online.R#L126
+  # Original code verbatim below:
+  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # progress <- progress_estimated(n = length(atc_code))
+  # 
+  # for (i in seq_len(length(atc_code))) {
+  #   
+  #   progress$tick()$print()
+  #   
+  #   atc_url <- sub("%s", atc_code[i], url, fixed = TRUE)
+  #   
+  #   if (property == "groups") {
+  #     tbl <- xml2::read_html(atc_url) %>%
+  #       rvest::html_node("#content") %>%
+  #       rvest::html_children() %>%
+  #       rvest::html_node("a")
+  #     
+  #     # get URLS of items
+  #     hrefs <- tbl %>% rvest::html_attr("href")
+  #     # get text of items
+  #     texts <- tbl %>% rvest::html_text()
+  #     # select only text items where URL like "code="
+  #     texts <- texts[grepl("?code=", tolower(hrefs), fixed = TRUE)]
+  #     # last one is antibiotics, skip it
+  #     texts <- texts[seq_len(length(texts)) - 1]
+  #     returnvalue <- c(list(texts), returnvalue)
+  #     
+  #   } else {
+  #     tbl <- xml2::read_html(atc_url) %>%
+  #       rvest::html_nodes("table") %>%
+  #       rvest::html_table(header = TRUE) %>%
+  #       as.data.frame(stringsAsFactors = FALSE)
+  #     
+  #     # case insensitive column names
+  #     colnames(tbl) <- tolower(colnames(tbl)) %>% gsub("^atc.*", "atc", .)
+  #     
+  #     if (length(tbl) == 0) {
+  #       warning("ATC not found: ", atc_code[i], ". Please check ", atc_url, ".", call. = FALSE)
+  #       returnvalue[i] <- NA
+  #       next
+  #     }
+  #     
+  #     if (property %in% c("atc", "name")) {
+  #       # ATC and name are only in first row
+  #       returnvalue[i] <- tbl[1, property]
+  #     } else {
+  #       if (!"adm.r" %in% colnames(tbl) | is.na(tbl[1, "adm.r"])) {
+  #         returnvalue[i] <- NA
+  #         next
+  #       } else {
+  #         for (j in seq_len(nrow(tbl))) {
+  #           if (tbl[j, "adm.r"] == administration) {
+  #             returnvalue[i] <- tbl[j, property]
+  #           }
+  #         }
+  #       }
+  #     }
+  #   }
+  # }
+
+  progress <- progress_estimated(n = length(search_ATC))
+  for (i in seq_len(length(search_ATC))) {
+    progress$tick()$print()
+    atc_url <- sub("%s", search_ATC[i], who_url, fixed = TRUE)
+    atc_page <- xml2::read_html(atc_url) 
+    if( length(rvest::html_nodes(
+          atc_page, 
+          paste0("table:contains(", search_ATC[i], ")")
+          )) == 0 ) {
+      warning("ATC not found: ", ATC_code[i], ". Please check ", 
+              atc_url, ".", call. = FALSE)
+      next
+    } else {
+      atc_page <- atc_page %>% rvest::html_nodes("table") %>% 
+        rvest::html_table(header = TRUE) %>% as.data.frame(stringsAsFactors = FALSE)
+      colnames(atc_page) <- gsub("^atc[.]", "ATC_", tolower(colnames(atc_page)))
+      colnames(atc_page) <- gsub("^ddd$", "ddd_value", colnames(atc_page))
+      
+      atc_page$ATC_code <- search_ATC[i]
+      reference_DDD[[i]] <- dplyr::select(atc_page, -.data$name, -.data$note)
+    }
+  }
+  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+  reference_DDD <- data.table::rbindlist(reference_DDD)
   x <- data.table(
-    ab = ab, 
-    administration = administration,
-    dose = dose, 
+    ATC_code = ATC_code, 
+    adm.r = ATC_administration, 
+    dose = dose,
     unit = unit
   )
   
-  reference <- na.omit(
-    unique(
-    x[, list(ab, administration)]
-    ))
-  reference$valid_ab <- AMR::as.ab(reference$ab)
-  reference <- reference[!is.na(valid_ab)]
-  
-  if (nrow(reference)==0) {
-    stop(simpleError("`ab` and `administration` must contain valid values"))
-  }
-  
-  reference[ , `:=`(
-    ddd_value = mapply(
-      FUN = AMR::atc_online_property,
-      atc_code = valid_ab,
-      administration = administration, 
-      property = "DDD"),
-    ddd_unit = mapply(
-      FUN = AMR::atc_online_property,
-      atc_code = valid_ab,
-      administration = administration,
-      property = "U")
-    )]
-  
-  x <- merge(x, reference, all.x = T, sort = F)
+  x <- merge(x, reference_DDD, all.x = T, sort = F)
   x$DDD <- NA_real_
-
+  u = NULL
   x[!(is.na(ddd_value) | is.na(dose) | is.na(unit)),
     DDD := as.numeric(
       units::mixed_units(x = dose, value = unit) /
-        units::mixed_units(x = ddd_value, value = ddd_unit)
-      )]
+        units::mixed_units(x = ddd_value, value = u)
+    )]
   
   return(x[["DDD"]])
 }
