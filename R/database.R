@@ -1,6 +1,5 @@
 
 
-
 #' Create a local database
 #'
 #' @description Create a local database in memory or on disk using RSQLite. This is 
@@ -110,8 +109,8 @@ build_ramses_schema.SQLiteConnection <- function(conn) {
 #' \code{\link{validate_inpatient_diagnoses}()}
 #' @param diagnoses_lookup a data frame containing an ICD-10 reference 
 #' lookup table
-#' @param overwrite if `TRUE` (the default), will overwrite an existing 
-#' diagnosis table
+#' @param overwrite if `TRUE` (the default), will overwrite any existing
+#' `inpatient_diagnoses` database table
 #' @seealso \code{\link{validate_inpatient_episodes}()}, 
 #' \code{\link{map_infections_abx_indications}()},
 #' \code{\link{map_charlson_comorbidities}()},
@@ -121,7 +120,7 @@ build_ramses_schema.SQLiteConnection <- function(conn) {
 #' "try-error" containing error messages trigger during warehouse data loading.
 #' @import methods
 #' @export
-load_diagnoses <- function(conn, diagnoses_data, diagnoses_lookup, overwrite = FALSE) {
+load_inpatient_diagnoses <- function(conn, diagnoses_data, diagnoses_lookup, overwrite = FALSE) {
    
   if (!validate_inpatient_diagnoses(diagnoses_data, diagnoses_lookup)) {
     stop(simpleError("`diagnoses_data` and `diagnoses_lookup` must pass `validate_inpatient_diagnoses()`"))
@@ -179,6 +178,58 @@ load_diagnoses <- function(conn, diagnoses_data, diagnoses_lookup, overwrite = F
   } else {
     return(TRUE)
   }
+  
+}
+
+#' Load episodes of care records into the warehouse
+#'
+#' @param conn a database connection
+#' @param episodes_data  a data frame validated with 
+#' \code{\link{validate_inpatient_episodes}()}
+#' @param overwrite if `TRUE` (the default), will overwrite any existing
+#' `inpatient_episodes` database table
+#' @return `TRUE` if the function ran successfully, otherwise object of class
+#' "try-error" containing error messages trigger during warehouse data loading.
+#' @export
+load_inpatient_episodes <- function(conn, episodes_data, overwrite = TRUE) {
+  
+  inpatient_schema <- system.file("Schema", "inpatient_episodes_variables.csv", 
+                                  package = "Ramses")
+  inpatient_schema <- utils::read.csv(inpatient_schema, stringsAsFactors = FALSE)
+  administrations <- dplyr::arrange(administrations, 
+                                    patient_id, administration_date)
+  
+  episodes_data
+  
+  administrations$id <- 1:nrow(administrations)
+  
+  first_column_names <- .drug_administrations_variables()[["variable_name"]]
+  first_column_names <- c(
+    "id",
+    first_column_names[first_column_names %in% names(administrations)]
+  )
+  administrations <- arrange_variables(
+    administrations, 
+    first_column_names = first_column_names) 
+  
+  administrations <- dbplyr::db_copy_to(
+    con = conn,
+    table = "drug_administrations",
+    values = administrations,
+    temporary = FALSE,
+    overwrite = overwrite,
+    indexes = list(
+      "id",
+      "patient_id", 
+      "administration_id",
+      "drug_id",
+      "ATC_code",
+      "ATC_route",
+      "administration_date"
+    ))
+  
+  TRUE
+  
   
 }
 
@@ -245,7 +296,6 @@ transitive_closure_control <- function(max_continuation_gap = 36,
   list(max_combination_authoring_gap = as.integer(max_continuation_gap),
        max_combination_start_gap = as.integer(max_combination_start_gap),
        max_continuation_gap = as.integer(max_continuation_gap))
-  
 }
 
 
@@ -278,17 +328,31 @@ load_medications.SQLiteConnection <- function(
   conn, prescriptions, administrations, overwrite = FALSE,
   transitive_closure_controls = transitive_closure_control()) {
   
-  .load_prescriptions.SQLiteConnection(
-    conn = conn, 
-    prescriptions = prescriptions, 
-    overwrite = overwrite,
-    transitive_closure_controls)
+  prescription_load_errors <- try({
+    .load_prescriptions.SQLiteConnection(
+      conn = conn, 
+      prescriptions = prescriptions, 
+      overwrite = overwrite,
+      transitive_closure_controls)
+  })
+  
   
   if(!is.null(administrations)) {
+    administration_load_errors <- try({
     .load_administrations.SQLiteConnection(
       conn = conn, 
       administrations = administrations, 
       overwrite = overwrite)
+    })
+    
+    return(list(prescription_load_errors = 
+                  prescription_load_errors,
+                administration_load_errors = 
+                  administration_load_errors))
+  } else {
+    
+    return(list(prescription_load_errors = 
+                  prescription_load_errors))
   }
   
 }
@@ -318,31 +382,31 @@ load_medications.SQLiteConnection <- function(
     first_column_names = first_column_names) 
   
   prescriptions <- dbplyr::db_copy_to(
-    con = conn,
-    table = "drug_prescriptions",
-    values = prescriptions,
-    temporary = FALSE,
-    overwrite = overwrite,
-    indexes = list(
-      "id",
-      "patient_id", 
-      "prescription_id",
-      "combination_id",
-      "therapy_id",
-      "drug_id",
-      "ATC_code",
-      "ATC_route",
-      "authoring_date",
-      "prescription_start", 
-      "prescription_end"
-    ))
+      con = conn,
+      table = "drug_prescriptions",
+      values = prescriptions,
+      temporary = FALSE,
+      overwrite = overwrite,
+      indexes = list(
+        "id",
+        "patient_id", 
+        "prescription_id",
+        "combination_id",
+        "therapy_id",
+        "drug_id",
+        "ATC_code",
+        "ATC_route",
+        "authoring_date",
+        "prescription_start", 
+        "prescription_end"
+      ))
   
   .create_table_drug_prescriptions_edges.SQLiteConnection(
     conn = conn, transitive_closure_controls)
   
   if(create_therapy_id) .create_therapy_id.SQLiteConnection(conn)
   if(create_combination_id) .create_combination_id.SQLiteConnection(conn)
-
+  
 }
 
 
@@ -383,11 +447,9 @@ load_medications.SQLiteConnection <- function(
       transitive_closure_controls[[i]], statement_edges)
   }
   
-  ignore <- DBI::dbExecute(
+  DBI::dbExecute(
     conn = conn,
     statement = statement_edges)
-  
-  NULL
 }
 
 
@@ -491,7 +553,7 @@ load_medications.SQLiteConnection <- function(
     administrations, 
     first_column_names = first_column_names) 
   
-  administrations <- dbplyr::db_copy_to(
+  dbplyr::db_copy_to(
     con = conn,
     table = "drug_administrations",
     values = administrations,
@@ -850,4 +912,25 @@ load_medications.SQLiteConnection <- function(
     drug_admins = drug_admins
   ))
   
+}
+
+.prepare_example_inpatient_records <- function() {
+  
+  ip_diagnoses <- Ramses::inpatient_diagnoses
+  ip_diagnoses <- filter(ip_diagnoses, !is.na(.data$icd_code))
+  
+  ip_episodes <- Ramses::inpatient_episodes
+  ip_episodes$consultant_code <- "CXXXXXXX"
+  ip_episodes <- ip_episodes %>% 
+    dplyr::group_by(.data$spell_id) %>% 
+    dplyr::mutate(last_episode_in_spell_indicator = if_else(
+      episode_number == max(.data$episode_number),
+      1, 2)) %>% 
+    dplyr::ungroup()
+  
+  list(
+    episodes = ip_episodes,
+    diagnoses = ip_diagnoses,
+    ward_movements = Ramses::inpatient_wards
+  )
 }

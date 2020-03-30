@@ -25,7 +25,10 @@ test_that("inpatient episode records are validated", {
     episode_number = 1:3,
     last_episode_in_spell_indicator = 2,
     episode_start = c(date1, date1 + 3600, date1 + 2*3600),
-    episode_end = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600)
+    episode_end = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600),
+    admission_method = "2",
+    consultant_code = "CXXXXXX",
+    main_specialty_code = "100"
   ))
   
   expect_equal(validate_inpatient_episodes(healthy_episodes), TRUE)
@@ -38,7 +41,10 @@ test_that("inpatient episode records are validated", {
     episode_number = 1:3,
     last_episode_in_spell_indicator = 2,
     episode_start = c(date1, date1 + 0.5*3600, date1 + 2*3600),
-    episode_end = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600)
+    episode_end = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600),
+    admission_method = "2",
+    consultant_code = "CXXXXXX",
+    main_specialty_code = "100"
   ))
   
   missing_first_episode <- data.frame(list(
@@ -49,7 +55,10 @@ test_that("inpatient episode records are validated", {
     episode_number = 2:4,
     last_episode_in_spell_indicator = 2,
     episode_start = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600),
-    episode_end = c(date1 + 2*3600, date1 + 3*3600, date1 + 4*3600)
+    episode_end = c(date1 + 2*3600, date1 + 3*3600, date1 + 4*3600),
+    admission_method = "2",
+    consultant_code = "CXXXXXX",
+    main_specialty_code = "100"
   ))
   
   missing_intermediate_episode <- data.frame(list(
@@ -60,7 +69,10 @@ test_that("inpatient episode records are validated", {
     episode_number = c(1, 3, 4),
     last_episode_in_spell_indicator = 2,
     episode_start = c(date1, date1 + 2*3600, date1 + 3*3600),
-    episode_end = c(date1 + 3600, date1 + 3*3600, date1 + 4*3600)
+    episode_end = c(date1 + 3600, date1 + 3*3600, date1 + 4*3600),
+    admission_method = "2",
+    consultant_code = "CXXXXXX",
+    main_specialty_code = "100"
   ))
   
   missing_final_episode <- data.frame(list( 
@@ -71,7 +83,10 @@ test_that("inpatient episode records are validated", {
     episode_number = 1:3,
     last_episode_in_spell_indicator = 2,
     episode_start = c(date1, date1 + 3600, date1 + 2*3600),
-    episode_end = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600)
+    episode_end = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600),
+    admission_method = "2",
+    consultant_code = "CXXXXXX",
+    main_specialty_code = "100"
   ))
   
   expect_true(expect_warning(validate_inpatient_episodes(missing_first_episode)))

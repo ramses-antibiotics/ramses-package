@@ -15,10 +15,25 @@
 #' @source Simulated data
 "inpatient_episodes"
 
+#' Simulated hospital ward movements
+#' 
+#' @description This simulated activity data consists of records of ward 
+#' movements during hospitalisation spells recorded in 
+#' \code{\link[Ramses]{inpatient_episodes}}.
+#' 
+#' This data was simulated to reproduce relevant characteristics of English 
+#' NHS Admitted Patient Care datasets. More information can be found on the 
+#' \href{https://www.datadictionary.nhs.uk/data_dictionary/messages/cds_v6-2/data_sets/cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds_fr.asp?shownav=1}{NHS data dictionary website}.
+#' @format A data frame of records of ward movements
+#' @docType data
+#' @name inpatient_wards
+#' @source Simulated data
+"inpatient_wards"
+
 #' Simulated inpatient clinical diagnoses
 #' 
 #' @description Dataset of simulated infection clinical diagnoses by 
-#' finished consultant episodes listed in \code{\link{inpatient_episodes}},
+#' finished consultant episodes listed in \code{\link[Ramses]{inpatient_episodes}},
 #' detailing all episode start and end times, episode number, and up to
 #' 5 clinical diagnoses coded according to the International 
 #' Classification of Diseases, Tenth Revision (ICD-10). 

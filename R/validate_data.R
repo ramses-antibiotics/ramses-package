@@ -76,34 +76,148 @@ validate_variable_no_missing <- function(data, vectorname){
 
 #' Validate inpatient episode records
 #'
-#' @param data a data frame containing 
+#' @description This function performs a series of checks for mandatory and
+#' optional requirements on episodes of care records. The data definitions 
+#' closely follow those of the  
+#' \href{https://www.datadictionary.nhs.uk/data_dictionary/messages/cds_v6-2/data_sets/cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds_fr.asp}{English NHS Admitted Patient Care Commissioning Datasets}.
+#' @param data data frame containing one row per episode of care
+#' @section Mandatory variables:
+#' \describe{
+#'   \item{\code{patient_id}}{a patient identifier with no missing value}
+#'   \item{\code{spell_id}}{a hospital spell identifier with no missing value}
+#'   \item{\code{admission_method}}{a non-missing character code: \itemize{
+#'        \item \code{"1"} elective admission
+#'        \item \code{"2"} emergency admission
+#'        \item \code{"3"} transfer/other admission
+#'     }
+#'   \emph{Note:} \code{"1"} and \code{"2"} corresponds to the first character 
+#'   of the \href{https://www.datadictionary.nhs.uk/data_dictionary/attributes/a/add/admission_method_de.asp}{NHS admission method value set}; \code{"3"} corresponds to 
+#'   the remaining values starting with \code{3} or \code{8}.}
+#'   \item{\code{admission_date}}{a \code{POSIXct} timestamp for 
+#'   the hospital admission. Must not be missing.}
+#'   \item{\code{discharge_date}}{a \code{POSIXct} timestamp for 
+#'   the hospital discharge. Must not be missing.}
+#'   \item{\code{episode_number}}{a strictly positive integer indicating the
+#'   number of the episode within an admission. Must not be missing.}
+#'   \item{\code{last_episode_in_spell_indicator}}{a character indicating whether
+#'   the patient is discharged at the end of the episode: \itemize{
+#'        \item \code{"1"} the episode is the last episode in the spell
+#'        \item \code{"2"} the episode is \strong{not} the last episode in the spell
+#'    }
+#'    Must not be missing.}
+#'   \item{\code{episode_start}}{a \code{POSIXct} timestamp for 
+#'   the hospital start. Must not be missing.}
+#'   \item{\code{episode_end}}{a \code{POSIXct} timestamp for 
+#'   the hospital end Must not be missing.}
+#'   \item{\code{consultant_code}}{a code uniquely identifying the medical 
+#'   professional responsible for the episode of care. Must not be missing.}
+#'   \item{\code{care_professional_main_specialty_code}}{a code identifying
+#'   the main specialty of the medical professional responsible for the 
+#'   episode of care. Must not be missing.}
+#' }
+#' @section Optional variables:
+#' \describe{
+#'   \item{\code{activity_treatment_function_code}}{0}
+#'   \item{\code{local_sub-specialty_code}}{0}
+#'   \item{\code{patient_forename}}{the patient's forename}
+#'   \item{\code{patient_surname}}{the patient's surname}
+#'   \item{\code{date_of_birth}}{a \code{Date} for the birth date}
+#'   \item{\code{date_of_death}}{a missing value or a \code{Date} of death}
+#'   \item{\code{patient_sex}}{the following values are valid: \itemize{
+#'        \item \code{"male"}  
+#'        \item \code{"female"}  
+#'        \item \code{"other"}
+#'        \item \code{"unknown"}
+#'    }
+#'   Must not be missing.}
+#'   \item{\code{age_on_admission}}{age in years at start of hospital spell}
+#'   \item{\code{ethnic_category_UK}}{Reserved for UK users for \code{Ramses} to compute
+#'   the empirical glomerular filtration rate (eGFR). The following codes are valid:
+#'   
+#'   White \itemize{
+#'       \item \code{"A"} British
+#'       \item \code{"B"} Irish
+#'       \item \code{"C"}	Any other White background
+#'   }
+#'   Mixed
+#'   \itemize{
+#'       \item \code{"D"} White and Black Caribbean
+#'       \item \code{"E"} White and Black African
+#'       \item \code{"F"} White and Asian
+#'       \item \code{"G"} Any other mixed background
+#'   }
+#' 
+#'   Asian or Asian British
+#'   \itemize{
+#'       \item \code{"H"} Indian
+#'       \item \code{"J"} Pakistani
+#'       \item \code{"K"} Bangladeshi
+#'       \item \code{"L"} Any other Asian background
+#'   }
 #'
-#' @return TODO
+#'   Black or Black British
+#'   \itemize{
+#'       \item \code{"M"} Caribbean
+#'       \item \code{"N"} African
+#'       \item \code{"P"} Any other Black background
+#'   }
+#'
+#'   Other Ethnic Groups
+#'   \itemize{
+#'       \item \code{"R"} Chinese
+#'       \item \code{"S"} Any other ethnic group
+#'   }
+#'   
+#'   Not stated \itemize{
+#'       \item \code{"Z"} Not stated
+#'   }}
+#' }
+#' @return A logical value indicating success
 #' @export
 validate_inpatient_episodes <- function(data) {
+  
+  
+  ip_schema <- system.file("Schema", "inpatient_episodes_variables.csv", 
+                           package = "Ramses")
+  ip_schema <- utils::read.csv(ip_schema, stringsAsFactors = FALSE)
+  
+  variable_exists <- ip_schema[ip_schema$must_exist, "variable_name"]
 
-  exists_non_missing <- list(
-    "patient_id", 
-    "spell_id", 
-    "admission_date", 
-    "discharge_date",
-    "episode_number",
-    "last_episode_in_spell_indicator",
-    "episode_start",
-    "episode_end"
-  )
-  
-  validation_result <- !any(
-    !sapply(exists_non_missing,
-            FUN = validate_variable_no_missing,
-            data = data)
+  not_exist <- !sapply(variable_exists, exists, where = data)
+  if( any(not_exist) ){
+    stop(
+      simpleError(paste(
+        "The following variables must exist:",
+        paste(paste0("`", variable_exists[not_exist], "`"), collapse = ", "))
+      )
     )
-  
-  if (validation_result) {
-    validation_result <- append(validate_inpatient_spells(data), validation_result)
-    validation_result <- append(validate_inpatient_episode_dates(data), validation_result)
   }
   
+  variable_exists_non_missing <- ip_schema[ip_schema$must_be_nonmissing, 
+                                           "variable_name"]
+  variable_exists_non_missing <- variable_exists_non_missing[
+    variable_exists_non_missing %in% colnames(data)]
+  
+  missing_data <- suppressWarnings(
+    !sapply(variable_exists_non_missing, 
+            FUN = validate_variable_no_missing,
+            data = data)
+  )
+  
+  if( any(missing_data) ){
+    stop(
+      simpleError(paste(
+        "Some variables must not contain missing data:",
+        paste(paste0("`", 
+                     variable_exists_non_missing[missing_data],
+                     "`"), collapse = ", "))
+      )
+    )
+  }
+  
+  validation_result <- validate_inpatient_spells(data)
+  validation_result <- append(validate_inpatient_episode_dates(data), validation_result)
+ 
   !any(!validation_result)
 }
 
@@ -111,6 +225,7 @@ validate_inpatient_episodes <- function(data) {
 #'
 #' @param data a data frame object
 #' @importFrom data.table data.table
+#' @return A logical value indicating success
 validate_inpatient_spells <- function(data) {
   
   validation_result <- TRUE
@@ -159,6 +274,7 @@ validate_inpatient_spells <- function(data) {
 #'
 #' @param data a data frame object
 #' @importFrom data.table data.table := 
+#' @return A logical value indicating success
 validate_inpatient_episode_dates <- function(data) {
   
   validation_result <- TRUE
@@ -252,7 +368,7 @@ validate_inpatient_episode_dates <- function(data) {
 #' variables `patient_id`, `spell_id`, `episode_number`, `icd_code`, `diagnosis_position`
 #' @param diagnoses_lookup a data frame containing an ICD-10 reference look up table
 #'
-#' @return a boolean indicating whether the data passed the set of validations
+#' @return A logical value indicating success
 #' @export
 #' @importFrom data.table data.table :=
 #' @examples
@@ -304,7 +420,7 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'
 #' @description This function performs a series of checks for mandatory and
 #' optional requirements on prescriptions data.
-#' @param data a data frame containing one row per prescription.
+#' @param data a data frame containing one row per prescription
 #' @section Mandatory fields:
 #' These fields are required in order to pass the validation:
 #'   \describe{
@@ -549,12 +665,6 @@ validate_administrations <- function(data) {
     drug_administrations_variables[["must_exist"]]
   )]
   
-  variable_exists_non_missing <- 
-    drug_administrations_variables[["variable_name"]]
-  variable_exists_non_missing <- variable_exists_non_missing[which(
-    drug_administrations_variables[["must_be_nonmissing"]]
-  )]
-  
   not_exist <- !sapply(variable_exists, exists, where = data)
   if( any(not_exist) ){
     stop(
@@ -564,6 +674,12 @@ validate_administrations <- function(data) {
       )
     )
   }
+  
+  variable_exists_non_missing <- 
+    drug_administrations_variables[["variable_name"]]
+  variable_exists_non_missing <- variable_exists_non_missing[which(
+    drug_administrations_variables[["must_be_nonmissing"]]
+  )]
   
   missing_data <- suppressWarnings(
     !sapply(variable_exists_non_missing, 
