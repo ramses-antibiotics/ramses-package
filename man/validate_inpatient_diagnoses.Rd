@@ -13,7 +13,7 @@ variables `patient_id`, `spell_id`, `episode_number`, `icd_code`, `diagnosis_pos
 \item{diagnoses_lookup}{a data frame containing an ICD-10 reference look up table}
 }
 \value{
-a boolean indicating whether the data passed the set of validations
+A logical value indicating success
 }
 \description{
 Validate contraints on diagnosis records, namely that the minimum 

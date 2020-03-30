@@ -9,6 +9,9 @@ validate_inpatient_spells(data)
 \arguments{
 \item{data}{a data frame object}
 }
+\value{
+A logical value indicating success
+}
 \description{
 Validate the consistency of admission and discharge dates
 }
