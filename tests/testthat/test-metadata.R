@@ -20,15 +20,16 @@ test_that("Infection mapping works", {
 })
 
 test_that("dosage and DDDs work", {
-  expect_equivalent(compute_DDDs("AMX", "O", 1500, "mg"), 1)
-  expect_true(is.na(compute_DDDs("AMX", "O", 1500, NA)))
-  expect_true(is.na(compute_DDDs("AMX", "O", NA, "mg")))
-  expect_error(compute_DDDs("AMX", NA, 1500, "mg"))
+  expect_equivalent(compute_DDDs("J01CA04", "O", 1500, "mg"), 1)
+  expect_true(is.na(compute_DDDs("J01CA04", "O", 1500, NA)))
+  expect_error(compute_DDDs("J01CA04", "O", 1500, "fake_unit"))
+  expect_true(is.na(compute_DDDs("J01CA04", "O", NA, "mg")))
+  expect_true(is.na(compute_DDDs("J01CA04", NA, 1500, "mg")))
+  expect_error(compute_DDDs("J01CA04", "fake_route", 1500, "mg"))
   expect_error(compute_DDDs(NA, "O", 1500, "mg"))
-  expect_equivalent(compute_DDDs("AMX", c("O", "P", "O", NA), c(1500, 1500, 1500, 1500), "mg"), c(1, .5, 1, NA))
+  expect_equivalent(compute_DDDs("J01CA04", c("O", "P", "O", NA), c(1500, 1500, 1500, 1500), "mg"), c(1, .5, 1, NA))
   expect_error(expect_warning(compute_DDDs("Fake_abx", "P", 650, "mg")))
-  
-  x <- expect_warning(compute_DDDs(c("Coamoxiclav", "Fake_abx"), "P", 650, "mg"))
+  x <- expect_warning(compute_DDDs(c("J01CR02", "Fake_abx"), "P", 650, "mg"))
   expect_true(is.na(x[2]))
 })
 
