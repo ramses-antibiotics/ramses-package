@@ -479,7 +479,7 @@ load_medications.SQLiteConnection <- function(
       by = c("id" = "id")
     ) %>% 
     group_by(grp) %>% 
-    mutate(therapy_id = min(prescription_id)) %>% 
+    mutate(therapy_id = min(prescription_id, na.rm = T)) %>% 
     ungroup() %>% 
     distinct(prescription_id, therapy_id) %>% 
     compute(name = "ramses_TC_therapy")
@@ -521,7 +521,7 @@ load_medications.SQLiteConnection <- function(
       by = c("id" = "id")
     ) %>% 
     group_by(grp) %>% 
-    mutate(combination_id = min(prescription_id)) %>% 
+    mutate(combination_id = min(prescription_id, na.rm = T)) %>% 
     ungroup() %>% 
     distinct(prescription_id, combination_id) %>% 
     compute(name = "ramses_TC_combination")
