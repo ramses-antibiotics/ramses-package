@@ -3,7 +3,7 @@
 #' Health Statistics
 #'
 #' @return A data frame containing ICD-10-CM codes 
-#' (\code{icd_code}) and labels (\code{icd_desc})
+#' (\code{icd_code}) and labels (\code{icd_description})
 #' @export
 download_icd10cm <- function() {
   icd10cm_url <- "https://www.cms.gov/Medicare/Coding/ICD10/Downloads/2020-ICD-10-CM-Codes.zip"
@@ -11,17 +11,133 @@ download_icd10cm <- function() {
   utils::download.file(url = icd10cm_url, destfile = icd10cm_file)
   icd10cm_file <- unz(
     icd10cm_file, 
-    grep("icd10cm_codes_[0-9]{4}.txt$", 
+    grep("icd10cm_order_[0-9]{4}.txt$", 
          utils::unzip(icd10cm_file, list = T)$Name, 
          value = T))
-  icd10cm <- utils::read.fwf(file = icd10cm_file, 
-                             widths = c(8, 250), header = F,
-                             col.names = c("icd_code", "icd_label"), 
-                             stringsAsFactor = FALSE)
-  icd10cm$icd_code <- trimws(icd10cm$icd_code)
+  icd_source <- utils::read.fwf(file = icd10cm_file, 
+                             widths = c(6,8,2,61), header = F,
+                             col.names = c("scrap", "icd_code", 
+                                           "header_indicator", "icd_description"),
+                             stringsAsFactor = FALSE)[,-1]
+  icd_source$icd_code <- trimws(icd_source$icd_code)
+  icd_source$icd_description <- trimws(icd_source$icd_description)
+  icd_source$level <- stringr::str_length(icd_source$icd_code)
   
-  icd10cm
+  icd3 <- filter(icd_source, .data$level == 3) %>% 
+    transmute(category_code = .data$icd_code,
+              category_description = .data$icd_description)
+  
+  icd5 <- filter(icd_source, .data$header_indicator == 1) %>% 
+    mutate(category_code = substring(.data$icd_code, 0, 3))
+  
+  icd <- merge(icd5, icd3, by = "category_code", all.x = T)
+  
+  icd$category_description[is.na(icd$category_description)] <- 
+    icd$description[is.na(icd$category_description)]
+  
+  icd$icd_display <- paste0(substring(icd$icd_code, first = 0, last = 3),
+                            ".", substring(icd$icd_code, first = 4))
+  
+  icd$edition <- "ICD-10-CM 2020"
+  
+  icd <- dplyr::select(icd, -header_indicator, -level)
+
+  icd <- arrange_variables(icd, 
+                           first_column_names = c(
+                             "icd_code",
+                             "icd_display",
+                             "icd_description",
+                             "category_code",
+                             "category_description",
+                             "edition"
+                           ))
+  icd
 }
+
+
+#' International Classification of Diseases
+#' 
+#' @description The World Health Organisation (WHO) International 
+#' Statistical Classification of Diseases and Related Health 
+#' Problems Tenth Revision is available under restrictive licence terms.
+#' 
+#' The UK implementation of ICD-10 is available from the NHS TRUD website
+#' \url{https://isd.digital.nhs.uk/trud3/user/guest/group/0/pack/28} 
+#' at no cost to UK users subject to a licence agreement.
+#'  
+#' The US implementation of ICD-10-CM is available from 
+#' \url{https://www.cdc.gov/nchs/icd/icd10cm.htm}
+#'
+#' @param archive path to the ZIP archive of the ICD-10 release 
+#' (5th Edition is recommended)
+#' @param version a character string labelling the edition 
+#' (e.g. "GB 5th Edition")
+#'
+#' @return A data frame ready for importing into the database with the 
+#' following variables:
+#' \describe{
+#'     \item{icd_code}{character vector of ICD-10 codes without punctuation. 
+#'     May include \code{"X"} placeholder characters depending on the edition.}
+#'     \item{icd_display}{character vector of ICD-10 codes with a dot after the first character,
+#'     for display in user interfaces.}
+#'     \item{icd_description}{charactor vector of ICD-10 code descriptions}
+#'     \item{category_code}{character vector of three-character ICD-10 codes}
+#'     \item{category_description}{charactor vector three-character ICD-10 code descriptions}
+#'     \item{edition}{edition label provided in parameter \code{version}}
+#'     \item{\code{...}}{any other variables present in the \code{archive} source}
+#' }
+#' @import dplyr magrittr  
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' import_icd("icd_df_10.5.0_20151102000001.zip", "GB 5th Edition")
+#' }
+import_icd <- function(archive, version) {
+  
+  temp <- tempfile()
+  source_files <- utils::unzip(archive, exdir = temp)
+  
+  icd_source <- readr::read_delim(
+    grep("CodesAndTitlesAndMetadata_GB", source_files, value = T),
+    delim = "\t", guess_max = 10000)
+  rm(temp)
+  
+  colnames(icd_source) <- tolower(colnames(icd_source))
+  
+  icd_source$level <- stringr::str_length(icd_source[["alt_code"]])
+  
+  icd3 <- filter(icd_source, .data$level == 3) %>% 
+    transmute(category_code = .data$alt_code,
+              category_description = .data$description)
+  
+  icd5 <- filter(icd_source, .data$level > 3) %>% 
+    mutate(category_code = substring(.data$alt_code, 0, 3))
+  
+  icd <- merge(icd5, icd3, by = "category_code", all.x = T)
+  
+  icd$category_description[is.na(icd$category_description)] <- 
+    icd$description[is.na(icd$category_description)]
+  
+  icd$edition <- version
+  
+  icd <- dplyr::rename(icd,
+                       icd_display = code,
+                       icd_code = alt_code,
+                       icd_description = description)
+  icd <- arrange_variables(icd, 
+                           first_column_names = c(
+                             "icd_code",
+                             "icd_display",
+                             "icd_description",
+                             "category_code",
+                             "category_description",
+                             "edition"
+                           ))
+  icd
+  
+}
+
 
 #' Map ICD-10 to Charlson comorbidities and weights
 #'

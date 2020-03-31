@@ -126,21 +126,25 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data, diagnoses_lookup, ove
     stop(simpleError("`diagnoses_data` and `diagnoses_lookup` must pass `validate_inpatient_diagnoses()`"))
   }
   
-  icd_infection_lkup <- map_infections_abx_indications(
+  reference_icd_infections <- map_infections_abx_indications(
     df = dplyr::select(diagnoses_lookup, icd_code), 
-    icd_column = "icd_code")
+    icd_column = "icd_code") %>% 
+    na.omit()
   
-  comorbidity_lkup <- map_charlson_comorbidities(
+  reference_icd_comorbidity <- map_charlson_comorbidities(
     df = dplyr::select(diagnoses_lookup, icd_code), 
-    icd_column = "icd_code")
+    icd_column = "icd_code") %>% 
+    na.omit()
   
-  ccsr_lkup <- map_ICD10_CCSR(
+  reference_icd_ccsr <- map_ICD10_CCSR(
     df = dplyr::select(diagnoses_lookup, icd_code), 
-    icd_column = "icd_code")
+    icd_column = "icd_code") %>% 
+    na.omit()
   
-  ccs_lkup <- map_ICD10_CCS(
+  reference_icd_ccs <- map_ICD10_CCS(
     df = dplyr::select(diagnoses_lookup, icd_code), 
-    icd_column = "icd_code")
+    icd_column = "icd_code") %>% 
+    na.omit()
   
   diagnoses_data <- arrange_variables(
     data = diagnoses_data,
@@ -156,20 +160,20 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data, diagnoses_lookup, ove
     dbplyr::db_copy_to(con = conn, table = "inpatient_diagnoses", 
                        values = diagnoses_data, overwrite = overwrite, temporary = FALSE,
                        indexes = list("patient_id", "spell_id", "episode_number", "icd_code"))
-    dbplyr::db_copy_to(con = conn, table = "icd_reference", 
+    dbplyr::db_copy_to(con = conn, table = "reference_icd", 
                        values = diagnoses_lookup, overwrite = overwrite, temporary = FALSE,
                        indexes = list("icd_code"))
-    dbplyr::db_copy_to(con = conn, table = "icd_charlson_comorbidities", 
-                       values = comorbidity_lkup, overwrite = overwrite, temporary = FALSE,
+    dbplyr::db_copy_to(con = conn, table = "reference_icd_comorbidity", 
+                       values = reference_icd_comorbidity, overwrite = overwrite, temporary = FALSE,
+                       indexes = list("icd_code", "comorb", "comorb_group"))
+    dbplyr::db_copy_to(con = conn, table = "reference_icd_infections", 
+                       values = reference_icd_infections, overwrite = overwrite, temporary = FALSE,
                        indexes = list("icd_code"))
-    dbplyr::db_copy_to(con = conn, table = "icd_infections", 
-                       values = icd_infection_lkup, overwrite = overwrite, temporary = FALSE,
-                       indexes = list("icd_code"))
-    dbplyr::db_copy_to(con = conn, table = "icd_ccs", 
-                       values = ccs_lkup, overwrite = overwrite, temporary = FALSE,
+    dbplyr::db_copy_to(con = conn, table = "reference_icd_ccs", 
+                       values = reference_icd_ccs, overwrite = overwrite, temporary = FALSE,
                        indexes = list("icd_code", "ccs_cat_code", "ccs_L1_code", "ccs_L2_code"))
-    dbplyr::db_copy_to(con = conn, table = "icd_ccsr", 
-                       values = ccsr_lkup, overwrite = overwrite, temporary = FALSE,
+    dbplyr::db_copy_to(con = conn, table = "reference_icd_ccsr", 
+                       values = reference_icd_ccsr, overwrite = overwrite, temporary = FALSE,
                        indexes = list("icd_code", "ccsr_body_system_code", "ccsr_cat_code"))
   })
   

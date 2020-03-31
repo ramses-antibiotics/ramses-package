@@ -9,15 +9,28 @@ library(odbc)
 test_that("Ramses on SQLite", {
   
   drug_data <- Ramses:::.prepare_example_drug_records()
+  inpatient_data <- Ramses:::.prepare_example_inpatient_records()
+  icd10cm <- download_icd10cm()
   conSQLite <- suppressWarnings(connect_db_local("test.sqlite"))
   
   expect_null(validate_prescriptions(drug_data$drug_rx))
   expect_null(validate_administrations(drug_data$drug_admins))
   
-  load_medications(conn = conSQLite, 
-                   prescriptions = drug_data$drug_rx,
-                   administrations = drug_data$drug_admins,
-                   overwrite = TRUE)
+  expect_warning(
+    validate_inpatient_diagnoses(
+      diagnoses_data = inpatient_data$diagnoses,
+      diagnoses_lookup = icd10cm))
+  
+  expect_warning(
+    load_medications(conn = conSQLite, 
+                     prescriptions = drug_data$drug_rx,
+                     administrations = drug_data$drug_admins,
+                     overwrite = TRUE))
+  
+  expect_true(load_inpatient_diagnoses(conn = conSQLite,
+                           diagnoses_data = inpatient_data$diagnoses,
+                           diagnoses_lookup = icd10cm,
+                           overwrite = TRUE))
 
   test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
     filter(prescription_id %in% c("60caeda91f36308ba857100193d2f504", "fb7d0847a420d38a5ccc10c017ec91e6")) %>% 

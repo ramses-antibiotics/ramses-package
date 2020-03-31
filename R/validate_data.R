@@ -342,7 +342,9 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
   )
   
   validation_result <- validation_result & !any(
-    !sapply(list("icd_code", "icd_label"),
+    !sapply(list("icd_code", "icd_description", 
+                 "icd_display", "category_code", 
+                 "category_description"),
             FUN = validate_variable_no_missing,
             data = diagnoses_lookup)
   )
@@ -357,7 +359,7 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
     
     if (any(is.na(diagnoses_data$missing))) {
       warning(
-        simpleWarning("all `icd_code` values in `diagnoses_data` must match an `icd_code` in `diagnoses_lookup`")
+        simpleWarning("some `icd_code` values in `diagnoses_data` do not match any `icd_code` in `diagnoses_lookup`")
       )
     }
   }
