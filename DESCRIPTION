@@ -2,17 +2,25 @@ Package: Ramses
 Type: Package
 Title: R Package for Antimicrobial Stewardship & Surveillance 
 Version: 0.0.1
-Authors@R: 
+Authors@R: c(
     person(given = "Peter",
-           family = "Dutey",
-           role = c("aut", "cre"),
+           family = "Dutey-Magni",
+           role = c("aut", "cre", "res"),
            email = "p.dutey-magni@ucl.ac.uk",
-           comment = c(ORCID = "0000-0002-8942-9836"))
+           comment = c(ORCID = "0000-0002-8942-9836")),
+    person(given = "Laura",
+           family = "Shallcross",
+           role = c("rth"),
+           email = "l.shallcross@ucl.ac.uk",
+           comment = c(ORCID = "0000-0003-1713-2555")),
+    person("University College London", role = c("cph")))
 Description: Ramses is a one-stop shop for antimicrobial stewardship data warehousing for hospitals. 
     It supports the modelling and analysis of hospital electronic health records 
     (episode of care, prescriptions, administration, pathology and investigations) to help
     keep antibiotics working for years to come.
 License: GPL-3
+URL: https://github.com/ramses-antibiotics/ramses-package
+BugReports: https://github.com/ramses-antibiotics/ramses-package/issues
 Encoding: UTF-8
 LazyData: true
 Depends: 
