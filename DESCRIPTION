@@ -24,7 +24,8 @@ BugReports: https://github.com/ramses-antibiotics/ramses-package/issues
 Encoding: UTF-8
 LazyData: true
 Depends: 
-    R (>= 2.10)
+    R (>= 3.2.0),
+    AMR
 Imports: 
     RSQLite (>= 2.1.4),
     DBI,
@@ -35,7 +36,6 @@ Imports:
     Rdpack (>= 0.7),
     data.table,
     readr,
-    AMR,
     units (>= 0.6-1),
     methods
 RdMacros: Rdpack
