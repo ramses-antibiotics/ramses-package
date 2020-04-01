@@ -6,14 +6,16 @@ inpatient_episodes <- read.csv(
                  "character", "character", "character", 
                  "character", "character", "character", 
                  "POSIXct", "POSIXct", "integer", 
-                 "integer", "character", "POSIXct", "POSIXct"))
+                 "integer", "character", "POSIXct", "POSIXct", 
+                 "character", "character"))
 usethis::use_data(inpatient_episodes, overwrite = T)
 
 inpatient_diagnoses <- read.csv(
   file = "data-raw/inpatient_diagnoses.csv", stringsAsFactors = F, 
-  colClasses = c("character", "character", "POSIXct", 
-                 "POSIXct", "integer", "character",
-                 "character", "integer"))
+  colClasses = c("character", "character",
+                 "integer", "character",
+                 "integer", "POSIXct", 
+                 "POSIXct", "character"))
 usethis::use_data(inpatient_diagnoses, overwrite = T)
 
 inpatient_wards <- read.csv(
