@@ -4,10 +4,13 @@
 \alias{validate_inpatient_episode_dates}
 \title{Validate the consistency of inpatient episode dates}
 \usage{
-validate_inpatient_episode_dates(data)
+validate_inpatient_episode_dates(data, type = "episodes")
 }
 \arguments{
 \item{data}{a data frame object}
+
+\item{type}{a string indicating the type of dates to validate:
+either `"wards"` for ward stays or `"episodes"` for inpatient episodes.}
 }
 \value{
 A logical value indicating success

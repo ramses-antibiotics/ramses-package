@@ -102,12 +102,17 @@ test_that("inpatient diagnosis records are validated", {
     spell_id = 1,
     episode_number = 1,
     icd_code = c("J440", "N39", "N81", NA),
-    diagnosis_position = 1
+    diagnosis_position = 1,
+    last_episode_in_spell = "2"
   ))
   test_lookup <- data.frame(list(
     icd_code = c("J44", "N39"),
-    icd_label = c("Other chronic obstructive pulmonary disease",
-                  "Other disorders of urinary system")
+    icd_display = c("J44", "N39"),
+    icd_description = c("Other chronic obstructive pulmonary disease",
+                  "Other disorders of urinary system"),
+    category_code = c("J44", "N39"),
+    category_description = c("Other chronic obstructive pulmonary disease",
+                             "Other disorders of urinary system")
   ))
   
   expect_true(expect_warning(

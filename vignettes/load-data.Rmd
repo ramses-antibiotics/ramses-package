@@ -87,7 +87,7 @@ Working out the DDD of the prescription is somewhat more complex. The reference 
 
 These just some examples. In order to obtain the correct DDDs for compound medications, it is recommended to map data to a suitable dictionary of medicines such as the [RxNorm](http://bioportal.bioontology.org/ontologies/RXNORM) or the [NHS Dictionary of Drugs and Medical Devices (dm+d)](https://www.nhsbsa.nhs.uk/pharmacies-gp-practices-and-appliance-contractors/dictionary-medicines-and-devices-dmd) and extract the relevant strengths.
 
-In this example, however, we use a look-up table for the strength of compound medications. Another lookup table `LU_frequency` available within Ramses is also used to convert the `freq` character variable into a numeric variable indicating the daily frequency of administration. 
+In this example, however, we use a look-up table for the strength of compound medications. Another lookup table `reference_drug_frequency` available within Ramses is also used to convert the `frequency` character variable into a numeric variable indicating the daily frequency of administration. 
 
 ```{r compute_ddd}
 # extracting the ATC code (eg J01CR02) group (eg Beta-lactam antibacterials, penicillins)
@@ -117,11 +117,11 @@ drug_prescriptions <- drug_prescriptions %>%
                                      basis_of_strength))
 
 drug_prescriptions <- merge(drug_prescriptions, 
-                            LU_frequency, by = "freq", all.x = T)
+                            reference_drug_frequency, by = "frequency", all.x = T)
 
 # computing the prescription DDD the reference DDD from the ATC
 drug_prescriptions <- drug_prescriptions %>% 
-  mutate(daily_dose = strength * daily_freq) %>% 
+  mutate(daily_dose = strength * daily_frequency) %>% 
   mutate(DDD = compute_DDDs(
     ATC_code = AMR::ab_atc(basis_of_strength),
     ATC_administration = ATC_route,
@@ -301,7 +301,7 @@ drug_prescriptions <- drug_prescriptions %>%
             ATC_code,
             ATC_group,
             ATC_route,
-            authoring_date = authored_on,
+            authoring_date,
             prescription_start,
             prescription_end,
             prescription_status = "completed",
@@ -309,8 +309,8 @@ drug_prescriptions <- drug_prescriptions %>%
             dose,
             unit = units,
             route,
-            frequency = freq,
-            daily_frequency = daily_freq,
+            frequency,
+            daily_frequency,
             DDD)
 
 load_medications(conn = ramses_db, 

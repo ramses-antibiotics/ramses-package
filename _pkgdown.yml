@@ -34,7 +34,7 @@ reference:
   - ccsr
   - download_icd10cm
   - import_icd
-  - LU_frequency
+  - reference_drug_frequency
 - title: Transform and validate data
   desc:  Functions to enrich and validate data before loading into the warehouse.
   contents:

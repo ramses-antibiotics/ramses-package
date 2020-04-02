@@ -9,7 +9,7 @@ download_icd10cm()
 }
 \value{
 A data frame containing ICD-10-CM codes 
-(\code{icd_code}) and labels (\code{icd_desc})
+(\code{icd_code}) and labels (\code{icd_description})
 }
 \description{
 Download the ICD-10-CM reference file by the US National Center for 

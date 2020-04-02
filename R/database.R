@@ -197,13 +197,8 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data, diagnoses_lookup, ove
 #' @export
 load_inpatient_episodes <- function(conn, episodes_data, overwrite = TRUE) {
   
-  inpatient_schema <- system.file("Schema", "inpatient_episodes_variables.csv", 
-                                  package = "Ramses")
-  inpatient_schema <- utils::read.csv(inpatient_schema, stringsAsFactors = FALSE)
   administrations <- dplyr::arrange(administrations, 
                                     patient_id, administration_date)
-  
-  episodes_data
   
   administrations$id <- 1:nrow(administrations)
   
@@ -233,8 +228,6 @@ load_inpatient_episodes <- function(conn, episodes_data, overwrite = TRUE) {
     ))
   
   TRUE
-  
-  
 }
 
 #' Set parameters for building combination therapy identifiers and
@@ -411,6 +404,7 @@ load_medications.SQLiteConnection <- function(
   if(create_therapy_id) .create_therapy_id.SQLiteConnection(conn)
   if(create_combination_id) .create_combination_id.SQLiteConnection(conn)
   
+  TRUE
 }
 
 
@@ -557,7 +551,7 @@ load_medications.SQLiteConnection <- function(
     administrations, 
     first_column_names = first_column_names) 
   
-  dbplyr::db_copy_to(
+  load_output <- dbplyr::db_copy_to(
     con = conn,
     table = "drug_administrations",
     values = administrations,
@@ -572,6 +566,12 @@ load_medications.SQLiteConnection <- function(
       "ATC_route",
       "administration_date"
     ))
+  
+  if(load_output == "drug_administrations") {
+    TRUE
+  } else {
+    load_output
+  }
 }
   
 #' Read SQL scripts
@@ -806,18 +806,17 @@ load_medications.SQLiteConnection <- function(
            basis_of_strength = if_else(is.na(basis_of_strength),
                                        as.character(ab), basis_of_strength))
   
-  drug_rx <- merge(drug_rx, LU_frequency, by = "freq", all.x = T)
+  drug_rx <- merge(drug_rx, reference_drug_frequency, by = "frequency", all.x = T)
   
   # computing the prescription DDD the reference DDD from the ATC
   drug_rx <- drug_rx %>% 
-    mutate(daily_dose = strength * daily_freq) %>% 
     mutate(DDD = compute_DDDs(
       ATC_code = AMR::ab_atc(basis_of_strength),
       ATC_administration = ATC_route,
-      dose = daily_dose,
+      dose = strength * daily_frequency,
       unit = units),
       duration_days = if_else(
-        daily_freq == -1,
+        daily_frequency == -1,
         "one-off", paste( difftime(
           prescription_end, prescription_start, units = "days"),
           "days"))) %>% 
@@ -832,7 +831,7 @@ load_medications.SQLiteConnection <- function(
               ATC_code,
               ATC_group, 
               ATC_route,
-              authoring_date = authored_on,
+              authoring_date,
               prescription_start,
               prescription_end,
               prescription_status = "completed",
@@ -840,8 +839,8 @@ load_medications.SQLiteConnection <- function(
               dose,
               unit = units,
               route,
-              frequency = freq,
-              daily_frequency = daily_freq,
+              frequency,
+              daily_frequency,
               DDD)
   
   
@@ -924,8 +923,8 @@ load_medications.SQLiteConnection <- function(
   ip_diagnoses <- filter(ip_diagnoses, !is.na(.data$icd_code))
   
   ip_episodes <- Ramses::inpatient_episodes
-  ip_episodes$consultant_code <- "CXXXXXXX"
   ip_episodes <- ip_episodes %>% 
+    dplyr::filter(!is.na(spell_id)) %>% 
     dplyr::group_by(.data$spell_id) %>% 
     dplyr::mutate(last_episode_in_spell_indicator = if_else(
       episode_number == max(.data$episode_number),

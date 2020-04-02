@@ -69,15 +69,15 @@ Ramses::drug_prescriptions \%>\%
             route,
             dose, 
             units,
-            daily_freq = case_when(
-              freq == "BD" ~ 2,
-              freq == "TDS" ~ 3,
-              freq == "6H" ~ 4
+            daily_frequency = case_when(
+              frequency == "BD" ~ 2,
+              frequency == "TDS" ~ 3,
+              frequency == "6H" ~ 4
             )) \%>\% 
   mutate(DDD = compute_DDDs(
     ATC_code = AMR::ab_atc(tr_DESC),
     ATC_administration = if_else(route == "ORAL", "O", "P"),
-    dose = dose * daily_freq,
+    dose = dose * daily_frequency,
     unit = units))
 }
 \references{

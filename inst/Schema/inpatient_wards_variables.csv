@@ -1,0 +1,6 @@
+position,variable_name,must_exist,must_be_nonmissing
+1,patient_id,TRUE,TRUE
+2,spell_id,TRUE,TRUE
+3,ward,TRUE,TRUE
+4,ward_start,TRUE,TRUE
+5,ward_end,TRUE,TRUE

@@ -4,7 +4,8 @@ validate_variable_no_missing <- function(data, vectorname){
   validation_result <- TRUE
   
   if(!exists(vectorname, data)) {
-    warning(simpleWarning(paste0("`data` must include a `", vectorname, "` variable.")))
+    warning(simpleWarning(paste0("`", deparse(substitute(data)), 
+                                 "` must include a `", vectorname, "` variable.")))
     validation_result <- FALSE
   } else {
     
@@ -23,14 +24,16 @@ validate_variable_no_missing <- function(data, vectorname){
   validation_result
 }
 
-#' Validate inpatient episode records
+#' Validate inpatient episode and ward movement records
 #'
 #' @description This function performs a series of checks for mandatory and
 #' optional requirements on episodes of care records. The data definitions 
 #' closely follow those of the  
 #' \href{https://www.datadictionary.nhs.uk/data_dictionary/messages/cds_v6-2/data_sets/cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds_fr.asp}{English NHS Admitted Patient Care Commissioning Datasets}.
-#' @param data data frame containing one row per episode of care
-#' @section Mandatory variables:
+#' @param episodes data frame containing one row per episode of care
+#' @param wards (optional) data frame containing one row per ward stay. 
+#'   Default is `NULL`.
+#' @section Episode mandatory variables:
 #' \describe{
 #'   \item{\code{patient_id}}{a patient identifier with no missing value}
 #'   \item{\code{spell_id}}{a hospital spell identifier with no missing value}
@@ -64,7 +67,7 @@ validate_variable_no_missing <- function(data, vectorname){
 #'   the main specialty of the medical professional responsible for the 
 #'   episode of care. Must not be missing.}
 #' }
-#' @section Optional variables:
+#' @section Episode optional variables:
 #' \describe{
 #'   \item{\code{activity_treatment_function_code}}{0}
 #'   \item{\code{local_sub-specialty_code}}{0}
@@ -123,16 +126,13 @@ validate_variable_no_missing <- function(data, vectorname){
 #' }
 #' @return A logical value indicating success
 #' @export
-validate_inpatient_episodes <- function(data) {
+validate_inpatient_episodes <- function(episodes,
+                                        wards = NULL) {
   
+  episode_schema <- .inpatient_episodes_variables()
   
-  ip_schema <- system.file("Schema", "inpatient_episodes_variables.csv", 
-                           package = "Ramses")
-  ip_schema <- utils::read.csv(ip_schema, stringsAsFactors = FALSE)
-  
-  variable_exists <- ip_schema[ip_schema$must_exist, "variable_name"]
-
-  not_exist <- !sapply(variable_exists, exists, where = data)
+  variable_exists <- episode_schema[episode_schema$must_exist, "variable_name"]
+  not_exist <- !sapply(variable_exists, exists, where = episodes)
   if( any(not_exist) ){
     stop(
       simpleError(paste(
@@ -142,21 +142,21 @@ validate_inpatient_episodes <- function(data) {
     )
   }
   
-  variable_exists_non_missing <- ip_schema[ip_schema$must_be_nonmissing, 
+  variable_exists_non_missing <- episode_schema[episode_schema$must_be_nonmissing, 
                                            "variable_name"]
   variable_exists_non_missing <- variable_exists_non_missing[
-    variable_exists_non_missing %in% colnames(data)]
+    variable_exists_non_missing %in% colnames(episodes)]
   
   missing_data <- suppressWarnings(
     !sapply(variable_exists_non_missing, 
             FUN = validate_variable_no_missing,
-            data = data)
+            data = episodes)
   )
   
   if( any(missing_data) ){
     stop(
       simpleError(paste(
-        "Some variables must not contain missing data:",
+        "The following `episodes` variables must not contain missing data:",
         paste(paste0("`", 
                      variable_exists_non_missing[missing_data],
                      "`"), collapse = ", "))
@@ -164,11 +164,72 @@ validate_inpatient_episodes <- function(data) {
     )
   }
   
-  validation_result <- validate_inpatient_spells(data)
-  validation_result <- append(validate_inpatient_episode_dates(data), validation_result)
+  validation_result <- validate_inpatient_spells(episodes)
+  validation_result <- append(
+    validate_inpatient_episode_dates(data = episodes,
+                                     type = "episodes"), 
+    validation_result)
+  
+  if(!is.null(wards)) {
+    validation_result <- append(
+      .validate_inpatient_wards(episodes, wards), 
+      validation_result)
+  }
  
   !any(!validation_result)
 }
+
+
+.validate_inpatient_wards <- function(episodes, wards) {
+  
+  ward_schema <- .inpatient_wards_variables()
+  
+  variable_exists <- ward_schema[ward_schema$must_exist, "variable_name"]
+  not_exist <- !sapply(variable_exists, exists, where = wards)
+  if( any(not_exist) ){
+    stop(
+      simpleError(paste(
+        "The following variables must exist:",
+        paste(paste0("`", variable_exists[not_exist], "`"), collapse = ", "))
+      )
+    )
+  }
+  
+  variable_exists_non_missing <- ward_schema[ward_schema$must_be_nonmissing, 
+                                             "variable_name"]
+  variable_exists_non_missing <- variable_exists_non_missing[
+    variable_exists_non_missing %in% colnames(wards)]
+  
+  missing_data <- suppressWarnings(
+    !sapply(variable_exists_non_missing, 
+            FUN = validate_variable_no_missing,
+            data = wards)
+  )
+  
+  if( any(missing_data) ){
+    stop(
+      simpleError(paste(
+        "The following `wards` variables must not contain missing data:",
+        paste(paste0("`", 
+                     variable_exists_non_missing[missing_data],
+                     "`"), collapse = ", "))
+      )
+    )
+  }
+  
+  wards <- merge(
+    wards, 
+    distinct(episodes, 
+             patient_id, 
+             spell_id, 
+             admission_date, 
+             discharge_date), 
+    all.x = TRUE)
+  
+  validate_inpatient_episode_dates(data = wards,
+                                   type = "wards")
+}
+
 
 #' Validate the consistency of admission and discharge dates
 #'
@@ -222,23 +283,35 @@ validate_inpatient_spells <- function(data) {
 #' Validate the consistency of inpatient episode dates
 #'
 #' @param data a data frame object
+#' @param type a string indicating the type of dates to validate:
+#' either `"wards"` for ward stays or `"episodes"` for inpatient episodes.
 #' @importFrom data.table data.table := 
 #' @return A logical value indicating success
-validate_inpatient_episode_dates <- function(data) {
+validate_inpatient_episode_dates <- function(data, type = "episodes") {
+  
+  if(type == "episodes") {
+    data$start <- data[["episode_start"]]
+    data$end <- data[["episode_end"]]
+  } else if(type == "wards") {
+    data$start <- data[["ward_start"]]
+    data$end <- data[["ward_end"]]
+  } else {
+    stop("`type` must be 'episodes' or 'wards'.")
+  }
   
   validation_result <- TRUE
-  if (any(data$episode_start > data$episode_end)) {
-    warning(simpleWarning("Some episode start dates are posterior to end dates."))
+  if (any(data$start > data$end)) {
+    warning(simpleWarning(paste0("Some `", type, "` start dates are posterior to end dates.")))
     validation_result <- FALSE
   }
   
-  if (any(!(data$episode_start >= data$admission_date & data$episode_start <= data$discharge_date))) {
-    warning(simpleWarning("Some episodes fall outside hospitalisation dates."))
+  if (any(!(data$start >= data$admission_date & data$start <= data$discharge_date))) {
+    warning(simpleWarning(paste0("Some `", type, "` fall outside hospitalisation dates.")))
     validation_result <- FALSE
   }
   
-  if (any(!(data$episode_end >= data$admission_date & data$episode_end <= data$discharge_date))) {
-    warning(simpleWarning("Some episodes fall outside hospitalisation dates."))
+  if (any(!(data$end >= data$admission_date & data$end <= data$discharge_date))) {
+    warning(simpleWarning(paste0("Some `", type, "` fall outside hospitalisation dates.")))
     validation_result <- FALSE
   }
   
@@ -247,37 +320,36 @@ validate_inpatient_episode_dates <- function(data) {
   episodes <- data.table::as.data.table(data)
   
   bed_day_matching <- episodes[,
-    list(BD_episode = sum(difftime(episode_end, episode_start,  units = "hours"))), 
+    list(BD_episode = sum(difftime(end, start, units = "secs"))), 
     by = list(patient_id, spell_id, admission_date, discharge_date)
     ]
-  bed_day_matching[, BD_spell := difftime(discharge_date, admission_date, units = "hours")]
+  bed_day_matching[, BD_spell := difftime(discharge_date, admission_date, units = "secs")]
   
-  if (nrow(bed_day_matching[BD_episode != BD_spell]) > 0) {
-    warning(simpleWarning(paste(
-      "Total bed days calculated from episode of cares does not",
+  if (nrow(bed_day_matching[abs(BD_episode - BD_spell) > 5]) > 0) {
+    warning(simpleWarning(paste0(
+      "Total bed days calculated from `", type,"` does not",
       "match admission duration. Bed days may be incorrect.")))
   }
   
   rm(bed_day_matching)
   
-  episodes <- episodes[, list(patient_id, spell_id,
-                              episode_start, episode_end)]
+  episodes <- episodes[, list(patient_id, spell_id, start, end)]
   
   episodes <- data.table::setorderv(
-    episodes, c("patient_id", "spell_id", "episode_start"))
+    episodes, c("patient_id", "spell_id", "start"))
   
-  episodes[ , `:=`(nextepistart =  data.table::shift(episode_start, type = "lead")), 
+  episodes[ , `:=`(nextepistart =  data.table::shift(start, type = "lead")), 
             by = list(patient_id, spell_id)]
   
-  if (nrow(episodes[!is.na(nextepistart) & nextepistart != episode_end]) > 0) {
-    warning(simpleWarning(paste(
-      "Some hospital spells have gaps between episodes.",
+  if (nrow(episodes[!is.na(nextepistart) & nextepistart != end]) > 0) {
+    warning(simpleWarning(paste0(
+      "Some hospital spells have gaps between `", type,"`.",
       "Bed days may be underestimated.")))
   }
 
   episodes[ , nextepistart := NULL]
   
-  data_cross_prod <- merge(#data.table::merge.data.table(
+  data_cross_prod <- merge(
     episodes, episodes, 
     by = c("patient_id"),
     all = T,
@@ -286,19 +358,19 @@ validate_inpatient_episode_dates <- function(data) {
   
   data_cross_prod <- data_cross_prod[
     !(spell_id.x == spell_id.y & 
-        episode_start.x == episode_start.y & 
-        episode_end.x == episode_end.y)
+        start.x == start.y & 
+        end.x == end.y)
     ]
 
   data_cross_prod <- data_cross_prod[
-    data.table::between(episode_start.x, episode_start.y, episode_end.y, incbounds = F) |
-      data.table::between(episode_end.x, episode_start.y, episode_end.y, incbounds = F) 
+    data.table::between(start.x, start.y, end.y, incbounds = F) |
+      data.table::between(end.x, start.y, end.y, incbounds = F) 
     ]
   
   if (nrow(data_cross_prod) > 0) {
-    warning(simpleWarning("Hospital spells must not overlap."))
+    warning(simpleWarning(paste0("Hospital `", type,"` must not overlap.")))
     utils::head(data.table::setorderv(
-      data_cross_prod, c("patient_id", "episode_start.x"))
+      data_cross_prod, c("patient_id", "start.x"))
       )
     validation_result <- FALSE
     

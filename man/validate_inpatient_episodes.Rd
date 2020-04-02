@@ -2,12 +2,15 @@
 % Please edit documentation in R/validate_data.R
 \name{validate_inpatient_episodes}
 \alias{validate_inpatient_episodes}
-\title{Validate inpatient episode records}
+\title{Validate inpatient episode and ward movement records}
 \usage{
-validate_inpatient_episodes(data)
+validate_inpatient_episodes(episodes, wards = NULL)
 }
 \arguments{
-\item{data}{data frame containing one row per episode of care}
+\item{episodes}{data frame containing one row per episode of care}
+
+\item{wards}{(optional) data frame containing one row per ward stay. 
+Default is `NULL`.}
 }
 \value{
 A logical value indicating success
@@ -18,7 +21,7 @@ optional requirements on episodes of care records. The data definitions
 closely follow those of the  
 \href{https://www.datadictionary.nhs.uk/data_dictionary/messages/cds_v6-2/data_sets/cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds_fr.asp}{English NHS Admitted Patient Care Commissioning Datasets}.
 }
-\section{Mandatory variables}{
+\section{Episode mandatory variables}{
 
 \describe{
   \item{\code{patient_id}}{a patient identifier with no missing value}
@@ -55,7 +58,7 @@ closely follow those of the
 }
 }
 
-\section{Optional variables}{
+\section{Episode optional variables}{
 
 \describe{
   \item{\code{activity_treatment_function_code}}{0}

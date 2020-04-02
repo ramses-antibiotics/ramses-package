@@ -6,6 +6,8 @@
 \alias{Ramses-package}
 \title{Ramses: R Package for Antimicrobial Stewardship & Surveillance}
 \description{
+\if{html}{\figure{logo.png}{options: align='right' alt='logo' width='120'}}
+
 Ramses is a one-stop shop for antimicrobial stewardship data warehousing for hospitals. 
     It supports the modelling and analysis of hospital electronic health records 
     (episode of care, prescriptions, administration, pathology and investigations) to help
@@ -26,8 +28,22 @@ R package for Antimicrobial Stewardship & Surveillance
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/ramses-antibiotics/ramses-package}
+  \item Report bugs at \url{https://github.com/ramses-antibiotics/ramses-package/issues}
+}
+
+}
 \author{
-\strong{Maintainer}: Peter Dutey \email{p.dutey-magni@ucl.ac.uk} (\href{https://orcid.org/0000-0002-8942-9836}{ORCID})
+\strong{Maintainer}: Peter Dutey-Magni \email{p.dutey-magni@ucl.ac.uk} (\href{https://orcid.org/0000-0002-8942-9836}{ORCID}) [researcher]
+
+Other contributors:
+\itemize{
+  \item Laura Shallcross \email{l.shallcross@ucl.ac.uk} (\href{https://orcid.org/0000-0003-1713-2555}{ORCID}) [research team head]
+  \item University College London [copyright holder]
+}
 
 }
 \keyword{internal}

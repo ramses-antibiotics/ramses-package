@@ -21,11 +21,15 @@ test_that("Ramses on SQLite", {
       diagnoses_data = inpatient_data$diagnoses,
       diagnoses_lookup = icd10cm))
   
-  expect_warning(
-    load_medications(conn = conSQLite, 
-                     prescriptions = drug_data$drug_rx,
-                     administrations = drug_data$drug_admins,
-                     overwrite = TRUE))
+  expect_true(validate_inpatient_episodes(inpatient_data$episodes))
+  expect_true(validate_inpatient_episodes(episodes = inpatient_data$episodes,
+                                          wards =inpatient_data$ward_movements))
+  medication_loading <- load_medications(conn = conSQLite, 
+                         prescriptions = drug_data$drug_rx,
+                         administrations = drug_data$drug_admins,
+                         overwrite = TRUE)
+  expect_true(medication_loading$drug_prescriptions)
+  expect_true(medication_loading$drug_administration)
   
   expect_true(load_inpatient_diagnoses(conn = conSQLite,
                            diagnoses_data = inpatient_data$diagnoses,
@@ -33,15 +37,15 @@ test_that("Ramses on SQLite", {
                            overwrite = TRUE))
 
   test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
-    filter(prescription_id %in% c("60caeda91f36308ba857100193d2f504", "fb7d0847a420d38a5ccc10c017ec91e6")) %>% 
+    filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08")) %>% 
     select(prescription_id, combination_id, therapy_id) %>% 
     collect()
 
   expect_equivalent(
     test_output, 
-    tibble(prescription_id = c("60caeda91f36308ba857100193d2f504", "fb7d0847a420d38a5ccc10c017ec91e6"),
-           combination_id = c(NA_character_, "717e21dcc485b7366ed825177e74c907"),
-           therapy_id = c("15f7c729771ea989617e6ff97c3caa8a", "15f7c729771ea989617e6ff97c3caa8a")))
+    tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08"),
+           combination_id = c(NA_character_, "0bf9ea7732dd6e904ab670a407382d95"),
+           therapy_id = c("0bf9ea7732dd6e904ab670a407382d95", "0bf9ea7732dd6e904ab670a407382d95")))
   
   DBI::dbDisconnect(conSQLite)
   file.remove("test.sqlite")

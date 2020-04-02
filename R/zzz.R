@@ -13,18 +13,32 @@
                 package = "Ramses"), stringsAsFactors = F)
 }
 
+.inpatient_episodes_variables <- function() {
+  utils::read.csv(
+    system.file("Schema", 
+                "inpatient_episodes_variables.csv", 
+                package = "Ramses"), stringsAsFactors = F)
+}
+
+.inpatient_wards_variables <- function() {
+  utils::read.csv(
+    system.file("Schema", 
+                "inpatient_wards_variables.csv", 
+                package = "Ramses"), stringsAsFactors = F)
+}
+
 global_vars <- c(
-  "spell_id", 
-  "admission_date", 
+  "admission_date",
   "discharge_date",
-  "episode_number",
-  "last_episode_in_spell_indicator",
-  "episode_start",
-  "episode_end",
+  "spell_id",
   "ddd_value",
   "ddd_unit",
   "valid_ab",
   "icd_code",
+  "code",
+  "alt_code",
+  "description",
+  "type",
   "from_id", 
   "to_id",
   "id1",
@@ -34,14 +48,16 @@ global_vars <- c(
   "basis_of_strength",
   "authored_on",
   "duration",
-  "freq",
-  "LU_frequency",
-  "daily_freq",
+  "reference_drug_frequency",
   "daily_dose",
   "duration_days",
   "grp",
   "id",
-  "edge_type"
+  "edge_type",
+  "start",
+  "end",
+  "level",
+  "header_indicator"
 )
 
 utils::globalVariables(global_vars)
@@ -49,3 +65,5 @@ utils::globalVariables(paste0(global_vars, ".x"))
 utils::globalVariables(paste0(global_vars, ".y"))
 utils::globalVariables(.drug_prescriptions_variables()[["variable_name"]])
 utils::globalVariables(.drug_administrations_variables()[["variable_name"]])
+utils::globalVariables(.inpatient_episodes_variables()[["variable_name"]])
+utils::globalVariables(.inpatient_wards_variables()[["variable_name"]])
