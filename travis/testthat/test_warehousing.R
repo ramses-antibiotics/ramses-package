@@ -28,6 +28,7 @@ test_that("Ramses on SQLite", {
                          prescriptions = drug_data$drug_rx,
                          administrations = drug_data$drug_admins,
                          overwrite = TRUE)
+  
   expect_true(medication_loading$prescription_load_errors)
   expect_true(medication_loading$administration_load_errors)
   

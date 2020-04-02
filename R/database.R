@@ -311,7 +311,7 @@ transitive_closure_control <- function(max_continuation_gap = 36,
 #' @param transitive_closure_controls parameters controlling (see 
 #' \code{\link{transitive_closure_control}()})
 #' @param silent a boolean indicating whether the function should be
-#' executed without progress message. Default is `FALSE`
+#' executed without progress bar. Default is `TRUE`.
 #'
 #' @return `TRUE` if the function ran successfully, otherwise object of class
 #' "try-error" containing error messages trigger during warehouse data loading.
@@ -320,14 +320,14 @@ transitive_closure_control <- function(max_continuation_gap = 36,
 load_medications <- function(
   conn, prescriptions, administrations = NULL, overwrite = FALSE,
   transitive_closure_controls = transitive_closure_control(),
-  silent = FALSE) {
+  silent = TRUE) {
   UseMethod("load_medications")
 }
 #' @export
 load_medications.SQLiteConnection <- function(
-  conn, prescriptions, administrations, overwrite = FALSE,
+  conn, prescriptions, administrations = NULL, overwrite = FALSE,
   transitive_closure_controls = transitive_closure_control(),
-  silent = FALSE) {
+  silent = TRUE) {
   
   prescription_load_errors <- try({
     .load_prescriptions.SQLiteConnection(
@@ -710,14 +710,14 @@ load_medications.SQLiteConnection <- function(
                          lvl = c(var_lvl, var_lvl)
                        ), stringsAsFactors = F))
     
-    DBI::dbExecute(
+    nrow_deleted <- DBI::dbExecute(
       conn, 
       paste("DELETE FROM", edge_table, 
             "WHERE id1 =", var_ids$id1,
             "AND id2 =", var_ids$id2, ";"))
     
     if(!silent) {
-      progress$i <- progress$n - .nrow_sql_table(conn, edge_table)
+      progress$i <- progress$n - nrow_deleted
       progress$print()
     }
     
@@ -737,12 +737,16 @@ load_medications.SQLiteConnection <- function(
         " ON G.id = T1.id1",
         "WHERE lvl =", var_lvl - 1, ";"))
       
-      DBI::dbExecute(conn, paste(
+      nrow_deleted <- DBI::dbExecute(conn, paste(
         "DELETE FROM", edge_table,
         "WHERE id1 IN(", 
         "  SELECT id",
         "  FROM ramses_TC_group",
         "  WHERE lvl =", var_lvl - 1,");"))
+      
+      if(!silent) {
+        progress$i <- progress$n - nrow_deleted
+      }
       
       var_rowcount <- DBI::dbExecute(conn, paste(
         "INSERT INTO ramses_TC_group",
@@ -764,12 +768,16 @@ load_medications.SQLiteConnection <- function(
         " ON G.id = T1.id2",
         "WHERE lvl =", var_lvl - 1, ";"))
       
-      DBI::dbExecute(conn, paste(
+      nrow_deleted <- DBI::dbExecute(conn, paste(
         "DELETE FROM", edge_table,
         "WHERE id2 IN(", 
         "  SELECT id",
         "  FROM ramses_TC_group",
         "  WHERE lvl =", var_lvl - 1,");"))
+      
+      if(!silent) {
+        progress$i <- progress$n - nrow_deleted
+      }
       
       var_rowcount <- var_rowcount + DBI::dbExecute(conn, paste(
         "INSERT INTO ramses_TC_group",
