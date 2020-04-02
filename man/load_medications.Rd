@@ -9,7 +9,8 @@ load_medications(
   prescriptions,
   administrations = NULL,
   overwrite = FALSE,
-  transitive_closure_controls = transitive_closure_control()
+  transitive_closure_controls = transitive_closure_control(),
+  silent = FALSE
 )
 }
 \arguments{

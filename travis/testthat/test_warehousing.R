@@ -28,13 +28,15 @@ test_that("Ramses on SQLite", {
                          prescriptions = drug_data$drug_rx,
                          administrations = drug_data$drug_admins,
                          overwrite = TRUE)
-  expect_true(medication_loading$drug_prescriptions)
-  expect_true(medication_loading$drug_administration)
+  expect_true(medication_loading$prescription_load_errors)
+  expect_true(medication_loading$administration_load_errors)
   
-  expect_true(load_inpatient_diagnoses(conn = conSQLite,
+  expect_true(
+    expect_warning(
+      load_inpatient_diagnoses(conn = conSQLite,
                            diagnoses_data = inpatient_data$diagnoses,
                            diagnoses_lookup = icd10cm,
-                           overwrite = TRUE))
+                           overwrite = TRUE)))
 
   test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
     filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08")) %>% 
@@ -75,7 +77,7 @@ test_that("SQLite does transitive closure", {
                      temporary = F)
   
   test_output <- Ramses:::.run_transitive_closure.SQLiteConnection(
-    conSQLite,"ramses_test_edges") %>% 
+    conSQLite,"ramses_test_edges", silent = TRUE) %>% 
     dplyr::select(id, grp) %>% 
     dplyr::arrange(id) %>% 
     dplyr::collect()

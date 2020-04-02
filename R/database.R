@@ -310,6 +310,8 @@ transitive_closure_control <- function(max_continuation_gap = 36,
 #' diagnosis table
 #' @param transitive_closure_controls parameters controlling (see 
 #' \code{\link{transitive_closure_control}()})
+#' @param silent a boolean indicating whether the function should be
+#' executed without progress message. Default is `FALSE`
 #'
 #' @return `TRUE` if the function ran successfully, otherwise object of class
 #' "try-error" containing error messages trigger during warehouse data loading.
@@ -317,20 +319,23 @@ transitive_closure_control <- function(max_continuation_gap = 36,
 #' @export
 load_medications <- function(
   conn, prescriptions, administrations = NULL, overwrite = FALSE,
-  transitive_closure_controls = transitive_closure_control()) {
+  transitive_closure_controls = transitive_closure_control(),
+  silent = FALSE) {
   UseMethod("load_medications")
 }
 #' @export
 load_medications.SQLiteConnection <- function(
   conn, prescriptions, administrations, overwrite = FALSE,
-  transitive_closure_controls = transitive_closure_control()) {
+  transitive_closure_controls = transitive_closure_control(),
+  silent = FALSE) {
   
   prescription_load_errors <- try({
     .load_prescriptions.SQLiteConnection(
       conn = conn, 
       prescriptions = prescriptions, 
       overwrite = overwrite,
-      transitive_closure_controls)
+      transitive_closure_controls,
+      silent = silent)
   })
   
   
@@ -356,7 +361,8 @@ load_medications.SQLiteConnection <- function(
 
 
 .load_prescriptions.SQLiteConnection <- function(
-  conn, prescriptions, overwrite, transitive_closure_controls) {
+  conn, prescriptions, overwrite, 
+  transitive_closure_controls, silent) {
   
   create_therapy_id <- !exists("therapy_id", prescriptions)
   create_combination_id <- !exists("combination_id", prescriptions)
@@ -401,8 +407,10 @@ load_medications.SQLiteConnection <- function(
   .create_table_drug_prescriptions_edges.SQLiteConnection(
     conn = conn, transitive_closure_controls)
   
-  if(create_therapy_id) .create_therapy_id.SQLiteConnection(conn)
-  if(create_combination_id) .create_combination_id.SQLiteConnection(conn)
+  if(create_therapy_id) .create_therapy_id.SQLiteConnection(conn = conn, 
+                                                            silent = silent)
+  if(create_combination_id) .create_combination_id.SQLiteConnection(conn = conn, 
+                                                                    silent = silent)
   
   TRUE
 }
@@ -455,8 +463,10 @@ load_medications.SQLiteConnection <- function(
 #'
 #' @param conn a data source with a table `drug_prescriptions_edges`
 #' already populated
+#' @param silent a boolean indicating whether the function should be
+#' executed without progress message
 #' @noRd
-.create_therapy_id.SQLiteConnection <- function(conn) {
+.create_therapy_id.SQLiteConnection <- function(conn, silent) {
   
   DBI::dbRemoveTable(conn, "ramses_TC_edges", fail_if_missing = F)
   
@@ -467,8 +477,11 @@ load_medications.SQLiteConnection <- function(
   DBI::dbExecute(conn, "CREATE INDEX ramses_TC_edges_idx1 ON ramses_TC_edges (id1, id2);")
   DBI::dbExecute(conn, "CREATE INDEX ramses_TC_edges_idx2 ON ramses_TC_edges (id2, id1);")
   
+  if(!silent) message("Transitive closure of therapy episodes beginning...")
   therapy_grps <- .run_transitive_closure(conn = conn, 
-                                          edge_table = "ramses_TC_edges")
+                                          edge_table = "ramses_TC_edges",
+                                          silent = silent)
+  if(!silent) message("\n")
   
   therapy_grps <- tbl(conn, "ramses_TC_group") %>% 
     dplyr::left_join(
@@ -496,8 +509,10 @@ load_medications.SQLiteConnection <- function(
 #'
 #' @param conn a data source with a table `drug_prescriptions_edges`
 #' already populated
+#' @param silent a boolean indicating whether the function should be
+#' executed without progress message
 #' @noRd
-.create_combination_id.SQLiteConnection <- function(conn) {
+.create_combination_id.SQLiteConnection <- function(conn, silent) {
   
   DBI::dbRemoveTable(conn, "ramses_TC_edges", fail_if_missing = F)
   
@@ -509,8 +524,11 @@ load_medications.SQLiteConnection <- function(
   DBI::dbExecute(conn, "CREATE INDEX ramses_TC_edges_idx1 ON ramses_TC_edges (id1, id2);")
   DBI::dbExecute(conn, "CREATE INDEX ramses_TC_edges_idx2 ON ramses_TC_edges (id2, id1);")
   
+  if(!silent) message("Transitive closure of therapy combinations beginning...")
   therapy_grps <- .run_transitive_closure(conn = conn, 
-                                          edge_table = "ramses_TC_edges")
+                                          edge_table = "ramses_TC_edges",
+                                          silent = silent)
+  if(!silent) message("\n")
   
   therapy_grps <- tbl(conn, "ramses_TC_group") %>% 
     dplyr::left_join(
@@ -642,6 +660,13 @@ load_medications.SQLiteConnection <- function(
   }
 }
 
+.nrow_sql_table <- function(conn, table){
+  nrow <- tbl(conn, table) %>% 
+    dplyr::summarise( n = n()) %>% 
+    dplyr::collect()
+  
+  nrow$n
+}
 
 #' Run transitive closure
 #'
@@ -653,11 +678,11 @@ load_medications.SQLiteConnection <- function(
 #' @references Inspired by Itzik Ben-Gan's T-SQL challenge solution
 #' https://www.itprotoday.com/sql-server/t-sql-puzzle-challenge-grouping-connected-items
 #' @noRd
-.run_transitive_closure <- function(conn, edge_table) {
+.run_transitive_closure <- function(conn, edge_table, silent = FALSE) {
   UseMethod(".run_transitive_closure")
 }
 #' @export
-.run_transitive_closure.SQLiteConnection <- function(conn, edge_table) {
+.run_transitive_closure.SQLiteConnection <- function(conn, edge_table, silent) {
   
   .create_ramses_TC_graphs(conn)
   
@@ -669,6 +694,11 @@ load_medications.SQLiteConnection <- function(
     data.frame()
   
   var_rowcount <- nrow(var_ids)
+  
+  if(!silent) {
+    progress <- dplyr::progress_estimated(
+      n = .nrow_sql_table(conn, edge_table))
+  }
   
   while (var_rowcount > 0) {
     
@@ -686,8 +716,13 @@ load_medications.SQLiteConnection <- function(
             "WHERE id1 =", var_ids$id1,
             "AND id2 =", var_ids$id2, ";"))
     
+    if(!silent) {
+      progress$i <- progress$n - .nrow_sql_table(conn, edge_table)
+      progress$print()
+    }
+    
     while(var_rowcount > 0) {  
-      
+
       var_lvl <- var_lvl + 1
       
       .remove_db_tables(conn, "ramses_TC_CurIds")
@@ -743,6 +778,7 @@ load_medications.SQLiteConnection <- function(
         "WHERE NOT EXISTS (",
         "   SELECT * FROM ramses_TC_group AS G",
         "   WHERE G.id = C.id);"))
+      
     }
     
     var_ids <- tbl(conn, edge_table) %>% 
@@ -752,6 +788,11 @@ load_medications.SQLiteConnection <- function(
       data.frame()
     
     var_rowcount <- nrow(var_ids)
+    
+  }
+  if(!silent) {
+    progress$i <- progress$n
+    progress$print()
   }
   
   .remove_db_tables(conn, "ramses_TC_CurIds")
