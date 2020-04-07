@@ -1,7 +1,4 @@
 
-library(DBI)
-library(odbc)
- 
 
 # SQLite ------------------------------------------------------------------
 
@@ -11,7 +8,6 @@ test_that("Ramses on SQLite", {
   if (!identical(Sys.getenv("TRAVIS"), "true")) {
     skip("Test only on Travis")
   }
-  
   
   drug_data <- Ramses:::.prepare_example_drug_records()
   inpatient_data <- Ramses:::.prepare_example_inpatient_records()
@@ -101,7 +97,7 @@ test_that("SQLite does transitive closure", {
 # conPostgreSQL <- DBI::dbConnect(RPostgreSQL::PostgreSQL(), 
 #                                 user = "user", password = "password", 
 #                                 host = "db-postgres", dbname="RamsesDB")
-# 
+# requireNamespace("odbc", quietly = TRUE)
 # conSQLServer <- dbConnect(
 #   odbc::odbc(),
 #   .connection_string = "Driver={ODBC Driver 17 for SQL Server}; Server=db-mssql,1433;Uid=Sa; Pwd=bidultrukCestLeurTruc!;", timeout = 10)
