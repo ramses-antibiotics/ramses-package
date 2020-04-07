@@ -25,6 +25,7 @@ services:
     environment:
       USER: user
       PASSWORD: password
+      CODECOV_TOKEN: "b31f380a-3d61-4f3f-aa39-418c17880680"
     ports:
      - 8787:8787
     volumes:
