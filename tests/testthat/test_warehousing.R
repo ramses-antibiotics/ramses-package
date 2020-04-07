@@ -8,6 +8,11 @@ library(odbc)
 
 test_that("Ramses on SQLite", {
   
+  if (!identical(Sys.getenv("TRAVIS"), "true")) {
+    skip("Test only on Travis")
+  }
+  
+  
   drug_data <- Ramses:::.prepare_example_drug_records()
   inpatient_data <- Ramses:::.prepare_example_inpatient_records()
   icd10cm <- download_icd10cm()
