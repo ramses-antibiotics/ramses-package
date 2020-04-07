@@ -2,7 +2,8 @@ language: minimal
 
 env:
   - COMPOSE_FILE="travis/docker-compose.yml"
-
+  - CODECOV_TOKEN="b31f380a-3d61-4f3f-aa39-418c17880680"
+  
 services:
   - docker
 
@@ -18,6 +19,7 @@ script:
   - docker-compose exec -w /mnt/Ramses/ r Rscript travis/script_hello_world.R
   - docker-compose exec -w /mnt/Ramses/ r Rscript travis/script_devtools.R
   - docker-compose exec -w /mnt/Ramses/ r Rscript travis/script_unit_tests.R
+  - docker-compose exec -w /mnt/Ramses/ r Rscript -e 'library(covr); codecov()'
 
 after_deploy:
   - ls
