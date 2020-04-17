@@ -317,6 +317,10 @@ load_medications(conn = ramses_db,
                  prescriptions = drug_prescriptions, 
                  administrations = drug_administrations, 
                  overwrite = TRUE)
+
+load_inpatient_episodes(conn = ramses_db,
+                        episodes_data = Ramses::inpatient_episodes,
+                        wards_data =  Ramses::inpatient_wards)
 DBI::dbDisconnect(ramses_db)
 
 ```

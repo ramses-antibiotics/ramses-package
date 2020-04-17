@@ -5,7 +5,7 @@ position,variable_name,must_exist,must_be_nonmissing
 4,admission_date,TRUE,TRUE
 5,discharge_date,TRUE,TRUE
 6,episode_number,TRUE,TRUE
-7,last_episode_in_spell_indicator,TRUE,TRUE
+7,last_episode_in_spell,TRUE,TRUE
 8,episode_start,TRUE,TRUE
 9,episode_end,TRUE,TRUE
 10,date_of_birth,FALSE,FALSE

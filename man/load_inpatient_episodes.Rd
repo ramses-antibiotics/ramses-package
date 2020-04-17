@@ -4,13 +4,16 @@
 \alias{load_inpatient_episodes}
 \title{Load episodes of care records into the warehouse}
 \usage{
-load_inpatient_episodes(conn, episodes_data, overwrite = TRUE)
+load_inpatient_episodes(conn, episodes_data, wards_data, overwrite = TRUE)
 }
 \arguments{
 \item{conn}{a database connection}
 
 \item{episodes_data}{a data frame validated with 
 \code{\link{validate_inpatient_episodes}()}}
+
+\item{wards_data}{a data frame validated with
+\code{\link{validate_inpatient_episodes}()}#'}
 
 \item{overwrite}{if `TRUE` (the default), will overwrite any existing
 `inpatient_episodes` database table}

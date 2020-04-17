@@ -10,7 +10,7 @@ load_medications(
   administrations = NULL,
   overwrite = FALSE,
   transitive_closure_controls = transitive_closure_control(),
-  silent = FALSE
+  silent = TRUE
 )
 }
 \arguments{
@@ -29,6 +29,9 @@ diagnosis table}
 
 \item{transitive_closure_controls}{parameters controlling (see 
 \code{\link{transitive_closure_control}()})}
+
+\item{silent}{a boolean indicating whether the function should be
+executed without progress bar. Default is `TRUE`.}
 }
 \value{
 `TRUE` if the function ran successfully, otherwise object of class

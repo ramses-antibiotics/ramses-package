@@ -190,41 +190,69 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data, diagnoses_lookup, ove
 #' @param conn a database connection
 #' @param episodes_data  a data frame validated with 
 #' \code{\link{validate_inpatient_episodes}()}
+#' @param wards_data a data frame validated with  
+#' \code{\link{validate_inpatient_episodes}()}#'
 #' @param overwrite if `TRUE` (the default), will overwrite any existing
 #' `inpatient_episodes` database table
 #' @return `TRUE` if the function ran successfully, otherwise object of class
 #' "try-error" containing error messages trigger during warehouse data loading.
 #' @export
-load_inpatient_episodes <- function(conn, episodes_data, overwrite = TRUE) {
+load_inpatient_episodes <- function(conn, episodes_data, wards_data, overwrite = TRUE) {
+  #TODO: define index in the variable schema + add reference tables
+  episodes_data <- dplyr::arrange(episodes_data, 
+                                  patient_id, episode_start)
   
-  administrations <- dplyr::arrange(administrations, 
-                                    patient_id, administration_date)
+  wards_data <- dplyr::arrange(wards_data,
+                               patient_id, ward_start)
   
-  administrations$id <- 1:nrow(administrations)
-  
-  first_column_names <- .drug_administrations_variables()[["variable_name"]]
-  first_column_names <- c(
-    "id",
-    first_column_names[first_column_names %in% names(administrations)]
+  first_column_names_episodes <- .inpatient_episodes_variables()[["variable_name"]]
+  first_column_names_episodes <- c(
+    first_column_names_episodes[first_column_names_episodes %in% names(episodes_data)]
   )
-  administrations <- arrange_variables(
-    administrations, 
-    first_column_names = first_column_names) 
   
-  administrations <- dbplyr::db_copy_to(
+  
+  first_column_names_wards <- .inpatient_wards_variables()[["variable_name"]]
+  first_column_names_wards <- c(
+    first_column_names_wards[first_column_names_wards %in% names(wards_data)]
+  )
+  
+  episodes_data <- arrange_variables(
+    episodes_data, 
+    first_column_names = first_column_names_episodes) 
+  
+  wards_data <- arrange_variables(
+    wards_data, 
+    first_column_names = first_column_names_wards) 
+  
+  episodes_data <- dbplyr::db_copy_to(
     con = conn,
-    table = "drug_administrations",
-    values = administrations,
+    table = "inpatient_episodes",
+    values = episodes_data,
     temporary = FALSE,
     overwrite = overwrite,
     indexes = list(
-      "id",
       "patient_id", 
-      "administration_id",
-      "drug_id",
-      "ATC_code",
-      "ATC_route",
-      "administration_date"
+      "spell_id",
+      "admission_date",
+      "discharge_date",
+      "episode_number",
+      "episode_start",
+      "episode_end",
+      "consultant_code",
+      "main_specialty_code"
+    ))
+  
+  wards_data <- dbplyr::db_copy_to(
+    con = conn,
+    table = "inpatient_ward_movements",
+    values = wards_data,
+    temporary = FALSE,
+    overwrite = overwrite,
+    indexes = list(
+      "patient_id", 
+      "spell_id",
+      "ward_start",
+      "ward_end"
     ))
   
   TRUE

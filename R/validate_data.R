@@ -439,6 +439,7 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
   validation_result
 }
 
+
 #' Validate medication prescription records
 #'
 #' @description This function performs a series of checks for mandatory and
