@@ -400,6 +400,7 @@ load_medications.SQLiteConnection <- function(
   prescriptions$authoring_date <- as.character(prescriptions$authoring_date)
   prescriptions$prescription_start <- as.character(prescriptions$prescription_start)
   prescriptions$prescription_end <- as.character(prescriptions$prescription_end)
+  prescriptions$therapy_rank <- NA_integer_
   if(create_combination_id) prescriptions$combination_id <- NA_character_
   if(create_therapy_id) prescriptions$therapy_id <- NA_character_
   
@@ -518,7 +519,7 @@ load_medications.SQLiteConnection <- function(
       by = c("id" = "id")
     ) %>% 
     group_by(grp) %>% 
-    mutate(therapy_id = min(prescription_id, na.rm = T)) %>% 
+    mutate(therapy_id = min(prescription_id, na.rm = TRUE)) %>% 
     ungroup() %>% 
     distinct(prescription_id, therapy_id) %>% 
     compute(name = "ramses_TC_therapy")
@@ -530,7 +531,20 @@ load_medications.SQLiteConnection <- function(
     DBI::dbExecute(conn, i)
   }
   .remove_db_tables(conn, c("ramses_TC_group", "ramses_TC_therapy"))
+  
+  # .create_table_drug_therapy_episodes(conn = conn)
+  
 }
+
+# TODO
+# .create_table_drug_therapy_episodes <- function(conn) {
+#   
+#   th_episodes <- tbl(conn, "drug_prescriptions") %>% 
+#     dplyr::group_by(therapy_id, antiinfective_type) %>% 
+#     dplyr::summarise(therapy_start = min(prescription_start, na.rm = TRUE),
+#                      therapy_end = max(prescription_end, na.rm = TRUE)) 
+#   
+# }
 
 
 #' Populate `drug_prescription.combination_id`
@@ -577,9 +591,8 @@ load_medications.SQLiteConnection <- function(
     DBI::dbExecute(conn, i)
   }
   .remove_db_tables(conn, c("ramses_TC_group", "ramses_TC_combination"))
+  
 }
-
-
 
 .load_administrations.SQLiteConnection <- function(
   conn, administrations, overwrite) {
