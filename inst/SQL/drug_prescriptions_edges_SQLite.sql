@@ -20,9 +20,8 @@ WITH rx_edges AS (
                WHEN (a.[daily_frequency] <> -1) and (b.[daily_frequency] = -1) and
                     (DATETIME(a.[prescription_end]) >= DATETIME(b.[prescription_start])) THEN '4'
                WHEN (a.[daily_frequency] <> -1) and (b.[daily_frequency] <> -1) and
-                    (DATETIME(a.[prescription_end]) >= DATETIME(b.[prescription_start])) and
-                    (DATETIME(a.[prescription_end]) >= DATETIME(b.[prescription_end]))
-                   THEN '5'
+                    (DATETIME(a.[prescription_start]) <= DATETIME(b.[prescription_start])) and
+                    (DATETIME(a.[prescription_end]) >= DATETIME(b.[prescription_end])) THEN '5'
                WHEN (a.[daily_frequency] <> -1) and (b.[daily_frequency] <> -1) and
                     (DATETIME(a.[prescription_end]) >= DATETIME(b.[prescription_start])) and
                     (DATETIME(a.[prescription_end]) < DATETIME(b.[prescription_end]))
