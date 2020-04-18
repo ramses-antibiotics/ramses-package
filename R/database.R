@@ -401,6 +401,7 @@ load_medications.SQLiteConnection <- function(
   prescriptions$prescription_start <- as.character(prescriptions$prescription_start)
   prescriptions$prescription_end <- as.character(prescriptions$prescription_end)
   prescriptions$therapy_rank <- NA_integer_
+  # TODO: antiinfective type
   if(create_combination_id) prescriptions$combination_id <- NA_character_
   if(create_therapy_id) prescriptions$therapy_id <- NA_character_
   
@@ -528,23 +529,31 @@ load_medications.SQLiteConnection <- function(
   update_therapy_id <- gsub("@@@ramses_TC_table", "ramses_TC_therapy", update_therapy_id)
   update_therapy_id <- .split_sql_batch(update_therapy_id)
   for(i in update_therapy_id) {
-    DBI::dbExecute(conn, i)
+    DBI::dbExecute(conn = conn, i)
   }
-  .remove_db_tables(conn, c("ramses_TC_group", "ramses_TC_therapy"))
+  .remove_db_tables(conn = conn, c("ramses_TC_group", "ramses_TC_therapy", "ramses_TC_edges"))
   
-  # .create_table_drug_therapy_episodes(conn = conn)
+  .create_table_drug_therapy_episodes(conn = conn)
   
 }
 
-# TODO
-# .create_table_drug_therapy_episodes <- function(conn) {
-#   
-#   th_episodes <- tbl(conn, "drug_prescriptions") %>% 
-#     dplyr::group_by(therapy_id, antiinfective_type) %>% 
-#     dplyr::summarise(therapy_start = min(prescription_start, na.rm = TRUE),
-#                      therapy_end = max(prescription_end, na.rm = TRUE)) 
-#   
-# }
+
+.create_table_drug_therapy_episodes <- function(conn) {
+  
+  .remove_db_tables(conn = conn, "drug_therapy_episodes")
+
+  forget <- tbl(conn, "drug_prescriptions") %>%
+    dplyr::group_by(patient_id, therapy_id) %>% # TODO antiinfective_type
+    dplyr::summarise(therapy_start = min(prescription_start, na.rm = TRUE),
+                     therapy_end = max(prescription_end, na.rm = TRUE)) %>% 
+    compute(name = "drug_therapy_episodes", temporary = FALSE)
+  
+  dplyr::db_create_indexes(con = conn, 
+                           table = "drug_therapy_episodes",
+                           indexes = c("patient_id",
+                                       "therapy_id"))
+
+}
 
 
 #' Populate `drug_prescription.combination_id`
