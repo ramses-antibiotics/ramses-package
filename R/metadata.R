@@ -624,7 +624,7 @@ get_ATC_name <- function(x) {
     stop("An internet connection is required for this function to work.")
   }
   
-  search_ATC <- gsub(" ", "", unique(x))
+  search_ATC <- gsub("[:blank:]", "", unique(x))
   search_ATC[search_ATC == ""] <- NA
   search_ATC <- stats::na.omit(search_ATC)
 

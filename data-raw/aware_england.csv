@@ -1,4 +1,4 @@
-"ATC_name","ATC_code","ATC_route","AWaRe_England","VTM_code","VTM_name"
+"ATC_name","ATC_code","ATC_route","aware_category","VTM_code","VTM_name"
 "DOXYCYCLINE","J01AA02","P","Access","10504007","Doxycycline"
 "DOXYCYCLINE","A01AB22","O","Access","10504007","Doxycycline"
 "DOXYCYCLINE","J01AA02","O","Access","10504007","Doxycycline"
@@ -121,10 +121,10 @@
 "OFLOXACIN","J01MA01","O","Watch","96086002","Ofloxacin"
 "LEVOFLOXACIN","J01MA12","P","Watch","96087006","Levofloxacin"
 "LEVOFLOXACIN","J01MA12","O","Watch","96087006","Levofloxacin"
-"AMOXICILLIN AND ENZYME INHIBITOR","J01CR02","O","Watch",NA,"Co-amoxiclav"
-"AMOXICILLIN AND ENZYME INHIBITOR","J01CR02","P","Watch",NA,"Co-amoxiclav"
+"AMOXICILLIN AND ENZYME INHIBITOR","J01CR02","O","Watch","89519005","Co-amoxiclav"
+"AMOXICILLIN AND ENZYME INHIBITOR","J01CR02","P","Watch","89519005","Co-amoxiclav"
 "PRULIFLOXACIN","J01MA17","O","Watch",NA,"Prulifloxacin"
-"CEFTAZIDIME AND BETA-LACTAMASE INHIBITOR","J01DD52","P","Reserve",NA,"Ceftazidime + Avibactam"
+"CEFTAZIDIME AND BETA-LACTAMASE INHIBITOR","J01DD52","P","Reserve","34180511000001105","Ceftazidime + Avibactam"
 "AMPICILLIN COMBINATIONS","J01CA51","P","Access",NA,NA
 "CEFTIZOXIME","J01DD07","P","Watch","54577009","Ceftizoxime"
 "FLURITHROMYCIN","J01FA14","O","Watch",NA,NA
