@@ -1,0 +1,13 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^data-raw$
+^doc$
+^docs$
+^Meta$
+^LICENSE\.md$
+^.travis.yml
+^\.idea
+^_pkgdown\.yml$
+^pkgdown$
+^.*\.sqlite$
+^travis$

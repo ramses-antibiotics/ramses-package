@@ -1,0 +1,70 @@
+destination: docs
+template:
+  params:
+    bootswatch: flatly
+title: RAMSES
+url: https://ramses-antibiotics.github.io
+
+authors:
+    University College London:
+      href: "https://www.ucl.ac.uk"
+      html: "<img src='reference/figures/partner-logos/UCL.png' height=28>"
+
+right: 
+  - text: " "
+    icon: url(https://pass-antibiotics.github.io/assets/icons/logonospellout_white.svg)
+    href: https://pass-antibiotics.github.io/
+    
+home:
+  description: >
+    RAMSES is an analytical software package enabling hospitals to 
+    monitor and query their use of antibiotics and the management of 
+    infections. 
+  links:
+  - text: Visit project website
+    href: https://pass-antibiotics.github.io/
+
+reference:
+- title: Reference datasets
+  desc:  Metadata provided with `RAMSES`
+  contents:
+  - antibiotic_icd_indications
+  - aware
+  - ccs
+  - ccsr
+  - download_icd10cm
+  - import_icd
+  - reference_drug_frequency
+- title: Transform and validate data
+  desc:  Functions to enrich and validate data before loading into the warehouse.
+  contents:
+  - starts_with("map_")
+  - compute_DDDs
+  - starts_with("validate_inpatient")
+  - validate_prescriptions
+  - validate_administrations
+- title: Load & link data
+  desc:  Load records into the warehouse and create secondary information.
+  contents:
+  - load_inpatient_episodes
+  - load_inpatient_diagnoses
+  - transitive_closure_control
+  - load_medications
+- title: Simulated sets of electronic health records
+  contents:
+  - inpatient_episodes
+  - inpatient_wards
+  - inpatient_diagnoses
+  - drug_prescriptions
+  - drug_administrations
+- title: Database administration
+  desc:  Functions to set up and manage the `RAMSES` database
+  contents:
+  - get_warehouse_status
+  - build_ramses_schema
+  - connect_db_local
+- title: Index
+  desc:  All functions in alphabetical order
+  contents:
+  - matches(".*")
+

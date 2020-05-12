@@ -1,0 +1,22 @@
+language: minimal
+
+env:
+  - COMPOSE_FILE="travis/docker-compose.yml"
+
+services:
+  - docker
+
+before_install:
+  - echo $BASH_VERSION
+  - echo $PWD
+  - docker-compose --version
+  - docker-compose up --no-start
+  - docker-compose start
+  - docker-compose ps
+
+script:
+  - docker-compose exec -w /mnt/Ramses/ r Rscript -e 'devtools::check()'
+  - docker-compose exec -w /mnt/Ramses/ r Rscript -e 'covr::codecov()'
+
+after_deploy:
+  - ls
