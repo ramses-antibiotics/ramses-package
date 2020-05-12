@@ -1,4 +1,4 @@
-# <img src="man/figures/logo.png" align="right" style="max-width: 25%; padding: 10px;"/>RAMSES: R package for Antimicrobial Stewardship & Surveillance
+# <img src="man/figures/logo.png" align="right" width="200" style="max-width: 25%; padding: 10px;"/>RAMSES: R package for Antimicrobial Stewardship & Surveillance
 
 
 <div class="lead"><code>RAMSES</code> is an analytical software package enabling hospitals to protect antibiotics by monitoring their prescribing and the management of infections using routine electronic health records.</div>
