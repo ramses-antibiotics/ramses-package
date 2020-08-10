@@ -343,7 +343,7 @@ map_ICD10_CCSR <- function(df, icd_column) {
   x_matched <- dplyr::inner_join(x_unmatched,
                                  ccsx_4chars,
                                  by = c("match_key" = "icd_code_4chars")) %>% 
-    dplyr::bind_rows(.data, x_matched)
+    dplyr::bind_rows(x_matched)
   
   x_unmatched <- dplyr::anti_join(x_unmatched,
                                   ccsx_4chars,
@@ -353,7 +353,7 @@ map_ICD10_CCSR <- function(df, icd_column) {
   x_matched <- dplyr::inner_join(x_unmatched,
                                  ccsx_3chars,
                                  by = c("match_key" = "icd_code_3chars")) %>% 
-    dplyr::bind_rows(.data, x_matched)
+    dplyr::bind_rows(x_matched)
   
   x_unmatched <- dplyr::anti_join(x_unmatched,
                                   ccsx_3chars,
@@ -366,7 +366,7 @@ map_ICD10_CCSR <- function(df, icd_column) {
   x_matched <- dplyr::inner_join(x_unmatched,
                                  ccsx_3chars,
                                  by = c("match_key" = "icd_code_3chars")) %>% 
-    dplyr::bind_rows(.data, x_matched)
+    dplyr::bind_rows(x_matched)
   
   x_unmatched <- dplyr::anti_join(x_unmatched,
                                   ccsx_3chars,
