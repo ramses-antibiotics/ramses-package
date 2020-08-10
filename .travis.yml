@@ -1,9 +1,8 @@
 language: minimal
 
 env:
-  - COMPOSE_FILE="travis/docker-compose.yml"
-  - RAMSESIMAGE="pdutey/ramses:R3.6.2"
-  - RAMSESIMAGE="pdutey/ramses:R4.0.2"
+  - RAMSESIMAGE="pdutey/ramses:R3.6.2" COMPOSE_FILE="travis/docker-compose.yml"
+#  - RAMSESIMAGE="pdutey/ramses:R4.0.2" COMPOSE_FILE="travis/docker-compose.yml"
 
 services:
   - docker
