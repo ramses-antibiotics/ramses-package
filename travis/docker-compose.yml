@@ -21,7 +21,7 @@ services:
     ports:
       - 1234:1234
   r:
-    image: pdutey/ramses:latest
+    image: ${RAMSESIMAGE}
     environment:
       USER: user
       PASSWORD: password
