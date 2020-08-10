@@ -1,0 +1,46 @@
+---
+title: "Objects and classes in Ramses"
+output: 
+  rmarkdown::html_vignette:
+   toc: true
+bibliography: ../inst/REFERENCES.bib
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(DiagrammeR)
+# library(Ramses)
+```
+
+# Introduction and rationale
+
+This article introduces the way `Ramses` handles the following *objects* and data records associated with them:
+
+- patients
+- prescriptions
+- therapy episodes
+
+Some `Ramses` functions, for instance `fetch()` or `get_patient_id()` are applicable to any of the above objects. To enable this, `Ramses` employs a combination of S3 and S4 classes. The [Object-oriented programming](https://adv-r.hadley.nz/oo.html) section by @Hadley2019 provides an introduction to objects and classes handling in `R`.
+
+Computer programmes designed for data analysis often need to overcome an obstacle known as **object-relational impedance mismatch**, which designates difficulties faced when interfacing a relational database management system (RDBMS) with an application such as the present package. The object representations in (a) the database and  (b) the software package have to be made explicit in an object-relational mapper. That is the vocation of the present article.
+
+
+# Objects in `Ramses`
+
+
+```{r diagram-objects, fig.cap="Class diagram of the main `Ramses` objects", fig.height=6, fig.width=8, echo=FALSE}
+grViz("diagrams/objects-main.gv", engine = "twopi")
+```
+
+
+
+```{r diagram-tbl, fig.cap="Class diagram of the main `Ramses` objects", fig.height=6, fig.width=8, echo=FALSE}
+grViz("diagrams/objects-tbl.gv")
+```
+
+
+# References
+
