@@ -7,8 +7,8 @@
 \format{A data frame with 208 antimicrobial agents, referenced 
 against the Anatomical Therapeutic Chemical (ATC) 
 classification \insertCite{WHO-ATC2020}{Ramses}, the World Health Organisation's
-and Public Health England's respective AWaRe Indices, \insertCite{WHO-aware2019, 
-PHE-aware2019}{Ramses} and the SNOMED-CT medical product concept codes and names 
+and Public Health England's respective AWaRe Indices, 
+and the SNOMED-CT medical product concept codes and names 
 (from Virtual Therapeutic Moieties codes of the UK NHS Dictionary of Medicines 
 (dm+d) \insertCite{DMD2015}{Ramses}).
 It contains 6 columns:
@@ -29,7 +29,7 @@ concept code in the SNOMED-CT UK Drug Extension (see \insertCite{DMD2015}{Ramses
 concept name in the SNOMED-CT UK Drug Extension (see \insertCite{DMD2015}{Ramses})}
 }}
 \source{
-Adapted from \insertRef{PHE-aware2019}{Ramses} with Virtual  
+Adapted from \insertCite{WHO-aware2019,PHE-aware2019;textual}{Ramses} with Virtual  
 Therapeutic Moiety equivalents from the NHS Dictionary of Medicines (dm+d)
 \insertCite{DMD2015}{Ramses}.
 }

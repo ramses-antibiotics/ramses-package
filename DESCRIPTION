@@ -37,7 +37,8 @@ Imports:
     data.table,
     readr,
     units (>= 0.6-1),
-    methods
+    methods,
+    lubridate
 RdMacros: Rdpack
 RoxygenNote: 7.0.2
 Suggests: 
@@ -47,5 +48,8 @@ Suggests:
     covr,
     rvest,
     xml2,
-    curl
+    curl,
+    DiagrammeR,
+    odbc,
+    timevis
 VignetteBuilder: knitr

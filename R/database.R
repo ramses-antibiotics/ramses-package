@@ -1,16 +1,16 @@
 
 
-#' Create a local database
+#' Create or connect to a local SQLite database
 #'
-#' @description Create a local database in memory or on disk using RSQLite. This is 
-#' the easiest method to work on a small scale, with a limited number of users.
+#' @description Create a local database in memory or on disk using \code{\link[RSQLite]{SQLite}()}. 
+#' This is the ideal method to experiment on a small scale or for testing purposes.
 #'
 #' @details This function creates a database on disk at the desired path. The database and
 #' its content will persist on disconnection.
 #'     
 #' @section Warning:     
-#' This method does not provide any encryption or password protection. For work with 
-#' real patient data, only use suitably encrypted databases.
+#' This method does not provide any encryption or password protection. You should only use this
+#' method with mock data unless you operate within a secure data enclave.
 #'
 #' @param file A file path to an existing or new database file with an .sqlite extension.
 #' @return An object of class SQLiteConnection.
@@ -23,7 +23,7 @@
 #'     # Create database and load data
 #'     con <- connect_db_local("ramses-db.sqlite")
 #'     
-#'     dplyr::copy_to(dest = con, df = aware, name = "LU_AWaRe", 
+#'     dplyr::copy_to(dest = con, df = reference_aware, name = "reference_aware", 
 #'                    overwrite = FALSE, temporary = FALSE)      
 #'     
 #'     # Close connection to database
@@ -31,7 +31,7 @@
 #'     
 #'     # Connect to the database again and show data
 #'     con <- connect_db_local("ramses-db.sqlite")
-#'     dplyr::tbl(con, "LU_AWaRe")
+#'     dplyr::tbl(con, "reference_aware")
 #'     DBI::dbDisconnect(con)
 connect_db_local <- function(file) {
   con <- DBI::dbConnect(RSQLite::SQLite(), file)
@@ -402,6 +402,15 @@ load_medications.SQLiteConnection <- function(
   prescriptions$prescription_end <- as.character(prescriptions$prescription_end)
   prescriptions$therapy_rank <- NA_integer_
   # TODO: antiinfective type
+  if (!exists("prescription_text", prescriptions)) {
+    prescriptions <- prescriptions %>% 
+      mutate(prescription_text = paste0(
+      drug_display_name, " ",
+      route, " ",
+      dose, unit, " ",
+      if_else(daily_frequency < 0, "one-off", frequency)
+    ))
+  }
   if(create_combination_id) prescriptions$combination_id <- NA_character_
   if(create_therapy_id) prescriptions$therapy_id <- NA_character_
   
@@ -550,7 +559,7 @@ load_medications.SQLiteConnection <- function(
   
   dplyr::db_create_indexes(con = conn, 
                            table = "drug_therapy_episodes",
-                           indexes = c("patient_id",
+                           indexes = list("patient_id",
                                        "therapy_id"))
 
 }

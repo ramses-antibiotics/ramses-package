@@ -11,3 +11,7 @@
 ^pkgdown$
 ^.*\.sqlite$
 ^travis$
+^vignettes/Mechanics-of-entities\.Rmd$
+^vignettes/*.R
+^vignettes/*.html
+^\.covrignore$

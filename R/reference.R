@@ -15,8 +15,8 @@
 #' @format A data frame with 208 antimicrobial agents, referenced 
 #' against the Anatomical Therapeutic Chemical (ATC) 
 #' classification \insertCite{WHO-ATC2020}{Ramses}, the World Health Organisation's
-#' and Public Health England's respective AWaRe Indices, \insertCite{WHO-aware2019, 
-#' PHE-aware2019}{Ramses} and the SNOMED-CT medical product concept codes and names 
+#' and Public Health England's respective AWaRe Indices, 
+#' and the SNOMED-CT medical product concept codes and names 
 #' (from Virtual Therapeutic Moieties codes of the UK NHS Dictionary of Medicines 
 #' (dm+d) \insertCite{DMD2015}{Ramses}).
 #' It contains 6 columns:
@@ -38,7 +38,7 @@
 #' }
 #' @docType data
 #' @name reference_aware
-#' @source Adapted from \insertRef{PHE-aware2019}{Ramses} with Virtual  
+#' @source Adapted from \insertCite{WHO-aware2019,PHE-aware2019;textual}{Ramses} with Virtual  
 #' Therapeutic Moiety equivalents from the NHS Dictionary of Medicines (dm+d)
 #' \insertCite{DMD2015}{Ramses}.
 #' @references{\insertAllCited{}}
@@ -90,7 +90,7 @@
 "ccs"
 
 
-#' Clinical Classifications Software *Refined* (CCSR): map to 4-character ICD code
+#' Clinical Classifications Software \emph{Refined} (CCSR): map to 4-character ICD code
 #' 
 #' @description A map of 538 clinical concepts to 4-character ICD code 
 #' adapted from the Clinical Classifications Software Refined (CCSR) 

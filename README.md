@@ -1,5 +1,7 @@
-# <img src="man/figures/logo.png" align="right" style="max-width: 25%; padding: 10px;"/>RAMSES: R package for Antimicrobial Stewardship & Surveillance
+# <img src="man/figures/logo.png" align="right" width="190px"/>RAMSES: R package for Antimicrobial Stewardship & Surveillance
 
+[![Build Status](https://travis-ci.com/ramses-antibiotics/ramses-package.svg?token=BqHsttk4zmWyz9yfgCbu&branch=master)](https://travis-ci.com/ramses-antibiotics/ramses-package)
+[![Codecov test coverage](https://codecov.io/gh/ramses-antibiotics/ramses-package/branch/master/graph/badge.svg)](https://codecov.io/gh/ramses-antibiotics/ramses-package?branch=master)
 
 <div class="lead"><code>RAMSES</code> is an analytical software package enabling hospitals to protect antibiotics by monitoring their prescribing and the management of infections using routine electronic health records.</div>
 

@@ -16,7 +16,7 @@ before_install:
 
 script:
   - docker-compose exec -w /mnt/Ramses/ r Rscript -e 'devtools::check()'
-  - docker-compose exec -w /mnt/Ramses/ r Rscript -e 'covr::codecov()'
+  - docker-compose exec -w /mnt/Ramses/ r Rscript -e 'covr::codecov(type = "all")'
 
 after_deploy:
   - ls

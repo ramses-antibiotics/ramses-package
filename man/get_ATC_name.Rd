@@ -20,6 +20,6 @@ Requires an internet connection.
 get_ATC_name("J01XA01")
 }
 \references{
-Adapted from \code{\link[AMR]{atc_name}()} with thanks to 
+Adapted from \code{\link[AMR]{atc_online_property}()} with thanks to 
 the \link{AMR} package authors.
 }

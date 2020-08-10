@@ -92,19 +92,10 @@ test_that("SQLite does transitive closure", {
 
 # PostgreSQL --------------------------------------------------------------
 
-
-
+# test_that("Ramses on PosgreSQL", {
 # conPostgreSQL <- DBI::dbConnect(RPostgreSQL::PostgreSQL(), 
 #                                 user = "user", password = "password", 
 #                                 host = "db-postgres", dbname="RamsesDB")
-# requireNamespace("odbc", quietly = TRUE)
-# conSQLServer <- dbConnect(
-#   odbc::odbc(),
-#   .connection_string = "Driver={ODBC Driver 17 for SQL Server}; Server=db-mssql,1433;Uid=Sa; Pwd=bidultrukCestLeurTruc!;", timeout = 10)
-
-
-
-# test_that("Ramses on PosgreSQL", {
 #   test_warehousing(conPostgreSQL, drug_data, overwrite = T)
 #   
 # })
@@ -116,6 +107,11 @@ test_that("SQLite does transitive closure", {
 # 
 # test_that("Ramses on MS SQL Server", {
 #   test_warehousing(conMS, drug_data, overwrite = T)
+    # requireNamespace("odbc", quietly = TRUE)
+    # conSQLServer <- dbConnect(
+    #   odbc::odbc(),
+    #   .connection_string = "Driver={ODBC Driver 17 for SQL Server}; Server=db-mssql,1433;Uid=Sa; Pwd=bidultrukCestLeurTruc!;")
+
 # 
 # })
 

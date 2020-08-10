@@ -4,33 +4,39 @@
 Roboto+Slab:400
 */
 
-h1, .h1 {
- font-size: 34px;
-}
-
 h2, .h2 {
- font-size: 26px;
+ font-size: 26px !important;
 }
 
-.navbar-default {
- background-color:#193747;
- border-color:transparent
+.version {
+  background-color: #1a242f !important;
 }
 
-a {
- color:#398BAA;
- text-decoration:none
+div.navbar, .navbar-link {
+ background-color:#193747 !important;
+ border-color:transparent !important;
+ color: white !important;
+}
+
+.navbar-default .navbar-nav > li > a {
+  color: white !important;	
+}
+
+ a {
+ color:#398BAA !important;
+ text-decoration:none !important
 }
 
 h1,h2,h3,h4,h5,h6,.h1,.h2,.h3,.h4,.h5,.h6,.tooltip,.nav,.navbar-link {
- font-family: "Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
- font-weight: 600;
+ font-family: "Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif !important;
+ font-weight: 600 !important;
 }
 
 body {
- font-family:"Noto Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
- color: #193747;
+ font-family:"Noto Sans","Helvetica Neue",Helvetica,Arial,sans-serif !important;
+ color: #193747 !important;
 }
+
 
 code,
 kbd,

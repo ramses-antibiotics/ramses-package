@@ -11,8 +11,8 @@ authors:
       html: "<img src='reference/figures/partner-logos/UCL.png' height=28>"
 
 right: 
-  - text: " "
-    icon: url(https://pass-antibiotics.github.io/assets/icons/logonospellout_white.svg)
+  - text: "PASS website"
+    icon: "fab fa-pill fa-lg"
     href: https://pass-antibiotics.github.io/
     
 home:
@@ -29,11 +29,11 @@ reference:
   desc:  Metadata provided with `RAMSES`
   contents:
   - antibiotic_icd_indications
-  - aware
   - ccs
   - ccsr
   - download_icd10cm
   - import_icd
+  - reference_aware
   - reference_drug_frequency
 - title: Transform and validate data
   desc:  Functions to enrich and validate data before loading into the warehouse.

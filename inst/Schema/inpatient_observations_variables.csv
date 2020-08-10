@@ -1,0 +1,9 @@
+position,variable_name,must_exist,must_be_nonmissing,
+1,patient_id,TRUE,TRUE,Foreign key to the Patient.
+2,spell_id,TRUE,TRUE,Foreign key to the Encounter where the observation was performed.
+3,observation_time,TRUE,TRUE,The date the observation was performed.
+4,observation_code,TRUE,TRUE,Observation or Lab code from LOINC
+5,observation_description,TRUE,TRUE,Description of the observation or lab.
+6,value,TRUE,TRUE,The recorded value of the observation.
+7,unit,TRUE,FALSE,The units of measure for the value.
+8,type,TRUE,TRUE,The datatype of Value: text or numeric

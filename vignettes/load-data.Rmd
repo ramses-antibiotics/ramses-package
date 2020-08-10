@@ -6,6 +6,7 @@ output:
   rmarkdown::html_vignette:
    toc: true 
 bibliography: ../inst/REFERENCES.bib
+always_allow_html: yes
 vignette: >
   %\VignetteIndexEntry{Validate and load electronic health records}
   %\VignetteEngine{knitr::rmarkdown}
@@ -21,7 +22,7 @@ library(Ramses)
 ```
 
 
-# Introduction
+## Introduction
 
 This vignette demonstrates how to clean and validate hospital records and load them into a data warehouse.
 
@@ -321,8 +322,16 @@ load_medications(conn = ramses_db,
 load_inpatient_episodes(conn = ramses_db,
                         episodes_data = Ramses::inpatient_episodes,
                         wards_data =  Ramses::inpatient_wards)
-DBI::dbDisconnect(ramses_db)
+
 
 ```
+
+
+You are now able to visualise the data!
+```{r}
+therapy_timeline(ramses_db, patient_identifier =  "1253675584")
+DBI::dbDisconnect(ramses_db)
+```
+
 
 # References
