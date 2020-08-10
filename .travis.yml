@@ -2,6 +2,8 @@ language: minimal
 
 env:
   - COMPOSE_FILE="travis/docker-compose.yml"
+  - RAMSESIMAGE="pdutey/ramses:R3.6.2"
+  - RAMSESIMAGE="pdutey/ramses:R4.0.2"
 
 services:
   - docker
@@ -16,7 +18,10 @@ before_install:
 
 script:
   - docker-compose exec -w /mnt/Ramses/ r Rscript -e 'devtools::check()'
-  - docker-compose exec -w /mnt/Ramses/ r Rscript -e 'covr::codecov(type = "all")'
+  - | 
+    if [ "$RAMSESIMAGE" == "pdutey/ramses:R3.6.2" ]; then 
+      docker-compose exec -w /mnt/Ramses/ r Rscript -e 'covr::codecov(type = "all")'
+    fi
 
 after_deploy:
   - ls
