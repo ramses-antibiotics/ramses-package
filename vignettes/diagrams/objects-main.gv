@@ -1,0 +1,115 @@
+digraph G {
+  fontsize = 8
+
+  node [
+          fontname = "Droid Sans Mono"
+          fontsize = 8
+          shape = "record"
+          width = 1.5
+  ]
+
+  edge [
+          fontname = "Droid Sans Mono"
+          fontsize = 8
+  ]
+ 
+RamsesEntity [
+  width = 3
+  label = "{RamsesEntity|
+  + id: character\l|
+  
+  + create(id, type): RamsesEntity\l
+  + fetch(collect = FALSE): tbl_sql \| tbl_df \l}"
+]
+
+Patient [
+  label = "{Patient|
+  + id: character\l}"
+]
+
+Clinician [
+  label = "{Clinician|
+  + id: character\l}"
+]
+
+Prescription [
+  width = 2.5
+  label = "{Prescription|
+  + id\l
+  + patient_id: character\l
+  + therapy_id: character\l|
+  
+  + create(id): Prescription\l
+  + get_rx_type(): \{\"mono\", \"combo\"\}\l
+  + get_therapy_id(): Therapy\l}"
+]
+
+Combination [
+  width = 2.2
+  label = "{Combination|
+  + id: character\l
+  - medication_requests\l
+  + prescription_records: tbl\l|
+  
+  + fetch(collect = FALSE): tbl\l}"
+]
+
+MedicationRequest [
+  width = 2.5
+  label = "{MedicationRequest|
+  + id \l
+  + patient_id \l
+  + prescription_id\l
+  + lazy_status: boolean |
+  
+  + get_therapy_id(): RamsesEntity\l
+  + fetch()\l}"
+]
+
+TherapyEpisode [
+  width = 2.2
+  label = "{TherapyEpisode|
+  + id: character\l
+  - therapy_table: tbl\l
+  + lazy_status: boolean\l|
+  
+  + fetch(): data.frame\l
+  + therapy_table(): data.frame\l}"
+]
+
+MicrobialCulture [
+  width = 2.2
+  label = "{MicrobialCulture|
+  + id: character\l}"
+]
+
+/*
+TherapyList [
+label = "{TherapyList|\l+ id: list\l+ type: \"therapy-list\"\l- TherapyTable: tbl\l+ lazy_status: boolean\l|+ fetch(): data.frame\l + therapy_table(): list\l}"
+]
+*/
+
+RamsesEntity -> Prescription [dir=back]
+RamsesEntity -> Patient [dir=back]
+RamsesEntity -> Clinician [dir=back]
+RamsesEntity -> MicrobialCulture [dir=back]
+RamsesEntity -> TherapyEpisode [dir=back]
+
+Prescription -> Combination [dir=back] 
+Prescription -> MedicationRequest [dir=back]
+TherapyEpisode -> MedicationRequest [ constraint=false
+  arrowhead=odiamond
+  headlabel = "                   1..*"
+  taillabel = "      1"]
+Combination -> MedicationRequest [
+  arrowhead=odiamond
+  headlabel = "2..*   "
+  taillabel = "1  "]
+
+/*
+TherapyEpisode -> TherapyList [constraint=false
+  arrowtail=odiamond
+  headlabel = "2..*  "
+  taillabel = "0..*  "]
+*/  
+}

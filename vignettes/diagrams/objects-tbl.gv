@@ -1,0 +1,49 @@
+digraph G {
+  fontsize = 8
+
+  node [
+          fontname = "Droid Sans Mono"
+          fontsize = 8
+          shape = "record"
+
+  ]
+
+  edge [
+          fontname = "Droid Sans Mono"
+          fontsize = 8
+  ]
+
+tbl_MSSQL [
+  label = "tbl_Microsoft SQL Server"
+]
+
+TherapyTable [
+  label = "{TherapyTable|
+  + patient_id: character\l
+  + therapy_id:character\l
+  + type: \"therapy-table\"\l
+  + lazy_status: boolean\l
+  + t: integer\l+ intravenous: boolean\l
+  + last_CRP: numeric \l
+  + last_NEUTS: numeric\l|
+  
+  + fetch(): data.frame\l
+  + therapy_table(): list\l}"
+]
+
+dataframe [
+  label="data.frame"
+]
+
+RamsesObject -> TherapyTable [dir=back]
+tbl -> TherapyTable [dir=back]
+tbl -> tbl_lazy [dir=back]
+tbl_lazy -> tbl_sql [dir=back]
+tbl_sql -> tbl_dbi [dir=back]
+tbl_dbi -> tbl_SQLiteConnection [dir=back]
+tbl_dbi -> tbl_PostgreSQLConnection [dir=back]
+tbl_dbi -> tbl_MSSQL [dir=back]
+tbl -> tbl_df [dir=back]
+tbl_df -> dataframe [dir=back]
+
+}
