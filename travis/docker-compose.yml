@@ -25,6 +25,7 @@ services:
     environment:
       USER: user
       PASSWORD: password
+      CODECOVETOKEN: ${CODECOVETOKEN}
     ports:
      - 8787:8787
     volumes:
