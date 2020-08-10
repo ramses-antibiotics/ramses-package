@@ -6,7 +6,6 @@ output:
   rmarkdown::html_vignette:
    toc: true 
 bibliography: ../inst/REFERENCES.bib
-always_allow_html: yes
 vignette: >
   %\VignetteIndexEntry{Validate and load electronic health records}
   %\VignetteEngine{knitr::rmarkdown}

@@ -4,7 +4,13 @@
 \alias{therapy_timeline}
 \title{Build an antiinfective timeline visualisation}
 \usage{
-therapy_timeline(conn, patient_identifier, date1, date2)
+therapy_timeline(
+  conn,
+  patient_identifier,
+  date1,
+  date2,
+  load_timevis_dependencies = FALSE
+)
 }
 \arguments{
 \item{conn}{a database connection}
@@ -14,6 +20,10 @@ therapy_timeline(conn, patient_identifier, date1, date2)
 \item{date1}{(optional) a date window minimum to focus the timeline on by default}
 
 \item{date2}{(optional) a date window maximum to focus the timeline on by default}
+
+\item{load_timevis_dependencies}{a boolean indicating whether jQuery 
+and Boostrap should be loaded (default is FALSE). See \link[timevis]{timevis}
+for detail}
 }
 \value{
 a timevis object

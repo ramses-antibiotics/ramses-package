@@ -14,13 +14,16 @@
 #' @param patient_identifier a length-one character vector for a patient ID
 #' @param date1 (optional) a date window minimum to focus the timeline on by default
 #' @param date2 (optional) a date window maximum to focus the timeline on by default
-#'
+#' @param load_timevis_dependencies a boolean indicating whether jQuery 
+#' and Boostrap should be loaded (default is FALSE). See \link[timevis]{timevis}
+#' for detail
 #' @return a timevis object
 #' @importFrom dplyr tbl
 #' @importFrom magrittr %>%
 #' @importFrom lubridate as_datetime
 #' @export
-therapy_timeline <- function(conn, patient_identifier, date1, date2){
+therapy_timeline <- function(conn, patient_identifier, date1, date2,
+                             load_timevis_dependencies = FALSE){
   
   requireNamespace("timevis", quietly = TRUE)
   
@@ -175,7 +178,8 @@ therapy_timeline <- function(conn, patient_identifier, date1, date2){
           options = list(stackSubgroups = FALSE,
                          stack = FALSE,
                          showCurrentTime = F,
-                         tooltip = list(followMouse = T))) %>% 
+                         tooltip = list(followMouse = T)),
+    loadDependencies = load_timevis_dependencies) %>% 
     timevis::setWindow(start = date_window$left_date,
               end = date_window$right_date) %>% 
     return()
