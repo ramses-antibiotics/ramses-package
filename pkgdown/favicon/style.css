@@ -1,0 +1,106 @@
+#pivot_DDD_PICSdir{ overflow-x: scroll } 
+#HC_Aware_detail { white-space:nowrap }
+#APC { white-space:nowrap }
+#ICD { white-space:nowrap }
+#Rx { white-space:nowrap }
+#TherapyFocus_APC { white-space:nowrap }
+#TherapyFocus_ICD { white-space:nowrap }
+#TherapyFocus_Rx { white-space:nowrap }
+#timeline_modal_table_1  { white-space:nowrap }
+
+.modal-lg { width: 90%; }
+
+.vis-item.diagnoses {
+font-size = 10px;
+}
+
+.vis-item.prescription-request {
+  border-color: black;
+  border-radius: 0px;
+  border-width: 1px;
+  height: 15px;
+  width: 0px;
+}
+.vis-item.prescription-REG .vis-item.overflow{
+  overflow: visible;
+}
+.vis-item.prescription-REGT .vis-item.overflow{
+  overflow: visible;
+}
+.vis-item.prescription-REG {  
+  font-size: 11px;
+  overflow: visible;
+}
+.vis-item.prescription-REGT {  
+  font-size: 11px;
+  background: #66CDAA;
+  overflow: visible;
+}
+.vis-item.prescription-OOF {  
+  font-size: 11px;
+  overflow: visible;
+}
+.vis-item .vis-item-content {
+  padding: 4px;
+}
+.vis-item.sepsis-redflag {
+  border-color: rgba(202, 0, 0, 0.68);
+  border-width: 8px;
+}
+.vis-item.micro-request {
+  border-color: black;
+  border-radius: 0px;
+  border-width: 1px;
+  height: 15px;
+  width: 0px;
+}
+.vis-item .micro-report {
+  border-color: rgba(0, 162, 202, 0.68);
+  border-width: 8px;
+  border-radius: 8px;
+}
+.vis-item .micro-report-no-growth {
+  border-color: rgba(0, 162, 202, 0.68);
+  border-width: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: 0;
+}
+/*.vis-item.CS {
+  border-color: rgba(0, 162, 202, 0.68);
+  border-width: 8px;
+  border-radius: 8px;
+}*/
+.vis-item.admission-emergency {
+  background: rgba(207, 193, 25, 0.35);
+}
+.vis-item.admission-elective {
+   background: LightGray;
+}
+.vis-item.admission-death {
+  background: rgba(177, 0, 0, 0.58);
+}
+.vis-item.admission-CC {
+  background: DarkGray;
+}
+.vis-item.CDS-IV-sequence {
+  border: none;
+  background: DarkGray;
+  font: 0px;
+}
+.vis-item.CDS-STOP-prompts {
+  border-color: rgba(207, 193, 25, 1);
+  border-width: 8px;
+  border-radius: 8px;
+}
+.vis-item.vis-dot.CDS-change-prompts {
+  border-color: rgba(207, 193, 25, 1);
+  border-width: 8px;
+  border-radius: 8px;
+}
+.vis-item.vis-dot.CDS-IVPO-prompts {
+  border-color: orange;
+  border-width: 8px;
+  border-radius: 8px;
+}

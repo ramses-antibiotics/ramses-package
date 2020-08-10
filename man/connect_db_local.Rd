@@ -2,7 +2,7 @@
 % Please edit documentation in R/database.R
 \name{connect_db_local}
 \alias{connect_db_local}
-\title{Create a local database}
+\title{Create or connect to a local SQLite database}
 \usage{
 connect_db_local(file)
 }
@@ -13,8 +13,8 @@ connect_db_local(file)
 An object of class SQLiteConnection.
 }
 \description{
-Create a local database in memory or on disk using RSQLite. This is 
-the easiest method to work on a small scale, with a limited number of users.
+Create a local database in memory or on disk using \code{\link[RSQLite]{SQLite}()}. 
+This is the ideal method to experiment on a small scale or for testing purposes.
 }
 \details{
 This function creates a database on disk at the desired path. The database and
@@ -22,15 +22,15 @@ its content will persist on disconnection.
 }
 \section{Warning}{
      
-This method does not provide any encryption or password protection. For work with 
-real patient data, only use suitably encrypted databases.
+This method does not provide any encryption or password protection. You should only use this
+method with mock data unless you operate within a secure data enclave.
 }
 
 \examples{
     # Create database and load data
     con <- connect_db_local("ramses-db.sqlite")
     
-    dplyr::copy_to(dest = con, df = aware, name = "LU_AWaRe", 
+    dplyr::copy_to(dest = con, df = reference_aware, name = "reference_aware", 
                    overwrite = FALSE, temporary = FALSE)      
     
     # Close connection to database
@@ -38,7 +38,7 @@ real patient data, only use suitably encrypted databases.
     
     # Connect to the database again and show data
     con <- connect_db_local("ramses-db.sqlite")
-    dplyr::tbl(con, "LU_AWaRe")
+    dplyr::tbl(con, "reference_aware")
     DBI::dbDisconnect(con)
 }
 \seealso{

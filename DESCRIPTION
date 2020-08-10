@@ -37,9 +37,8 @@ Imports:
     data.table,
     readr,
     units (>= 0.6-1),
-    methods
-RdMacros: Rdpack
-RoxygenNote: 7.0.2
+    methods,
+    lubridate
 Suggests: 
     testthat (>= 2.1.0),
     knitr,
@@ -47,5 +46,10 @@ Suggests:
     covr,
     rvest,
     xml2,
-    curl
-VignetteBuilder: knitr
+    curl,
+    DiagrammeR,
+    odbc,
+    timevis
+RdMacros: Rdpack    
+RoxygenNote: 7.0.2
+VignetteBuilder: knitr,rmarkdown

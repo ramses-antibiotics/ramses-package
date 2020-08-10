@@ -563,8 +563,8 @@ compute_DDDs <- function(ATC_code, ATC_administration, dose, unit) {
           atc_page, 
           paste0("table:contains(", search_ATC[i], ")")
           )) == 0 ) {
-      warning("ATC not found: ", ATC_code[i], ". Please check ", 
-              atc_url, ".", call. = FALSE)
+      warning("ATC not found: ", search_ATC[i], 
+              ". Please check <<https://www.whocc.no/atc_ddd_index/>>.", call. = FALSE)
       next
     } else {
       atc_page <- atc_page %>% rvest::html_nodes("table") %>% 
@@ -596,4 +596,73 @@ compute_DDDs <- function(ATC_code, ATC_administration, dose, unit) {
     )]
   
   return(x[["DDD"]])
+}
+
+
+
+#' Look up ATC name on the WHO website
+#' 
+#' @description Look up drug name from an ATC code using the WHO DDD website.
+#' Requires an internet connection.
+#' @param x a character vector of ATC codes
+#'
+#' @return a character vector of ATC names (lowercase).
+#' @export
+#' @references Adapted from \code{\link[AMR]{atc_online_property}()} with thanks to 
+#' the \link{AMR} package authors.
+#' @examples
+#' get_ATC_name("J01XA01")
+get_ATC_name <- function(x) {
+    if (any(!requireNamespace("curl", quietly = TRUE),
+            !requireNamespace("xml2", quietly = TRUE),
+            !requireNamespace("rvest", quietly = TRUE))) {
+      stop("Packages \"curl\", \"rvest\" and \"xml2\" are required for this function to work. Please install them.",
+           call. = FALSE)
+    }
+    
+    if (!curl::has_internet()) {
+      stop("An internet connection is required for this function to work.")
+    }
+    
+    search_ATC <- gsub("[:blank:]", "", unique(x))
+    search_ATC[search_ATC == ""] <- NA
+    search_ATC <- stats::na.omit(search_ATC)
+    
+    if(length(search_ATC) == 0) {
+      stop("`x` must contain valid entries.")
+    }
+    
+    output <- list()
+    who_url <- "https://www.whocc.no/atc_ddd_index/?code=%s&showdescription=no"
+    
+    progress <- progress_estimated(n = length(search_ATC))
+    for (i in seq_len(length(search_ATC))) {
+      progress$tick()$print()
+      atc_url <- sub("%s", search_ATC[i], who_url, fixed = TRUE)
+      atc_page <- xml2::read_html(atc_url) 
+      if( length(rvest::html_nodes(
+        atc_page, 
+        paste0("table:contains(", search_ATC[i], ")")
+      )) == 0 ) {
+        warning("ATC not found: `", search_ATC[i], 
+                "`. Please check <https://www.whocc.no/atc_ddd_index/>.", call. = FALSE)
+        next
+      } else {
+        atc_page <- atc_page %>% rvest::html_nodes("table") %>% 
+          rvest::html_table(header = TRUE) %>% as.data.frame(stringsAsFactors = FALSE)
+        output[[i]] <- data.table(
+          ATC_code = search_ATC[i],
+          ATC_name = atc_page$Name[1]
+        )
+      }
+    }
+    output <- data.table::rbindlist(output)
+    if (nrow(output)==0) {
+      return(rep(NA_character_, length(x)))
+    } else {
+      return(
+        merge(x = data.table("ATC_code" = x), y = output, by = "ATC_code",
+              all.x = TRUE, sort = FALSE)[["ATC_name"]]
+      )
+    }
 }

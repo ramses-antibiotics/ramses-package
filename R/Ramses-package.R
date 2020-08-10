@@ -15,6 +15,8 @@
 #'    
 #' @keywords internal
 #' @importFrom Rdpack reprompt
+#' @seealso Preserving Antibiotics through Safe Stewardship (PASS) research 
+#' project: \url{https://pass-antibiotics.github.io}
 "_PACKAGE"
 
 # The following block is used by usethis to automatically manage

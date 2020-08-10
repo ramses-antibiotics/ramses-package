@@ -8,7 +8,7 @@ test_that("ICD-10-CM downloads and maps to Charlson", {
   expect_equal(icd10_charlson[icd10_charlson$icd_code=="J440", "charlson_weights"], 1)
 })
 
-test_that("Infection mapping works", {
+test_that("Infection mapping", {
   
   mock_icd10 <- data.frame(list(
     icd_code = c("A38X", "N390"),
@@ -19,7 +19,7 @@ test_that("Infection mapping works", {
   expect_equal(mock_icd10$infection_group2_label[2], "Urinary tract infections, unspecified")
 })
 
-test_that("dosage and DDDs work", {
+test_that("dosage and DDDs", {
   expect_equivalent(compute_DDDs("J01CA04", "O", 1500, "mg"), 1)
   expect_true(is.na(compute_DDDs("J01CA04", "O", 1500, NA)))
   expect_error(compute_DDDs("J01CA04", "O", 1500, "fake_unit"))
@@ -33,8 +33,12 @@ test_that("dosage and DDDs work", {
   expect_true(is.na(x[2]))
 })
 
+test_that("ATC name look up", {
+  expect_equal(get_ATC_name(c("J01CA04", "J01XA01")), c("amoxicillin", "vancomycin"))
+  expect_equal(expect_warning(get_ATC_name(c(NA, "", "fake_code"))), rep(NA_character_, 3))
+})
 
-test_that("CCS mapping works", {
+test_that("CCS mapping", {
   mock_icd_data <- data.frame(
     list(icd10_code = c("J44", "J44X", "J440")), 
     stringsAsFactors = FALSE)

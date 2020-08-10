@@ -14,30 +14,35 @@
 #' 
 #' @format A data frame with 208 antimicrobial agents, referenced 
 #' against the Anatomical Therapeutic Chemical (ATC) 
-#' classification \insertCite{WHO-ATC2020}{Ramses} and the 
-#' NHS Dictionary of Medicines (dm+d) \insertCite{DMD2015}{Ramses}.
-#' 
+#' classification \insertCite{WHO-ATC2020}{Ramses}, the World Health Organisation's
+#' and Public Health England's respective AWaRe Indices, 
+#' and the SNOMED-CT medical product concept codes and names 
+#' (from Virtual Therapeutic Moieties codes of the UK NHS Dictionary of Medicines 
+#' (dm+d) \insertCite{DMD2015}{Ramses}).
 #' It contains 6 columns:
 #' \describe{
-#' \item{\code{ATC_name}}{ATC name of the antibiotic}
 #' \item{\code{ATC_code}}{ATC code of the antibiotic}
 #' \item{\code{ATC_route}}{route of administration as defined in
 #' the ATC ("O" = oral; "P" = parenteral; "R" = rectal;
 #' "V" = vaginal)}
-#' \item{\code{AWaRe_England}}{AWaRe index assigned by Public Health
-#' England in 2018 ("Access", "Watch", "Reserve")}
-#' \item{\code{VTM_code}}{antibiotic Virtual Therapeutic Moiety 
+#' \item{\code{ATC_name}}{ATC name of the antibiotic}
+#' \item{\code{aware_category}}{AWaRe index ("Access", "Watch", "Reserve")}
+#' \item{\code{version}}{AWaRe Index version (eg. "WHO", "England")}
+#' \item{\code{year}}{AWaRe Index version year}
+#' \item{\code{WHONET_ab_code}}{WHONET antibiotic code (from \code{\link[AMR]{as.ab}()})}
+#' \item{\code{WHONET_ab_name}}{WHONET antibiotic name (from \code{\link[AMR]{ab_name}()})}
+#' \item{\code{VTM_code}}{SNOMED-CT medicinal product code/Virtual Therapeutic Moiety 
 #' concept code in the SNOMED-CT UK Drug Extension (see \insertCite{DMD2015}{Ramses})}
-#' \item{\code{VTM_name}}{antibiotic Virtual Therapeutic Moiety 
-#' concept label in the SNOMED-CT UK Drug Extension (see \insertCite{DMD2015}{Ramses})}
+#' \item{\code{VTM_name}}{SNOMED-CT medicinal product code/Virtual Therapeutic Moiety 
+#' concept name in the SNOMED-CT UK Drug Extension (see \insertCite{DMD2015}{Ramses})}
 #' }
 #' @docType data
-#' @name aware
-#' @source Adapted from \insertRef{PHE-aware2019}{Ramses} with Virtual  
+#' @name reference_aware
+#' @source Adapted from \insertCite{WHO-aware2019,PHE-aware2019;textual}{Ramses} with Virtual  
 #' Therapeutic Moiety equivalents from the NHS Dictionary of Medicines (dm+d)
 #' \insertCite{DMD2015}{Ramses}.
 #' @references{\insertAllCited{}}
-"aware"
+"reference_aware"
 
 #' Clinical Classifications Software (CCS): map to 4-character ICD code
 #' 
@@ -85,7 +90,7 @@
 "ccs"
 
 
-#' Clinical Classifications Software *Refined* (CCSR): map to 4-character ICD code
+#' Clinical Classifications Software \emph{Refined} (CCSR): map to 4-character ICD code
 #' 
 #' @description A map of 538 clinical concepts to 4-character ICD code 
 #' adapted from the Clinical Classifications Software Refined (CCSR) 

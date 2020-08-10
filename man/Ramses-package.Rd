@@ -29,12 +29,8 @@ R package for Antimicrobial Stewardship & Surveillance
    GNU General Public License for more details.
 }
 \seealso{
-Useful links:
-\itemize{
-  \item \url{https://github.com/ramses-antibiotics/ramses-package}
-  \item Report bugs at \url{https://github.com/ramses-antibiotics/ramses-package/issues}
-}
-
+Preserving Antibiotics through Safe Stewardship (PASS) research 
+project: \url{https://pass-antibiotics.github.io}
 }
 \author{
 \strong{Maintainer}: Peter Dutey-Magni \email{p.dutey-magni@ucl.ac.uk} (\href{https://orcid.org/0000-0002-8942-9836}{ORCID}) [researcher]

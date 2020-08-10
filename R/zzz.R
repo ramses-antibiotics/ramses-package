@@ -57,7 +57,9 @@ global_vars <- c(
   "start",
   "end",
   "level",
-  "header_indicator"
+  "header_indicator",
+  "therapy_start",
+  "therapy_end"
 )
 
 utils::globalVariables(global_vars)
