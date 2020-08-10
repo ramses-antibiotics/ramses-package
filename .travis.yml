@@ -19,7 +19,7 @@ script:
   - docker-compose exec -w /mnt/Ramses/ r Rscript -e 'devtools::check()'
   - | 
     if [ "$RAMSESIMAGE" == "pdutey/ramses:R3.6.2" ]; then 
-      docker-compose exec -w /mnt/Ramses/ r Rscript -e "covr::codecov(type = "all", token = ${CODECOVETOKEN})"
+      docker-compose exec -w /mnt/Ramses/ r Rscript -e "covr::codecov(type = "all", token = '${CODECOVETOKEN}')"
     fi
 
 after_deploy:
