@@ -131,3 +131,18 @@
 #' @docType data
 #' @name reference_drug_frequency
 "reference_drug_frequency"
+
+#' Clinical investigations and observations LOINC codes look-up table
+#' @description This look-up table provides a subset of useful clinical investigation
+#' codes from the LOINC terminology. It can be used to map clinical investigations
+#' and observations that are relevant to modelling antibiotic prescribing decisions.
+#' @details This material contains content from LOINC (\url{http://loinc.org}). 
+#' LOINC is copyright © 1995-2020, Regenstrief Institute, Inc. and the 
+#' Logical Observation Identifiers Names and Codes(LOINC) Committee and 
+#' is available at no cost under the license at \url{http://loinc.org/license}.
+#' LOINC® is a registered United States trademark of Regenstrief Institute, Inc.
+#' @source LOINC Table File Version 2.68. Released 2020-06-17. \url{http://loinc.org}
+#' @format A data frame.
+#' @docType data
+#' @name reference_loinc
+"reference_loinc"
