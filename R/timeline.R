@@ -50,13 +50,13 @@ therapy_timeline <- function(conn, patient_identifier,
   date2 <- lubridate::as_datetime(date2)
   
   if( !is.na(date1) && !is.na(date2) ) {
-    date_window <- dplyr::filter( nodes, 
-        dplyr::between(therapy_start, date1, date2) |
-          dplyr::between(therapy_end, date1, date2) |
-          (therapy_start <= date1 & date1 <= therapy_end) ) %>%
+    date_window <- dplyr::filter(
+      nodes, 
+      dplyr::between(therapy_start, date1, date2) |
+        dplyr::between(therapy_end, date1, date2) |
+        (therapy_start <= date1 & date1 <= therapy_end)) %>%
       dplyr::summarise(left_date = min(therapy_start, na.rm = T), 
                        right_date = max(therapy_end, na.rm = T))
-    
   } else if( !is.na(date2) ) {
     date_window <- dplyr::filter(
       nodes, 

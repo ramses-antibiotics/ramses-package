@@ -21,24 +21,36 @@ library(Ramses)
 ```
 
 
-## Introduction
+# Introduction
 
 This vignette demonstrates how to clean and validate hospital records and load them into a data warehouse.
 
-Ramses is provided with simulated data consisting of records of `r formatC(length(unique(inpatient_episodes$local_provider_spell_number)), big.mark = ",")` hospitalisations for `r formatC(length(unique(inpatient_episodes$local_patient_identifier)), big.mark = ",")` patients, complete with prescriptions, diagnoses and care episodes records.
+Ramses is provided simulated datasets consisting of records of `r formatC(length(unique(inpatient_episodes$spell_id)), big.mark = ",")` hospitalisations for `r formatC(length(unique(inpatient_episodes$patient_id)), big.mark = ",")` patients, complete with prescriptions, diagnoses and care episodes records.
 
 
-# Data cleaning and validation
+# Setup
+
+First, packages must be loaded.
+
 ```{r setup, warning=F, message=F}
-library(AMR)
 library(Ramses)
-# to facilitate data manipulations
-library(dplyr)
+library(dplyr)    # to facilitate data manipulations
+library(magrittr) # for the pipe operator `%>%`
 ```
 
+Second, a relational database server is needed. In this vignette, we will create a small \href{https://www.sqlite.org}{SQLite 3} database on the local hard drive. This database will behave in a similar way as a large Microsoft SQL Server or MySQL relational database. The database connection information is stored in an object entitled `ramses_db` which must be provided to most functions in the Ramses package.
 
-## Medication records
-### Drug prescriptions
+```{r}
+ramses_db <- connect_db_local("ramses-db.sqlite")
+```
+
+We can now begin validating and loading records into the database. This may be done in any order.
+
+# Medication records
+
+## Drug prescriptions
+
+We begin with prescription records. 
 
 ```{r print_prescriptions}
 str(drug_prescriptions)
@@ -80,8 +92,9 @@ drug_prescriptions <- mutate(drug_prescriptions,
 ```
 
 With the AMR package, it is possible to infer important properties of the drug:
-- its ATC class and group, which can be useful for instance in order identify antifungals (group 'Antifungals/antimycotics')
-- Defined Daily Doses (DDDs). 
+
+* its ATC class and group, which can be useful for instance in order identify antifungals (group 'Antifungals/antimycotics')
+* Defined Daily Doses (DDDs). 
 
 Working out the DDD of the prescription is somewhat more complex. The reference DDD is for the main substance. In the case of amoxicillin/clavulanic acid for example, the DDD (0.5g) refers to the amoxicillin. A 625mg tablet of Augmentin (c) contains 500mg of amoxicillin and 125mg of clavulanic acid. The reference DDD is `paste0(AMR::ab_ddd("amoxicillin/clavulanic acid", "oral"), AMR::ab_ddd("amoxicillin/clavulanic acid", "oral", unit = T))` = `r paste0(ab_ddd("amoxicillin/clavulanic acid", "oral"), ab_ddd("amoxicillin/clavulanic acid", "oral", unit = T))`. A prescription of Augmentin 625mg TDS (three times a day) therefore amounts to 1.5g of amoxicillin per day, which is 1.5 DDDs. Co-trimoxazole is a compound of 5 parts of sulfamethoxazole to 1 part of trimethoprim. The DDD of sulfamethoxazole is 2g while the DDD of trimethoprim is 400mg: with this ratio of 5 to 1, DDDs calculated on the basis of the dosage of sulfamethoxazole will be valid for co-trimoxazole prepared with 5 parts to 1 part.
 
@@ -128,9 +141,34 @@ drug_prescriptions <- drug_prescriptions %>%
     dose = daily_dose,
     unit = units))
 
+
 ```
 
-### Drug administrations
+
+```{r}
+drug_prescriptions <- drug_prescriptions %>% 
+  transmute(patient_id,
+            prescription_id,
+            drug_id,
+            drug_name = drug_name,
+            drug_display_name = drug_name,
+            ATC_code,
+            ATC_group,
+            ATC_route,
+            authoring_date,
+            prescription_start,
+            prescription_end,
+            prescription_status = "completed",
+            prescription_context = "inpatient",
+            dose,
+            unit = units,
+            route,
+            frequency,
+            daily_frequency,
+            DDD)
+```
+
+## Drug administrations
 
 An identical process is followed for drug administration, with the difference that DDDs do not rely on a daily frequency of administration variable
 
@@ -214,12 +252,56 @@ drug_administrations <- drug_administrations %>%
 
 ```
 
-## Inpatient care records
 
-### Episodes of care
+Data can now be loaded into the database
 
+```{r load_rx}
+load_medications(conn = ramses_db, 
+                 prescriptions = drug_prescriptions, 
+                 administrations = drug_administrations, 
+                 overwrite = TRUE)
+```
 
-### Diagnosis codes (ICD-10)
+# Inpatient care records
+
+## Admissions
+
+We now turn to records of admissions, discharges and transfers. Ramses is designed around the notion of *hospital spells* identified by variable `spell_id`, which correspond to the window from the time a patient is admitted to the time a patient is discharged. 
+
+In addition, Ramses use subdivisions of *hospital spells* called *episodes of care*, which designate a continuous period of inpatient care under the responsibility of a department, specialty, or clinical team. This corresponds to the 'finished consultant episode' in the UK NHS Admitted Patient Care data model [@Herbert2017]. All *hospital spells* consist of at least one *episode of care*.
+Episodes of care are used to calculate bed-days as well as rates of infection, prescribing and other stewardship metrics for individal specialties and teams of clinicians. 
+
+Hospital spells and episodes of care are recorded in a single table in which every row corresponds to one episode of care.
+
+```{r}
+str(inpatient_episodes)
+```
+
+Dates of admissions and episode start/end must be valid:
+
+* there must be no overlap between admissions or between episodes
+* there must be no gap between episodes in an admission.
+
+```{r}
+validate_inpatient_episodes(episodes = inpatient_episodes)
+```
+
+Optionally, Ramses can use data on ward movements. These records must be validated together with episodes of care
+
+```{r}
+validate_inpatient_episodes(episodes = inpatient_episodes, 
+                            wards = inpatient_wards)
+```
+
+The data can now be loaded into the database.
+
+```{r}
+load_inpatient_episodes(conn = ramses_db,
+                        episodes_data = Ramses::inpatient_episodes,
+                        wards_data =  Ramses::inpatient_wards)
+```
+
+## Diagnosis codes (ICD-10)
 
 In order to exploit clinical diagnoses coded by doctors during hospital admissions, Ramses relies on a range of look up tables which must be built to suit the precise ICD-10 version used by the data. Ramses uses three types of look up tables:
 
@@ -227,7 +309,7 @@ In order to exploit clinical diagnoses coded by doctors during hospital admissio
 * a categorisation based on the AHRQ Clinical Classification Software (CCS) or its Revised version (CCSR)
 * a classification of infections and whether antibiotics are commonly indicated to treat them, adapted from @Hashimoto2020
 
-### ICD-10 reference table
+## ICD-10 reference table
 
 This example uses the `Ramses::inpatient_diagnoses` example dataset. First, we download the ICD-10-CM reference look up table
 
@@ -278,62 +360,34 @@ head(icd_infection_lkup)
 ```
 
 
-```{r create_local_db}
-ramses_db <- connect_db_local("ramses-db.sqlite")
+Data may now be loaded into the database. Diagnoses and their reference look-up are loaded in one step
+
+```{r load_diagnoses}
 load_inpatient_diagnoses(conn = ramses_db, 
                          diagnoses_data = inpatient_diagnoses, 
                          diagnoses_lookup = icd10cm, 
                          overwrite = TRUE)
-
-# TODO: APC_Diagnoses_Infection_Summary
 ```
 
 
-```{r load_medications}
-# load aware - add atc and ATC_route
-# create TTA
-drug_prescriptions <- drug_prescriptions %>% 
-  transmute(patient_id,
-            prescription_id,
-            drug_id,
-            drug_name = drug_name,
-            drug_display_name = drug_name,
-            ATC_code,
-            ATC_group,
-            ATC_route,
-            authoring_date,
-            prescription_start,
-            prescription_end,
-            prescription_status = "completed",
-            prescription_context = "inpatient",
-            dose,
-            unit = units,
-            route,
-            frequency,
-            daily_frequency,
-            DDD)
 
-load_medications(conn = ramses_db, 
-                 prescriptions = drug_prescriptions, 
-                 administrations = drug_administrations, 
-                 overwrite = TRUE)
+# Visualisation
 
-load_inpatient_episodes(conn = ramses_db,
-                        episodes_data = Ramses::inpatient_episodes,
-                        wards_data =  Ramses::inpatient_wards)
+You are now able to query the database and visualise admissions and episodes of antimicrobial therapy.
 
-
-```
-
-
-You are now able to visualise the data!
 ```{r}
 therapy_timeline(conn = ramses_db, 
                  patient_identifier =  "99999999999",
                  date1 = as.Date("2017-02-01"),
                  date2 = as.Date("2017-03-01"))
+```
+
+Always remember close database connections when you are finished.
+
+```{r}
 DBI::dbDisconnect(ramses_db)
 ```
+
 
 
 # References

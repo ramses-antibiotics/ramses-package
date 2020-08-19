@@ -36,7 +36,7 @@
 connect_db_local <- function(file) {
   con <- DBI::dbConnect(RSQLite::SQLite(), file)
   .build_tally_table(con)
-  warning(paste0("SQLite database created in ", con@dbname, 
+  warning(paste0("SQLite database created in \n", con@dbname, 
                  "\nPlease do not use real patient data."))
   
   con
