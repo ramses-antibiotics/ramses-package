@@ -1045,3 +1045,59 @@ load_medications.SQLiteConnection <- function(
     ward_movements = Ramses::inpatient_wards
   )
 }
+
+
+#' Collect SQL tibble
+#' 
+#' @description This wrapper function for \link[dplyr]{collect} will convert
+#' relevant character columns to `date` and `datetime` during collection of 
+#' SQLite tables. This is to address the absence of date and time data types
+#' in SQLite.
+#' @param tbl a `tbl_sql` object
+#' @return a `tbl_df` object
+#' @seealso \url{https://www.sqlite.org/datatype3.html#date_and_time_datatype}
+#' @noRd
+.sqlite_date_collect <- function(tbl) {
+  if(is(tbl, "tbl_SQLiteConnection")) {
+    tbl <- dplyr::collect(tbl)
+    DATETIME_FIELDS <- c(
+      "prescription_start",
+      "prescription_end",
+      "authoring_date",
+      "administration_date",
+      "therapy_start",
+      "therapy_end",
+      "admission_date",
+      "admission_date",
+      "discharge_date",
+      "episode_start",
+      "episode_end",
+      "ward_start",
+      "ward_end"
+    )
+    DATETIME_FIELDS <- DATETIME_FIELDS[
+      which(DATETIME_FIELDS %in% colnames(tbl))
+      ]
+    for(var in DATETIME_FIELDS){
+      tbl[[var]] <- lubridate::as_datetime(tbl[[var]])
+    }
+    
+    DATE_FIELDS <- c(
+      "date_of_birth", 
+      "date_of_death"
+    )
+    DATE_FIELDS <- DATE_FIELDS[
+      which(DATE_FIELDS %in% colnames(tbl))
+      ]
+    for(var in DATE_FIELDS){
+      tbl[[var]] <- lubridate::as_date(tbl[[var]])
+    }
+    
+    return(tbl)
+  } else {
+    dplyr::collect(tbl)
+  }
+}
+
+ 
+ 

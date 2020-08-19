@@ -9,6 +9,9 @@ test_that("Ramses on SQLite", {
     skip("Test only on Travis")
   }
   
+
+  # > validate functions --------------------------------------------------
+  
   drug_data <- Ramses:::.prepare_example_drug_records()
   inpatient_data <- Ramses:::.prepare_example_inpatient_records()
   icd10cm <- download_icd10cm()
@@ -51,6 +54,47 @@ test_that("Ramses on SQLite", {
            combination_id = c(NA_character_, "0bf9ea7732dd6e904ab670a407382d95"),
            therapy_id = c("0bf9ea7732dd6e904ab670a407382d95", "0bf9ea7732dd6e904ab670a407382d95")))
   
+  
+  # > date and datetime casting on SQLite -------------------------------------
+
+  test_sqlite_date <- tbl(ramses_db, "inpatient_episodes") %>% 
+    dplyr::filter(patient_id == "99999999999") %>% 
+    Ramses:::.sqlite_date_collect( )
+  
+  expect_is(test_sqlite_date$spell_id, "character")
+  expect_is(test_sqlite_date$admission_date, "POSIXt")
+  expect_equal(test_sqlite_date$date_of_birth[1], as.Date("1926-08-02"))
+  expect_equal(test_sqlite_date$date_of_death[1], as.Date(NA))
+  
+  # > therapy timeline -------------------------------------------------
+  
+  expect_error(
+    therapy_timeline(conn = conSQLite, 
+                     patient_identifier =  "I don't exist")
+  )
+  expect_is(
+    therapy_timeline(conn = conSQLite, 
+                     patient_identifier =  "99999999999"),
+    "timevis")
+  expect_is(
+    therapy_timeline(conn = conSQLite, 
+                     patient_identifier =  "99999999999",
+                     date1 = "2017-01-01",
+                     date2 = "2017-03-01"), 
+    "timevis")
+  expect_is(
+    therapy_timeline(conn = conSQLite, 
+                     patient_identifier =  "99999999999",
+                     date1 = "2017-01-01"),
+    "timevis")
+  expect_is(
+    therapy_timeline(conn = conSQLite, 
+                     patient_identifier =  "99999999999",
+                     date2 = "2017-03-01"), 
+    "timevis")
+  
+
+  # > close connection ----------------------------------------------------
   DBI::dbDisconnect(conSQLite)
   file.remove("test.sqlite")
   

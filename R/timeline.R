@@ -22,7 +22,8 @@
 #' @importFrom magrittr %>%
 #' @importFrom lubridate as_datetime
 #' @export
-therapy_timeline <- function(conn, patient_identifier, date1, date2,
+therapy_timeline <- function(conn, patient_identifier, 
+                             date1 = NA, date2 = NA,
                              load_timevis_dependencies = FALSE){
   
   requireNamespace("timevis", quietly = TRUE)
@@ -30,7 +31,7 @@ therapy_timeline <- function(conn, patient_identifier, date1, date2,
   # Retrieve inpatient records
   base <- tbl(conn, "inpatient_episodes") %>%
     dplyr::filter(patient_id == patient_identifier) %>%
-    dplyr::collect()
+    .sqlite_date_collect()
   if (nrow(base) == 0) {
     stop("Patient was not found.")
   }
@@ -39,42 +40,41 @@ therapy_timeline <- function(conn, patient_identifier, date1, date2,
   nodes <- tbl(conn, "drug_prescriptions") %>%
     dplyr::filter(patient_id == patient_identifier & 
              !prescription_status %in% c("cancelled", "draft")) %>%
-    dplyr::left_join(tbl(conn, "drug_therapy_episodes")) %>%
-    dplyr::arrange(patient_id, prescription_start) %>% collect() 
-  
-  if( is(conn, "SQLiteConnection") ) {
-    # TODO build a function for this
-    nodes <- nodes %>% 
-      dplyr::mutate(prescription_start = as_datetime(prescription_start),
-             prescription_end = as_datetime(prescription_end),
-             therapy_start = as_datetime(therapy_start),
-             therapy_end = as_datetime(therapy_end),
-             authoring_date = as_datetime(authoring_date))
-  }
-  
+    dplyr::left_join(tbl(conn, "drug_therapy_episodes"), 
+                     by = c("patient_id", "therapy_id")) %>%
+    dplyr::arrange(patient_id, prescription_start) %>% 
+    .sqlite_date_collect() 
+   
   # Calculate the date range the timeline should display by default
-  if(missing(date1) | missing(date2)){
-    date_window <- nodes %>% 
-      dplyr::summarise(left_date = min(therapy_start), 
-                right_date = max(therapy_end)) %>% 
-      dplyr::collect()
-  } else {
-    date_window <- nodes %>% dplyr::filter( between(therapy_start, date1, date2) |
-                                       between(therapy_end, date1, date2) |
-                                       between(date1, therapy_start, therapy_end)) %>%
-      dplyr::summarise(left_date = min(therapy_start), 
-                right_date = max(therapy_end))
-  }
+  date1 <- lubridate::as_datetime(date1)
+  date2 <- lubridate::as_datetime(date2)
   
-
-  
-  if( is(conn, "SQLiteConnection") ) {
-    # TODO build a function for this
+  if( !is.na(date1) && !is.na(date2) ) {
+    date_window <- dplyr::filter( nodes, 
+        dplyr::between(therapy_start, date1, date2) |
+          dplyr::between(therapy_end, date1, date2) |
+          (therapy_start <= date1 & date1 <= therapy_end) ) %>%
+      dplyr::summarise(left_date = min(therapy_start, na.rm = T), 
+                       right_date = max(therapy_end, na.rm = T))
     
-    base <- base %>% 
-      dplyr::mutate(admission_date = as_datetime(admission_date),
-             discharge_date = as_datetime(discharge_date))
-  }
+  } else if( !is.na(date2) ) {
+    date_window <- dplyr::filter(
+      nodes, 
+      therapy_start <= date2 ) %>%
+      dplyr::summarise(left_date = min(therapy_start, na.rm = T), 
+                       right_date = max(therapy_end, na.rm = T)) 
+  } else if( !is.na(date1) ) {
+    date_window <- dplyr::filter(
+      nodes, 
+      therapy_end >= date1 ) %>%
+      dplyr::summarise(left_date = min(therapy_start, na.rm = T), 
+                       right_date = max(therapy_end, na.rm = T)) 
+  } else {
+    date_window <- dplyr::summarise(
+      nodes, 
+      left_date = min(therapy_start, na.rm = T), 
+      right_date = max(therapy_end, na.rm = T)) 
+  } 
   
   # extract all data to feed into timevis
   timeline_diags <- NULL #TODO timeline_Rx_getdiag(input_patient)

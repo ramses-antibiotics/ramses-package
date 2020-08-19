@@ -8,6 +8,16 @@ inpatient_episodes <- read.csv(
                  "POSIXct", "POSIXct", "integer", 
                  "integer", "character", "POSIXct", "POSIXct", 
                  "character", "character"))
+inpatient_episodes2 <- read.csv(
+  file = "data-raw/inpatient_episodes2.csv", stringsAsFactors = F,
+  colClasses = c("character", "character", "Date", "Date", 
+                 "character", "character", "character", 
+                 "character", "character", "character", 
+                 "POSIXct", "POSIXct", "integer", 
+                 "integer", "character", "POSIXct", "POSIXct", 
+                 "character", "character"))
+inpatient_episodes <- dplyr::bind_rows(inpatient_episodes,
+                                       inpatient_episodes2)
 usethis::use_data(inpatient_episodes, overwrite = T)
 
 inpatient_diagnoses <- read.csv(
@@ -16,10 +26,24 @@ inpatient_diagnoses <- read.csv(
                  "integer", "character",
                  "integer", "POSIXct", 
                  "POSIXct", "character"))
+inpatient_diagnoses2 <- read.csv(
+  file = "data-raw/inpatient_diagnoses2.csv", stringsAsFactors = F, 
+  colClasses = c("character", "character",
+                 "integer", "character",
+                 "integer", "POSIXct", 
+                 "POSIXct", "character"))
+inpatient_diagnoses <- dplyr::bind_rows(inpatient_diagnoses,
+                                        inpatient_diagnoses2)
 usethis::use_data(inpatient_diagnoses, overwrite = T)
 
 inpatient_wards <- read.csv(
   file = "data-raw/inpatient_wards.csv", stringsAsFactors = F, 
   colClasses = c("character", "character", "character",
                  "POSIXct", "POSIXct"))
+inpatient_wards2 <- read.csv(
+  file = "data-raw/inpatient_wards2.csv", stringsAsFactors = F, 
+  colClasses = c("character", "character", "character",
+                 "POSIXct", "POSIXct"))
+inpatient_wards <- dplyr::bind_rows(inpatient_wards,
+                                    inpatient_wards2)
 usethis::use_data(inpatient_wards, overwrite = T)
