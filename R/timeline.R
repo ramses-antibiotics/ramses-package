@@ -7,7 +7,6 @@
 # }
 
 
-# TODO rename, document and test function!
 #' Build an antiinfective timeline visualisation
 #'
 #' @param conn a database connection
@@ -181,6 +180,6 @@ therapy_timeline <- function(conn, patient_identifier,
                          tooltip = list(followMouse = T)),
     loadDependencies = load_timevis_dependencies) %>% 
     timevis::setWindow(start = date_window$left_date,
-              end = date_window$right_date) %>% 
+                       end = date_window$right_date) %>% 
     return()
 }

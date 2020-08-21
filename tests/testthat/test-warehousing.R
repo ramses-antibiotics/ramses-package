@@ -5,7 +5,7 @@
 
 test_that("Ramses on SQLite", {
   
-  if (!identical(Sys.getenv("TRAVIS"), "true")) {
+  if (!identical(Sys.getenv("TRAVISTESTS"), "true")) {
     skip("Test only on Travis")
   }
   
@@ -37,6 +37,12 @@ test_that("Ramses on SQLite", {
   expect_true(medication_loading$administration_load_errors)
   
   expect_true(
+    load_inpatient_episodes(conn = conSQLite,
+                            episodes_data = inpatient_data$episodes,
+                            wards_data = inpatient_data$ward_movements)
+  )
+  
+  expect_true(
     expect_warning(
       load_inpatient_diagnoses(conn = conSQLite,
                            diagnoses_data = inpatient_data$diagnoses,
@@ -52,12 +58,12 @@ test_that("Ramses on SQLite", {
     test_output, 
     tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08"),
            combination_id = c(NA_character_, "0bf9ea7732dd6e904ab670a407382d95"),
-           therapy_id = c("0bf9ea7732dd6e904ab670a407382d95", "0bf9ea7732dd6e904ab670a407382d95")))
+           therapy_id = c("592a738e4c2afcae6f625c01856151e0", "0bf9ea7732dd6e904ab670a407382d95")))
   
   
   # > date and datetime casting on SQLite -------------------------------------
 
-  test_sqlite_date <- tbl(ramses_db, "inpatient_episodes") %>% 
+  test_sqlite_date <- tbl(conSQLite, "inpatient_episodes") %>% 
     dplyr::filter(patient_id == "99999999999") %>% 
     Ramses:::.sqlite_date_collect( )
   
