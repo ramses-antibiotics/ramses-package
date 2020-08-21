@@ -26,7 +26,7 @@ services:
       USER: user
       PASSWORD: password
       CODECOVETOKEN: ${CODECOVETOKEN}
-      TRAVISTESTS: true
+      TRAVISTESTS: "true"
     ports:
      - 8787:8787
     volumes:
