@@ -36,10 +36,13 @@ test_that("Ramses on SQLite", {
   expect_true(medication_loading$prescription_load_errors)
   expect_true(medication_loading$administration_load_errors)
   
-  expect_true(
+  expect_equivalent(
     load_inpatient_episodes(conn = conSQLite,
                             episodes_data = inpatient_data$episodes,
-                            wards_data = inpatient_data$ward_movements)
+                            wards_data = inpatient_data$ward_movements,
+                            overwrite = TRUE),
+    list(episodes_load_errors = TRUE,
+         wards_load_errors = TRUE)
   )
   
   expect_true(
