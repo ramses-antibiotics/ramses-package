@@ -759,6 +759,134 @@ validate_administrations <- function(data) {
   NULL
 }
 
+#' Validate microbial isolates & susceptibility records
+#'
+#' @param specimens a data frame with one row per specimen sent
+#' to laboratory (see details)
+#' @param isolates a data frame with one row per microorganism
+#' isolated from the laboratory specimen (see details)
+#' @param susceptibilities a data frame with one row per susceptibility
+#' (see details)
+#' 
+#' 
+#' 
+#' @section \code{specimens} data frame:
+#' The following fields are mandatory:
+#' \describe{
+#'    \item{\code{specimen_id}}{a unique identifier with no missing value}
+#'    \item{\code{patient_id}}{a patient identifier with no missing value}
+#'    \item{\code{spell_id}}{a hospital spell identifier (if the specimen was 
+#'    sampled during admission)}
+#'    \item{\code{status}}{one value from the following 
+#'    \href{https://www.hl7.org/fhir/valueset-specimen-status.html{FHIR R4}
+#'      reference set: \itemize{
+#'        \item \code{"available"}: The physical specimen is present and 
+#'        in good condition.
+#'        \item \code{"unavailable"}: There is no physical specimen because it is either 
+#'        lost, destroyed or consumed.
+#'        \item \code{"unsatisfactory"}: The specimen cannot be used because of a
+#'         quality issue such as a broken container, contamination, or too old.	
+#'        \item \code{"entered-in-error"}: The specimen was entered in error and 
+#'        therefore nullified.
+#'      }}
+#'    \item{\code{specimen_datetime}}: the time when specimen was sampled or 
+#'    received for processing.
+#'    \item{\code{specimen_type_code}}
+#'    \item{\code{specimen_type_name}}
+#'    \item{\code{specimen_type_display}}
+#' }
+#' 
+#' The following fields are optional:
+#' \describe{
+#'    \item{\code{}}
+#'    \item{\code{}}
+#'    \item{\code{}}
+#'  }
+#' 
+#' 
+#' 
+#' @section \code{specimens} data frame:
+#' The following fields are mandatory:
+#' \describe{
+#'    \item{\code{}}
+#'    \item{\code{}}
+#'    \item{\code{}}
+#'  }
+#' 
+#' The following fields are optional:
+#' \describe{
+#'    \item{\code{}}
+#'    \item{\code{}}
+#'    \item{\code{}}
+#' }
+#'  
+#'  
+#'  
+#' @section \code{susceptibilities} data frame:
+#' The following fields are mandatory:
+#' \describe{
+#'   \item{specimen_id}{a specimen identifier with no missing value}
+#'   \item{status}{a string in  ne value from the following 
+#'      \href{https://www.hl7.org/fhir/valueset-specimen-status.html}{FHIR}
+#'      reference set:
+#'      \itemize{
+#'         \item \code{"available"}: The physical specimen is present and in good condition.
+#'         \item \code{"unavailable"}: There is no physical specimen because it is either lost, destroyed or consumed.
+#'         \item \code{"unsatisfactory"}: The specimen cannot be used because of a quality issue such as a broken container, contamination, or too old.
+#'         \item \code{"entered-in-error"}: The specimen was entered in error and therefore nullified.
+#'      }
+#' }}
+#' 
+#' The following fields are optional:
+#' \describe{}
+#' 
+#' 
+#'
+#' @return
+#' @export
+validate_microbiology <- function(specimens, isolates, susceptibility) {
+  
+}
+
+
+#' Validate records of observations & investigation results
+#'
+#' @param investigations 
+#'
+#' @return
+#' @section 
+#' 
+#' Codes from teh following value set \url{http://hl7.org/fhir/observation-status} \itemize{
+#'   \item \code{"registered"}: The existence of the observation is registered, but there is no result yet available.
+#'   \item \code{"preliminary"}: his is an initial or interim observation: data may be incomplete or unverified.
+#'   \item \code{"final"}: The observation is complete and there are no further actions needed. 
+#'   \item \code{"amended"}: Subsequent to being Final, the observation has been modified 
+#'   subsequent. This includes updates/new information and corrections.
+#'   \item \code{"corrected"}: Subsequent to being Final, the observation has been modified to 
+#'   correct an error in the test result.
+#'   \item \code{"cancelled"}: The observation is unavailable because the 
+#'   measurement was not started or not completed.
+#'   \item \code{"entered-in-error"}: The observation has been withdrawn following previous 
+#'   final release. This electronic record should never have existed, though it is possible 
+#'   that real-world decisions were based on it. (If real-world activity has occurred, 
+#'   the status should be "cancelled" rather than "entered-in-error".).
+#'   \item \code{"unknown"}: The authoring/source system does not know which of the status 
+#'   values currently applies for this observation. Note: This concept is not to be used for 
+#'   "other" - one of the listed statuses is presumed to apply, but the authoring/source 
+#'   system does not know which.
+#'   }
+#' 
+#' 
+#' identifier of the hospital spell during which the investigation was performed.
+#' datetime when the investigation was performed.
+#' Observation or Lab code from LOINC or SNOMED-CT
+#' @export
+#'
+#' @examples
+validate_investigations <- function(investigations) {
+  
+}
+
 arrange_variables <- function(data, first_column_names) {
   other_names <- colnames(data)[!colnames(data) %in% first_column_names]
   data[, c(first_column_names, other_names)]

@@ -1,0 +1,26 @@
+"tessy_code","tessy_description","normally_sterile"
+"BAL","Broncho alveolar lavage",TRUE
+"BLOOD","Blood",TRUE
+"BONE","Bone marrow",TRUE
+"CSF","Cerebrospinal fluid",TRUE
+"LUNGTISSUE","Tissue",TRUE
+"PLEURAL","Pleural effusion",TRUE
+"SYNO","Synovial fluid (arthritis)",TRUE
+"URI","Urine",TRUE
+"URINE","Urine",TRUE
+"OTHSTERILE","Other normally sterile site",TRUE
+"DRYBLOSP","Dry blood spot",FALSE
+"EDTA","EDTA whole blood",FALSE
+"EYE","Eye (endophthalmitis)",FALSE
+"FAECES","Faeces",FALSE
+"GF","Gastric fluid",FALSE
+"NASALSWAB","Nasal and naso-pharyngeal",FALSE
+"PUS","Pus",FALSE
+"SALOR","Saliva/oral fluid",FALSE
+"SKIN","Skin",FALSE
+"SPUTUM","Sputum including induced sputum",FALSE
+"NONSTERILE","Non-sterile site in foetus,stillborn,newborn,mother sampled within 24h. of birth",FALSE
+"O","Other",FALSE
+"OTHER","Other",FALSE
+"UNK","Unknown",FALSE
+NA,"Not applicable",FALSE

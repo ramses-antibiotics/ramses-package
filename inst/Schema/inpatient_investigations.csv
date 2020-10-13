@@ -1,0 +1,11 @@
+position,variable_name,must_exist,must_be_nonmissing,must_be_unique
+1,specimen_id,TRUE,TRUE,TRUE
+2,patient_id,TRUE,TRUE,FALSE
+3,spell_id,TRUE,FALSE,FALSE
+4,status,TRUE,TRUE,FALSE
+5,request_datetime,TRUE,TRUE,FALSE
+6,observation_code,TRUE,FALSE,FALSE
+7,observation_name,TRUE,FALSE,FALSE
+8,observation_display,TRUE,FALSE,FALSE
+9,observation_value_text,TRUE,FALSE,FALSE
+10,observation_value_numeric,TRUE,FALSE,FALSE

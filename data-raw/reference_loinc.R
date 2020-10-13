@@ -59,10 +59,14 @@ reference_loinc <- filter(
     "9108-2",   #	Fluid intake total 24 hour
     "9262-7",   # Fluid output total 24 hour
     "2823-3",   # Potassium [Moles/volume] in Serum or Plasma
+    "2947-0",   # Sodium [Moles/volume] in Blood
     "2345-7", 	# Glucose [Mass/volume] in Serum or Plasma
-    "3094-0", 	# Urea nitrogen [Mass/volume] in Serum or Plasma
     "2160-0", 	# Creatinine [Mass/volume] in Serum or Plasma
+    "3094-0", 	# Urea nitrogen [Mass/volume] in Serum or Plasma
     "3097-3", 	# Urea nitrogen/Creatinine [Mass Ratio] in Serum or Plasma
+    "3091-6",   # Urea [Mass/volume] in Serum or Plasma
+    "22664-7",  # Urea [Moles/volume] in Serum or Plasma
+    "77136-0",  # Urea [Moles/volume] in Serum, Plasma or Blood
     "33914-3", 	# Glomerular filtration rate/1.73 sq M.predicted [Volume Rate/Area] in Serum or Plasma by Creatinine-based formula (MDRD)
     "50044-7", 	# Glomerular filtration rate/1.73 sq M.predicted among females [Volume Rate/Area] in Serum, Plasma or Blood by Creatinine-based formula (MDRD)
     "48642-3", 	# Glomerular filtration rate/1.73 sq M.predicted among non-blacks [Volume Rate/Area] in Serum, Plasma or Blood by Creatinine-based formula (MDRD)
@@ -84,11 +88,50 @@ reference_loinc <- filter(
     "30318-0", 	# Base deficit in Blood
     "20564-1", 	# Oxygen saturation in Blood
     "2713-6", 	# Oxygen saturation Calculated from oxygen partial pressure in Blood
-    "718-7", 	  # Hemoglobin [Mass/volume] in Blood
+    "59408-5",  # Oxygen saturation in Arterial blood by Pulse oximetry
     "3150-0", 	# Inhaled oxygen concentration
-    "3151-8" 	# Inhaled oxygen flow rate
+    "3151-8",	  # Inhaled oxygen flow rate
+    "50982-8"  # Horowitz index in Blood
   )) %>% 
   arrange(CLASS, SYSTEM, LOINC_NUM)
 
 usethis::use_data(reference_loinc, overwrite = T)
- 
+
+# 
+# tessy <- read.csv("data-raw/tessy_45.csv", stringsAsFactors = F)
+# tessy <- tessy[
+#   !tessy$tessy_codelist %in% 
+#     c("SpecimenDIPH", 
+#       "SpecimenSeroVPD"), ]
+# tessy <- tessy[,-1]
+# for(i in ncol(tessy)){
+#   tessy[[i]] <- trimws(tessy[[i]])
+# }
+# tessy$tessy_description[tessy$tessy_description=="Cerebro spinal fluid"] <- "Cerebrospinal fluid"
+# 
+# tessy <- unique(tessy)
+# tessy$normally_sterile <- tessy$tessy_code %in% c(
+#   "BAL", "BLOOD", "BONE", "CSF", "LUNGTISSUE", 
+#   "PLEURAL", "SER", "SYNO", "URI", "URINE", 
+#   "OTHSTERILE")
+# tessy$other_codes <- tessy$tessy_code %in% c(
+#   "O", "OTHER", "UNK", NA,
+#   "NONSTERILE", "OTHSTERILE"
+#   )
+# tessy <- dplyr::arrange(tessy, -normally_sterile, other_codes, tessy_code)
+# tessy <- dplyr::select(tessy, -other_codes)
+# write.csv(tessy, file="data-raw/tessy_short.csv", row.names = FALSE)
+# 
+# 
+# 
+# hl7 <- jsonlite::fromJSON(url("https://terminology.hl7.org/1.0.0/CodeSystem-v2-0487.json"))
+# 
+# truc <- hl7$concept %>% 
+#   dplyr::select(-designation) %>% 
+#   mutate(status = purrr::map_chr(property, function(X) X[X$code == "status",]$valueCode),
+#          othertruc = purrr::map_chr(property, function(X) X[X$code == "v2-concComment",]$valueString))
+# 
+# jsonlite::flatten(hl7)
+# dplyr::bind_rows(truc$property)
+# 
+# truc <- bind_cols(truc, dplyr::bind_rows( hl7$concept$property))

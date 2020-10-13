@@ -2,28 +2,35 @@
 .drug_prescriptions_variables <- function() {
   utils::read.csv(
     system.file("Schema", 
-                "drug_prescriptions_variables.csv", 
+                "drug_prescriptions.csv", 
                 package = "Ramses"), stringsAsFactors = F)
 }
 
 .drug_administrations_variables <- function() {
   utils::read.csv(
     system.file("Schema", 
-                "drug_administrations_variables.csv", 
+                "drug_administrations.csv", 
                 package = "Ramses"), stringsAsFactors = F)
 }
 
 .inpatient_episodes_variables <- function() {
   utils::read.csv(
     system.file("Schema", 
-                "inpatient_episodes_variables.csv", 
+                "inpatient_episodes.csv", 
                 package = "Ramses"), stringsAsFactors = F)
 }
 
 .inpatient_wards_variables <- function() {
   utils::read.csv(
     system.file("Schema", 
-                "inpatient_wards_variables.csv", 
+                "inpatient_wards.csv", 
+                package = "Ramses"), stringsAsFactors = F)
+}
+
+.inpatient_investigations_variables <- function() {
+  utils::read.csv(
+    system.file("Schema", 
+                "inpatient_investigations.csv", 
                 package = "Ramses"), stringsAsFactors = F)
 }
 

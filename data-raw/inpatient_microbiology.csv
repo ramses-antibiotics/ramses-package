@@ -1,0 +1,39 @@
+﻿patient_id,specimen_id,status,specimen_type_display,specimen_datetime,organism_code,organism_display_name,organism_id,drug_id,drug_display_name,sir_code
+99999999999,CCC2,,MRSA Screen,14/02/2017,NULL,No growth,2300967,NULL,NULL,NULL
+99999999999,CCC1,,Blood Culture,13/02/2017,NULL,No growth,2365356,NULL,NULL,NULL
+99999999999,BBB8,,MRSA Screen,01/12/2016,NULL,No growth,2284807,NULL,NULL,NULL
+99999999999,BBB7,,Faeces,27/05/2016,NULL,No growth,2392702,NULL,NULL,NULL
+99999999999,BBB6,,Urine,04/11/2015,NULL,No growth,1960554,NULL,NULL,NULL
+99999999999,BBB5,,Blood Culture,07/08/2015,NULL,No growth,2110922,NULL,NULL,NULL
+99999999999,BBB4,,MRSA Screen,07/08/2015,NULL,No growth,2015253,NULL,NULL,NULL
+99999999999,BBB3,,MRSA Screen,15/05/2015,NULL,No growth,1996884,NULL,NULL,NULL
+99999999999,BBB2,,MRSA Screen,03/05/2015,NULL,No growth,1994380,NULL,NULL,NULL
+99999999999,BBB1,,Urine,25/03/2015,NULL,No growth,1770706,NULL,NULL,NULL
+99999999999,AAA2,,Urine,07/02/2015,ECOL,Escherichia coli,1761696,Amp,Ampicillin,R
+99999999999,AAA2,,Urine,07/02/2015,ECOL,Escherichia coli,1761696,Aug,Co-amoxiclav,R
+99999999999,AAA2,,Urine,07/02/2015,ECOL,Escherichia coli,1761696,Caz,Ceftazidime,S
+99999999999,AAA2,,Urine,07/02/2015,ECOL,Escherichia coli,1761696,Cet,Cefotaxime,S
+99999999999,AAA2,,Urine,07/02/2015,ECOL,Escherichia coli,1761696,Cip,Ciprofloxacin,R
+99999999999,AAA2,,Urine,07/02/2015,ECOL,Escherichia coli,1761696,Clx,Cefalexin,S
+99999999999,AAA2,,Urine,07/02/2015,ECOL,Escherichia coli,1761696,Cxm,Cefuroxime,S
+99999999999,AAA2,,Urine,07/02/2015,ECOL,Escherichia coli,1761696,Ert,Ertapenem,S
+99999999999,AAA2,,Urine,07/02/2015,ECOL,Escherichia coli,1761696,Fos,Fosfomycin,S
+99999999999,AAA2,,Urine,07/02/2015,ECOL,Escherichia coli,1761696,Gen,Gentamicin,S
+99999999999,AAA2,,Urine,07/02/2015,ECOL,Escherichia coli,1761696,Mer,Meropenem,S
+99999999999,AAA2,,Urine,07/02/2015,ECOL,Escherichia coli,1761696,Nit,Nitrofurantoin,S
+99999999999,AAA2,,Urine,07/02/2015,ECOL,Escherichia coli,1761696,Taz,Piperacillin + Tazobactam,R
+99999999999,AAA2,,Urine,07/02/2015,ECOL,Escherichia coli,1761696,Tri,Trimethoprim,R
+99999999999,AAA1,,Urine,08/03/2014,ECOL,Escherichia coli,1519213,Amp,Ampicillin,R
+99999999999,AAA1,,Urine,08/03/2014,ECOL,Escherichia coli,1519213,Aug,Co-amoxiclav,S
+99999999999,AAA1,,Urine,08/03/2014,ECOL,Escherichia coli,1519213,Caz,Ceftazidime,S
+99999999999,AAA1,,Urine,08/03/2014,ECOL,Escherichia coli,1519213,Cet,Cefotaxime,S
+99999999999,AAA1,,Urine,08/03/2014,ECOL,Escherichia coli,1519213,Cip,Ciprofloxacin,R
+99999999999,AAA1,,Urine,08/03/2014,ECOL,Escherichia coli,1519213,Clx,Cefalexin,S
+99999999999,AAA1,,Urine,08/03/2014,ECOL,Escherichia coli,1519213,Cxm,Cefuroxime,S
+99999999999,AAA1,,Urine,08/03/2014,ECOL,Escherichia coli,1519213,Ert,Ertapenem,S
+99999999999,AAA1,,Urine,08/03/2014,ECOL,Escherichia coli,1519213,Fos,Fosfomycin,S
+99999999999,AAA1,,Urine,08/03/2014,ECOL,Escherichia coli,1519213,Gen,Gentamicin,S
+99999999999,AAA1,,Urine,08/03/2014,ECOL,Escherichia coli,1519213,Mer,Meropenem,S
+99999999999,AAA1,,Urine,08/03/2014,ECOL,Escherichia coli,1519213,Nit,Nitrofurantoin,S
+99999999999,AAA1,,Urine,08/03/2014,ECOL,Escherichia coli,1519213,Taz,Piperacillin + Tazobactam,S
+99999999999,AAA1,,Urine,08/03/2014,ECOL,Escherichia coli,1519213,Tri,Trimethoprim,R

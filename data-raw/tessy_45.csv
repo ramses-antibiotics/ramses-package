@@ -1,0 +1,70 @@
+tessy_codelist,tessy_code,tessy_description
+SpecimenAMR,BLOOD,Blood
+SpecimenAMR,CSF,Cerebrospinal fluid
+SpecimenDIPH,MEMBR,Membrane
+SpecimenDIPH,NASALSWAB,Nasal swab
+SpecimenDIPH,O,Other
+SpecimenDIPH,SKINSWAB,Skin swab
+SpecimenDIPH,THROATSWAB,Throat swab
+SpecimenDIPH,Unk,Unknown
+SpecimenLIST,BLOOD,Blood
+SpecimenLIST,CSF,Cerebrospinal fluid
+SpecimenLIST,EYE,Eye (endophthalmitis)
+SpecimenLIST,NA,Not applicable
+SpecimenLIST,NONSTERILE,"Non-sterile site in foetus,stillborn,newborn,mother sampled within 24h. of birth"
+SpecimenLIST,OTHSTERILE,Other normally sterile site
+SpecimenLIST,SYNO,Synovial fluid (arthritis)
+SpecimenLIST,UNK,Unknown
+SpecimenMYCO,BAL,Broncho alveolar lavage
+SpecimenMYCO,BLOOD,Blood
+SpecimenMYCO,BONE,Bone marrow
+SpecimenMYCO,CSF,Cerebro spinal fluid
+SpecimenMYCO,GF,Gastric fluid
+SpecimenMYCO,LUNGTISSUE,Tissue
+SpecimenMYCO,NA,Not applicable
+SpecimenMYCO,O,Other
+SpecimenMYCO,PLEURAL,Pleural effusion
+SpecimenMYCO,SKIN,Skin
+SpecimenMYCO,SPUTUM,Sputum including induced sputum
+SpecimenMYCO,UNK,Unknown
+SpecimenMYCO,URINE,Urine
+SpecimenSalm,BLOOD,Blood
+SpecimenSalm,CSF,Cerebrospinal fluid
+SpecimenSalm,FAECES,Faeces
+SpecimenSalm,NA,Not applicable
+SpecimenSalm,OTHER,Other
+SpecimenSalm,PUS,Pus
+SpecimenSalm,UNK,Unknown
+SpecimenSalm,URINE,Urine
+SpecimenSeroVPD,DRYBLOSP,Dry blood spot
+SpecimenSeroVPD,EDTA, EDTA whole blood
+SpecimenSeroVPD,NA,Not applicable
+SpecimenSeroVPD,O,Other 
+SpecimenSeroVPD,SALOR,Saliva/oral fluid
+SpecimenSeroVPD,SER,Serum
+SpecimenSeroVPD,UNK,Unknown
+SpecimenTBE,BLOOD,Blood
+SpecimenTBE,CSF,Cerebrospinal fluid
+SpecimenTBE,NA,Not applicable
+SpecimenTBE,O,Other
+SpecimenTBE,UNK,Unknown
+SpecimenVirDetectVPD,DRYBLOSP,Dry blood spot
+SpecimenVirDetectVPD,EDTA, EDTA whole blood
+SpecimenVirDetectVPD,NA,Not applicable
+SpecimenVirDetectVPD,NASALSWAB,Nasal and naso-pharyngeal
+SpecimenVirDetectVPD,O,Other 
+SpecimenVirDetectVPD,SALOR,Saliva/oral fluid
+SpecimenVirDetectVPD,UNK,Unknown
+SpecimenVirDetectVPD,URI,Urine 
+SpecimenVtec,BLOOD,Blood
+SpecimenVtec,FAECES,Faeces
+SpecimenVtec,NA,Not applicable
+SpecimenVtec,OTHER,Other
+SpecimenVtec,UNK,Unknown
+SpecimenVtec,URINE,Urine
+SpecimenWNF,BLOOD,Blood
+SpecimenWNF,CSF,Cerebrospinal fluid
+SpecimenWNF,NA,Not applicable
+SpecimenWNF,O,Other
+SpecimenWNF,UNK,Unknown
+SpecimenWNF,URINE,Urine

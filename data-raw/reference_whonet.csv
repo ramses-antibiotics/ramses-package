@@ -1,0 +1,188 @@
+whonet_id,whonet_code,whonet_description
+1,no,Nose
+2,th,Throat
+3,sp,Sputum
+4,br,Bronchial
+5,ea,Ear
+6,ey,Eyes
+7,mo,Mouth
+8,sk,Skin
+9,jt,Joint
+10,uc,"Urine, catheter"
+11,ur,Urine
+12,bl,Blood
+13,sf,Cerebrospinal fluid
+14,lu,Lung
+15,ab,Abdominal fluid
+16,ga,Gastric fluid
+17,dr,Drainage
+18,fl,Fluid
+19,bi,Bile
+21,wd,Wound
+22,sw,"Wound, surgical"
+23,as,Abscess
+24,ps,Pus
+25,am,Amniotic fluid
+26,tr,Tracheal
+27,si,Sinus
+28,sb,Swab
+29,at,Aspirate
+30,fn,"Aspirate, fine-needle"
+31,og,Organ
+32,cx,Cervix
+33,um,Umbilical cord
+34,va,Vagina
+35,bx,Biopsy
+36,ti,Tissue
+37,bn,Brain
+38,he,Heart
+39,hv,Heart valve
+40,li,Liver
+41,st,Stool
+42,re,Rectal
+43,mu,Muscle
+44,ha,Hand
+45,ar,Arm
+46,ax,Axilla
+47,co,Conjunctiva
+48,em,"Ear, middle"
+49,eo,"Ear, outer"
+50,fi,Fistula
+51,gn,Genital
+52,gm,"Genital, male"
+53,gf,"Genital, female"
+54,pl,Placenta
+55,bt,Breast
+56,mi,Breast milk
+57,sm,Semen
+58,ue,Urethra
+59,cv,"Urine, clean-voided"
+60,se,Secretion
+61,bo,Bone
+62,bm,Bone marrow
+63,ba,Broncho-alveolar lavage
+64,pf,Pleural fluid
+65,rl,"Respiratory, lower"
+66,ru,"Respiratory, upper"
+67,ta,Tracheal aspirate
+68,ux,"Ulcer, external"
+69,ui,"Ulcer, internal"
+70,sc,Screening
+71,mr,Screen for MRSA
+72,vr,Screen for VRE
+73,rs,Research
+74,la,Laboratory
+75,ex,"Quality control, external"
+76,rp,Respiratory
+77,ul,Ulcer
+78,ub,"Urine, bladder"
+79,uk,"Urine, kidney"
+80,ua,"Urine, suprapubic aspirate"
+81,ki,Kidney
+82,ut,Uterus
+83,du,Duodenum
+84,me,Mediastinum
+85,bu,Bursa
+86,cy,Cyst
+87,ln,Lymph node
+88,gl,Gland
+89,ot,Other
+91,ca,Catheter
+92,di,Dialysis fluid
+93,en,Environmental
+94,pr,Prosthesis
+95,cc,"Catheter, central"
+96,wa,Water
+97,fo,Food
+98,un,Unknown
+99,qc,Quality control
+100,hr,Hair
+101,nl,Nail
+102,np,Nasopharynx
+103,ft,Foot
+104,au,Autopsy
+105,fb,Foreign body
+106,mc,Meconium
+107,iu,Intra-uterine device
+108,fv,"Urine, first-voided"
+109,us,Umbilicus
+110,is,Isolate
+111,ad,"Abscess, abdominal"
+112,bs,Burns
+113,cp,"Catheter, permanent"
+114,cr,Cornea
+115,ee,Empyema
+116,ep,"Empyema, pleural"
+117,es,"Empyema, subdural"
+118,hp,"Heart valve, prosthetic"
+119,mb,Mini-BAL
+120,pm,Pacemaker
+121,pn,Pancreas
+122,pd,Pericardial fluid
+123,cs,Catheter site
+124,pb,"Prosthesis, bone"
+125,sh,"Prosthesis, shunt"
+126,pv,"Prosthesis, vascular"
+127,pc,Protected brush catheter
+128,tn,Tonsils
+129,ud,"Ulcer, decubitis"
+130,uz,"Urine, non-catheterized"
+131,uo,"Urine, nephrostomy"
+132,uu,"Urine, unknown source"
+133,pt,"Abscess, peritonsillar"
+134,de,"Abscess, dental"
+135,ac,"Abscess, perirectal"
+136,ak,"Abscess, skin"
+137,ap,Appendix
+138,ch,"Catheter, peripheral"
+140,cm,Culture medium
+141,cb,"Cyst, Bartholin's"
+142,dn,Drain
+143,ec,Endocardium
+144,ed,Epididymis
+145,eg,Epiglottis
+146,eh,Esophagus
+147,fa,Fallopian tube
+148,fu,Furuncle
+149,gb,Gallbladder
+150,hi,Hip
+151,hf,Hip fluid
+152,it,Insect
+153,jf,Joint fluid
+154,kn,Knee
+155,kf,Knee fluid
+156,lx,Larynx
+157,lp,Lip
+158,lo,Lochia
+159,ov,Ovary
+160,pe,Penis
+161,pg,Penile discharge
+162,pi,Perineum
+163,pa,Plasma
+164,po,Prostate
+165,pu,Prostatic fluid
+166,rc,Rectouterine pouch (Douglas' cul-de-sac)
+167,tp,Scotch tape test for parasites
+168,sr,Serum
+169,su,Shunt fluid
+170,sl,Spleen
+171,sa,Sputum for acid-fast bacilli
+172,in,"Sputum, induced"
+173,sg,String test for parasites
+174,te,Testes
+175,to,Tooth
+176,wo,Worm
+177,wt,"Wound, sternal"
+178,an,Abdomen
+179,bv,Blood vessel
+181,hd,Head
+182,sv,Salivary gland
+183,lg,Leg
+184,nk,Neck
+185,nv,Nerve
+186,lv,Pelvis
+187,cd,Screen for C. difficile
+188,gr,Groin
+189,ig,Inguinal
+190,cu,"Catheter, umbilical"
+191,fd,"Foot, diabetic"
