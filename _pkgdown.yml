@@ -49,11 +49,9 @@ reference:
 - title: Load & link data
   desc:  Load records into the warehouse and create secondary information.
   contents:
-  - load_inpatient_episodes
-  - load_inpatient_diagnoses
+  - starts_with("load_inpatient")
   - transitive_closure_control
   - load_medications
-  - load_investigations
 - title: Simulated sets of electronic health records
   contents:
   - inpatient_episodes

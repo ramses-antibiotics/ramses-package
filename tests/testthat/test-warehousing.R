@@ -24,10 +24,10 @@ test_that("Ramses on SQLite", {
     validate_inpatient_diagnoses(
       diagnoses_data = inpatient_data$diagnoses,
       diagnoses_lookup = icd10cm))
-  
+  expect_true(validate_investigations(inpatient_data$investigations))
   expect_true(validate_inpatient_episodes(inpatient_data$episodes))
   expect_true(validate_inpatient_episodes(episodes = inpatient_data$episodes,
-                                          wards =inpatient_data$ward_movements))
+                                          wards = inpatient_data$ward_movements))
   medication_loading <- load_medications(conn = conSQLite, 
                          prescriptions = drug_data$drug_rx,
                          administrations = drug_data$drug_admins,
@@ -44,13 +44,15 @@ test_that("Ramses on SQLite", {
     list(episodes_load_errors = TRUE,
          wards_load_errors = TRUE)
   )
-  
   expect_true(
     expect_warning(
       load_inpatient_diagnoses(conn = conSQLite,
                            diagnoses_data = inpatient_data$diagnoses,
                            diagnoses_lookup = icd10cm,
                            overwrite = TRUE)))
+  expect_true(
+    load_inpatient_investigations(inpatient_data$investigations))
+  
 
   test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
     filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08")) %>% 

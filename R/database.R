@@ -1107,7 +1107,8 @@ build_ramses_schema.SQLiteConnection <- function(conn) {
   list(
     episodes = ip_episodes,
     diagnoses = ip_diagnoses,
-    ward_movements = Ramses::inpatient_wards
+    ward_movements = Ramses::inpatient_wards,
+    investigations = Ramses::inpatient_investigations
   )
 }
 

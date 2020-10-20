@@ -833,7 +833,6 @@ validate_administrations <- function(data) {
     drug_administrations_variables[["must_be_nonmissing"]]
   )]
   
-  .validate_variable_no_missing()
   missing_data <- .validate_variable_no_missing(
     data = data,
     vectorname = variable_exists_non_missing,
@@ -1073,7 +1072,7 @@ validate_investigations <- function(investigations,
   if( !is.null(custom_units) ){
     custom_units <- custom_units[custom_units != ""]
     for (unit in custom_units) {
-      units::install_symbolic_unit(unit)
+      units::install_symbolic_unit(unit, warn = FALSE)
     }
   }
   
