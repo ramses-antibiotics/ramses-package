@@ -4,7 +4,9 @@
 \name{inpatient_episodes}
 \alias{inpatient_episodes}
 \title{Simulated episodes of inpatient care}
-\format{A data frame of records of finished consultant episodes.}
+\format{
+A data frame of records of finished consultant episodes.
+}
 \source{
 Simulated data
 }

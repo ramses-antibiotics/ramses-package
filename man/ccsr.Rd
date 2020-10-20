@@ -4,8 +4,10 @@
 \name{ccsr}
 \alias{ccsr}
 \title{Clinical Classifications Software \emph{Refined} (CCSR): map to 4-character ICD code}
-\format{A data frame with 72,715 ICD-10-CM codes mapped to 
-CCSR categories.}
+\format{
+A data frame with 72,715 ICD-10-CM codes mapped to 
+CCSR categories.
+}
 \source{
 Adapted from \insertCite{HCUP-CCSR}{Ramses} for 
 4-character ICD-10 codes.

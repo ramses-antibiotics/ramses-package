@@ -1,102 +1,7 @@
 
 
-#' Create or connect to a local SQLite database
-#'
-#' @description Create a local database in memory or on disk using \code{\link[RSQLite]{SQLite}()}. 
-#' This is the ideal method to experiment on a small scale or for testing purposes.
-#'
-#' @details This function creates a database on disk at the desired path. The database and
-#' its content will persist on disconnection.
-#'     
-#' @section Warning:     
-#' This method does not provide any encryption or password protection. You should only use this
-#' method with mock data unless you operate within a secure data enclave.
-#'
-#' @param file A file path to an existing or new database file with an .sqlite extension.
-#' @return An object of class SQLiteConnection.
-#' @seealso The dbplyr website provides excellent guidance on how to connect to databases: 
-#' \url{https://db.rstudio.com/getting-started/connect-to-database}
-#' @importFrom DBI dbConnect dbDisconnect
-#' @export
-#'
-#' @examples
-#'     # Create database and load data
-#'     con <- connect_db_local("ramses-db.sqlite")
-#'     
-#'     dplyr::copy_to(dest = con, df = reference_aware, name = "reference_aware", 
-#'                    overwrite = FALSE, temporary = FALSE)      
-#'     
-#'     # Close connection to database
-#'     DBI::dbDisconnect(con)
-#'     
-#'     # Connect to the database again and show data
-#'     con <- connect_db_local("ramses-db.sqlite")
-#'     dplyr::tbl(con, "reference_aware")
-#'     DBI::dbDisconnect(con)
-connect_db_local <- function(file) {
-  con <- DBI::dbConnect(RSQLite::SQLite(), file)
-  .build_tally_table(con)
-  warning(paste0("SQLite database created in \n", con@dbname, 
-                 "\nPlease do not use real patient data."))
-  
-  con
-}
 
-
-#' Get warehouse status
-#'
-#' @description Inspect the status of tables making up the warehouse
-#' @param conn a database connection
-#'
-#' @return 
-#'   \describe{
-#'     \item{diagnoses}{a flag indicating whether }
-#'   }
-#' @export
-get_warehouse_status <- function(conn) {
-  
-  if (DBI::dbExistsTable(conn, "inpatient_diagnoses")) {
-    diagnoses <- dplyr::tbl(conn, "inpatient_diagnoses") %>% 
-      dplyr::filter(.data, row_number()==1) %>% 
-      dplyr::collect()
-  } else {
-    diagnoses = NULL
-  }
-  
-  inspect_diagnoses <- (
-    is.null(diagnoses) || nrow(diagnoses) == 0 || 
-      any(!c("icd_code", "patient_id", "spell_id", "episode_number") %in% colnames(diagnoses))
-    )
-  
-  list(
-    diagnoses = inspect_diagnoses
-  )
-  
-}
- 
-#' Build the RAMSES schema
-#' 
-#' @description The RAMSES schema is the set of tables required to import health records
-#' for curation and analysis 
-#' @param conn a database connection
-#' @rdname build_ramses_schema
-#' @export
-build_ramses_schema <- function(conn) {
-  UseMethod("build_ramses_schema")
-}
-#' @export
-build_ramses_schema.SQLiteConnection <- function(conn) {
-  
-}
-
-.build_tally_table <- function(conn) {
-  # Build table to use in joins to create therapy tables
-  dbplyr::db_copy_to(conn, 
-                     table = "ramses_tally",
-                     values = data.frame(t = 1:20000),
-                     temporary = FALSE,
-                     overwrite = TRUE)
-}
+# Inpatient records -------------------------------------------------------
 
 
 #' Load inpatient diagnosis records into the warehouse
@@ -120,7 +25,8 @@ build_ramses_schema.SQLiteConnection <- function(conn) {
 #' "try-error" containing error messages trigger during warehouse data loading.
 #' @import methods
 #' @export
-load_inpatient_diagnoses <- function(conn, diagnoses_data, diagnoses_lookup, overwrite = FALSE) {
+load_inpatient_diagnoses <- function(conn, diagnoses_data,
+                                     diagnoses_lookup, overwrite = FALSE) {
    
   if (!validate_inpatient_diagnoses(diagnoses_data, diagnoses_lookup)) {
     stop(simpleError("`diagnoses_data` and `diagnoses_lookup` must pass `validate_inpatient_diagnoses()`"))
@@ -274,6 +180,45 @@ load_inpatient_episodes <- function(conn, episodes_data,
     return(list(episodes_load_errors = episodes_load_errors))
   }  
 }
+
+
+
+#' Load observations & investigations into the warehouse
+#' 
+#' @param conn a database connection
+#' @param investigations_data a data frame validated with 
+#' \code{\link{validate_investigations}()}
+#' @param overwrite if `TRUE` (the default), will overwrite any existing
+#' `inpatient_investigations` database table
+#' @seealso \code{\link{validate_investigations}()}, 
+#' @return `TRUE` if the function ran successfully, otherwise object of class
+#' "try-error" containing error messages trigger during warehouse data loading.
+#' @export
+load_inpatient_investigations <- function(conn, investigations_data, overwrite = TRUE) {
+  
+  first_variables <- .inpatient_investigations_variables()$variable_name
+  first_variables <- first_variables[first_variables %in% colnames(investigations_data)]
+  
+  investigations_data <- arrange_variables(
+    data = investigations_data,
+    first_column_names = first_variables)
+  
+  load_errors <- try({
+    dbplyr::db_copy_to(con = conn, table = "inpatient_investigations", 
+                       values = investigations_data, overwrite = overwrite, temporary = FALSE,
+                       indexes = list("patient_id", "spell_id", "observation_code", "status"))
+  })
+  
+  if (is(load_errors, "try-error")) {
+    return(load_errors)
+  } else {
+    return(TRUE)
+  }
+}
+
+
+# Medication records ------------------------------------------------------
+
 
 #' Set parameters for building combination therapy identifiers and
 #' therapy episode identifiers
@@ -667,7 +612,110 @@ load_medications.SQLiteConnection <- function(
     load_output
   }
 }
+
+
+# Database management -----------------------------------------------------
+
+
+#' Create or connect to a local SQLite database
+#'
+#' @description Create a local database in memory or on disk using \code{\link[RSQLite]{SQLite}()}. 
+#' This is the ideal method to experiment on a small scale or for testing purposes.
+#'
+#' @details This function creates a database on disk at the desired path. The database and
+#' its content will persist on disconnection.
+#'     
+#' @section Warning:     
+#' This method does not provide any encryption or password protection. You should only use this
+#' method with mock data unless you operate within a secure data enclave.
+#'
+#' @param file A file path to an existing or new database file with an .sqlite extension.
+#' @return An object of class SQLiteConnection.
+#' @seealso The dbplyr website provides excellent guidance on how to connect to databases: 
+#' \url{https://db.rstudio.com/getting-started/connect-to-database}
+#' @importFrom DBI dbConnect dbDisconnect
+#' @export
+#'
+#' @examples
+#'     # Create database and load data
+#'     con <- connect_db_local("ramses-db.sqlite")
+#'     
+#'     dplyr::copy_to(dest = con, df = reference_aware, name = "reference_aware", 
+#'                    overwrite = FALSE, temporary = FALSE)      
+#'     
+#'     # Close connection to database
+#'     DBI::dbDisconnect(con)
+#'     
+#'     # Connect to the database again and show data
+#'     con <- connect_db_local("ramses-db.sqlite")
+#'     dplyr::tbl(con, "reference_aware")
+#'     DBI::dbDisconnect(con)
+connect_db_local <- function(file) {
+  con <- DBI::dbConnect(RSQLite::SQLite(), file)
+  .build_tally_table(con)
+  warning(paste0("SQLite database created in \n", con@dbname, 
+                 "\nPlease do not use real patient data."))
   
+  con
+}
+
+
+#' Get warehouse status
+#'
+#' @description Inspect the status of tables making up the warehouse
+#' @param conn a database connection
+#'
+#' @return 
+#'   \describe{
+#'     \item{diagnoses}{a flag indicating whether }
+#'   }
+#' @export
+get_warehouse_status <- function(conn) {
+  
+  if (DBI::dbExistsTable(conn, "inpatient_diagnoses")) {
+    diagnoses <- dplyr::tbl(conn, "inpatient_diagnoses") %>% 
+      dplyr::filter(.data, row_number()==1) %>% 
+      dplyr::collect()
+  } else {
+    diagnoses = NULL
+  }
+  
+  inspect_diagnoses <- (
+    is.null(diagnoses) || nrow(diagnoses) == 0 || 
+      any(!c("icd_code", "patient_id", "spell_id", "episode_number") %in% colnames(diagnoses))
+  )
+  
+  list(
+    diagnoses = inspect_diagnoses
+  )
+  
+}
+
+#' Build the RAMSES schema
+#' 
+#' @description The RAMSES schema is the set of tables required to import health records
+#' for curation and analysis 
+#' @param conn a database connection
+#' @rdname build_ramses_schema
+#' @export
+build_ramses_schema <- function(conn) {
+  UseMethod("build_ramses_schema")
+}
+#' @export
+build_ramses_schema.SQLiteConnection <- function(conn) {
+  
+}
+
+.build_tally_table <- function(conn) {
+  # Build table to use in joins to create therapy tables
+  dbplyr::db_copy_to(conn, 
+                     table = "ramses_tally",
+                     values = data.frame(t = 1:20000),
+                     temporary = FALSE,
+                     overwrite = TRUE)
+}
+
+
 #' Read SQL scripts
 #'
 #' @description Reads SQL script, remove comments and concatenate

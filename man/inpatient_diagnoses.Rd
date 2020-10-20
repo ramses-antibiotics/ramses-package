@@ -4,7 +4,9 @@
 \name{inpatient_diagnoses}
 \alias{inpatient_diagnoses}
 \title{Simulated inpatient clinical diagnoses}
-\format{A data frame of records of clinical diagnoses.}
+\format{
+A data frame of records of clinical diagnoses.
+}
 \source{
 Simulated data
 }
@@ -13,7 +15,8 @@ inpatient_diagnoses
 }
 \description{
 Dataset of simulated infection clinical diagnoses by 
-finished consultant episodes listed in \code{\link[Ramses]{inpatient_episodes}},
+finished consultant episodes listed in 
+\code{\link[Ramses]{inpatient_episodes}},
 detailing all episode start and end times, episode number, and up to
 5 clinical diagnoses coded according to the International 
 Classification of Diseases, Tenth Revision (ICD-10). 

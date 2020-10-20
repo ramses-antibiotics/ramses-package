@@ -369,6 +369,49 @@ load_inpatient_diagnoses(conn = ramses_db,
                          overwrite = TRUE)
 ```
 
+# Investigation records
+
+## Microbiology culture and sensitivity 
+
+## Clinical investigations
+
+Finally, we import all other observation and test results, from basic vitals such
+as respiration rate and blood pressure, to urine antigen test results. Analysis of 
+such data requires the use of standard test vocabularies.
+
+The international standard code system for laboratory data is LOINC 
+(\link[Ramses]{reference_loinc}). A sample of important codes may be found in 
+dataset `Ramses::reference_loinc`. Other observable entity concepts or evaluation procedure concepts may be imported from SNOMED-CT.
+
+
+```{r show_inpatient_investigations}
+data(inpatient_investigations)
+str(inpatient_investigations)
+```
+
+One particular set of validation constraints is that units conform to the \href{https://ucum.org}{Unified Code for Units of Measure (UCUM)}. Units are implemented using the `units` package in R. Yet, many important units in medicine are not listed in the UCUM. For instance: 
+
+- respirations (breaths/min)
+- heart rate (beats/min)
+- alkaline phosphatase in serum (international unit per liter notated U/L)
+
+By default, these three custom units are passed to the `custom_units` argument of `validate_investigations()`. Any other custom unit in the dataset must be handled with this argument. 
+
+```{r validate_invest}
+validate_investigations(inpatient_investigations, 
+                        custom_units = c("breaths", "beats", "U"))
+```
+
+Data may now be loaded into the database.
+
+
+```{r load_invest}
+load_inpatient_investigations(
+  conn = ramses_db,
+  investigations_data = inpatient_investigations, 
+  overwrite = TRUE
+)
+```
 
 
 # Visualisation
@@ -381,6 +424,9 @@ therapy_timeline(conn = ramses_db,
                  date1 = as.Date("2017-02-01"),
                  date2 = as.Date("2017-03-01"))
 ```
+
+
+# Once you are done 
 
 Always remember close database connections when you are finished.
 

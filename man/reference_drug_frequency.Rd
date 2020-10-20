@@ -4,7 +4,9 @@
 \name{reference_drug_frequency}
 \alias{reference_drug_frequency}
 \title{Prescription frequency abbreviation look-up table}
-\format{A data frame with 64 abbreviations and their corresponding daily frequency value.}
+\format{
+A data frame with 64 abbreviations and their corresponding daily frequency value.
+}
 \usage{
 reference_drug_frequency
 }

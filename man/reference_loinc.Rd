@@ -4,7 +4,9 @@
 \name{reference_loinc}
 \alias{reference_loinc}
 \title{Clinical investigations and observations LOINC codes look-up table}
-\format{A data frame.}
+\format{
+A data frame.
+}
 \source{
 LOINC Table File Version 2.68. Released 2020-06-17. \url{http://loinc.org}
 }

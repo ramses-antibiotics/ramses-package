@@ -1,5 +1,9 @@
 ## code to prepare `data-raw/inpatient_episodes.csv` dataset goes here
 ## code to prepare `data-raw/inpatient_diagnoses.csv` dataset goes here
+## code to prepare `data-raw/inpatient_wards.csv` dataset goes here
+## code to prepare `data-raw/inpatient_microbiology.csv` dataset goes here
+## code to prepare `data-raw/inpatient_investigations.csv` dataset goes here
+
 inpatient_episodes <- read.csv(
   file = "data-raw/inpatient_episodes.csv", stringsAsFactors = F,
   colClasses = c("character", "character", "Date", "Date", 
@@ -47,3 +51,10 @@ inpatient_wards2 <- read.csv(
 inpatient_wards <- dplyr::bind_rows(inpatient_wards,
                                     inpatient_wards2)
 usethis::use_data(inpatient_wards, overwrite = T)
+
+inpatient_investigations <- read.csv(
+  "data-raw/inpatient_investigations.csv", stringsAsFactors = F,
+  colClasses = c("character", "character",  "character", "character", 
+                 "POSIXct", "POSIXct", "character", "numeric", "character",
+                 "character", "character", "character", "character"))
+usethis::use_data(inpatient_investigations, overwrite = T)

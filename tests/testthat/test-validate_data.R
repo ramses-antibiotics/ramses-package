@@ -1,9 +1,9 @@
 date1 <- structure(1585220000, class = c("POSIXct", "POSIXt"))
 
 test_that("inpatient episode records are validated", {
-  expect_false(expect_warning(validate_variable_no_missing(data.frame(foo = c("1", "")), "foo")))
-  expect_false(expect_warning(validate_variable_no_missing(data.frame(foo = c("1", NA)), "foo")))
-  expect_false(expect_warning(validate_variable_no_missing(data.frame(bar = c("1", NA)), "foo")))
+  expect_false(expect_warning(.validate_variable_no_missing(data.frame(foo = c("1", "")), "foo")))
+  expect_false(expect_warning(.validate_variable_no_missing(data.frame(foo = c("1", NA)), "foo")))
+  expect_false(expect_warning(.validate_variable_no_missing(data.frame(bar = c("1", NA)), "foo")))
   
   faulty_spells <- data.frame(list(
     patient_id = c(1, 2, 2),
@@ -249,4 +249,26 @@ test_that("variables are rearranged", {
   expect_equal(
     colnames(arrange_variables(testdf, c("patient_id", "spell_id"))), 
     c("patient_id", "spell_id", "misc"))
+})
+
+
+test_that(".validate_values_unique()", {
+  
+  testdata <- data.frame(list(a = 1:4, b = rep(4, 4)))
+  
+  expect_true(.validate_values_unique(testdata, c("a")))
+  expect_error(.validate_values_unique(testdata, c("a", "b")))
+  expect_error(.validate_values_unique(testdata, c("b")))
+  expect_true(.validate_values_unique(testdata, c("a", "c")))
+  expect_true(.validate_values_unique(testdata, c("c")))
+  expect_true(.validate_values_unique(testdata, c()))
+  expect_true(.validate_values_unique(testdata, NULL))
+})
+
+
+test_that(".validate_UCUM_codes()", {
+  testdata <- c('absurd_code', NA, '', '%', 'degree_Celsius', 'mm_Hg', '10^9/L', 
+                'mmol/L', 'fL', 'g/L', 'pg', 'micromol/L', 'mg/L')
+  expect_error(.validate_UCUM_codes(testdata[1:5]))
+  expect_true(.validate_UCUM_codes(testdata[-1]))
 })

@@ -1,5 +1,83 @@
 
-validate_variable_no_missing <- function(data, vectorname){
+
+#' Verify uniqueness constraints
+#' 
+#' @description Verifies that values in vectors `col_names` in data frame
+#' `data` are unique
+#' @param data  a data frame
+#' @param col_names a character vector of column names. Column names which do
+#' not exist in `data` will be dropped.
+#' @return TRUE if the validation is passed.
+#' @noRd
+.validate_values_unique <- function(data, col_names) {
+  
+  col_names <- col_names[col_names %in% colnames(data)]
+  
+  if( length(col_names) == 0 ){
+    return(TRUE)
+  }
+  
+  must_be_unique <- subset(data, select = col_names)
+  duplicate_results <- sapply(
+    must_be_unique,
+    function(X) {
+      any(duplicated(X))
+    }
+  )
+  
+  if( any(duplicate_results) ){
+    stop(
+      simpleError(paste(
+        "The following variables must have unique values:",
+        paste(paste0("`", 
+                     must_be_unique[duplicate_values],
+                     "`"), collapse = ", "))
+      )
+    )
+  }
+  
+  validation_result <- !all(duplicate_results)
+  
+  validation_result
+}
+
+
+#' Validate unit codes
+#'
+#' @param unit_codes a character vector of UCUM unit names to pass
+#' \code{\link[units]{as_units}()}. `NA` and `""` values will be dropped.
+#'
+#' @return TRUE if the validation is passed.
+#' @noRd
+.validate_UCUM_codes <- function(unit_codes) {
+  stopifnot(is.character(unit_codes))
+  unit_codes <- na.omit(unit_codes)
+  unit_codes <- unit_codes[unit_codes != ""]
+  
+  units_validate <- list()
+  units_validate$validation <- lapply(
+    unit_codes,
+    function(X){
+      try(units::as_units(X), silent = T)
+    })
+  units_validate$class <- lapply(
+    units_validate$validation,
+    class
+  )
+  units_validate$errors <- which(units_validate$class == "try-error")
+  
+  if( any(units_validate$class != "units") ){
+    stop(paste(
+      units_validate$validation[units_validate$errors],
+      sep = "\n"
+    ))
+  }
+  
+  return(TRUE)
+}
+
+
+.validate_variable_no_missing <- function(data, vectorname){
   
   validation_result <- TRUE
   
@@ -149,7 +227,7 @@ validate_inpatient_episodes <- function(episodes,
   
   missing_data <- suppressWarnings(
     !sapply(variable_exists_non_missing, 
-            FUN = validate_variable_no_missing,
+            FUN = .validate_variable_no_missing,
             data = episodes)
   )
   
@@ -202,7 +280,7 @@ validate_inpatient_episodes <- function(episodes,
   
   missing_data <- suppressWarnings(
     !sapply(variable_exists_non_missing, 
-            FUN = validate_variable_no_missing,
+            FUN = .validate_variable_no_missing,
             data = wards)
   )
   
@@ -409,7 +487,7 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
  
   validation_result <- !any(
     !sapply(exists_non_missing,
-            FUN = validate_variable_no_missing,
+            FUN = .validate_variable_no_missing,
             data = diagnoses_data)
   )
   
@@ -417,7 +495,7 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
     !sapply(list("icd_code", "icd_description", 
                  "icd_display", "category_code", 
                  "category_description"),
-            FUN = validate_variable_no_missing,
+            FUN = .validate_variable_no_missing,
             data = diagnoses_lookup)
   )
   
@@ -551,7 +629,7 @@ validate_prescriptions <- function(data) {
   
   missing_data <- suppressWarnings(
     !sapply(variable_exists_non_missing, 
-            FUN = validate_variable_no_missing,
+            FUN = .validate_variable_no_missing,
             data = data)
   )
   
@@ -707,7 +785,7 @@ validate_administrations <- function(data) {
   
   missing_data <- suppressWarnings(
     !sapply(variable_exists_non_missing, 
-            FUN = validate_variable_no_missing,
+            FUN = .validate_variable_no_missing,
             data = data)
   )
   
@@ -768,8 +846,6 @@ validate_administrations <- function(data) {
 #' @param susceptibilities a data frame with one row per susceptibility
 #' (see details)
 #' 
-#' 
-#' 
 #' @section \code{specimens} data frame:
 #' The following fields are mandatory:
 #' \describe{
@@ -778,7 +854,7 @@ validate_administrations <- function(data) {
 #'    \item{\code{spell_id}}{a hospital spell identifier (if the specimen was 
 #'    sampled during admission)}
 #'    \item{\code{status}}{one value from the following 
-#'    \href{https://www.hl7.org/fhir/valueset-specimen-status.html{FHIR R4}
+#'    \href{https://www.hl7.org/fhir/valueset-specimen-status.html}{FHIR R4}
 #'      reference set: \itemize{
 #'        \item \code{"available"}: The physical specimen is present and 
 #'        in good condition.
@@ -789,18 +865,18 @@ validate_administrations <- function(data) {
 #'        \item \code{"entered-in-error"}: The specimen was entered in error and 
 #'        therefore nullified.
 #'      }}
-#'    \item{\code{specimen_datetime}}: the time when specimen was sampled or 
-#'    received for processing.
-#'    \item{\code{specimen_type_code}}
-#'    \item{\code{specimen_type_name}}
-#'    \item{\code{specimen_type_display}}
+#'    \item{\code{specimen_datetime}}{datetime when specimen was sampled or 
+#'    received for processing.}
+#'    \item{\code{specimen_type_code}}{}
+#'    \item{\code{specimen_type_name}}{}
+#'    \item{\code{specimen_type_display}}{}
 #' }
 #' 
 #' The following fields are optional:
 #' \describe{
-#'    \item{\code{}}
-#'    \item{\code{}}
-#'    \item{\code{}}
+#'    \item{\code{a}}{a}
+#'    \item{\code{a}}{a}
+#'    \item{\code{a}}{a}
 #'  }
 #' 
 #' 
@@ -808,16 +884,16 @@ validate_administrations <- function(data) {
 #' @section \code{specimens} data frame:
 #' The following fields are mandatory:
 #' \describe{
-#'    \item{\code{}}
-#'    \item{\code{}}
-#'    \item{\code{}}
+#'    \item{\code{a}}{a}
+#'    \item{\code{a}}{a}
+#'    \item{\code{a}}{a}
 #'  }
 #' 
 #' The following fields are optional:
 #' \describe{
-#'    \item{\code{}}
-#'    \item{\code{}}
-#'    \item{\code{}}
+#'    \item{\code{a}}{a}
+#'    \item{\code{a}}{a}
+#'    \item{\code{a}}{a}
 #' }
 #'  
 #'  
@@ -826,22 +902,21 @@ validate_administrations <- function(data) {
 #' The following fields are mandatory:
 #' \describe{
 #'   \item{specimen_id}{a specimen identifier with no missing value}
-#'   \item{status}{a string in  ne value from the following 
-#'      \href{https://www.hl7.org/fhir/valueset-specimen-status.html}{FHIR}
-#'      reference set:
+#'   \item{status}{one value from the following 
+#'      \href{https://www.hl7.org/fhir/valueset-specimen-status.html}{FHIR reference set}:
 #'      \itemize{
 #'         \item \code{"available"}: The physical specimen is present and in good condition.
 #'         \item \code{"unavailable"}: There is no physical specimen because it is either lost, destroyed or consumed.
 #'         \item \code{"unsatisfactory"}: The specimen cannot be used because of a quality issue such as a broken container, contamination, or too old.
 #'         \item \code{"entered-in-error"}: The specimen was entered in error and therefore nullified.
-#'      }
-#' }}
+#'      }}
+#' }
 #' 
 #' The following fields are optional:
-#' \describe{}
+#' \describe{
+#'   \item{blah}{blah}
+#' }
 #' 
-#' 
-#'
 #' @return
 #' @export
 validate_microbiology <- function(specimens, isolates, susceptibility) {
@@ -849,14 +924,21 @@ validate_microbiology <- function(specimens, isolates, susceptibility) {
 }
 
 
-#' Validate records of observations & investigation results
+#' Validate records of observations & investigations
 #'
-#' @param investigations 
-#'
+#' @param investigations a data frame
+#' @param custom_units a character vector of valid unit codes not listed in
+#' the UCUM. Default is: \code{c("breaths", "beats", "U")}.
 #' @return
-#' @section 
-#' 
-#' Codes from teh following value set \url{http://hl7.org/fhir/observation-status} \itemize{
+#' @section Mandatory variables:
+#' The following variables are required:
+#' \describe{
+#'    \item{\code{"observation_id"}}{a unique identifier with no missing value}
+#'    \item{\code{"patient_id"}}{a patient identifier with no missing value}
+#'    \item{\code{"spell_id"}}{identifier of the hospital spell during which 
+#'    the investigation was performed (if observations are made during admission)}
+#'    \item{\code{"status"}}{Codes from the following value set 
+#'    \url{http://hl7.org/fhir/observation-status} \itemize{
 #'   \item \code{"registered"}: The existence of the observation is registered, but there is no result yet available.
 #'   \item \code{"preliminary"}: his is an initial or interim observation: data may be incomplete or unverified.
 #'   \item \code{"final"}: The observation is complete and there are no further actions needed. 
@@ -874,21 +956,92 @@ validate_microbiology <- function(specimens, isolates, susceptibility) {
 #'   values currently applies for this observation. Note: This concept is not to be used for 
 #'   "other" - one of the listed statuses is presumed to apply, but the authoring/source 
 #'   system does not know which.
-#'   }
+#'   }}
+#'    \item{\code{"request_datetime"}}{a datetime when the observation was 
+#'    requested with no missing value}
+#'    \item{\code{"observation_datetime"}}{a datetime when the investigation 
+#'    was performed with no missing value}
+#'    \item{\code{"observation_code_system"}}{URL of the code system (for instance: 
+#'    "http://snomed.info/sct", "http://loinc.org")}
+#'    \item{\code{"observation_code"}}{LOINC concept code or SNOMED-CT concept 
+#'    code corresponding to a SNOMED-CT observable entity or evaluation procedure}
+#'    \item{\code{"observation_name"}}{code system name for the observation}
+#'    \item{\code{"observation_display"}}{observation name to display}
+#'    \item{\code{"observation_value_text"}}{observation string value or codable
+#'    concept, for example: TRUE/FALSE, Yes/No, SNOMED-CT qualifier value}
+#'    \item{\code{"observation_value_numeric"}}{observation numeric value}
+#'    \item{\code{"observation_unit"}}{a unit code passing 
+#'    \code{\link[units]{as_units}()}. See examples. 
+#'    See also: \code{\link[units]{valid_udunits}}, 
+#'    \code{\link[units]{install_symbolic_unit}}
+#'    \url{http://unitsofmeasure.org}}
+#' }
+#' @export 
+#' @examples 
+#' # the units "breaths/min" (http://loinc.org/8867-4) or
+#' # "beats/min" () do not exist in the https://ucum.org/. 
+#' library(units)
+#' as_units("breaths/min") # fails
 #' 
-#' 
-#' identifier of the hospital spell during which the investigation was performed.
-#' datetime when the investigation was performed.
-#' Observation or Lab code from LOINC or SNOMED-CT
-#' @export
-#'
-#' @examples
-validate_investigations <- function(investigations) {
+#' # Yet, they may be declared.
+#' install_symbolic_unit("breaths") 
+#' as_units("breaths/min") # succeeds
+validate_investigations <- function(investigations, 
+                                    custom_units = c("breaths",
+                                                     "beats",
+                                                     "U")) {
   
+  investigation_schema <- .inpatient_investigations_variables()
+  
+  variable_exists <- investigation_schema[investigation_schema$must_exist,
+                                          "variable_name"]
+  not_exist <- !sapply(variable_exists, exists, where = investigations)
+  if( any(not_exist) ){
+    stop(
+      simpleError(paste(
+        "The following variables must exist:",
+        paste(paste0("`", variable_exists[not_exist], "`"), collapse = ", "))
+      )
+    )
+  }
+  
+  exists_non_missing <- investigation_schema[
+    investigation_schema$must_be_nonmissing,
+    "variable_name"]
+  missing_data <- suppressWarnings(
+    !sapply(exists_non_missing, 
+            FUN = .validate_variable_no_missing,
+            data = investigations)
+  )
+  if( any(missing_data) ){
+    stop(
+      paste(
+        "The following variables must not contain missing data:",
+        paste(paste0("`", 
+                     variable_exists_non_missing[missing_data],
+                     "`"), collapse = ", ")
+        ))
+  }
+  
+  must_be_unique <- .validate_values_unique(
+    investigations,
+    investigation_schema[
+    investigation_schema$must_be_unique, 
+    "variable_name"])
+  
+  if( !is.null(custom_units) ){
+    custom_units <- custom_units[custom_units != ""]
+    for (unit in custom_units) {
+      units::install_symbolic_unit(unit)
+    }
+  }
+  
+  units_validate <- .validate_UCUM_codes(unique(investigations$observation_unit))
+  
+  all(!not_exist, !missing_data, must_be_unique, units_validate)
 }
 
 arrange_variables <- function(data, first_column_names) {
   other_names <- colnames(data)[!colnames(data) %in% first_column_names]
   data[, c(first_column_names, other_names)]
 }
-

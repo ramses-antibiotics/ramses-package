@@ -33,7 +33,8 @@
 #' Simulated inpatient clinical diagnoses
 #' 
 #' @description Dataset of simulated infection clinical diagnoses by 
-#' finished consultant episodes listed in \code{\link[Ramses]{inpatient_episodes}},
+#' finished consultant episodes listed in 
+#' \code{\link[Ramses]{inpatient_episodes}},
 #' detailing all episode start and end times, episode number, and up to
 #' 5 clinical diagnoses coded according to the International 
 #' Classification of Diseases, Tenth Revision (ICD-10). 

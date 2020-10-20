@@ -4,7 +4,8 @@
 \name{antibiotic_icd_indications}
 \alias{antibiotic_icd_indications}
 \title{Common infections and indications for antimicrobial therapy}
-\format{\code{antibiotic_icd_indications} is data frame of 276 rows 
+\format{
+\code{antibiotic_icd_indications} is data frame of 276 rows 
 defining 74 infections classified into 17 groups, with references 
 to ICD-10 codes.
 
@@ -19,7 +20,8 @@ are indicated ("potentially", "rarely", "usually")}
 for infection groups}
 \item{\code{infection_group2_code}}{character vector containing 5-character short codes
 for infections}
-}}
+}
+}
 \source{
 Adapted from Supplementary Table S1 in \insertCite{Hashimoto2020}{Ramses}.
 }

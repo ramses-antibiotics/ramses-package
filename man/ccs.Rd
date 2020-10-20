@@ -4,7 +4,9 @@
 \name{ccs}
 \alias{ccs}
 \title{Clinical Classifications Software (CCS): map to 4-character ICD code}
-\format{A data frame with 72,446 ICD-10-CM codes mapped to CCS multilevel categories.}
+\format{
+A data frame with 72,446 ICD-10-CM codes mapped to CCS multilevel categories.
+}
 \source{
 Adapted from \insertCite{HCUP-CCS}{Ramses} for 4-character ICD-10 codes.
 }

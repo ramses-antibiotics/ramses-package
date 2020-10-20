@@ -6,7 +6,7 @@ output:
 bibliography: ../inst/REFERENCES.bib
 always_allow_html: yes
 vignette: >
-  %\VignetteIndexEntry{Ramses}
+  %\VignetteIndexEntry{Ramses: R Package for Antimicrobial Stewardship & Surveillance}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
