@@ -77,30 +77,87 @@
 }
 
 
-.validate_variable_no_missing <- function(data, vectorname){
+#' Verify no missing or "" value
+#'
+#' @param data a data frame
+#' @param vectorname a character vector of variables which must not be missing.
+#' Variables that are not present in `data` will be dropped.
+#' @param action whether to throw `"warning"` or `"error"`. Default is "warning"
+#'
+#' @return TRUE if validation is passed
+#' @noRd
+.validate_variable_no_missing <- function(data, 
+                                          vectorname, 
+                                          action = "warning") {
   
-  validation_result <- TRUE
+  stopifnot(action %in% c("warning", "error"))
+  stopifnot(is.character(vectorname))
+  vectorname <- vectorname[vectorname %in% colnames(data)]
+  if( length(vectorname) == 0 ) {
+    return(TRUE)
+  }
   
-  if(!exists(vectorname, data)) {
-    warning(simpleWarning(paste0("`", deparse(substitute(data)), 
-                                 "` must include a `", vectorname, "` variable.")))
-    validation_result <- FALSE
-  } else {
-    
-    if(any(is.na(data[, vectorname]))) {
-      warning(simpleWarning(paste0("Some `", vectorname, "` is missing.")))
-      validation_result <- FALSE
-    }
-    
-    if(any(na.omit(as.character(data[, vectorname]) == ""))) {
-      warning(simpleWarning(paste0("Some `", vectorname, "` == \"\"")))
-      validation_result <- FALSE
-    }
-    
-  } 
+  missing_data <- sapply(
+    vectorname, 
+    function(var, data) {
+      any(is.na(data[, var]))
+    },
+    data = data
+  )
   
-  validation_result
+  empty_data <- sapply(
+    vectorname, 
+    function(var, data) {
+      any(as.character(na.omit(data[, var])) == "")
+    },
+    data = data
+  )
+  
+  if( any(missing_data) & action == "warning"){
+    warning(
+      paste(
+        "The following variables contain missing data:",
+        paste(paste0("`", 
+                     vectorname[missing_data],
+                     "`"), collapse = ", ")
+      ))
+  }
+  
+  if( any(missing_data) & action == "error"){
+    stop(
+      paste(
+        "The following variables must not contain missing data:",
+        paste(paste0("`", 
+                     vectorname[missing_data],
+                     "`"), collapse = ", ")
+      ))
+  }
+  
+  
+  if( any(empty_data) & action == "warning" ){
+    warning(
+      paste(
+        "The following variables contain \"\" values:",
+        paste(paste0("`", 
+                     vectorname[empty_data],
+                     "`"), collapse = ", ")
+      ))
+  }
+  
+  if( any(empty_data) & action == "error" ){
+    stop(
+      paste(
+        "The following variables must not equal \"\":",
+        paste(paste0("`", 
+                     vectorname[empty_data],
+                     "`"), collapse = ", ")
+      ))
+  }
+  
+  !any(empty_data, missing_data)
 }
+
+
 
 #' Validate inpatient episode and ward movement records
 #'
@@ -223,25 +280,11 @@ validate_inpatient_episodes <- function(episodes,
   variable_exists_non_missing <- episode_schema[
     episode_schema$must_be_nonmissing, 
     "variable_name"]
-  variable_exists_non_missing <- variable_exists_non_missing[
-    variable_exists_non_missing %in% colnames(episodes)]
-  
-  missing_data <- suppressWarnings(
-    !sapply(variable_exists_non_missing, 
-            FUN = .validate_variable_no_missing,
-            data = episodes)
+  no_missing_data <- .validate_variable_no_missing(
+    data = episodes,
+    vectorname = variable_exists_non_missing,
+    action = "error"
   )
-  
-  if( any(missing_data) ){
-    stop(
-      simpleError(paste(
-        "The following `episodes` variables must not contain missing data:",
-        paste(paste0("`", 
-                     variable_exists_non_missing[missing_data],
-                     "`"), collapse = ", "))
-      )
-    )
-  }
   
   validation_result <- validate_inpatient_spells(episodes)
   validation_result <- append(
@@ -274,27 +317,14 @@ validate_inpatient_episodes <- function(episodes,
     )
   }
   
-  variable_exists_non_missing <- ward_schema[ward_schema$must_be_nonmissing, 
-                                             "variable_name"]
-  variable_exists_non_missing <- variable_exists_non_missing[
-    variable_exists_non_missing %in% colnames(wards)]
-  
-  missing_data <- suppressWarnings(
-    !sapply(variable_exists_non_missing, 
-            FUN = .validate_variable_no_missing,
-            data = wards)
+  variable_exists_non_missing <- ward_schema[
+    ward_schema$must_be_nonmissing, 
+    "variable_name"]
+  no_missing_data <- .validate_variable_no_missing(
+    data = wards,
+    vectorname = variable_exists_non_missing,
+    action = "error"
   )
-  
-  if( any(missing_data) ){
-    stop(
-      simpleError(paste(
-        "The following `wards` variables must not contain missing data:",
-        paste(paste0("`", 
-                     variable_exists_non_missing[missing_data],
-                     "`"), collapse = ", "))
-      )
-    )
-  }
   
   wards <- merge(
     wards, 
@@ -461,58 +491,90 @@ validate_inpatient_episode_dates <- function(data, type = "episodes") {
 
 #' Validate inpatient diagnosis records
 #' 
-#' @description Validate contraints on diagnosis records, namely that the minimum 
-#' variables are present, and that all `icd_code` values can be looked up in an 
-#' ICD-10 reference table
-#' @param diagnoses_data a data frame containing clinical diagnoses, with, at minimum, 
-#' variables `patient_id`, `spell_id`, `episode_number`, `icd_code`, `diagnosis_position`
-#' @param diagnoses_lookup a data frame containing an ICD-10 reference look up table
+#' @description Validate constraints on diagnosis records, namely that the 
+#' minimum variables are present, and that all \code{icd_code} values can be 
+#' looked up in an ICD-10 reference table
+#' @param diagnoses_data a data frame containing clinical diagnoses, with, 
+#' at minimum, variables \code{patient_id}, \code{spell_id}, 
+#' \code{episode_number}, \code{icd_code}, \code{diagnosis_position}
+#' @param diagnoses_lookup a data frame containing an ICD-10 reference look up 
+#' table with, at minimum, variables `icd_description`, `icd_display`, 
+#' `category_code`, `category_description`
 #'
 #' @return A logical value indicating success
 #' @export
 #' @importFrom data.table data.table :=
 #' @examples
-#' lookup_icd <- dplyr::distinct(Ramses::inpatient_diagnoses, icd_code)
-#' lookup_icd <- dplyr::filter(lookup_icd, !is.na(icd_code))
-#' lookup_icd$icd_label <- "ICD-10 code label text"
-#' validate_inpatient_diagnoses(Ramses::inpatient_diagnoses, lookup_icd)
+#' data_icd <- dplyr::filter(Ramses::inpatient_diagnoses, !is.na(icd_code))
+#' lookup_icd <- dplyr::distinct(data_icd, icd_code)
+#' lookup_icd$icd_display <- lookup_icd$icd_code
+#' lookup_icd$icd_description <- "ICD-10 code label text"
+#' lookup_icd$category_code <- substr(lookup_icd$icd_code, 0, 3)
+#' lookup_icd$category_description <- "ICD-10 category label text"
+#' validate_inpatient_diagnoses(data_icd, lookup_icd)
 validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 
-  exists_non_missing <- list(
-    "patient_id", 
-    "spell_id", 
-    "episode_number",
-    "icd_code",
-    "diagnosis_position"
-  )
- 
-  validation_result <- !any(
-    !sapply(exists_non_missing,
-            FUN = .validate_variable_no_missing,
-            data = diagnoses_data)
-  )
+  diagnoses_data_schema <- .inpatient_diagnoses_data_variables()
+  diagnoses_lookup_schema <- .inpatient_diagnoses_lookup_variables()
   
-  validation_result <- validation_result & !any(
-    !sapply(list("icd_code", "icd_description", 
-                 "icd_display", "category_code", 
-                 "category_description"),
-            FUN = .validate_variable_no_missing,
-            data = diagnoses_lookup)
-  )
-  
-  if (validation_result) {
-    diagnoses_data <- data.table::data.table(diagnoses_data)
-    diagnoses_data <- unique(diagnoses_data[, list(icd_code)])
-    diagnoses_lookup <- data.table::data.table(diagnoses_lookup)[, list(icd_code)]
-    diagnoses_lookup[, missing := FALSE]
-    
-    diagnoses_data <- merge(diagnoses_data, diagnoses_lookup, by = "icd_code", all.x = T)
-    
-    if (any(is.na(diagnoses_data$missing))) {
-      warning(
-        simpleWarning("some `icd_code` values in `diagnoses_data` do not match any `icd_code` in `diagnoses_lookup`")
+  data_var_exists <- diagnoses_data_schema[
+    diagnoses_data_schema[["must_exist"]],
+    "variable_name"
+  ]
+  not_exist <- !sapply(data_var_exists, exists, where = diagnoses_data)
+  if( any(not_exist) ){
+    stop(
+      simpleError(paste(
+        "The following variables must exist:",
+        paste(paste0("`", data_var_exists[not_exist], "`"), collapse = ", "))
       )
-    }
+    )
+  }
+  
+  lkup_var_exists <- diagnoses_lookup_schema[
+    diagnoses_lookup_schema[["must_exist"]],
+    "variable_name"
+  ]
+  not_exist <- !sapply(lkup_var_exists, exists, where = diagnoses_lookup)
+  if( any(not_exist) ){
+    stop(
+      simpleError(paste(
+        "The following variables must exist:",
+        paste(paste0("`", lkup_var_exists[not_exist], "`"), collapse = ", "))
+      )
+    )
+  }
+
+  validation_result <- .validate_variable_no_missing(
+    data = diagnoses_data,
+    vectorname = diagnoses_data_schema[
+      diagnoses_data_schema[["must_be_nonmissing"]],
+      "variable_name"
+    ],
+    action = "warning"
+  )
+  
+  validation_result <- validation_result & 
+    .validate_variable_no_missing(
+    data = diagnoses_lookup,
+    vectorname = diagnoses_lookup_schema[
+      diagnoses_lookup_schema[["must_be_nonmissing"]],
+      "variable_name"
+    ],
+    action = "error"
+  )
+  
+  diagnoses_data <- data.table::data.table(diagnoses_data)
+  diagnoses_data <- unique(diagnoses_data[, list(icd_code)])
+  diagnoses_lookup <- data.table::data.table(diagnoses_lookup)[, list(icd_code)]
+  diagnoses_lookup[, missing := FALSE]
+  
+  diagnoses_data <- merge(diagnoses_data, diagnoses_lookup, by = "icd_code", all.x = T)
+  
+  if (any(is.na(diagnoses_data$missing))) {
+    warning(
+      simpleWarning("some `icd_code` values in `diagnoses_data` do not match any `icd_code` in `diagnoses_lookup`")
+    )
   }
   
   validation_result
@@ -607,17 +669,15 @@ validate_prescriptions <- function(data) {
   
   drug_prescriptions_variables <- .drug_prescriptions_variables()
   
-  variable_exists <- drug_prescriptions_variables[["variable_name"]]
-  variable_exists <- variable_exists[which(
-    drug_prescriptions_variables[["must_exist"]]
-  )]
-  
-  variable_exists_non_missing <- 
-    drug_prescriptions_variables[["variable_name"]]
-  variable_exists_non_missing <- variable_exists_non_missing[which(
-    drug_prescriptions_variables[["must_be_nonmissing"]]
-  )]
-  
+  variable_exists <- drug_prescriptions_variables[
+    drug_prescriptions_variables[["must_exist"]],
+    "variable_name"
+  ]
+  variable_exists_non_missing <- drug_prescriptions_variables[
+    drug_prescriptions_variables[["must_be_nonmissing"]],
+    "variable_name"
+  ]
+
   not_exist <- !sapply(variable_exists, exists, where = data)
   if( any(not_exist) ){
     stop(
@@ -628,23 +688,12 @@ validate_prescriptions <- function(data) {
     )
   }
   
-  missing_data <- suppressWarnings(
-    !sapply(variable_exists_non_missing, 
-            FUN = .validate_variable_no_missing,
-            data = data)
+  missing_data <- .validate_variable_no_missing(
+    data = data,
+    vectorname = variable_exists_non_missing,
+    action = "error"
   )
-  
-  if( any(missing_data) ){
-    stop(
-      simpleError(paste(
-        "Some variables must not contain missing data:",
-        paste(paste0("`", 
-                     variable_exists_non_missing[missing_data],
-                     "`"), collapse = ", "))
-      )
-    )
-  }
-  
+ 
   invalid_status <- !data$prescription_status %in% c(
     "active", "on-hold", "cancelled", "completed", 
     "entered-in-error", "stopped", "draft", "unknown"
@@ -763,10 +812,10 @@ validate_administrations <- function(data) {
   
   drug_administrations_variables <- .drug_administrations_variables()
   
-  variable_exists <- drug_administrations_variables[["variable_name"]]
-  variable_exists <- variable_exists[which(
-    drug_administrations_variables[["must_exist"]]
-  )]
+  variable_exists <- drug_administrations_variables[
+    drug_administrations_variables[["must_exist"]],
+    "variable_name"
+  ]
   
   not_exist <- !sapply(variable_exists, exists, where = data)
   if( any(not_exist) ){
@@ -784,22 +833,12 @@ validate_administrations <- function(data) {
     drug_administrations_variables[["must_be_nonmissing"]]
   )]
   
-  missing_data <- suppressWarnings(
-    !sapply(variable_exists_non_missing, 
-            FUN = .validate_variable_no_missing,
-            data = data)
+  .validate_variable_no_missing()
+  missing_data <- .validate_variable_no_missing(
+    data = data,
+    vectorname = variable_exists_non_missing,
+    action = "error"
   )
-  
-  if( any(missing_data) ){
-    stop(
-      simpleError(paste(
-        "Some variables must not contain missing data:",
-        paste(paste0("`", 
-                     variable_exists_non_missing[missing_data],
-                     "`"), collapse = ", "))
-      )
-    )
-  }
   
   invalid_status <- !data$administration_status %in% c(
     "in-progress", "not-done", "on-hold", "completed", 
@@ -814,7 +853,6 @@ validate_administrations <- function(data) {
       )
     )
   }
-  
   
   duplicates <- data %>% 
     dplyr::group_by(patient_id, drug_id, dose, route, administration_date) %>% 
@@ -994,8 +1032,10 @@ validate_investigations <- function(investigations,
   
   investigation_schema <- .inpatient_investigations_variables()
   
-  variable_exists <- investigation_schema[investigation_schema$must_exist,
-                                          "variable_name"]
+  variable_exists <- investigation_schema[
+    investigation_schema[["must_exist"]],
+    "variable_name"]
+
   not_exist <- !sapply(variable_exists, exists, where = investigations)
   if( any(not_exist) ){
     stop(

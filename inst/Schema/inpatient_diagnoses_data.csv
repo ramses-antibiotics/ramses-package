@@ -1,0 +1,6 @@
+position,variable_name,must_exist,must_be_nonmissing,must_be_unique
+1,patient_id,TRUE,TRUE,FALSE
+2,spell_id,TRUE,TRUE,FALSE
+3,episode_number,TRUE,TRUE,FALSE
+4,icd_code,TRUE,TRUE,FALSE
+5,diagnosis_position,TRUE,TRUE,FALSE

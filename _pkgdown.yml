@@ -36,8 +36,7 @@ reference:
   - ccsr
   - download_icd10cm
   - import_icd
-  - reference_aware
-  - reference_drug_frequency
+  - starts_with("reference_")
 - title: Transform and validate data
   desc:  Functions to enrich and validate data before loading into the warehouse.
   contents:
@@ -46,6 +45,7 @@ reference:
   - starts_with("validate_inpatient")
   - validate_prescriptions
   - validate_administrations
+  - validate_investigations
 - title: Load & link data
   desc:  Load records into the warehouse and create secondary information.
   contents:
@@ -53,11 +53,13 @@ reference:
   - load_inpatient_diagnoses
   - transitive_closure_control
   - load_medications
+  - load_investigations
 - title: Simulated sets of electronic health records
   contents:
   - inpatient_episodes
   - inpatient_wards
   - inpatient_diagnoses
+  - inpatient_investigations
   - drug_prescriptions
   - drug_administrations
 - title: Database administration

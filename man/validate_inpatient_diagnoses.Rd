@@ -7,22 +7,28 @@
 validate_inpatient_diagnoses(diagnoses_data, diagnoses_lookup)
 }
 \arguments{
-\item{diagnoses_data}{a data frame containing clinical diagnoses, with, at minimum, 
-variables `patient_id`, `spell_id`, `episode_number`, `icd_code`, `diagnosis_position`}
+\item{diagnoses_data}{a data frame containing clinical diagnoses, with, 
+at minimum, variables \code{patient_id}, \code{spell_id}, 
+\code{episode_number}, \code{icd_code}, \code{diagnosis_position}}
 
-\item{diagnoses_lookup}{a data frame containing an ICD-10 reference look up table}
+\item{diagnoses_lookup}{a data frame containing an ICD-10 reference look up 
+table with, at minimum, variables `icd_description`, `icd_display`, 
+`category_code`, `category_description`}
 }
 \value{
 A logical value indicating success
 }
 \description{
-Validate contraints on diagnosis records, namely that the minimum 
-variables are present, and that all `icd_code` values can be looked up in an 
-ICD-10 reference table
+Validate constraints on diagnosis records, namely that the 
+minimum variables are present, and that all \code{icd_code} values can be 
+looked up in an ICD-10 reference table
 }
 \examples{
-lookup_icd <- dplyr::distinct(Ramses::inpatient_diagnoses, icd_code)
-lookup_icd <- dplyr::filter(lookup_icd, !is.na(icd_code))
-lookup_icd$icd_label <- "ICD-10 code label text"
-validate_inpatient_diagnoses(Ramses::inpatient_diagnoses, lookup_icd)
+data_icd <- dplyr::filter(Ramses::inpatient_diagnoses, !is.na(icd_code))
+lookup_icd <- dplyr::distinct(data_icd, icd_code)
+lookup_icd$icd_display <- lookup_icd$icd_code
+lookup_icd$icd_description <- "ICD-10 code label text"
+lookup_icd$category_code <- substr(lookup_icd$icd_code, 0, 3)
+lookup_icd$category_description <- "ICD-10 category label text"
+validate_inpatient_diagnoses(data_icd, lookup_icd)
 }

@@ -20,6 +20,20 @@
                 package = "Ramses"), stringsAsFactors = F)
 }
 
+.inpatient_diagnoses_data_variables <- function() {
+  utils::read.csv(
+    system.file("Schema", 
+                "inpatient_diagnoses_data.csv", 
+                package = "Ramses"), stringsAsFactors = F)
+}
+
+.inpatient_diagnoses_lookup_variables <- function() {
+  utils::read.csv(
+    system.file("Schema", 
+                "inpatient_diagnoses_lookup.csv", 
+                package = "Ramses"), stringsAsFactors = F)
+}
+
 .inpatient_wards_variables <- function() {
   utils::read.csv(
     system.file("Schema", 

@@ -1,9 +1,45 @@
 date1 <- structure(1585220000, class = c("POSIXct", "POSIXt"))
 
+
+test_that(".validate_variable_no_missing()", {
+  expect_error(.validate_variable_no_missing(
+    data = data.frame(foo = c("1", "")), 
+    vectorname = "foo", 
+    action = "bidule"))
+  expect_error(.validate_variable_no_missing(
+    data = data.frame(foo = c("1", "")), 
+    vectorname = "foo", 
+    action = NULL))
+  expect_false(expect_warning(.validate_variable_no_missing(
+    data = data.frame(foo = c("1", "")), 
+    vectorname = "foo", 
+    action = "warning")))
+  expect_error(.validate_variable_no_missing(
+    data = data.frame(foo = c("1", "")), 
+    vectorname = "foo", 
+    action = "error"))
+  
+  expect_false(expect_warning(.validate_variable_no_missing(
+    data = data.frame(foo = c("1", NA)), 
+    vectorname = "foo", 
+    action = "warning")))
+  expect_error(.validate_variable_no_missing(
+    data = data.frame(foo = c("1", NA)), 
+    vectorname = "foo", 
+    action = "error"))
+  expect_true(.validate_variable_no_missing(
+    data = data.frame(foo = c("1", NA)), 
+    vectorname = character(0),
+    action = "error"))
+  expect_true(.validate_variable_no_missing(
+    data.frame(bar = c("1", NA)), 
+    vectorname = "foo",
+    action = "error"))
+})
+
+
 test_that("inpatient episode records are validated", {
-  expect_false(expect_warning(.validate_variable_no_missing(data.frame(foo = c("1", "")), "foo")))
-  expect_false(expect_warning(.validate_variable_no_missing(data.frame(foo = c("1", NA)), "foo")))
-  expect_false(expect_warning(.validate_variable_no_missing(data.frame(bar = c("1", NA)), "foo")))
+
   
   faulty_spells <- data.frame(list(
     patient_id = c(1, 2, 2),
@@ -123,9 +159,9 @@ test_that("inpatient diagnosis records are validated", {
   expect_true(expect_warning(
     validate_inpatient_diagnoses(diagnoses_data = test_diagnoses[3,], 
                                  diagnoses_lookup = test_lookup)))
-  expect_false(expect_warning(
+  expect_error(
     validate_inpatient_diagnoses(diagnoses_data = test_diagnoses[3,], 
-                                 diagnoses_lookup = dplyr::select(test_lookup, icd_code))))
+                                 diagnoses_lookup = dplyr::select(test_lookup, icd_code)))
   expect_false(expect_warning(
     validate_inpatient_diagnoses(diagnoses_data = test_diagnoses[4,], 
                                  diagnoses_lookup = test_lookup)
