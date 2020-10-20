@@ -30,7 +30,7 @@
       simpleError(paste(
         "The following variables must have unique values:",
         paste(paste0("`", 
-                     must_be_unique[duplicate_values],
+                     must_be_unique[duplicate_results],
                      "`"), collapse = ", "))
       )
     )
@@ -220,8 +220,9 @@ validate_inpatient_episodes <- function(episodes,
     )
   }
   
-  variable_exists_non_missing <- episode_schema[episode_schema$must_be_nonmissing, 
-                                           "variable_name"]
+  variable_exists_non_missing <- episode_schema[
+    episode_schema$must_be_nonmissing, 
+    "variable_name"]
   variable_exists_non_missing <- variable_exists_non_missing[
     variable_exists_non_missing %in% colnames(episodes)]
   
@@ -917,9 +918,9 @@ validate_administrations <- function(data) {
 #'   \item{blah}{blah}
 #' }
 #' 
-#' @return
+#' @return TRUE if the validation is passed
 #' @export
-validate_microbiology <- function(specimens, isolates, susceptibility) {
+validate_microbiology <- function(specimens, isolates, susceptibilities) {
   
 }
 
@@ -929,7 +930,7 @@ validate_microbiology <- function(specimens, isolates, susceptibility) {
 #' @param investigations a data frame
 #' @param custom_units a character vector of valid unit codes not listed in
 #' the UCUM. Default is: \code{c("breaths", "beats", "U")}.
-#' @return
+#' @return TRUE if the validation is passed
 #' @section Mandatory variables:
 #' The following variables are required:
 #' \describe{
@@ -981,7 +982,7 @@ validate_microbiology <- function(specimens, isolates, susceptibility) {
 #' # the units "breaths/min" (http://loinc.org/8867-4) or
 #' # "beats/min" () do not exist in the https://ucum.org/. 
 #' library(units)
-#' as_units("breaths/min") # fails
+#' \dontrun{as_units("breaths/min")} # fails
 #' 
 #' # Yet, they may be declared.
 #' install_symbolic_unit("breaths") 
@@ -1018,7 +1019,7 @@ validate_investigations <- function(investigations,
       paste(
         "The following variables must not contain missing data:",
         paste(paste0("`", 
-                     variable_exists_non_missing[missing_data],
+                     exists_non_missing[missing_data],
                      "`"), collapse = ", ")
         ))
   }

@@ -4,7 +4,7 @@
 \alias{validate_microbiology}
 \title{Validate microbial isolates & susceptibility records}
 \usage{
-validate_microbiology(specimens, isolates, susceptibility)
+validate_microbiology(specimens, isolates, susceptibilities)
 }
 \arguments{
 \item{specimens}{a data frame with one row per specimen sent
@@ -17,7 +17,7 @@ isolated from the laboratory specimen (see details)}
 (see details)}
 }
 \value{
-
+TRUE if the validation is passed
 }
 \description{
 Validate microbial isolates & susceptibility records

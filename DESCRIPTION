@@ -49,6 +49,7 @@ Suggests:
     curl,
     DiagrammeR,
     odbc,
+    RPostgres,
     timevis
 RdMacros: Rdpack    
 RoxygenNote: 7.1.1

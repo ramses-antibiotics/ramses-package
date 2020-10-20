@@ -16,7 +16,7 @@ validate_investigations(
 the UCUM. Default is: \code{c("breaths", "beats", "U")}.}
 }
 \value{
-
+TRUE if the validation is passed
 }
 \description{
 Validate records of observations & investigations
@@ -74,7 +74,7 @@ The following variables are required:
 # the units "breaths/min" (http://loinc.org/8867-4) or
 # "beats/min" () do not exist in the https://ucum.org/. 
 library(units)
-as_units("breaths/min") # fails
+\dontrun{as_units("breaths/min")} # fails
 
 # Yet, they may be declared.
 install_symbolic_unit("breaths") 

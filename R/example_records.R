@@ -73,3 +73,17 @@
 #' @name drug_administrations
 #' @source Simulated data
 "drug_administrations"
+
+
+#' Simulated clinical investigation results
+#' 
+#' @description A set of records of observations (for example: respiration rate,
+#' blood pressure) and investigations (for example: blood cell counts)
+#' performed during inpatient care episodes.
+#'   
+#' @format A data frame of records of observations and investigations 
+#' passing \code{\link[Ramses]{validate_investigations}()}.
+#' @docType data
+#' @name inpatient_investigations
+#' @source Simulated data
+"inpatient_investigations"
