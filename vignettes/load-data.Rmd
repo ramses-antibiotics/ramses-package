@@ -44,20 +44,25 @@ Second, a relational database server is needed. In this vignette, we will create
 ramses_db <- connect_db_local("ramses-db.sqlite")
 ```
 
-We can now begin validating and loading records into the database. This may be done in any order.
+We can now begin preparing records and loading them into the database. This involves three steps:
+
+1. *Transform*: adding metadata and transforming records to conform with Ramses data validation constraints
+2. *Validate*: using dedicated functions (eg: `validate_inpatient_episodes()`) to verify that all data conform to Ramses data validation constraints
+3. *Load*: loading records into a SQL database.
 
 # Medication records
 
 ## Drug prescriptions
 
-We begin with prescription records. 
+We begin with prescription records (but you can choose to start with other records type if you prefer).
 
 ```{r print_prescriptions}
 str(drug_prescriptions)
 ```
 
+Prescriptions records must conform to data validation requirements listed in the documentation for `validate_prescriptions()`
 
-We begin by mapping drug concepts thanks to the `as.ab()` function provided by the AMR package. This function takes a character variable as input and returns a three-letter code EARS-Net code. For more information, refer to the documentation for the `as.ab` function. Some manual editing may be required when drugs are not successfully mapped, as shown in the example below.
+We first map drug concepts thanks to the `as.ab()` function provided by the AMR package. This function takes a character variable as input and returns a three-letter code EARS-Net code. For more information, refer to the documentation for the [AMR::as.ab()] `as.ab()` function. Some manual editing may be required when drugs are not successfully mapped, as shown in the example below.
 
 ```{r map_drug_failing}
 # attempting to map drug name using AMR package
@@ -247,15 +252,14 @@ drug_administrations <- drug_administrations %>%
       administration_status = "completed",
       DDD
     )
-
-
-
 ```
 
 
-Data can now be loaded into the database
+This data frame can now be validated, before being loaded into the database.
 
 ```{r load_rx}
+validate_administrations(drug_administrations)
+
 load_medications(conn = ramses_db, 
                  prescriptions = drug_prescriptions, 
                  administrations = drug_administrations, 

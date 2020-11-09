@@ -51,7 +51,11 @@ test_that("Ramses on SQLite", {
                            diagnoses_lookup = icd10cm,
                            overwrite = TRUE)))
   expect_true(
-    load_inpatient_investigations(inpatient_data$investigations))
+    load_inpatient_investigations(
+      conn = conSQLite,
+      investigations_data = inpatient_data$investigations,
+      overwrite = TRUE
+    ))
   
 
   test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
