@@ -393,7 +393,7 @@ data(inpatient_investigations)
 str(inpatient_investigations)
 ```
 
-One particular set of validation constraints is that units conform to the \href{https://ucum.org}{Unified Code for Units of Measure (UCUM)}. Units are implemented using the `units` package in R. Yet, many important units in medicine are not listed in the UCUM. For instance: 
+One particular set of validation constraints is that units conform to the [Unified Code for Units of Measure (UCUM)](https://ucum.org). Units are implemented using the `units` package in R. Yet, many important units in medicine are not listed in the UCUM. For instance: 
 
 - respirations (breaths/min)
 - heart rate (beats/min)
