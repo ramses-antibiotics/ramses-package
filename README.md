@@ -28,8 +28,10 @@
 
 ## Features
 
+<!-- - measuring antibiotic consumption -->
+<!-- - measuring drug/bug match and rates of microbial culture sampling -->
 - integration with the [AMR package](https://msberends.gitlab.io/AMR/) for classification/prediction of resistance phenotypes 
-- compatible with SQLite and MS SQL Server databases
+- compatible with SQLite and PostgreSQL databases
 
 ## Funders
 
