@@ -660,52 +660,6 @@ connect_db_local <- function(file) {
 }
 
 
-#' Get warehouse status
-#'
-#' @description Inspect the status of tables making up the warehouse
-#' @param conn a database connection
-#'
-#' @return 
-#'   \describe{
-#'     \item{diagnoses}{a flag indicating whether }
-#'   }
-#' @export
-get_warehouse_status <- function(conn) {
-  
-  if (DBI::dbExistsTable(conn, "inpatient_diagnoses")) {
-    diagnoses <- dplyr::tbl(conn, "inpatient_diagnoses") %>% 
-      dplyr::filter(.data, row_number()==1) %>% 
-      dplyr::collect()
-  } else {
-    diagnoses = NULL
-  }
-  
-  inspect_diagnoses <- (
-    is.null(diagnoses) || nrow(diagnoses) == 0 || 
-      any(!c("icd_code", "patient_id", "spell_id", "episode_number") %in% colnames(diagnoses))
-  )
-  
-  list(
-    diagnoses = inspect_diagnoses
-  )
-  
-}
-
-#' Build the RAMSES schema
-#' 
-#' @description The RAMSES schema is the set of tables required to import health records
-#' for curation and analysis 
-#' @param conn a database connection
-#' @rdname build_ramses_schema
-#' @export
-build_ramses_schema <- function(conn) {
-  UseMethod("build_ramses_schema")
-}
-#' @export
-build_ramses_schema.SQLiteConnection <- function(conn) {
-  
-}
-
 .build_tally_table <- function(conn) {
   # Build table to use in joins to create therapy tables
   dbplyr::db_copy_to(conn, 
@@ -735,6 +689,7 @@ build_ramses_schema.SQLiteConnection <- function(conn) {
   
   statement
 }
+
 
 #' Split SQL statements from a batch script
 #'
@@ -801,11 +756,12 @@ build_ramses_schema.SQLiteConnection <- function(conn) {
 #' under the name `ramses_TC_group`.
 #' @references Inspired by Itzik Ben-Gan's T-SQL challenge solution
 #' https://www.itprotoday.com/sql-server/t-sql-puzzle-challenge-grouping-connected-items
+#' @keywords internal
 #' @noRd
 .run_transitive_closure <- function(conn, edge_table, silent = FALSE) {
   UseMethod(".run_transitive_closure")
 }
-#' @export
+
 .run_transitive_closure.SQLiteConnection <- function(conn, edge_table, silent) {
   
   .create_ramses_TC_graphs(conn)
