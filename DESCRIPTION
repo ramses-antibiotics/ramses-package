@@ -50,7 +50,8 @@ Suggests:
     DiagrammeR,
     odbc,
     RPostgres,
-    timevis
+    timevis,
+    snomedizer
 RdMacros: Rdpack    
 RoxygenNote: 7.1.1
 VignetteBuilder: knitr,rmarkdown

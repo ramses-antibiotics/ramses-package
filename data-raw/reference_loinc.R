@@ -1,6 +1,7 @@
 ## code to prepare `data/reference_loinc.rda dataset
 library(dplyr)
 library(magrittr)
+
 loinc_text <- unz(grep("Loinc.*Text.*.zip$", 
                        list.files("data-raw", full.names = "T"), 
                        value = T), 
@@ -96,42 +97,3 @@ reference_loinc <- filter(
   arrange(CLASS, SYSTEM, LOINC_NUM)
 
 usethis::use_data(reference_loinc, overwrite = T)
-
-# 
-# tessy <- read.csv("data-raw/tessy_45.csv", stringsAsFactors = F)
-# tessy <- tessy[
-#   !tessy$tessy_codelist %in% 
-#     c("SpecimenDIPH", 
-#       "SpecimenSeroVPD"), ]
-# tessy <- tessy[,-1]
-# for(i in ncol(tessy)){
-#   tessy[[i]] <- trimws(tessy[[i]])
-# }
-# tessy$tessy_description[tessy$tessy_description=="Cerebro spinal fluid"] <- "Cerebrospinal fluid"
-# 
-# tessy <- unique(tessy)
-# tessy$normally_sterile <- tessy$tessy_code %in% c(
-#   "BAL", "BLOOD", "BONE", "CSF", "LUNGTISSUE", 
-#   "PLEURAL", "SER", "SYNO", "URI", "URINE", 
-#   "OTHSTERILE")
-# tessy$other_codes <- tessy$tessy_code %in% c(
-#   "O", "OTHER", "UNK", NA,
-#   "NONSTERILE", "OTHSTERILE"
-#   )
-# tessy <- dplyr::arrange(tessy, -normally_sterile, other_codes, tessy_code)
-# tessy <- dplyr::select(tessy, -other_codes)
-# write.csv(tessy, file="data-raw/tessy_short.csv", row.names = FALSE)
-# 
-# 
-# 
-# hl7 <- jsonlite::fromJSON(url("https://terminology.hl7.org/1.0.0/CodeSystem-v2-0487.json"))
-# 
-# truc <- hl7$concept %>% 
-#   dplyr::select(-designation) %>% 
-#   mutate(status = purrr::map_chr(property, function(X) X[X$code == "status",]$valueCode),
-#          othertruc = purrr::map_chr(property, function(X) X[X$code == "v2-concComment",]$valueString))
-# 
-# jsonlite::flatten(hl7)
-# dplyr::bind_rows(truc$property)
-# 
-# truc <- bind_cols(truc, dplyr::bind_rows( hl7$concept$property))

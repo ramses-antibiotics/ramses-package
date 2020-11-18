@@ -16,7 +16,7 @@ inpatient_episodes
 \description{
 This simulated activity data consists of records of finished 
 consultant episodes for 200 patients, detailing all dates and times of 
-admission, dischage, activity dates, and ICD-10 clinical diagnoses codes 
+admission, discharge, activity dates, and ICD-10 clinical diagnoses codes 
 (for infections only).
 
 This data was simulated to reproduce relevant characteristics of English 
