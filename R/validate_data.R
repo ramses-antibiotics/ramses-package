@@ -96,9 +96,7 @@
     return(TRUE)
   }
   
-  not_exist <- !sapply(vectorname, function(name, data) {
-    exists(x = name, where = data)
-  }, data = data)
+  not_exist <- !sapply(vectorname, exists, where = data)
   if( any(not_exist) & action == "warning"){
     warning(
       simpleWarning(paste(

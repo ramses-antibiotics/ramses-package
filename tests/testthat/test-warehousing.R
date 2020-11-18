@@ -26,9 +26,9 @@ test_that("Ramses on SQLite", {
       diagnoses_lookup = icd10cm))
   expect_true(validate_investigations(inpatient_data$investigations))
   expect_true(validate_microbiology(
-    inpatient_data$specimens,
-    inpatient_data$isolates,
-    inpatient_data$susceptibilities
+    inpatient_data$micro$specimens,
+    inpatient_data$micro$isolates,
+    inpatient_data$micro$susceptibilities
     ))
   expect_true(validate_inpatient_episodes(inpatient_data$episodes))
   expect_true(validate_inpatient_episodes(episodes = inpatient_data$episodes,
@@ -63,9 +63,9 @@ test_that("Ramses on SQLite", {
     ))
   expect_true(load_inpatient_microbiology(
     conn = conSQLite,
-    inpatient_data$specimens,
-    inpatient_data$isolates,
-    inpatient_data$susceptibilities,
+    inpatient_data$micro$specimens,
+    inpatient_data$micro$isolates,
+    inpatient_data$micro$susceptibilities,
     overwrite = TRUE
   ))
   
