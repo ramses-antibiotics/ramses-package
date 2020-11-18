@@ -495,7 +495,7 @@ mdr_classification <- microbiology_data$susceptibilities  %>%
 mdr_classification$multidrug_resistance <- 
   as.character(AMR::mdro(
     x = mdr_classification,
-    guideline = "EUCAST3.2",
+    guideline = "EUCAST",
     col_mo = "organism_code"))
 
 # Merging back into the isolates dataset

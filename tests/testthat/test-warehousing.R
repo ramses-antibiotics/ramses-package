@@ -62,6 +62,7 @@ test_that("Ramses on SQLite", {
       overwrite = TRUE
     ))
   expect_true(load_inpatient_microbiology(
+    conn = conSQLite,
     inpatient_data$specimens,
     inpatient_data$isolates,
     inpatient_data$susceptibilities,
