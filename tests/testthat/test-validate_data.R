@@ -1,5 +1,21 @@
+
 date1 <- structure(1585220000, class = c("POSIXct", "POSIXt"))
 
+
+# .validate_variable_exist ------------------------------------------------
+
+test_that(".validate_variable_exist", {
+  testdata <- tibble(
+    bidule = 1,
+    truc = 2
+  )
+  expect_true(.validate_variable_exist(testdata, c("bidule", "truc")))
+  expect_error(.validate_variable_exist(testdata, c("bidule", "truc", "bidul"), "error"))
+  expect_warning(.validate_variable_exist(testdata, c("bidule", "truc", "TRUC")))
+})
+
+
+# .validate_variable_no_missing -------------------------------------------
 
 test_that(".validate_variable_no_missing()", {
   expect_error(.validate_variable_no_missing(
@@ -38,9 +54,12 @@ test_that(".validate_variable_no_missing()", {
 })
 
 
-test_that("inpatient episode records are validated", {
 
-  
+
+# validate_inpatient_spells/validate_inpatient_episodes -------------------
+
+test_that("validate_inpatient_spells()/validate_inpatient_episodes()", {
+
   faulty_spells <- data.frame(list(
     patient_id = c(1, 2, 2),
     spell_id = c(1, 2, 3),
@@ -132,7 +151,11 @@ test_that("inpatient episode records are validated", {
  
 })
 
-test_that("inpatient diagnosis records are validated", {
+
+
+# validate_inpatient_diagnoses --------------------------------------------
+
+test_that("validate_inpatient_diagnoses()", {
   test_diagnoses <- data.frame(list(
     patient_id = 1,
     spell_id = 1,
@@ -169,7 +192,10 @@ test_that("inpatient diagnosis records are validated", {
   
 })
 
-test_that("Prescriptions are validated", {
+
+# validate_prescriptions --------------------------------------------------
+
+test_that("validate_prescriptions()", {
   
   expect_error(validate_prescriptions(
     data.frame(list(
@@ -274,7 +300,10 @@ test_that("Prescriptions are validated", {
   
 })
 
-test_that("variables are rearranged", {
+
+# arrange_variables -------------------------------------------------------
+
+test_that("arrange_variables", {
   testdf <- data.frame(list(
     misc = 3,
     spell_id = 2,
@@ -287,6 +316,8 @@ test_that("variables are rearranged", {
     c("patient_id", "spell_id", "misc"))
 })
 
+
+# .validate_values_unique -------------------------------------------------
 
 test_that(".validate_values_unique()", {
   
@@ -302,9 +333,111 @@ test_that(".validate_values_unique()", {
 })
 
 
+# .validate_UCUM_codes ----------------------------------------------------
+
 test_that(".validate_UCUM_codes()", {
   testdata <- c('absurd_code', NA, '', '%', 'degree_Celsius', 'mm_Hg', '10^9/L', 
                 'mmol/L', 'fL', 'g/L', 'pg', 'micromol/L', 'mg/L')
   expect_error(.validate_UCUM_codes(testdata[1:5]))
   expect_true(.validate_UCUM_codes(testdata[-1]))
 })
+
+
+# validate_microbiology ---------------------------------------------------
+
+test_that("validate_microbiology", {
+ 
+  testdata = list(
+    specimens = data.frame(list(
+      specimen_id = "1",
+      patient_id = "1",
+      status = "available",
+      specimen_datetime = Sys.time(),
+      specimen_type_code = "122575003",
+      specimen_type_name = "Urine specimen",
+      specimen_type_display = "Urine"
+    ), stringsAsFactors = FALSE),
+    isolates = data.frame(
+      list(organism_id = "1", 
+           specimen_id = "1", 
+           patient_id = "1", 
+           organism_code = structure("B_ESCHR_COLI", class = c("mo", "character")), 
+           organism_name = "Escherichia coli", 
+           organism_display_name = "Escherichia coli", 
+           multidrug_resistance = "Multi-drug-resistant (MDR)"
+    ), stringsAsFactors = FALSE),
+    susceptibilities = data.frame(list(
+      organism_id = "1", 
+      specimen_id = "1",
+      patient_id = "1",
+      organism_code = "B_ESCHR_COLI",
+      organism_name = "Escherichia coli",
+      organism_display_name = "Escherichia coli", 
+      drug_id = c("AMP", "AMC", "CAZ", "CTX", "CIP", "LEX", "CXM", "ETP", 
+                  "FOS", "GEN", "MEM", "NIT", "TZP", "TMP"),
+      drug_name = c("Ampicillin", "Amoxicillin/clavulanic acid", "Ceftazidime", "Cefotaxime", 
+                    "Ciprofloxacin", "Cephalexin", "Cefuroxime", "Ertapenem", "Fosfomycin", 
+                    "Gentamicin", "Meropenem", "Nitrofurantoin", "Piperacillin/tazobactam", 
+                    "Trimethoprim"), 
+      drug_display_name = c("Ampicillin", "Co-amoxiclav", "Ceftazidime", "Cefotaxime", "Ciprofloxacin",
+                            "Cefalexin", "Cefuroxime", "Ertapenem", "Fosfomycin", "Gentamicin", 
+                            "Meropenem", "Nitrofurantoin", "Piperacillin + Tazobactam", "Trimethoprim"),
+      sir_code = c("R", "R", "S", "S", "R", "S", "S", "S", "S", "S", "S", "S", "R", "R")
+    ), stringsAsFactors = FALSE)
+  )
+  
+  expect_true(validate_microbiology(
+    testdata$specimens,
+    testdata$isolates,
+    testdata$susceptibilities
+  ))
+  
+  # wrong multidrug resistance variable
+  testdata_wrongmdr <- testdata
+  testdata_wrongmdr$isolates$multidrug_resistance <- "biduletruccleurtruc"
+  expect_error(validate_microbiology(
+    testdata_wrongmdr$specimens,
+    testdata_wrongmdr$isolates,
+    testdata_wrongmdr$susceptibilities
+  ))
+  
+  # wrong specimen code
+  testdata_spec_code <- testdata
+  testdata_spec_code$specimens$specimen_type_code <- "biduletruccleurtruc"
+  expect_warning(validate_microbiology(
+    testdata_spec_code$specimens,
+    testdata_spec_code$isolates,
+    testdata_spec_code$susceptibilities
+  ))
+  
+  # missing relations
+  testdata_missing_id1 <- testdata
+  testdata_missing_id1$susceptibilities$specimen_id[1] <- "biduletruccleurtruc"
+  expect_error(validate_microbiology(
+    testdata_missing_id1$specimens,
+    testdata_missing_id1$isolates,
+    testdata_missing_id1$susceptibilities
+  ))
+  
+  testdata_missing_id2 <- testdata
+  testdata_missing_id2$susceptibilities$organism_id[1] <- "biduletruccleurtruc"
+  expect_error(validate_microbiology(
+    testdata_missing_id2$specimens,
+    testdata_missing_id2$isolates,
+    testdata_missing_id2$susceptibilities
+  ))
+  
+  testdata_missing_id3 <- testdata
+  testdata_missing_id3$isolates$specimen_id[1] <- "biduletruccleurtruc"
+  expect_error(validate_microbiology(
+    testdata_missing_id3$specimens,
+    testdata_missing_id3$isolates,
+    testdata_missing_id3$susceptibilities
+  ))
+  
+})
+  
+  
+  
+  
+    

@@ -77,6 +77,45 @@
 }
 
 
+#' Verify variables exist in the data
+#'
+#' @param data a data frame
+#' @param vectorname a character vector of variables which must exist.
+#' @param action whether to throw `"warning"` or `"error"`. Default is "warning"
+#'
+#' @return TRUE if validation is passed
+#' @noRd
+.validate_variable_exist <- function(
+  data,
+  vectorname,
+  action = "warning"
+) {
+  stopifnot(action %in% c("warning", "error"))
+  stopifnot(is.character(vectorname))
+  if( length(vectorname) == 0 ) {
+    return(TRUE)
+  }
+  
+  not_exist <- !sapply(vectorname, exists, where = data)
+  if( any(not_exist) & action == "warning"){
+    warning(
+      simpleWarning(paste(
+        "The following variables must exist:",
+        paste(paste0("`", vectorname[not_exist], "`"), collapse = ", "))
+      )
+    )
+  } else if( any(not_exist) & action == "error"){
+    stop(
+      simpleError(paste(
+        "The following variables must exist:",
+        paste(paste0("`", vectorname[not_exist], "`"), collapse = ", "))
+      )
+    )
+  } else {
+    return(TRUE)
+  }
+}
+
 #' Verify no missing or "" value
 #'
 #' @param data a data frame
@@ -905,19 +944,21 @@ validate_administrations <- function(data) {
 #'      }}
 #'    \item{\code{specimen_datetime}}{datetime when specimen was sampled or 
 #'    received for processing.}
-#'    \item{\code{specimen_type_code}}{}
-#'    \item{\code{specimen_type_name}}{}
-#'    \item{\code{specimen_type_display}}{}
+#'    \item{\code{specimen_type_code}}{character vector of descendants of 
+#'    the SNOMED CT concept \code{123038009 | Specimen (specimen) |}. Admissible
+#'    values are listed in \link[Ramses]{reference_specimen_type}}
+#'    \item{\code{specimen_type_name}}{character vector of the SNOMED CT
+#'    preferred terms for \code{specimen_type_code}}
+#'    \item{\code{specimen_type_display}}{character vector of custom specimen
+#'    types for display in user interfaces}
 #' }
 #' 
 #' The following fields are optional:
 #' \describe{
-#'    \item{\code{a}}{a}
-#'    \item{\code{a}}{a}
-#'    \item{\code{a}}{a}
-#'  }
-#' 
-#' 
+#'    \item{\code{test}}{a}
+#'    \item{\code{reason}}{a}
+#'    \item{\code{conditions}}{a}
+#'  }  
 #' 
 #' @section \code{specimens} data frame:
 #' The following fields are mandatory:
@@ -959,6 +1000,94 @@ validate_administrations <- function(data) {
 #' @export
 validate_microbiology <- function(specimens, isolates, susceptibilities) {
   
+  schema <- .inpatient_microbiology_variables()
+  
+  forgetme <- .validate_variable_exist(
+    data = specimens,
+    vectorname = schema$specimens$variable_name[
+      schema$specimens$must_exist
+    ],
+    action = "error"
+  )
+  forgetme <- .validate_variable_exist(
+    data = isolates,
+    vectorname = schema$isolates$variable_name[
+      schema$isolates$must_exist
+    ],
+    action = "error"
+  )
+  forgetme <- .validate_variable_exist(
+    data = susceptibilities,
+    vectorname = schema$susceptibilities$variable_name[
+      schema$susceptibilities$must_exist
+    ],
+    action = "error"
+  )
+  
+  forgetme <- .validate_variable_no_missing(
+    specimens, 
+    schema$specimens$variable_name[schema$specimens$must_be_nonmissing])
+  forgetme <- .validate_variable_no_missing(
+    isolates, 
+    schema$isolates$variable_name[schema$isolates$must_be_nonmissing])
+  forgetme <- .validate_variable_no_missing(
+    susceptibilities, 
+    schema$susceptibilities$variable_name[schema$susceptibilities$must_be_nonmissing])
+  
+  forgetme <- .validate_values_unique(
+    specimens,
+    schema$specimens$variable_name[schema$specimens$must_be_unique]
+  )
+  forgetme <- .validate_values_unique(
+    isolates,
+    schema$isolates$variable_name[schema$isolates$must_be_unique]
+  )
+  .validate_values_unique(
+    susceptibilities,
+    schema$susceptibilities$variable_name[schema$susceptibilities$must_be_unique]
+  )
+  
+  invalid_specimen_codes <- !(specimens$specimen_type_code %in% reference_specimen_type$conceptId)
+  if( any(invalid_specimen_codes) ) {
+    warning(paste(
+      c("Some values in `specimen_type_code` are not valid SNOMED CT specimen concepts:",
+        paste(utils::head(unique(specimens$specimen_type_code[invalid_specimen_codes])), collapse = ", ")),
+      collapse = "\n"
+    ))
+  }
+  
+  if( exists("multidrug_resistance", isolates) ) {
+    invalid_mdro <- !(
+      isolates$multidrug_resistance %in% c("Negative",
+                                            "Multi-drug-resistant (MDR)",
+                                            "Extensively drug-resistant (XDR)",
+                                            "Pandrug-resistant (PDR)")
+    )
+    if( any(invalid_mdro) ) {
+      stop(paste(c(
+        "Some values in `multidrug_resistance` are invalid:",
+        paste(utils::head(unique(isolates$multidrug_resistance[invalid_mdro])), collapse = ", "),
+        "Please refer to ?validate_microbiology for more detail."
+        ),
+        collapse = "\n"
+      ))
+    }
+  }
+  
+  if( any(!susceptibilities$organism_id %in% isolates$organism_id) ) {
+    stop("Some `organism_id` in `susceptibility` are missing from `isolates`")
+  }
+  if( any(!susceptibilities$specimen_id %in% isolates$specimen_id) ) {
+    stop("Some `specimen_id` in `susceptibility` are missing from `isolates`")
+  }
+  if( any(!susceptibilities$specimen_id %in% specimens$specimen_id) ) {
+    stop("Some `specimen_id` in `susceptibility` are missing from `specimens`")
+  }
+  if( any(!isolates$specimen_id %in% specimens$specimen_id) ) {
+    stop("Some `specimen_id` in `isolates` are missing from `specimens`")
+  }
+  
+  TRUE
 }
 
 

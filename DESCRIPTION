@@ -44,6 +44,7 @@ Suggests:
     knitr,
     rmarkdown,
     covr,
+    tidyr,
     rvest,
     xml2,
     curl,

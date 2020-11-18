@@ -217,6 +217,79 @@ load_inpatient_investigations <- function(conn, investigations_data, overwrite =
 }
 
 
+#' Load observations & investigations into the warehouse
+#' 
+#' @param conn a database connection
+#' @param specimens a data frame with one row per specimen sent
+#' to laboratory and
+#' validated with \code{\link{validate_microbiology}()}
+#' @param isolates a data frame with one row per microorganism
+#' isolated from the laboratory specimen and
+#' validated with \code{\link{validate_microbiology}()}
+#' @param susceptibilities a data frame with one row per susceptibility 
+#' validated with \code{\link{validate_microbiology}()}
+#' @param overwrite if `TRUE` (the default), will overwrite any existing
+#' `inpatient_investigations` database table
+#' @seealso \code{\link{validate_investigations}()}, 
+#' @return `TRUE` if the function ran successfully, otherwise object of class
+#' "try-error" containing error messages trigger during warehouse data loading.
+#' @export
+load_inpatient_microbiology <- function(conn, 
+                                        specimens, 
+                                        isolates, 
+                                        susceptibilities, 
+                                        overwrite = TRUE) {
+  
+  first_variables <- .inpatient_microbiology_variables()
+  first_variables$specimens <- first_variables$specimens$variable_name
+  first_variables$isolates <- first_variables$isolates$variable_name
+  first_variables$susceptibilities <- first_variables$susceptibilities$variable_name
+  
+  first_variables$specimens <- first_variables$specimens[
+    first_variables$specimens %in% colnames(specimens)]
+  first_variables$isolates <- first_variables$isolates[
+    first_variables$isolates %in% colnames(isolates)]
+  first_variables$susceptibilities <- first_variables$susceptibilities[
+    first_variables$susceptibilities %in% colnames(susceptibilities)]
+  
+  specimens <- arrange_variables(
+    data = specimens,
+    first_column_names = first_variables$specimens)
+  isolates <- arrange_variables(
+    data = isolates,
+    first_column_names = first_variables$isolates)
+  susceptibilities <- arrange_variables(
+    data = susceptibilities,
+    first_column_names = first_variables$susceptibilities)
+  
+  load_errors <- list()
+  load_errors$specimens <- try({
+    dbplyr::db_copy_to(con = conn, table = "microbiology_specimens", 
+                       values = specimens, overwrite = overwrite, temporary = FALSE,
+                       indexes = list("patient_id", "specimen_id", "status",
+                                      "specimen_datetime", "specimen_type_code",
+                                      "specimen_type_name"))
+  })
+  load_errors$isolates <- try({
+    dbplyr::db_copy_to(con = conn, table = "microbiology_isolates", 
+                       values = isolates, overwrite = overwrite, temporary = FALSE,
+                       indexes = list("patient_id", "organism_id", "specimen_id", 
+                                      "organism_code"))
+  })
+  load_errors$susceptibilities <- try({
+    dbplyr::db_copy_to(con = conn, table = "microbiology_susceptibilities", 
+                       values = susceptibilities, overwrite = overwrite, temporary = FALSE,
+                       indexes = list("patient_id", "organism_id", "specimen_id", 
+                                      "organism_code", "drug_id"))
+  })
+  
+  if ( any(sapply(load_errors, is, class2 = "try-error")) ) {
+    return(load_errors)
+  } else {
+    return(TRUE)
+  }
+}
+
 # Medication records ------------------------------------------------------
 
 
@@ -1060,11 +1133,73 @@ connect_db_local <- function(file) {
       1, 2)) %>% 
     dplyr::ungroup()
   
+  micro <- list()
+  micro$raw <- Ramses::inpatient_microbiology
+  micro$raw <- micro$raw %>% 
+    dplyr::mutate(organism_display_name = dplyr::if_else(
+      organism_display_name == "No growth",
+      NA_character_,
+      organism_display_name)) %>% 
+    dplyr::mutate(organism_code = AMR::as.mo(organism_display_name),
+                  drug_id = AMR::as.ab(drug_display_name)) %>% 
+    dplyr::mutate(organism_name = AMR::mo_name(organism_code),
+                  drug_name = AMR::ab_name(drug_id))
+  micro$raw <- micro$raw %>% 
+    mutate(specimen_type_code = case_when(
+      specimen_type_display == "Blood Culture" ~ 
+        "446131002", # Blood specimen obtained for blood culture
+      specimen_type_display == "Faeces" ~ 
+        "119339001", # Stool specimen
+      specimen_type_display == "MRSA Screen" ~ 
+        "697989009", # Anterior nares swab 
+      specimen_type_display == "Urine" ~ 
+        "122575003", # Urine specimen
+      TRUE ~ NA_character_
+    )) %>% 
+    left_join(transmute(reference_specimen_type,
+                        specimen_type_code = conceptId,
+                        specimen_type_name = pt_term))
+  micro$specimens <- micro$raw %>% 
+    transmute(specimen_id,
+              patient_id,
+              status = "available",
+              specimen_datetime,
+              specimen_type_code,
+              specimen_type_name,
+              specimen_type_display) %>% 
+    distinct() # Removing duplicates created by multiple isolates and susceptibility testing
+  
+  micro$isolates <- micro$raw %>% 
+    transmute(organism_id,
+              specimen_id,
+              patient_id,
+              organism_code,
+              organism_name,
+              organism_display_name) %>% 
+    filter(!is.na(organism_code)) %>%  # Remove no growth
+    distinct() # Removing duplicates created by susceptibility testing
+  
+  micro$susceptibilities <- micro$raw %>% 
+    filter(!is.na(organism_code)) %>%  # Remove no growth
+    transmute(organism_id,
+              specimen_id,
+              patient_id,
+              organism_code,
+              organism_name,
+              organism_display_name,
+              drug_id,
+              drug_name,
+              drug_display_name,
+              sir_code,
+              concept_code = NA_character_) %>% 
+    distinct()
+  micro$raw <- NULL
   list(
     episodes = ip_episodes,
     diagnoses = ip_diagnoses,
     ward_movements = Ramses::inpatient_wards,
-    investigations = Ramses::inpatient_investigations
+    investigations = Ramses::inpatient_investigations,
+    micro = micro
   )
 }
 

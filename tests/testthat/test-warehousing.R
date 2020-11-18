@@ -25,6 +25,11 @@ test_that("Ramses on SQLite", {
       diagnoses_data = inpatient_data$diagnoses,
       diagnoses_lookup = icd10cm))
   expect_true(validate_investigations(inpatient_data$investigations))
+  expect_true(validate_microbiology(
+    inpatient_data$specimens,
+    inpatient_data$isolates,
+    inpatient_data$susceptibilities
+    ))
   expect_true(validate_inpatient_episodes(inpatient_data$episodes))
   expect_true(validate_inpatient_episodes(episodes = inpatient_data$episodes,
                                           wards = inpatient_data$ward_movements))
@@ -56,8 +61,13 @@ test_that("Ramses on SQLite", {
       investigations_data = inpatient_data$investigations,
       overwrite = TRUE
     ))
+  expect_true(load_inpatient_microbiology(
+    inpatient_data$specimens,
+    inpatient_data$isolates,
+    inpatient_data$susceptibilities,
+    overwrite = TRUE
+  ))
   
-
   test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
     filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08")) %>% 
     select(prescription_id, combination_id, therapy_id) %>% 

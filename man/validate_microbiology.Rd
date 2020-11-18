@@ -44,16 +44,20 @@ The following fields are mandatory:
      }}
    \item{\code{specimen_datetime}}{datetime when specimen was sampled or 
    received for processing.}
-   \item{\code{specimen_type_code}}{}
-   \item{\code{specimen_type_name}}{}
-   \item{\code{specimen_type_display}}{}
+   \item{\code{specimen_type_code}}{character vector of descendants of 
+   the SNOMED CT concept \code{123038009 | Specimen (specimen) |}. Admissible
+   values are listed in \link[Ramses]{reference_specimen_type}}
+   \item{\code{specimen_type_name}}{character vector of the SNOMED CT
+   preferred terms for \code{specimen_type_code}}
+   \item{\code{specimen_type_display}}{character vector of custom specimen
+   types for display in user interfaces}
 }
 
 The following fields are optional:
 \describe{
-   \item{\code{a}}{a}
-   \item{\code{a}}{a}
-   \item{\code{a}}{a}
+   \item{\code{test}}{a}
+   \item{\code{reason}}{a}
+   \item{\code{conditions}}{a}
  }
 
 

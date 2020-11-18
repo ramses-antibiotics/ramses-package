@@ -147,12 +147,13 @@
 #' @name reference_loinc
 "reference_loinc"
 
+
 #' Laboratory specimen type reference table (SNOMED CT concepts )
 #' @description This reference table contains the list of admissible specimen
 #' types in microbiology records (see \code{\link[Ramses]{validate_microbiology}()}).
 #' These concepts are from the 
 #' \href{SNOMED CT International Edition}{https://browser.ihtsdotools.org/} and 
-#' correspond to teh descendants of the \code{123038009 | Specimen (specimen) |} 
+#' correspond to the descendants of the \code{123038009 | Specimen (specimen) |} 
 #' concept.
 #' @details This data frame contains 5 variables:
 #' \describe{
@@ -162,7 +163,7 @@
 #'     \item{\code{pt_term}}{SNOMED CT Preferred Term}
 #'     \item{\code{snomed_release_version}}{SNOMED CT RF2 release date}
 #' }
-#' @seealso \href{https://snomedizer.web.app}
+#' @seealso \url{https://snomedizer.web.app}
 #' @format A data frame.
 #' @docType data
 #' @name reference_specimen_type

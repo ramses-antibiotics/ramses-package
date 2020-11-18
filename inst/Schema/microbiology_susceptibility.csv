@@ -1,6 +1,0 @@
-position,variable_name,must_exist,must_be_nonmissing,must_be_unique
-1,organism_id,TRUE,TRUE,FALSE
-2,antimicrobial_code,TRUE,FALSE,FALSE
-3,antimicrobial_name,TRUE,FALSE,FALSE
-4,antimicrobial_display_name,TRUE,TRUE,FALSE
-5,sir_code,TRUE,FALSE,FALSE

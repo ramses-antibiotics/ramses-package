@@ -48,6 +48,28 @@
                 package = "Ramses"), stringsAsFactors = F)
 }
 
+.inpatient_microbiology_variables <- function() {
+  
+  specimens <- utils::read.csv(
+    system.file("Schema", 
+                "microbiology_specimens.csv", 
+                package = "Ramses"), stringsAsFactors = F)
+  isolates <- utils::read.csv(
+    system.file("Schema", 
+                "microbiology_isolates.csv", 
+                package = "Ramses"), stringsAsFactors = F)
+  susceptibilities <- utils::read.csv(
+    system.file("Schema", 
+                "microbiology_susceptibilities.csv", 
+                package = "Ramses"), stringsAsFactors = F)
+  
+  return(list(
+    specimens = specimens,
+    isolates = isolates,
+    susceptibilities = susceptibilities
+  ))
+}
+
 global_vars <- c(
   "admission_date",
   "discharge_date",
@@ -80,7 +102,10 @@ global_vars <- c(
   "level",
   "header_indicator",
   "therapy_start",
-  "therapy_end"
+  "therapy_end",
+  "reference_specimen_type",
+  "conceptId",
+  "pt_term"
 )
 
 utils::globalVariables(global_vars)
@@ -90,3 +115,6 @@ utils::globalVariables(.drug_prescriptions_variables()[["variable_name"]])
 utils::globalVariables(.drug_administrations_variables()[["variable_name"]])
 utils::globalVariables(.inpatient_episodes_variables()[["variable_name"]])
 utils::globalVariables(.inpatient_wards_variables()[["variable_name"]])
+utils::globalVariables(.inpatient_microbiology_variables()[["specimens"]][["variable_name"]])
+utils::globalVariables(.inpatient_microbiology_variables()[["isolates"]][["variable_name"]])
+utils::globalVariables(.inpatient_microbiology_variables()[["susceptibilities"]][["variable_name"]])

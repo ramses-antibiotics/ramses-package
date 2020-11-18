@@ -58,3 +58,18 @@ inpatient_investigations <- read.csv(
                  "POSIXct", "POSIXct", "character", "numeric", "character",
                  "character", "character", "character", "character"))
 usethis::use_data(inpatient_investigations, overwrite = T)
+
+
+
+inpatient_microbiology <- read.csv(
+  "data-raw/inpatient_microbiology.csv", 
+  stringsAsFactors = F,
+  colClasses = c("character", "character", "character", "character",
+                 "POSIXct", "character", "character", "character",
+                 "character", "character", "character")) %>% 
+  select(-organism_code, -drug_id) %>% 
+  mutate(status = NA_character_,
+         specimen_datetime = lubridate::as_datetime(specimen_datetime))
+  
+usethis::use_data(inpatient_microbiology, overwrite = TRUE)
+
