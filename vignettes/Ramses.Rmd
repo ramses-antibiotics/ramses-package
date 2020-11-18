@@ -47,10 +47,10 @@ Antibiotic resistance jeopardizes many achievements of modern medicine, such as 
 <div class="container-fluid">
 <div class="row">
   <div class="col-sm-6"><div class="col-sm-1 blob vcenter">ADT</div><div class="col-sm-8 vcenter">admission, discharge, transfers</div></div>
-  <div class="col-sm-6"><div class="col-sm-1 blob vcenter">Rx</div><div class="col-sm-8 vcenter">drug prescribing and administration</div></div>
+  <div class="col-sm-6"><div class="col-sm-1 blob vcenter">Rx</div><div class="col-sm-8 vcenter">drug prescribing and administrations</div></div>
   <div class="col-sm-6"><div class="col-sm-1 blob vcenter">Cx</div><div class="col-sm-8 vcenter">microbial culture and susceptibility</div></div>
   <div class="col-sm-6"><div class="col-sm-1 blob vcenter">Dx</div><div class="col-sm-8 vcenter">diagnostics, diagnoses and infection syndromes</div></div>
-  <div class="col-sm-6"><div class="col-sm-1 blob vcenter">Ix</div><div class="col-sm-8 vcenter">clinical investigations and observation.</div></div>
+  <div class="col-sm-6"><div class="col-sm-1 blob vcenter">Ix</div><div class="col-sm-8 vcenter">clinical investigations and observations</div></div>
 </div>
 </div>
 

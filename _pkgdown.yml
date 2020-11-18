@@ -46,6 +46,7 @@ reference:
   - validate_prescriptions
   - validate_administrations
   - validate_investigations
+  - validate_microbiology
 - title: Load & link data
   desc:  Load records into the warehouse and create secondary information.
   contents:
@@ -63,8 +64,6 @@ reference:
 - title: Database administration
   desc:  Functions to set up and manage the `RAMSES` database
   contents:
-  - get_warehouse_status
-  - build_ramses_schema
   - connect_db_local
 - title: Index
   desc:  All functions in alphabetical order
