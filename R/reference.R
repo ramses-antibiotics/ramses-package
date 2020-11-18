@@ -151,8 +151,9 @@
 #' @description This reference table contains the list of admissible specimen
 #' types in microbiology records (see \code{\link[Ramses]{validate_microbiology}()}).
 #' These concepts are from the 
-#' \href{SNOMED CT International Edition}{https://browser.ihtsdotools.org/}. 
-#' a subset of useful clinical investigation.
+#' \href{SNOMED CT International Edition}{https://browser.ihtsdotools.org/} and 
+#' correspond to teh descendants of the \code{123038009 | Specimen (specimen) |} 
+#' concept.
 #' @details This data frame contains 5 variables:
 #' \describe{
 #'     \item{\code{conceptId}}{SNOMED CT concept code}
