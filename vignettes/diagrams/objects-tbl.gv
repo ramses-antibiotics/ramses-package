@@ -46,4 +46,7 @@ tbl_dbi -> tbl_MSSQL [dir=back]
 tbl -> tbl_df [dir=back]
 tbl_df -> dataframe [dir=back]
 
+
+DBIObject -> DBIConnection [dir=back]
+DBIConnection -> SQLiteConnection [dir=back]
 }

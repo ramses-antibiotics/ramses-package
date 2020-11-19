@@ -12,7 +12,15 @@ digraph G {
           fontname = "Droid Sans Mono"
           fontsize = 8
   ]
- 
+
+# arrowheads
+# Association open
+# Inheritance empty
+# Realisation/implementation empty + style=dashed
+# Dependency open + style=dashed
+# Aggregation odiamond
+# Composition diamond
+
 RamsesEntity [
   width = 3
   label = "{RamsesEntity|
@@ -60,7 +68,7 @@ MedicationRequest [
   + id \l
   + patient_id \l
   + prescription_id\l
-  + lazy_status: boolean |
+  + lazy_status: boolean\l|
   
   + get_therapy_id(): RamsesEntity\l
   + fetch()\l}"
@@ -80,9 +88,15 @@ TherapyEpisode [
 MicrobialCulture [
   width = 2.2
   label = "{MicrobialCulture|
-  + id: character\l}"
+  + specimen_id: character\l
+  + patient_id: character\l
+  + isolates: tbl\l
+  + susceptibilities: tbl\l|
+  
+  + fetch_antibiogram(): tbl\l
+  + resistance_predict(): tbl\l}"
 ]
-
+ 
 /*
 TherapyList [
 label = "{TherapyList|\l+ id: list\l+ type: \"therapy-list\"\l- TherapyTable: tbl\l+ lazy_status: boolean\l|+ fetch(): data.frame\l + therapy_table(): list\l}"
