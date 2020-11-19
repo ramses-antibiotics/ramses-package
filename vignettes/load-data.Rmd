@@ -573,7 +573,7 @@ When hovered for a few seconds, timeline symbols display a tooltip containing de
 
 ```{r}
 therapy_timeline(conn = ramses_db, 
-                 patient_identifier =  "99999999999",
+                 patient_identifier = "99999999999",
                  date1 = as.Date("2017-02-01"),
                  date2 = as.Date("2017-03-01"))
 ```

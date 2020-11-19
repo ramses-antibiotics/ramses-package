@@ -105,7 +105,16 @@ global_vars <- c(
   "therapy_end",
   "reference_specimen_type",
   "conceptId",
-  "pt_term"
+  "pt_term",
+  "icd_text",
+  "prim_diag",
+  "start_time",
+  "end_time",
+  "category_description",
+  "infection_group1_code",
+  "infection_group1_label",
+  "infection_group2_code",
+  "infection_group2_label"
 )
 
 utils::globalVariables(global_vars)
@@ -113,6 +122,8 @@ utils::globalVariables(paste0(global_vars, ".x"))
 utils::globalVariables(paste0(global_vars, ".y"))
 utils::globalVariables(.drug_prescriptions_variables()[["variable_name"]])
 utils::globalVariables(.drug_administrations_variables()[["variable_name"]])
+utils::globalVariables(.inpatient_diagnoses_lookup_variables()[["variable_name"]])
+utils::globalVariables(.inpatient_diagnoses_data_variables()[["variable_name"]])
 utils::globalVariables(.inpatient_episodes_variables()[["variable_name"]])
 utils::globalVariables(.inpatient_wards_variables()[["variable_name"]])
 utils::globalVariables(.inpatient_microbiology_variables()[["specimens"]][["variable_name"]])

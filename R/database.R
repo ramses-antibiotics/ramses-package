@@ -62,6 +62,12 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
       "diagnosis_position"
     ))
   
+  if ( is(conn, "SQLiteConnection" )) {
+    for(i in which(sapply(diagnoses_data, is, class2 = "POSIXct"))) {
+      diagnoses_data[[i]] <- as.character(diagnoses_data[[i]])
+    }
+  }
+  
   load_errors <- try({
     dbplyr::db_copy_to(con = conn, table = "inpatient_diagnoses", 
                        values = diagnoses_data, overwrite = overwrite, temporary = FALSE,
@@ -116,6 +122,12 @@ load_inpatient_episodes <- function(conn, episodes_data,
     episodes_data, 
     first_column_names = first_column_names_episodes) 
   
+  if ( is(conn, "SQLiteConnection" )) {
+    for(i in which(sapply(episodes_data, is, class2 = "POSIXct"))) {
+      episodes_data[[i]] <- as.character(episodes_data[[i]])
+    }
+  }
+  
   episodes_load_errors <- try({
     dbplyr::db_copy_to(
       con = conn,
@@ -146,6 +158,12 @@ load_inpatient_episodes <- function(conn, episodes_data,
     wards_data <- arrange_variables(
       wards_data, 
       first_column_names = first_column_names_wards)   
+    
+    if ( is(conn, "SQLiteConnection" )) {
+      for(i in which(sapply(wards_data, is, class2 = "POSIXct"))) {
+        wards_data[[i]] <- as.character(wards_data[[i]])
+      }
+    }
     
     wards_load_errors <- try({
       dbplyr::db_copy_to(
@@ -202,6 +220,12 @@ load_inpatient_investigations <- function(conn, investigations_data, overwrite =
   investigations_data <- arrange_variables(
     data = investigations_data,
     first_column_names = first_variables)
+  
+  if ( is(conn, "SQLiteConnection" )) {
+    for(i in which(sapply(investigations_data, is, class2 = "POSIXct"))) {
+      investigations_data[[i]] <- as.character(investigations_data[[i]])
+    }
+  }
   
   load_errors <- try({
     dbplyr::db_copy_to(con = conn, table = "inpatient_investigations", 
@@ -261,6 +285,18 @@ load_inpatient_microbiology <- function(conn,
   susceptibilities <- arrange_variables(
     data = susceptibilities,
     first_column_names = first_variables$susceptibilities)
+  
+  if ( is(conn, "SQLiteConnection" )) {
+    for(i in which(sapply(specimens, is, class2 = "POSIXct"))) {
+      specimens[[i]] <- as.character(specimens[[i]])
+    }
+    for(i in which(sapply(isolates, is, class2 = "POSIXct"))) {
+      isolates[[i]] <- as.character(isolates[[i]])
+    }
+    for(i in which(sapply(susceptibilities, is, class2 = "POSIXct"))) {
+      susceptibilities[[i]] <- as.character(susceptibilities[[i]])
+    }
+  }
   
   load_errors <- list()
   load_errors$specimens <- try({
