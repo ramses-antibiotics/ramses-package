@@ -60,6 +60,7 @@ inpatient_investigations <- read.csv(
 usethis::use_data(inpatient_investigations, overwrite = T)
 
 
+library(lubridate)
 
 inpatient_microbiology <- read.csv(
   "data-raw/inpatient_microbiology.csv", 
@@ -69,7 +70,8 @@ inpatient_microbiology <- read.csv(
                  "character", "character", "character")) %>% 
   select(-organism_code, -drug_id) %>% 
   mutate(status = NA_character_,
-         specimen_datetime = lubridate::as_datetime(specimen_datetime))
+         specimen_datetime = lubridate::as_datetime(specimen_datetime),
+         isolation_datetime = lubridate::as_datetime(specimen_datetime) %m+% days(3))
   
 usethis::use_data(inpatient_microbiology, overwrite = TRUE)
 

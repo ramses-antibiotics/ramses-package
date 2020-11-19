@@ -346,7 +346,7 @@ test_that(".validate_UCUM_codes()", {
 # validate_microbiology ---------------------------------------------------
 
 test_that("validate_microbiology", {
- 
+ library(lubridate)
   testdata = list(
     specimens = data.frame(list(
       specimen_id = "1",
@@ -364,7 +364,8 @@ test_that("validate_microbiology", {
            organism_code = structure("B_ESCHR_COLI", class = c("mo", "character")), 
            organism_name = "Escherichia coli", 
            organism_display_name = "Escherichia coli", 
-           multidrug_resistance = "Multi-drug-resistant (MDR)"
+           multidrug_resistance = "Multi-drug-resistant (MDR)",
+           isolation_datetime = Sys.time() %m+% lubridate::days(3)
     ), stringsAsFactors = FALSE),
     susceptibilities = data.frame(list(
       organism_id = "1", 

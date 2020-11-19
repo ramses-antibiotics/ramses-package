@@ -154,7 +154,8 @@ therapy_timeline <- function(conn, patient_identifier,
   #             className = "sepsis-redflag"
   #   )
   
-  timeline_micro <- NULL # timeline_Rx_getmicro(input_patient)
+  timeline_micro <- .therapy_timeline_get_micro(conn = conn,
+                                                patient_identifier = patient_identifier)
   
   timeline_groups <- data.frame(
     id = 3:0,
@@ -182,4 +183,67 @@ therapy_timeline <- function(conn, patient_identifier,
     timevis::setWindow(start = date_window$left_date,
                        end = date_window$right_date) %>% 
     return()
+}
+
+
+
+#' Extract a data frame of microbiology results for display in therapy timeline
+#' @param conn a database connection
+#' @param patient_identifier a patient identifier
+#' @return a data frame
+#' @noRd
+.therapy_timeline_get_micro <- function(conn,
+                                        patient_identifier) {
+  
+  micro <- tbl(conn, "microbiology_specimens") %>%
+    dplyr::filter(patient_id == patient_identifier) %>% 
+    dplyr::left_join(
+      tbl(conn, "microbiology_isolates"),
+      by = c("patient_id", "specimen_id")
+    ) %>% 
+    dplyr::collect()
+  
+  #TODO: reintroduce the micro-requests when we have a date of reporting
+  if(nrow(micro) == 0){
+    return(data.frame())
+  } else {
+    timeline_micro_reports <- micro %>%
+      dplyr::mutate(className = dplyr::if_else(is.na(organism_code),
+                                "micro-report-no-growth", 
+                                "micro-report")) %>% 
+      dplyr::group_by(specimen_id, className) %>% 
+      dplyr::summarise(
+        id = paste0("Specimen ID:",
+                    paste(unique(specimen_id), sep = "-"), 
+                    ":report"),
+        start = min(lubridate::as_datetime(isolation_datetime), na.rm = T),
+        title = paste0(
+          paste(unique(specimen_type_display), collapse = ", "), "\n",
+          "Organisms: ", 
+          paste(unique(organism_display_name), collapse = ", "), "\n",
+          "Sample received: ", unique(lubridate::as_date(
+            lubridate::as_datetime(specimen_datetime))
+          )),
+        type = "point",
+        group = 1,
+        subgroup = "micro"
+      )
+    
+    # timeline_micro_requests <- micro %>%
+    #   dplyr::group_by(specimen_id) %>%
+    #   dplyr::summarise(
+    #     id = unique(paste0("Specimen ID:", specimen_id, ":request")),
+    #     start = mean(lubridate::as_datetime(specimen_datetime), na.rm = T),
+    #     type = "point",
+    #     group = 1,
+    #     subgroup = "micro",
+    #     className = "micro-request"
+    #   )
+    # timeline_data <- dplyr::bind_rows(list(
+    #   timeline_micro_requests,
+    #   timeline_micro_reports))
+    
+    return(timeline_micro_reports)
+  }
+  
 }

@@ -4,5 +4,6 @@ position,variable_name,must_exist,must_be_nonmissing,must_be_unique
 3,patient_id,TRUE,TRUE,FALSE
 4,organism_code,TRUE,FALSE,FALSE
 5,organism_name,TRUE,FALSE,FALSE
-6,organism_display_name,TRUE,FALSE,FALSE
-7,mdr_classification,FALSE,FALSE,FALSE
+6,organism_display_name,TRUE,TRUE,FALSE
+7,isolation_datetime,TRUE,TRUE,FALSE
+8,mdr_classification,FALSE,FALSE,FALSE

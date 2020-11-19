@@ -1136,12 +1136,13 @@ connect_db_local <- function(file) {
   micro <- list()
   micro$raw <- Ramses::inpatient_microbiology
   micro$raw <- micro$raw %>% 
-    dplyr::mutate(organism_display_name = dplyr::if_else(
-      organism_display_name == "No growth",
-      NA_character_,
-      organism_display_name)) %>% 
-    dplyr::mutate(organism_code = AMR::as.mo(organism_display_name),
-                  drug_id = AMR::as.ab(drug_display_name)) %>% 
+    dplyr::mutate(
+      organism_code = AMR::as.mo(dplyr::if_else(
+        organism_display_name == "No growth",
+        NA_character_,
+        organism_display_name)),
+      drug_id = AMR::as.ab(drug_display_name)
+    ) %>% 
     dplyr::mutate(organism_name = AMR::mo_name(organism_code),
                   drug_name = AMR::ab_name(drug_id))
   micro$raw <- micro$raw %>% 
@@ -1175,8 +1176,8 @@ connect_db_local <- function(file) {
               patient_id,
               organism_code,
               organism_name,
-              organism_display_name) %>% 
-    filter(!is.na(organism_code)) %>%  # Remove no growth
+              organism_display_name,
+              isolation_datetime) %>% 
     distinct() # Removing duplicates created by susceptibility testing
   
   micro$susceptibilities <- micro$raw %>% 

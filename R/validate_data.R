@@ -972,10 +972,18 @@ validate_administrations <- function(data) {
 #'    \item{\code{organism_id}}{a unique isolated organism identifier with no missing value}
 #'    \item{\code{specimen_id}}{a specimen identifier with no missing value}
 #'    \item{\code{patient_id}}{a patient identifier with no missing value}
-#'    \item{\code{organism_code}}{a microorganism code validated using \code{\link[AMR]{as.mo}()}}
-#'    \item{\code{organism_name}}{a microorganism name provided by \code{\link[AMR]{mo_name}()}}
+#'    \item{\code{organism_code}}{a character vector containing either: \itemize{
+#'       \item a microorganism code validated using \code{\link[AMR]{as.mo}()}
+#'       \item \code{NA_character_} if no microorganism was isolated, for instance
+#'       due to no growth or mixed heavy growth
+#'    }}
+#'    \item{\code{organism_name}}{a microorganism name provided by 
+#'    \code{\link[AMR]{mo_name}(), or \code{NA} if no microorganism was isolated}}
 #'    \item{\code{organism_display_name}}{microorganism name as labelled by the
-#'    laboratory, for display in user interfaces}
+#'    laboratory, for display in user interfaces. No growth/mixed heavy growth should
+#'    be referenced here}
+#'    \item{\code{isolation_datetime}}{datetime when the organism was first isolated 
+#'    (or reported) by the laboratory}
 #'  }
 #' 
 #' \emph{The following field is optional:}
@@ -996,20 +1004,23 @@ validate_administrations <- function(data) {
 #'   \item{\code{organism_id}}{an isolated organism identifier with no missing value}
 #'   \item{\code{specimen_id}}{a specimen identifier with no missing value}
 #'   \item{\code{patient_id}}{a patient identifier with no missing value}
-#'   \item{\code{organism_code}}{a microorganism code validated using \code{\link[AMR]{as.mo}()}}
-#'   \item{\code{organism_name}}{a microorganism name provided by \code{\link[AMR]{mo_name}()}}
+#'   \item{\code{organism_code}}{a microorganism code validated using 
+#'   \code{\link[AMR]{as.mo}()}, with no missing values}
+#'   \item{\code{organism_name}}{a microorganism name provided by 
+#'   \code{\link[AMR]{mo_name}()}, with no missing values}
 #'   \item{\code{organism_display_name}}{microorganism name as labelled by the
-#'   laboratory, for display in user interfaces}
+#'   laboratory, for display in user interfaces, with no missing values}
 #'   \item{\code{drug_id}}{code of the antimicrobial tested as provided by 
 #'   \code{\link{AMR}{as.ab}()})}
 #'   \item{\code{drug_name}}{name of the antimicrobial tested as provided by 
 #'   \code{\link{AMR}{ab_name}()})}
-#'   \item{\code{drug_display_name}}{name of the antimicrobial tested for 
-#'   display in reports and user interfaces (can be the same as \code{drug_name})}
-#'    \item{\code{rsi_code}}{\code{"R"} (resistant), \code{"S"} (susceptible), 
+#'   \item{\code{drug_display_name}}{name of the antimicrobial tested, 
+#'   with no missing values, for  display in reports and user interfaces
+#'   (can be the same as \code{drug_name})}
+#'   \item{\code{rsi_code}}{\code{"R"} (resistant), \code{"S"} (susceptible), 
 #'    or \code{"I"} (intermediate exposure), as determined by the laboratory or by
-#'    \code{\link[AMR]{as.rsi}()} on the basis of minimum inhibitory concentrations
-#'    or disk diffusion diameters}
+#'   \code{\link[AMR]{as.rsi}()} on the basis of minimum inhibitory concentrations
+#'   or disk diffusion diameters}
 #' }
 #' 
 #' @return TRUE if the validation is passed
@@ -1086,9 +1097,10 @@ validate_microbiology <- function(specimens, isolates, susceptibilities) {
   }
   
   stopifnot(is(specimens$specimen_datetime, "POSIXt"))
+  stopifnot(is(isolates$isolation_datetime, "POSIXt"))
   
-  invalid_organism_codes <- unique(c(isolates$organism_code,
-                                     susceptibilities$organism_code))
+  invalid_organism_codes <- na.omit(unique(c(isolates$organism_code,
+                                     susceptibilities$organism_code)))
   invalid_organism_codes <- invalid_organism_codes[
     !invalid_organism_codes %in% AMR::microorganisms.codes$mo
   ]
@@ -1100,8 +1112,8 @@ validate_microbiology <- function(specimens, isolates, susceptibilities) {
     ))
   }
   
-  invalid_drug_codes <- unique(c(isolates$drug_id,
-                                 susceptibilities$drug_id))
+  invalid_drug_codes <- na.omit(unique(c(isolates$drug_id,
+                                 susceptibilities$drug_id)))
   invalid_drug_codes <- invalid_drug_codes[
     !invalid_drug_codes %in% AMR::antibiotics$ab
   ]

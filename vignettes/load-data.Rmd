@@ -375,7 +375,7 @@ load_inpatient_diagnoses(conn = ramses_db,
 
 # Investigation records
 
-## Microbiology cultures and sensitivity 
+## Microbiology culture isolates and susceptibilities 
 
 A small sample of records of microbial isolates is provided along with susceptibility testing results:
 
@@ -398,11 +398,12 @@ microbiology_data <- list()
 # Start by cleaning the raw data
 microbiology_data$raw <- inpatient_microbiology
 microbiology_data$raw <- microbiology_data$raw %>% 
-  mutate(organism_display_name = if_else(organism_display_name == "No growth",
-                                         NA_character_,
-                                         organism_display_name)) %>% 
-  mutate(organism_code = AMR::as.mo(organism_display_name),
-         drug_id = AMR::as.ab(drug_display_name)) %>% 
+  mutate(
+    organism_code = AMR::as.mo(if_else(
+      organism_display_name == "No growth",
+      NA_character_,
+      organism_display_name)),
+    drug_id = AMR::as.ab(drug_display_name)) %>% 
   mutate(organism_name = AMR::mo_name(organism_code),
          drug_name = AMR::ab_name(drug_id))
 ```
@@ -452,8 +453,8 @@ microbiology_data$isolates <- microbiology_data$raw %>%
             patient_id,
             organism_code,
             organism_name,
-            organism_display_name) %>% 
-  filter(!is.na(organism_code)) %>%  # Remove no growth
+            organism_display_name,
+            isolation_datetime) %>% 
   distinct() # Removing duplicates created by susceptibility testing
 
 microbiology_data$susceptibilities <- microbiology_data$raw %>% 
@@ -566,7 +567,9 @@ load_inpatient_investigations(
 
 # Visualisation
 
-You are now able to query the database and visualise admissions and episodes of antimicrobial therapy.
+You are now able to query the database and visualise admissions and episodes of antimicrobial therapy timeline below.
+
+When hovered for a few seconds, timeline symbols display a tooltip containing detailed information.
 
 ```{r}
 therapy_timeline(conn = ramses_db, 
