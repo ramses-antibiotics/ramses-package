@@ -131,3 +131,40 @@
 #' @docType data
 #' @name reference_drug_frequency
 "reference_drug_frequency"
+
+#' Clinical investigations and observations LOINC codes look-up table
+#' @description This look-up table provides a subset of useful clinical investigation
+#' codes from the LOINC terminology. It can be used to map clinical investigations
+#' and observations that are relevant to modelling antibiotic prescribing decisions.
+#' @details This material contains content from LOINC (\url{http://loinc.org}). 
+#' LOINC is copyright © 1995-2020, Regenstrief Institute, Inc. and the 
+#' Logical Observation Identifiers Names and Codes(LOINC) Committee and 
+#' is available at no cost under the license at \url{http://loinc.org/license}.
+#' LOINC® is a registered United States trademark of Regenstrief Institute, Inc.
+#' @source LOINC Table File Version 2.68. Released 2020-06-17. \url{http://loinc.org}
+#' @format A data frame.
+#' @docType data
+#' @name reference_loinc
+"reference_loinc"
+
+
+#' Laboratory specimen type reference table (SNOMED CT concepts )
+#' @description This reference table contains the list of admissible specimen
+#' types in microbiology records (see \code{\link[Ramses]{validate_microbiology}()}).
+#' These concepts are from the 
+#' \href{SNOMED CT International Edition}{https://browser.ihtsdotools.org/} and 
+#' correspond to the descendants of the \code{123038009 | Specimen (specimen) |} 
+#' concept.
+#' @details This data frame contains 5 variables:
+#' \describe{
+#'     \item{\code{conceptId}}{SNOMED CT concept code}
+#'     \item{\code{moduleId}}{SNOMED CT module code}
+#'     \item{\code{fsn_term}}{SNOMED CT Full Specified Name}
+#'     \item{\code{pt_term}}{SNOMED CT Preferred Term}
+#'     \item{\code{snomed_release_version}}{SNOMED CT RF2 release date}
+#' }
+#' @seealso \url{https://snomedizer.web.app}
+#' @format A data frame.
+#' @docType data
+#' @name reference_specimen_type
+"reference_specimen_type"

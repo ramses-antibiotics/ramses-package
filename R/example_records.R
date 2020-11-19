@@ -3,7 +3,7 @@
 #' 
 #' @description This simulated activity data consists of records of finished 
 #' consultant episodes for 200 patients, detailing all dates and times of 
-#' admission, dischage, activity dates, and ICD-10 clinical diagnoses codes 
+#' admission, discharge, activity dates, and ICD-10 clinical diagnoses codes 
 #' (for infections only).
 #' 
 #' This data was simulated to reproduce relevant characteristics of English 
@@ -33,7 +33,8 @@
 #' Simulated inpatient clinical diagnoses
 #' 
 #' @description Dataset of simulated infection clinical diagnoses by 
-#' finished consultant episodes listed in \code{\link[Ramses]{inpatient_episodes}},
+#' finished consultant episodes listed in 
+#' \code{\link[Ramses]{inpatient_episodes}},
 #' detailing all episode start and end times, episode number, and up to
 #' 5 clinical diagnoses coded according to the International 
 #' Classification of Diseases, Tenth Revision (ICD-10). 
@@ -72,3 +73,34 @@
 #' @name drug_administrations
 #' @source Simulated data
 "drug_administrations"
+
+
+#' Simulated clinical investigation results
+#' 
+#' @description A set of records of observations (for example: respiration rate,
+#' blood pressure) and investigations (for example: blood cell counts)
+#' performed during inpatient care episodes.
+#'   
+#' @format A data frame of records of observations and investigations 
+#' passing \code{\link[Ramses]{validate_investigations}()}.
+#' @docType data
+#' @name inpatient_investigations
+#' @source Simulated data
+"inpatient_investigations"
+
+
+#' Simulated microbial culture and susceptibility results
+#' 
+#' @description This simulated activity data consists of records of microbial 
+#' samples sent for culture and susceptibility testing for a single inpatient.
+#' 
+#' This data was simulated to reproduce relevant characteristics of English 
+#' NHS Admitted Patient Care datasets. More information can be found on the 
+#' \href{https://www.datadictionary.nhs.uk/data_dictionary/messages/cds_v6-2/data_sets/cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds_fr.asp?shownav=1}{NHS data dictionary website}.
+
+#' @format A data frame
+#' @seealso \link[Ramses]{validate_microbiology}()
+#' @docType data
+#' @name inpatient_microbiology
+#' @source Simulated data
+"inpatient_microbiology"

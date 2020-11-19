@@ -1,7 +1,7 @@
 Package: Ramses
 Type: Package
 Title: R Package for Antimicrobial Stewardship & Surveillance 
-Version: 0.0.1
+Version: 0.0.2
 Authors@R: c(
     person(given = "Peter",
            family = "Dutey-Magni",
@@ -44,12 +44,15 @@ Suggests:
     knitr,
     rmarkdown,
     covr,
+    tidyr,
     rvest,
     xml2,
     curl,
     DiagrammeR,
     odbc,
-    timevis
+    RPostgres,
+    timevis,
+    snomedizer
 RdMacros: Rdpack    
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.1
 VignetteBuilder: knitr,rmarkdown

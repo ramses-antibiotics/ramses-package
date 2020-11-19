@@ -4,7 +4,9 @@
 \name{inpatient_wards}
 \alias{inpatient_wards}
 \title{Simulated hospital ward movements}
-\format{A data frame of records of ward movements}
+\format{
+A data frame of records of ward movements
+}
 \source{
 Simulated data
 }

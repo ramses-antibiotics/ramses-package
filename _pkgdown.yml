@@ -36,8 +36,7 @@ reference:
   - ccsr
   - download_icd10cm
   - import_icd
-  - reference_aware
-  - reference_drug_frequency
+  - starts_with("reference_")
 - title: Transform and validate data
   desc:  Functions to enrich and validate data before loading into the warehouse.
   contents:
@@ -46,11 +45,12 @@ reference:
   - starts_with("validate_inpatient")
   - validate_prescriptions
   - validate_administrations
+  - validate_investigations
+  - validate_microbiology
 - title: Load & link data
   desc:  Load records into the warehouse and create secondary information.
   contents:
-  - load_inpatient_episodes
-  - load_inpatient_diagnoses
+  - starts_with("load_inpatient")
   - transitive_closure_control
   - load_medications
 - title: Simulated sets of electronic health records
@@ -58,13 +58,12 @@ reference:
   - inpatient_episodes
   - inpatient_wards
   - inpatient_diagnoses
+  - inpatient_investigations
   - drug_prescriptions
   - drug_administrations
 - title: Database administration
   desc:  Functions to set up and manage the `RAMSES` database
   contents:
-  - get_warehouse_status
-  - build_ramses_schema
   - connect_db_local
 - title: Index
   desc:  All functions in alphabetical order

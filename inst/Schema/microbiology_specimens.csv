@@ -1,0 +1,11 @@
+position,variable_name,must_exist,must_be_nonmissing,must_be_unique
+1,specimen_id,TRUE,TRUE,TRUE
+2,patient_id,TRUE,TRUE,FALSE
+3,spell_id,FALSE,FALSE,FALSE
+4,status,TRUE,TRUE,FALSE
+3,specimen_datetime,TRUE,TRUE,FALSE
+4,test_display,FALSE,FALSE,FALSE
+5,reason_display,FALSE,FALSE,FALSE
+6,specimen_type_code,TRUE,FALSE,FALSE
+7,specimen_type_name,TRUE,FALSE,FALSE
+8,specimen_type_display,TRUE,FALSE,FALSE

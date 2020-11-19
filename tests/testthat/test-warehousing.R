@@ -5,9 +5,12 @@
 
 test_that("Ramses on SQLite", {
   
-  if (!identical(Sys.getenv("TRAVIS"), "true")) {
+  if (!identical(Sys.getenv("TRAVISTESTS"), "true")) {
     skip("Test only on Travis")
   }
+  
+
+  # > validate functions --------------------------------------------------
   
   drug_data <- Ramses:::.prepare_example_drug_records()
   inpatient_data <- Ramses:::.prepare_example_inpatient_records()
@@ -21,10 +24,15 @@ test_that("Ramses on SQLite", {
     validate_inpatient_diagnoses(
       diagnoses_data = inpatient_data$diagnoses,
       diagnoses_lookup = icd10cm))
-  
+  expect_true(validate_investigations(inpatient_data$investigations))
+  expect_true(validate_microbiology(
+    inpatient_data$micro$specimens,
+    inpatient_data$micro$isolates,
+    inpatient_data$micro$susceptibilities
+    ))
   expect_true(validate_inpatient_episodes(inpatient_data$episodes))
   expect_true(validate_inpatient_episodes(episodes = inpatient_data$episodes,
-                                          wards =inpatient_data$ward_movements))
+                                          wards = inpatient_data$ward_movements))
   medication_loading <- load_medications(conn = conSQLite, 
                          prescriptions = drug_data$drug_rx,
                          administrations = drug_data$drug_admins,
@@ -33,13 +41,34 @@ test_that("Ramses on SQLite", {
   expect_true(medication_loading$prescription_load_errors)
   expect_true(medication_loading$administration_load_errors)
   
+  expect_equivalent(
+    load_inpatient_episodes(conn = conSQLite,
+                            episodes_data = inpatient_data$episodes,
+                            wards_data = inpatient_data$ward_movements,
+                            overwrite = TRUE),
+    list(episodes_load_errors = TRUE,
+         wards_load_errors = TRUE)
+  )
   expect_true(
     expect_warning(
       load_inpatient_diagnoses(conn = conSQLite,
                            diagnoses_data = inpatient_data$diagnoses,
                            diagnoses_lookup = icd10cm,
                            overwrite = TRUE)))
-
+  expect_true(
+    load_inpatient_investigations(
+      conn = conSQLite,
+      investigations_data = inpatient_data$investigations,
+      overwrite = TRUE
+    ))
+  expect_true(load_inpatient_microbiology(
+    conn = conSQLite,
+    inpatient_data$micro$specimens,
+    inpatient_data$micro$isolates,
+    inpatient_data$micro$susceptibilities,
+    overwrite = TRUE
+  ))
+  
   test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
     filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08")) %>% 
     select(prescription_id, combination_id, therapy_id) %>% 
@@ -49,8 +78,49 @@ test_that("Ramses on SQLite", {
     test_output, 
     tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08"),
            combination_id = c(NA_character_, "0bf9ea7732dd6e904ab670a407382d95"),
-           therapy_id = c("0bf9ea7732dd6e904ab670a407382d95", "0bf9ea7732dd6e904ab670a407382d95")))
+           therapy_id = c("592a738e4c2afcae6f625c01856151e0", "0bf9ea7732dd6e904ab670a407382d95")))
   
+  
+  # > date and datetime casting on SQLite -------------------------------------
+
+  test_sqlite_date <- tbl(conSQLite, "inpatient_episodes") %>% 
+    dplyr::filter(patient_id == "99999999999") %>% 
+    Ramses:::.sqlite_date_collect( )
+  
+  expect_is(test_sqlite_date$spell_id, "character")
+  expect_is(test_sqlite_date$admission_date, "POSIXt")
+  expect_equal(test_sqlite_date$date_of_birth[1], as.Date("1926-08-02"))
+  expect_equal(test_sqlite_date$date_of_death[1], as.Date(NA))
+  
+  # > therapy timeline -------------------------------------------------
+  
+  expect_error(
+    therapy_timeline(conn = conSQLite, 
+                     patient_identifier =  "I don't exist")
+  )
+  expect_is(
+    therapy_timeline(conn = conSQLite, 
+                     patient_identifier =  "99999999999"),
+    "timevis")
+  expect_is(
+    therapy_timeline(conn = conSQLite, 
+                     patient_identifier =  "99999999999",
+                     date1 = "2017-01-01",
+                     date2 = "2017-03-01"), 
+    "timevis")
+  expect_is(
+    therapy_timeline(conn = conSQLite, 
+                     patient_identifier =  "99999999999",
+                     date1 = "2017-01-01"),
+    "timevis")
+  expect_is(
+    therapy_timeline(conn = conSQLite, 
+                     patient_identifier =  "99999999999",
+                     date2 = "2017-03-01"), 
+    "timevis")
+  
+
+  # > close connection ----------------------------------------------------
   DBI::dbDisconnect(conSQLite)
   file.remove("test.sqlite")
   

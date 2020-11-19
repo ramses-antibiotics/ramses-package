@@ -1,0 +1,6 @@
+position,variable_name,must_exist,must_be_nonmissing,must_be_unique
+1,icd_code,TRUE,TRUE,TRUE
+2,icd_description,TRUE,TRUE,FALSE
+3,icd_display,TRUE,TRUE,FALSE
+4,category_code,TRUE,TRUE,FALSE
+5,category_description,TRUE,TRUE,FALSE

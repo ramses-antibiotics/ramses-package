@@ -4,7 +4,8 @@
 \name{reference_aware}
 \alias{reference_aware}
 \title{English Adaptation of the WHO AWaRe Index}
-\format{A data frame with 208 antimicrobial agents, referenced 
+\format{
+A data frame with 208 antimicrobial agents, referenced 
 against the Anatomical Therapeutic Chemical (ATC) 
 classification \insertCite{WHO-ATC2020}{Ramses}, the World Health Organisation's
 and Public Health England's respective AWaRe Indices, 
@@ -27,7 +28,8 @@ the ATC ("O" = oral; "P" = parenteral; "R" = rectal;
 concept code in the SNOMED-CT UK Drug Extension (see \insertCite{DMD2015}{Ramses})}
 \item{\code{VTM_name}}{SNOMED-CT medicinal product code/Virtual Therapeutic Moiety 
 concept name in the SNOMED-CT UK Drug Extension (see \insertCite{DMD2015}{Ramses})}
-}}
+}
+}
 \source{
 Adapted from \insertCite{WHO-aware2019,PHE-aware2019;textual}{Ramses} with Virtual  
 Therapeutic Moiety equivalents from the NHS Dictionary of Medicines (dm+d)

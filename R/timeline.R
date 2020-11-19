@@ -7,7 +7,6 @@
 # }
 
 
-# TODO rename, document and test function!
 #' Build an antiinfective timeline visualisation
 #'
 #' @param conn a database connection
@@ -22,7 +21,8 @@
 #' @importFrom magrittr %>%
 #' @importFrom lubridate as_datetime
 #' @export
-therapy_timeline <- function(conn, patient_identifier, date1, date2,
+therapy_timeline <- function(conn, patient_identifier, 
+                             date1 = NA, date2 = NA,
                              load_timevis_dependencies = FALSE){
   
   requireNamespace("timevis", quietly = TRUE)
@@ -30,7 +30,7 @@ therapy_timeline <- function(conn, patient_identifier, date1, date2,
   # Retrieve inpatient records
   base <- tbl(conn, "inpatient_episodes") %>%
     dplyr::filter(patient_id == patient_identifier) %>%
-    dplyr::collect()
+    .sqlite_date_collect()
   if (nrow(base) == 0) {
     stop("Patient was not found.")
   }
@@ -39,45 +39,46 @@ therapy_timeline <- function(conn, patient_identifier, date1, date2,
   nodes <- tbl(conn, "drug_prescriptions") %>%
     dplyr::filter(patient_id == patient_identifier & 
              !prescription_status %in% c("cancelled", "draft")) %>%
-    dplyr::left_join(tbl(conn, "drug_therapy_episodes")) %>%
-    dplyr::arrange(patient_id, prescription_start) %>% collect() 
-  
-  if( is(conn, "SQLiteConnection") ) {
-    # TODO build a function for this
-    nodes <- nodes %>% 
-      dplyr::mutate(prescription_start = as_datetime(prescription_start),
-             prescription_end = as_datetime(prescription_end),
-             therapy_start = as_datetime(therapy_start),
-             therapy_end = as_datetime(therapy_end),
-             authoring_date = as_datetime(authoring_date))
-  }
-  
+    dplyr::left_join(tbl(conn, "drug_therapy_episodes"), 
+                     by = c("patient_id", "therapy_id")) %>%
+    dplyr::arrange(patient_id, prescription_start) %>% 
+    .sqlite_date_collect() 
+   
   # Calculate the date range the timeline should display by default
-  if(missing(date1) | missing(date2)){
-    date_window <- nodes %>% 
-      dplyr::summarise(left_date = min(therapy_start), 
-                right_date = max(therapy_end)) %>% 
-      dplyr::collect()
+  date1 <- lubridate::as_datetime(date1)
+  date2 <- lubridate::as_datetime(date2)
+  
+  if( !is.na(date1) && !is.na(date2) ) {
+    date_window <- dplyr::filter(
+      nodes, 
+      dplyr::between(therapy_start, date1, date2) |
+        dplyr::between(therapy_end, date1, date2) |
+        (therapy_start <= date1 & date1 <= therapy_end)) %>%
+      dplyr::summarise(left_date = min(therapy_start, na.rm = T), 
+                       right_date = max(therapy_end, na.rm = T))
+  } else if( !is.na(date2) ) {
+    date_window <- dplyr::filter(
+      nodes, 
+      therapy_start <= date2 ) %>%
+      dplyr::summarise(left_date = min(therapy_start, na.rm = T), 
+                       right_date = max(therapy_end, na.rm = T)) 
+  } else if( !is.na(date1) ) {
+    date_window <- dplyr::filter(
+      nodes, 
+      therapy_end >= date1 ) %>%
+      dplyr::summarise(left_date = min(therapy_start, na.rm = T), 
+                       right_date = max(therapy_end, na.rm = T)) 
   } else {
-    date_window <- nodes %>% dplyr::filter( between(therapy_start, date1, date2) |
-                                       between(therapy_end, date1, date2) |
-                                       between(date1, therapy_start, therapy_end)) %>%
-      dplyr::summarise(left_date = min(therapy_start), 
-                right_date = max(therapy_end))
-  }
-  
-
-  
-  if( is(conn, "SQLiteConnection") ) {
-    # TODO build a function for this
-    
-    base <- base %>% 
-      dplyr::mutate(admission_date = as_datetime(admission_date),
-             discharge_date = as_datetime(discharge_date))
-  }
+    date_window <- dplyr::summarise(
+      nodes, 
+      left_date = min(therapy_start, na.rm = T), 
+      right_date = max(therapy_end, na.rm = T)) 
+  } 
   
   # extract all data to feed into timevis
-  timeline_diags <- NULL #TODO timeline_Rx_getdiag(input_patient)
+  timeline_diags <- .therapy_timeline_get_diagnoses(
+    conn = conn, 
+    patient_identifier = patient_identifier)
   
   timeline_Rx <- nodes %>%
     dplyr::filter(!is.na(prescription_start)) %>%
@@ -155,7 +156,8 @@ therapy_timeline <- function(conn, patient_identifier, date1, date2,
   #             className = "sepsis-redflag"
   #   )
   
-  timeline_micro <- NULL # timeline_Rx_getmicro(input_patient)
+  timeline_micro <- .therapy_timeline_get_micro(conn = conn,
+                                                patient_identifier = patient_identifier)
   
   timeline_groups <- data.frame(
     id = 3:0,
@@ -181,6 +183,160 @@ therapy_timeline <- function(conn, patient_identifier, date1, date2,
                          tooltip = list(followMouse = T)),
     loadDependencies = load_timevis_dependencies) %>% 
     timevis::setWindow(start = date_window$left_date,
-              end = date_window$right_date) %>% 
+                       end = date_window$right_date) %>% 
     return()
 }
+
+
+
+#' Extract a data frame of microbiology results for display in therapy timeline
+#' @param conn a database connection
+#' @param patient_identifier a patient identifier
+#' @return a data frame
+#' @noRd
+.therapy_timeline_get_micro <- function(conn,
+                                        patient_identifier) {
+  
+  micro <- tbl(conn, "microbiology_specimens") %>%
+    dplyr::filter(patient_id == patient_identifier) %>% 
+    dplyr::left_join(
+      tbl(conn, "microbiology_isolates"),
+      by = c("patient_id", "specimen_id")
+    ) %>% 
+    dplyr::collect()
+  
+  #TODO: reintroduce the micro-requests when we have a date of reporting
+  if(nrow(micro) == 0){
+    return(data.frame())
+  } else {
+    timeline_micro_reports <- micro %>%
+      dplyr::mutate(className = dplyr::if_else(is.na(organism_code),
+                                               "micro-report-no-growth", 
+                                               "micro-report")) %>% 
+      dplyr::group_by(specimen_id, className) %>% 
+      dplyr::summarise(
+        id = paste0("Specimen ID:",
+                    paste(unique(specimen_id), sep = "-"), 
+                    ":report"),
+        start = min(lubridate::as_datetime(isolation_datetime), na.rm = T),
+        title = paste0(
+          paste(unique(specimen_type_display), collapse = ", "), "\n",
+          "Organisms: ", 
+          paste(unique(organism_display_name), collapse = ", "), "\n",
+          "Sample received: ", unique(lubridate::as_date(
+            lubridate::as_datetime(specimen_datetime))
+          )),
+        type = "point",
+        group = 1,
+        subgroup = "micro"
+      )
+    
+    # timeline_micro_requests <- micro %>%
+    #   dplyr::group_by(specimen_id) %>%
+    #   dplyr::summarise(
+    #     id = unique(paste0("Specimen ID:", specimen_id, ":request")),
+    #     start = mean(lubridate::as_datetime(specimen_datetime), na.rm = T),
+    #     type = "point",
+    #     group = 1,
+    #     subgroup = "micro",
+    #     className = "micro-request"
+    #   )
+    # timeline_data <- dplyr::bind_rows(list(
+    #   timeline_micro_requests,
+    #   timeline_micro_reports))
+    
+    return(timeline_micro_reports)
+}}
+  
+
+
+#' Extract a data frame of infection diagnoses for display in therapy timeline
+#' @param conn a database connection
+#' @param patient_identifier a patient identifier
+#' @return a data frame
+#' @noRd
+.therapy_timeline_get_diagnoses <- function(conn,
+                                            patient_identifier) {
+    
+  
+  # Taking ICD labels from the most recent ICD edition
+  icd_lu <- tbl(conn, "reference_icd") %>%
+    dplyr::select(icd_code,
+                  icd_display,
+                  icd_description,
+                  category_description)
+  
+  # Consolidating diagnoses across episodes of care
+  diag <- tbl(conn, "inpatient_diagnoses") %>%
+    dplyr::filter(patient_id == patient_identifier) %>% 
+    dplyr::inner_join(tbl(conn, "reference_icd_infections"), 
+               by = c("icd_code")) %>%
+    dplyr::compute()
+  
+  # If no infection diagnosis is present, return empty data frame.
+  # It will get ignore when feeding into timevis
+  if(nrow(dplyr::collect(diag)) == 0){
+    return(data.frame())
+  } 
+  
+  
+  if( is(diag, "tbl_SQLiteConnection") ) {
+    # combining episodes together for diagnoses that span several episodes
+    diag <- diag %>%
+      dplyr::mutate(
+        prim_diag = dplyr::if_else(diagnosis_position == 1, 1, 0),
+        grp = dplyr::sql("
+         CASE WHEN ABS(strftime('%s', LAG([episode_end], 1, 0)
+                       OVER(PARTITION BY patient_id, icd_code
+                            ORDER BY [episode_start]))
+                       - strftime('%s', [episode_start])) <= (6 * 3600) 
+         THEN NULL
+         ELSE ROW_NUMBER() OVER(ORDER BY [episode_start]) END")) %>% 
+      dplyr::mutate(grp = dplyr::sql(
+        "MAX(grp) 
+         OVER(PARTITION BY patient_id, icd_code, prim_diag
+         ORDER BY patient_id, [episode_start])"
+      )) %>%
+      dplyr::group_by(patient_id, icd_code, grp, prim_diag, 
+                      infection_group1_code,
+                      infection_group1_label,
+                      infection_group2_code,
+                      infection_group2_label) %>%
+      dplyr::summarise(start_time = min(episode_start, na.rm = TRUE),
+                       end_time = max(episode_end, na.rm = TRUE)) %>%
+      dplyr::compute()
+    
+    diag <- diag %>%
+      dplyr::left_join(icd_lu, by = c('icd_code')) %>% 
+      dplyr::collect() %>% data.table() %>% unique() %>%
+      dplyr::mutate(icd_text = paste0(
+        dplyr::if_else(prim_diag == 1, "<strong>", ""), 
+        icd_display, " &ndash; ", icd_description,
+        dplyr::if_else(prim_diag == 1, "</strong>", "")))
+    
+    diag <- dplyr::transmute(
+      diag,
+      id = NA, 
+      content = icd_text, 
+      title = paste0(icd_description, ifelse(prim_diag == 1, " (PRIMARY DIAGNOSIS)", "")),
+      start = lubridate::as_datetime(start_time),  
+      end = lubridate::as_datetime(end_time),
+      group =  2,
+      subgroup = infection_group1_code,
+      type = 'range',
+      style = "background-color: #97e2f8",#paste0("background-color: #97e2f8", graph_colour), # TODO why not move this to CSS!
+      className = "") %>% 
+      unique() %>%
+      as.data.frame()
+    
+    return(diag)
+  } else {
+    stop(paste(
+      ".therapy_timeline_get_diagnoses() is not implemented for this type of database.",
+      "Please report this issue on https://github.com/ramses-antibiotics/ramses-package/issues",
+      collapse = "\n"
+      ))
+  }
+}
+
+

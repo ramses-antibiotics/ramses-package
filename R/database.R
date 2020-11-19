@@ -1,102 +1,7 @@
 
 
-#' Create or connect to a local SQLite database
-#'
-#' @description Create a local database in memory or on disk using \code{\link[RSQLite]{SQLite}()}. 
-#' This is the ideal method to experiment on a small scale or for testing purposes.
-#'
-#' @details This function creates a database on disk at the desired path. The database and
-#' its content will persist on disconnection.
-#'     
-#' @section Warning:     
-#' This method does not provide any encryption or password protection. You should only use this
-#' method with mock data unless you operate within a secure data enclave.
-#'
-#' @param file A file path to an existing or new database file with an .sqlite extension.
-#' @return An object of class SQLiteConnection.
-#' @seealso The dbplyr website provides excellent guidance on how to connect to databases: 
-#' \url{https://db.rstudio.com/getting-started/connect-to-database}
-#' @importFrom DBI dbConnect dbDisconnect
-#' @export
-#'
-#' @examples
-#'     # Create database and load data
-#'     con <- connect_db_local("ramses-db.sqlite")
-#'     
-#'     dplyr::copy_to(dest = con, df = reference_aware, name = "reference_aware", 
-#'                    overwrite = FALSE, temporary = FALSE)      
-#'     
-#'     # Close connection to database
-#'     DBI::dbDisconnect(con)
-#'     
-#'     # Connect to the database again and show data
-#'     con <- connect_db_local("ramses-db.sqlite")
-#'     dplyr::tbl(con, "reference_aware")
-#'     DBI::dbDisconnect(con)
-connect_db_local <- function(file) {
-  con <- DBI::dbConnect(RSQLite::SQLite(), file)
-  .build_tally_table(con)
-  warning(paste0("SQLite database created in ", con@dbname, 
-                 "\nPlease do not use real patient data."))
-  
-  con
-}
 
-
-#' Get warehouse status
-#'
-#' @description Inspect the status of tables making up the warehouse
-#' @param conn a database connection
-#'
-#' @return 
-#'   \describe{
-#'     \item{diagnoses}{a flag indicating whether }
-#'   }
-#' @export
-get_warehouse_status <- function(conn) {
-  
-  if (DBI::dbExistsTable(conn, "inpatient_diagnoses")) {
-    diagnoses <- dplyr::tbl(conn, "inpatient_diagnoses") %>% 
-      dplyr::filter(.data, row_number()==1) %>% 
-      dplyr::collect()
-  } else {
-    diagnoses = NULL
-  }
-  
-  inspect_diagnoses <- (
-    is.null(diagnoses) || nrow(diagnoses) == 0 || 
-      any(!c("icd_code", "patient_id", "spell_id", "episode_number") %in% colnames(diagnoses))
-    )
-  
-  list(
-    diagnoses = inspect_diagnoses
-  )
-  
-}
- 
-#' Build the RAMSES schema
-#' 
-#' @description The RAMSES schema is the set of tables required to import health records
-#' for curation and analysis 
-#' @param conn a database connection
-#' @rdname build_ramses_schema
-#' @export
-build_ramses_schema <- function(conn) {
-  UseMethod("build_ramses_schema")
-}
-#' @export
-build_ramses_schema.SQLiteConnection <- function(conn) {
-  
-}
-
-.build_tally_table <- function(conn) {
-  # Build table to use in joins to create therapy tables
-  dbplyr::db_copy_to(conn, 
-                     table = "ramses_tally",
-                     values = data.frame(t = 1:20000),
-                     temporary = FALSE,
-                     overwrite = TRUE)
-}
+# Inpatient records -------------------------------------------------------
 
 
 #' Load inpatient diagnosis records into the warehouse
@@ -120,7 +25,8 @@ build_ramses_schema.SQLiteConnection <- function(conn) {
 #' "try-error" containing error messages trigger during warehouse data loading.
 #' @import methods
 #' @export
-load_inpatient_diagnoses <- function(conn, diagnoses_data, diagnoses_lookup, overwrite = FALSE) {
+load_inpatient_diagnoses <- function(conn, diagnoses_data,
+                                     diagnoses_lookup, overwrite = FALSE) {
    
   if (!validate_inpatient_diagnoses(diagnoses_data, diagnoses_lookup)) {
     stop(simpleError("`diagnoses_data` and `diagnoses_lookup` must pass `validate_inpatient_diagnoses()`"))
@@ -155,6 +61,12 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data, diagnoses_lookup, ove
       "icd_code",
       "diagnosis_position"
     ))
+  
+  if ( is(conn, "SQLiteConnection" )) {
+    for(i in which(sapply(diagnoses_data, is, class2 = "POSIXct"))) {
+      diagnoses_data[[i]] <- as.character(diagnoses_data[[i]])
+    }
+  }
   
   load_errors <- try({
     dbplyr::db_copy_to(con = conn, table = "inpatient_diagnoses", 
@@ -197,66 +109,225 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data, diagnoses_lookup, ove
 #' @return `TRUE` if the function ran successfully, otherwise object of class
 #' "try-error" containing error messages trigger during warehouse data loading.
 #' @export
-load_inpatient_episodes <- function(conn, episodes_data, wards_data, overwrite = TRUE) {
+load_inpatient_episodes <- function(conn, episodes_data, 
+                                    wards_data = NULL, overwrite = TRUE) {
   #TODO: define index in the variable schema + add reference tables
   episodes_data <- dplyr::arrange(episodes_data, 
                                   patient_id, episode_start)
-  
-  wards_data <- dplyr::arrange(wards_data,
-                               patient_id, ward_start)
-  
   first_column_names_episodes <- .inpatient_episodes_variables()[["variable_name"]]
   first_column_names_episodes <- c(
     first_column_names_episodes[first_column_names_episodes %in% names(episodes_data)]
   )
-  
-  
-  first_column_names_wards <- .inpatient_wards_variables()[["variable_name"]]
-  first_column_names_wards <- c(
-    first_column_names_wards[first_column_names_wards %in% names(wards_data)]
-  )
-  
   episodes_data <- arrange_variables(
     episodes_data, 
     first_column_names = first_column_names_episodes) 
   
-  wards_data <- arrange_variables(
-    wards_data, 
-    first_column_names = first_column_names_wards) 
+  if ( is(conn, "SQLiteConnection" )) {
+    for(i in which(sapply(episodes_data, is, class2 = "POSIXct"))) {
+      episodes_data[[i]] <- as.character(episodes_data[[i]])
+    }
+  }
   
-  episodes_data <- dbplyr::db_copy_to(
-    con = conn,
-    table = "inpatient_episodes",
-    values = episodes_data,
-    temporary = FALSE,
-    overwrite = overwrite,
-    indexes = list(
-      "patient_id", 
-      "spell_id",
-      "admission_date",
-      "discharge_date",
-      "episode_number",
-      "episode_start",
-      "episode_end",
-      "consultant_code",
-      "main_specialty_code"
+  episodes_load_errors <- try({
+    dbplyr::db_copy_to(
+      con = conn,
+      table = "inpatient_episodes",
+      values = episodes_data,
+      temporary = FALSE,
+      overwrite = overwrite,
+      indexes = list(
+        "patient_id", 
+        "spell_id",
+        "admission_date",
+        "discharge_date",
+        "episode_number",
+        "episode_start",
+        "episode_end",
+        "consultant_code",
+        "main_specialty_code"
+      ))
+  })
+  
+  if(!is.null(wards_data)) {
+    wards_data <- dplyr::arrange(wards_data,
+                                 patient_id, ward_start)
+    first_column_names_wards <- .inpatient_wards_variables()[["variable_name"]]
+    first_column_names_wards <- c(
+      first_column_names_wards[first_column_names_wards %in% names(wards_data)]
+    )
+    wards_data <- arrange_variables(
+      wards_data, 
+      first_column_names = first_column_names_wards)   
+    
+    if ( is(conn, "SQLiteConnection" )) {
+      for(i in which(sapply(wards_data, is, class2 = "POSIXct"))) {
+        wards_data[[i]] <- as.character(wards_data[[i]])
+      }
+    }
+    
+    wards_load_errors <- try({
+      dbplyr::db_copy_to(
+        con = conn,
+        table = "inpatient_ward_movements",
+        values = wards_data,
+        temporary = FALSE,
+        overwrite = overwrite,
+        indexes = list(
+          "patient_id", 
+          "spell_id",
+          "ward_start",
+          "ward_end"
+        ))
+    })
+  }
+  
+  if(episodes_load_errors == "inpatient_episodes") {
+    episodes_load_errors <- TRUE
+  } 
+  
+  if(exists("wards_load_errors")) {
+    if(wards_load_errors == "inpatient_ward_movements") {
+      wards_load_errors <- TRUE
+    } 
+    
+    return(list(
+      episodes_load_errors = episodes_load_errors,
+      wards_load_errors = wards_load_errors
     ))
-  
-  wards_data <- dbplyr::db_copy_to(
-    con = conn,
-    table = "inpatient_ward_movements",
-    values = wards_data,
-    temporary = FALSE,
-    overwrite = overwrite,
-    indexes = list(
-      "patient_id", 
-      "spell_id",
-      "ward_start",
-      "ward_end"
-    ))
-  
-  TRUE
+  } else {
+    return(list(episodes_load_errors = episodes_load_errors))
+  }  
 }
+
+
+
+#' Load observations & investigations into the warehouse
+#' 
+#' @param conn a database connection
+#' @param investigations_data a data frame validated with 
+#' \code{\link{validate_investigations}()}
+#' @param overwrite if `TRUE` (the default), will overwrite any existing
+#' `inpatient_investigations` database table
+#' @seealso \code{\link{validate_investigations}()}, 
+#' @return `TRUE` if the function ran successfully, otherwise object of class
+#' "try-error" containing error messages trigger during warehouse data loading.
+#' @export
+load_inpatient_investigations <- function(conn, investigations_data, overwrite = TRUE) {
+  
+  first_variables <- .inpatient_investigations_variables()$variable_name
+  first_variables <- first_variables[first_variables %in% colnames(investigations_data)]
+  
+  investigations_data <- arrange_variables(
+    data = investigations_data,
+    first_column_names = first_variables)
+  
+  if ( is(conn, "SQLiteConnection" )) {
+    for(i in which(sapply(investigations_data, is, class2 = "POSIXct"))) {
+      investigations_data[[i]] <- as.character(investigations_data[[i]])
+    }
+  }
+  
+  load_errors <- try({
+    dbplyr::db_copy_to(con = conn, table = "inpatient_investigations", 
+                       values = investigations_data, overwrite = overwrite, temporary = FALSE,
+                       indexes = list("patient_id", "spell_id", "observation_code", "status"))
+  })
+  
+  if (is(load_errors, "try-error")) {
+    return(load_errors)
+  } else {
+    return(TRUE)
+  }
+}
+
+
+#' Load observations & investigations into the warehouse
+#' 
+#' @param conn a database connection
+#' @param specimens a data frame with one row per specimen sent
+#' to laboratory and
+#' validated with \code{\link{validate_microbiology}()}
+#' @param isolates a data frame with one row per microorganism
+#' isolated from the laboratory specimen and
+#' validated with \code{\link{validate_microbiology}()}
+#' @param susceptibilities a data frame with one row per susceptibility 
+#' validated with \code{\link{validate_microbiology}()}
+#' @param overwrite if `TRUE` (the default), will overwrite any existing
+#' `inpatient_investigations` database table
+#' @seealso \code{\link{validate_investigations}()}, 
+#' @return `TRUE` if the function ran successfully, otherwise object of class
+#' "try-error" containing error messages trigger during warehouse data loading.
+#' @export
+load_inpatient_microbiology <- function(conn, 
+                                        specimens, 
+                                        isolates, 
+                                        susceptibilities, 
+                                        overwrite = TRUE) {
+  
+  first_variables <- .inpatient_microbiology_variables()
+  first_variables$specimens <- first_variables$specimens$variable_name
+  first_variables$isolates <- first_variables$isolates$variable_name
+  first_variables$susceptibilities <- first_variables$susceptibilities$variable_name
+  
+  first_variables$specimens <- first_variables$specimens[
+    first_variables$specimens %in% colnames(specimens)]
+  first_variables$isolates <- first_variables$isolates[
+    first_variables$isolates %in% colnames(isolates)]
+  first_variables$susceptibilities <- first_variables$susceptibilities[
+    first_variables$susceptibilities %in% colnames(susceptibilities)]
+  
+  specimens <- arrange_variables(
+    data = specimens,
+    first_column_names = first_variables$specimens)
+  isolates <- arrange_variables(
+    data = isolates,
+    first_column_names = first_variables$isolates)
+  susceptibilities <- arrange_variables(
+    data = susceptibilities,
+    first_column_names = first_variables$susceptibilities)
+  
+  if ( is(conn, "SQLiteConnection" )) {
+    for(i in which(sapply(specimens, is, class2 = "POSIXct"))) {
+      specimens[[i]] <- as.character(specimens[[i]])
+    }
+    for(i in which(sapply(isolates, is, class2 = "POSIXct"))) {
+      isolates[[i]] <- as.character(isolates[[i]])
+    }
+    for(i in which(sapply(susceptibilities, is, class2 = "POSIXct"))) {
+      susceptibilities[[i]] <- as.character(susceptibilities[[i]])
+    }
+  }
+  
+  load_errors <- list()
+  load_errors$specimens <- try({
+    dbplyr::db_copy_to(con = conn, table = "microbiology_specimens", 
+                       values = specimens, overwrite = overwrite, temporary = FALSE,
+                       indexes = list("patient_id", "specimen_id", "status",
+                                      "specimen_datetime", "specimen_type_code",
+                                      "specimen_type_name"))
+  })
+  load_errors$isolates <- try({
+    dbplyr::db_copy_to(con = conn, table = "microbiology_isolates", 
+                       values = isolates, overwrite = overwrite, temporary = FALSE,
+                       indexes = list("patient_id", "organism_id", "specimen_id", 
+                                      "organism_code"))
+  })
+  load_errors$susceptibilities <- try({
+    dbplyr::db_copy_to(con = conn, table = "microbiology_susceptibilities", 
+                       values = susceptibilities, overwrite = overwrite, temporary = FALSE,
+                       indexes = list("patient_id", "organism_id", "specimen_id", 
+                                      "organism_code", "drug_id"))
+  })
+  
+  if ( any(sapply(load_errors, is, class2 = "try-error")) ) {
+    return(load_errors)
+  } else {
+    return(TRUE)
+  }
+}
+
+# Medication records ------------------------------------------------------
+
 
 #' Set parameters for building combination therapy identifiers and
 #' therapy episode identifiers
@@ -650,7 +721,64 @@ load_medications.SQLiteConnection <- function(
     load_output
   }
 }
+
+
+# Database management -----------------------------------------------------
+
+
+#' Create or connect to a local SQLite database
+#'
+#' @description Create a local database in memory or on disk using \code{\link[RSQLite]{SQLite}()}. 
+#' This is the ideal method to experiment on a small scale or for testing purposes.
+#'
+#' @details This function creates a database on disk at the desired path. The database and
+#' its content will persist on disconnection.
+#'     
+#' @section Warning:     
+#' This method does not provide any encryption or password protection. You should only use this
+#' method with mock data unless you operate within a secure data enclave.
+#'
+#' @param file A file path to an existing or new database file with an .sqlite extension.
+#' @return An object of class SQLiteConnection.
+#' @seealso The dbplyr website provides excellent guidance on how to connect to databases: 
+#' \url{https://db.rstudio.com/getting-started/connect-to-database}
+#' @importFrom DBI dbConnect dbDisconnect
+#' @export
+#'
+#' @examples
+#'     # Create database and load data
+#'     con <- connect_db_local("ramses-db.sqlite")
+#'     
+#'     dplyr::copy_to(dest = con, df = reference_aware, name = "reference_aware", 
+#'                    overwrite = FALSE, temporary = FALSE)      
+#'     
+#'     # Close connection to database
+#'     DBI::dbDisconnect(con)
+#'     
+#'     # Connect to the database again and show data
+#'     con <- connect_db_local("ramses-db.sqlite")
+#'     dplyr::tbl(con, "reference_aware")
+#'     DBI::dbDisconnect(con)
+connect_db_local <- function(file) {
+  con <- DBI::dbConnect(RSQLite::SQLite(), file)
+  .build_tally_table(con)
+  warning(paste0("SQLite database created in \n", con@dbname, 
+                 "\nPlease do not use real patient data."))
   
+  con
+}
+
+
+.build_tally_table <- function(conn) {
+  # Build table to use in joins to create therapy tables
+  dbplyr::db_copy_to(conn, 
+                     table = "ramses_tally",
+                     values = data.frame(t = 1:20000),
+                     temporary = FALSE,
+                     overwrite = TRUE)
+}
+
+
 #' Read SQL scripts
 #'
 #' @description Reads SQL script, remove comments and concatenate
@@ -670,6 +798,7 @@ load_medications.SQLiteConnection <- function(
   
   statement
 }
+
 
 #' Split SQL statements from a batch script
 #'
@@ -736,11 +865,12 @@ load_medications.SQLiteConnection <- function(
 #' under the name `ramses_TC_group`.
 #' @references Inspired by Itzik Ben-Gan's T-SQL challenge solution
 #' https://www.itprotoday.com/sql-server/t-sql-puzzle-challenge-grouping-connected-items
+#' @keywords internal
 #' @noRd
 .run_transitive_closure <- function(conn, edge_table, silent = FALSE) {
   UseMethod(".run_transitive_closure")
 }
-#' @export
+
 .run_transitive_closure.SQLiteConnection <- function(conn, edge_table, silent) {
   
   .create_ramses_TC_graphs(conn)
@@ -1039,9 +1169,129 @@ load_medications.SQLiteConnection <- function(
       1, 2)) %>% 
     dplyr::ungroup()
   
+  micro <- list()
+  micro$raw <- Ramses::inpatient_microbiology
+  micro$raw <- micro$raw %>% 
+    dplyr::mutate(
+      organism_code = AMR::as.mo(dplyr::if_else(
+        organism_display_name == "No growth",
+        NA_character_,
+        organism_display_name)),
+      drug_id = AMR::as.ab(drug_display_name)
+    ) %>% 
+    dplyr::mutate(organism_name = AMR::mo_name(organism_code),
+                  drug_name = AMR::ab_name(drug_id))
+  micro$raw <- micro$raw %>% 
+    mutate(specimen_type_code = case_when(
+      specimen_type_display == "Blood Culture" ~ 
+        "446131002", # Blood specimen obtained for blood culture
+      specimen_type_display == "Faeces" ~ 
+        "119339001", # Stool specimen
+      specimen_type_display == "MRSA Screen" ~ 
+        "697989009", # Anterior nares swab 
+      specimen_type_display == "Urine" ~ 
+        "122575003", # Urine specimen
+      TRUE ~ NA_character_
+    )) %>% 
+    left_join(transmute(reference_specimen_type,
+                        specimen_type_code = conceptId,
+                        specimen_type_name = pt_term))
+  micro$specimens <- micro$raw %>% 
+    transmute(specimen_id,
+              patient_id,
+              status = "available",
+              specimen_datetime,
+              specimen_type_code,
+              specimen_type_name,
+              specimen_type_display) %>% 
+    distinct() # Removing duplicates created by multiple isolates and susceptibility testing
+  
+  micro$isolates <- micro$raw %>% 
+    transmute(organism_id,
+              specimen_id,
+              patient_id,
+              organism_code,
+              organism_name,
+              organism_display_name,
+              isolation_datetime) %>% 
+    distinct() # Removing duplicates created by susceptibility testing
+  
+  micro$susceptibilities <- micro$raw %>% 
+    filter(!is.na(organism_code)) %>%  # Remove no growth
+    transmute(organism_id,
+              specimen_id,
+              patient_id,
+              organism_code,
+              organism_name,
+              organism_display_name,
+              drug_id,
+              drug_name,
+              drug_display_name,
+              rsi_code,
+              concept_code = NA_character_) %>% 
+    distinct()
+  micro$raw <- NULL
   list(
     episodes = ip_episodes,
     diagnoses = ip_diagnoses,
-    ward_movements = Ramses::inpatient_wards
+    ward_movements = Ramses::inpatient_wards,
+    investigations = Ramses::inpatient_investigations,
+    micro = micro
   )
 }
+
+
+#' Collect SQL tibble
+#' 
+#' @description This wrapper function for \link[dplyr]{collect} will convert
+#' relevant character columns to `date` and `datetime` during collection of 
+#' SQLite tables. This is to address the absence of date and time data types
+#' in SQLite.
+#' @param tbl a `tbl_sql` object
+#' @return a `tbl_df` object
+#' @seealso \url{https://www.sqlite.org/datatype3.html#date_and_time_datatype}
+#' @noRd
+.sqlite_date_collect <- function(tbl) {
+  if(is(tbl, "tbl_SQLiteConnection")) {
+    tbl <- dplyr::collect(tbl)
+    DATETIME_FIELDS <- c(
+      "prescription_start",
+      "prescription_end",
+      "authoring_date",
+      "administration_date",
+      "therapy_start",
+      "therapy_end",
+      "admission_date",
+      "admission_date",
+      "discharge_date",
+      "episode_start",
+      "episode_end",
+      "ward_start",
+      "ward_end"
+    )
+    DATETIME_FIELDS <- DATETIME_FIELDS[
+      which(DATETIME_FIELDS %in% colnames(tbl))
+      ]
+    for(var in DATETIME_FIELDS){
+      tbl[[var]] <- lubridate::as_datetime(tbl[[var]])
+    }
+    
+    DATE_FIELDS <- c(
+      "date_of_birth", 
+      "date_of_death"
+    )
+    DATE_FIELDS <- DATE_FIELDS[
+      which(DATE_FIELDS %in% colnames(tbl))
+      ]
+    for(var in DATE_FIELDS){
+      tbl[[var]] <- lubridate::as_date(tbl[[var]])
+    }
+    
+    return(tbl)
+  } else {
+    dplyr::collect(tbl)
+  }
+}
+
+ 
+ 

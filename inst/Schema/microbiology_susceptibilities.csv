@@ -1,0 +1,11 @@
+position,variable_name,must_exist,must_be_nonmissing,must_be_unique
+1,organism_id,TRUE,TRUE,FALSE
+2,specimen_id,TRUE,TRUE,FALSE
+3,patient_id,TRUE,TRUE,FALSE
+4,organism_code,TRUE,TRUE,FALSE
+5,organism_name,TRUE,TRUE,FALSE
+6,organism_display_name,TRUE,TRUE,FALSE
+7,drug_id,TRUE,FALSE,FALSE
+8,drug_name,TRUE,FALSE,FALSE
+9,drug_display_name,TRUE,TRUE,FALSE
+10,rsi_code,TRUE,FALSE,FALSE

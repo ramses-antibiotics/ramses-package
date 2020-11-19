@@ -4,7 +4,12 @@
 \alias{load_inpatient_episodes}
 \title{Load episodes of care records into the warehouse}
 \usage{
-load_inpatient_episodes(conn, episodes_data, wards_data, overwrite = TRUE)
+load_inpatient_episodes(
+  conn,
+  episodes_data,
+  wards_data = NULL,
+  overwrite = TRUE
+)
 }
 \arguments{
 \item{conn}{a database connection}

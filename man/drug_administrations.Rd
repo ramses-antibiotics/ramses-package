@@ -4,7 +4,9 @@
 \name{drug_administrations}
 \alias{drug_administrations}
 \title{Simulated antimicrobial drug administrations}
-\format{A data frame of records of drug administrations.}
+\format{
+A data frame of records of drug administrations.
+}
 \source{
 Simulated data
 }

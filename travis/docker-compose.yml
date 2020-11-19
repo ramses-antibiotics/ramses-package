@@ -21,10 +21,12 @@ services:
     ports:
       - 1234:1234
   r:
-    image: pdutey/ramses:latest
+    image: ${RAMSESIMAGE}
     environment:
       USER: user
       PASSWORD: password
+      CODECOVETOKEN: ${CODECOVETOKEN}
+      TRAVISTESTS: "true"
     ports:
      - 8787:8787
     volumes:

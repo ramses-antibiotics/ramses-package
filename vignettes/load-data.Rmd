@@ -21,31 +21,48 @@ library(Ramses)
 ```
 
 
-## Introduction
+# Introduction
 
 This vignette demonstrates how to clean and validate hospital records and load them into a data warehouse.
 
-Ramses is provided with simulated data consisting of records of `r formatC(length(unique(inpatient_episodes$local_provider_spell_number)), big.mark = ",")` hospitalisations for `r formatC(length(unique(inpatient_episodes$local_patient_identifier)), big.mark = ",")` patients, complete with prescriptions, diagnoses and care episodes records.
+Ramses is provided simulated datasets consisting of records of `r formatC(length(unique(inpatient_episodes$spell_id)), big.mark = ",")` hospitalisations for `r formatC(length(unique(inpatient_episodes$patient_id)), big.mark = ",")` patients, complete with prescriptions, diagnoses and care episodes records.
 
 
-# Data cleaning and validation
+# Setup
+
+First, packages must be loaded.
+
 ```{r setup, warning=F, message=F}
-library(AMR)
 library(Ramses)
-# to facilitate data manipulations
-library(dplyr)
+library(dplyr)    # to facilitate data manipulations
+library(magrittr) # for the pipe operator `%>%`
 ```
 
+Second, a relational database server is needed. In this vignette, we will create a small \href{https://www.sqlite.org}{SQLite 3} database on the local hard drive. This database will behave in a similar way as a large Microsoft SQL Server or MySQL relational database. The database connection information is stored in an object entitled `ramses_db` which must be provided to most functions in the Ramses package.
 
-## Medication records
-### Drug prescriptions
+```{r}
+ramses_db <- connect_db_local("ramses-db.sqlite")
+```
+
+We can now begin preparing records and loading them into the database. This involves three steps:
+
+1. *Transform*: adding metadata and transforming records to conform with Ramses data validation constraints
+2. *Validate*: using dedicated functions (eg: `validate_inpatient_episodes()`) to verify that all data conform to Ramses data validation constraints
+3. *Load*: loading records into a SQL database.
+
+# Medication records
+
+## Drug prescriptions
+
+We begin with prescription records (but you can choose to start with other records type if you prefer).
 
 ```{r print_prescriptions}
 str(drug_prescriptions)
 ```
 
+Prescriptions records must conform to data validation requirements listed in the documentation for `validate_prescriptions()`
 
-We begin by mapping drug concepts thanks to the `as.ab()` function provided by the AMR package. This function takes a character variable as input and returns a three-letter code EARS-Net code. For more information, refer to the documentation for the `as.ab` function. Some manual editing may be required when drugs are not successfully mapped, as shown in the example below.
+We first map drug concepts thanks to the `as.ab()` function provided by the AMR package. This function takes a character variable as input and returns a three-letter code EARS-Net code. For more information, refer to the documentation for the [AMR::as.ab()] `as.ab()` function. Some manual editing may be required when drugs are not successfully mapped, as shown in the example below.
 
 ```{r map_drug_failing}
 # attempting to map drug name using AMR package
@@ -80,8 +97,9 @@ drug_prescriptions <- mutate(drug_prescriptions,
 ```
 
 With the AMR package, it is possible to infer important properties of the drug:
-- its ATC class and group, which can be useful for instance in order identify antifungals (group 'Antifungals/antimycotics')
-- Defined Daily Doses (DDDs). 
+
+* its ATC class and group, which can be useful for instance in order identify antifungals (group 'Antifungals/antimycotics')
+* Defined Daily Doses (DDDs). 
 
 Working out the DDD of the prescription is somewhat more complex. The reference DDD is for the main substance. In the case of amoxicillin/clavulanic acid for example, the DDD (0.5g) refers to the amoxicillin. A 625mg tablet of Augmentin (c) contains 500mg of amoxicillin and 125mg of clavulanic acid. The reference DDD is `paste0(AMR::ab_ddd("amoxicillin/clavulanic acid", "oral"), AMR::ab_ddd("amoxicillin/clavulanic acid", "oral", unit = T))` = `r paste0(ab_ddd("amoxicillin/clavulanic acid", "oral"), ab_ddd("amoxicillin/clavulanic acid", "oral", unit = T))`. A prescription of Augmentin 625mg TDS (three times a day) therefore amounts to 1.5g of amoxicillin per day, which is 1.5 DDDs. Co-trimoxazole is a compound of 5 parts of sulfamethoxazole to 1 part of trimethoprim. The DDD of sulfamethoxazole is 2g while the DDD of trimethoprim is 400mg: with this ratio of 5 to 1, DDDs calculated on the basis of the dosage of sulfamethoxazole will be valid for co-trimoxazole prepared with 5 parts to 1 part.
 
@@ -128,9 +146,34 @@ drug_prescriptions <- drug_prescriptions %>%
     dose = daily_dose,
     unit = units))
 
+
 ```
 
-### Drug administrations
+
+```{r}
+drug_prescriptions <- drug_prescriptions %>% 
+  transmute(patient_id,
+            prescription_id,
+            drug_id,
+            drug_name = drug_name,
+            drug_display_name = drug_name,
+            ATC_code,
+            ATC_group,
+            ATC_route,
+            authoring_date,
+            prescription_start,
+            prescription_end,
+            prescription_status = "completed",
+            prescription_context = "inpatient",
+            dose,
+            unit = units,
+            route,
+            frequency,
+            daily_frequency,
+            DDD)
+```
+
+## Drug administrations
 
 An identical process is followed for drug administration, with the difference that DDDs do not rely on a daily frequency of administration variable
 
@@ -209,17 +252,60 @@ drug_administrations <- drug_administrations %>%
       administration_status = "completed",
       DDD
     )
-
-
-
 ```
 
-## Inpatient care records
 
-### Episodes of care
+This data frame can now be validated, before being loaded into the database.
 
+```{r load_rx}
+validate_administrations(drug_administrations)
 
-### Diagnosis codes (ICD-10)
+load_medications(conn = ramses_db, 
+                 prescriptions = drug_prescriptions, 
+                 administrations = drug_administrations, 
+                 overwrite = TRUE)
+```
+
+# Inpatient care records
+
+## Admissions
+
+We now turn to records of admissions, discharges and transfers. Ramses is designed around the notion of *hospital spells* identified by variable `spell_id`, which correspond to the window from the time a patient is admitted to the time a patient is discharged. 
+
+In addition, Ramses use subdivisions of *hospital spells* called *episodes of care*, which designate a continuous period of inpatient care under the responsibility of a department, specialty, or clinical team. This corresponds to the 'finished consultant episode' in the UK NHS Admitted Patient Care data model [@Herbert2017]. All *hospital spells* consist of at least one *episode of care*.
+Episodes of care are used to calculate bed-days as well as rates of infection, prescribing and other stewardship metrics for individal specialties and teams of clinicians. 
+
+Hospital spells and episodes of care are recorded in a single table in which every row corresponds to one episode of care.
+
+```{r}
+str(inpatient_episodes)
+```
+
+Dates of admissions and episode start/end must be valid:
+
+* there must be no overlap between admissions or between episodes
+* there must be no gap between episodes in an admission.
+
+```{r}
+validate_inpatient_episodes(episodes = inpatient_episodes)
+```
+
+Optionally, Ramses can use data on ward movements. These records must be validated together with episodes of care
+
+```{r}
+validate_inpatient_episodes(episodes = inpatient_episodes, 
+                            wards = inpatient_wards)
+```
+
+The data can now be loaded into the database.
+
+```{r}
+load_inpatient_episodes(conn = ramses_db,
+                        episodes_data = Ramses::inpatient_episodes,
+                        wards_data =  Ramses::inpatient_wards)
+```
+
+## Diagnosis codes (ICD-10)
 
 In order to exploit clinical diagnoses coded by doctors during hospital admissions, Ramses relies on a range of look up tables which must be built to suit the precise ICD-10 version used by the data. Ramses uses three types of look up tables:
 
@@ -227,7 +313,7 @@ In order to exploit clinical diagnoses coded by doctors during hospital admissio
 * a categorisation based on the AHRQ Clinical Classification Software (CCS) or its Revised version (CCSR)
 * a classification of infections and whether antibiotics are commonly indicated to treat them, adapted from @Hashimoto2020
 
-### ICD-10 reference table
+## ICD-10 reference table
 
 This example uses the `Ramses::inpatient_diagnoses` example dataset. First, we download the ICD-10-CM reference look up table
 
@@ -278,59 +364,229 @@ head(icd_infection_lkup)
 ```
 
 
-```{r create_local_db}
-ramses_db <- connect_db_local("ramses-db.sqlite")
+Data may now be loaded into the database. Diagnoses and their reference look-up are loaded in one step
+
+```{r load_diagnoses}
 load_inpatient_diagnoses(conn = ramses_db, 
                          diagnoses_data = inpatient_diagnoses, 
                          diagnoses_lookup = icd10cm, 
                          overwrite = TRUE)
-
-# TODO: APC_Diagnoses_Infection_Summary
 ```
 
+# Investigation records
 
-```{r load_medications}
-# load aware - add atc and ATC_route
-# create TTA
-drug_prescriptions <- drug_prescriptions %>% 
-  transmute(patient_id,
-            prescription_id,
-            drug_id,
-            drug_name = drug_name,
-            drug_display_name = drug_name,
-            ATC_code,
-            ATC_group,
-            ATC_route,
-            authoring_date,
-            prescription_start,
-            prescription_end,
-            prescription_status = "completed",
-            prescription_context = "inpatient",
-            dose,
-            unit = units,
-            route,
-            frequency,
-            daily_frequency,
-            DDD)
+## Microbiology culture isolates and susceptibilities 
 
-load_medications(conn = ramses_db, 
-                 prescriptions = drug_prescriptions, 
-                 administrations = drug_administrations, 
-                 overwrite = TRUE)
+A small sample of records of microbial isolates is provided along with susceptibility testing results:
 
-load_inpatient_episodes(conn = ramses_db,
-                        episodes_data = Ramses::inpatient_episodes,
-                        wards_data =  Ramses::inpatient_wards)
-
-
+```{r show_inpatient_microbiology}
+str(Ramses::inpatient_microbiology)
 ```
 
+Before validating and loading these records into the database, some transformations 
+will be required to create three separate data frames:
 
-You are now able to visualise the data!
+1. `specimens` contains one row per microbial sample sent to the laboratory
+2. `isolates` contains zero, one, or multiple rows for every specimen -- as many rows as the number of microorganisms isolated from the specimen, whatever the technique (eg mass spectrometry, PCR, bacterial culture)
+3. `susceptibility` contains results of susceptibility testing: one row per substance tested.
+
+For this, we create a list of data frames named `microbiology_data`, and commence with cleaning the raw data. We employ the [AMR](https://cran.r-project.org/web/packages/AMR/index.html) package to code microorganism species names (`AMR::as.mo()`) and antimicrobial names (`AMR::as.ab`). 
+
 ```{r}
-therapy_timeline(ramses_db, patient_identifier =  "1253675584")
+microbiology_data <- list()
+
+# Start by cleaning the raw data
+microbiology_data$raw <- inpatient_microbiology
+microbiology_data$raw <- microbiology_data$raw %>% 
+  mutate(
+    organism_code = AMR::as.mo(if_else(
+      organism_display_name == "No growth",
+      NA_character_,
+      organism_display_name)),
+    drug_id = AMR::as.ab(drug_display_name)) %>% 
+  mutate(organism_name = AMR::mo_name(organism_code),
+         drug_name = AMR::ab_name(drug_id))
+```
+
+
+As for specimen types (eg bood, bronchoalveolar lavage fluid, etc.), they must be coded using [SNOMED CT specimen concepts](https://snowstorm.ihtsdotools.org/?perspective=full&conceptId1=123038009&edition=MAIN/2020-07-31&release=&languages=en). A complete list of concepts from the SNOMED CT International Edition can be found in `reference_specimen_type`.
+
+Susceptibility testing results in the example dataset are already interpreted as Resistant/Increased exposure/Susceptible (RSI). Where needed, minimum inhibitory concentrations and disk diffusion diameters can be interpreted as RSI using the `as.rsi()` function provided by the AMR package.
+
+If possible, use the most specific concept available (eg `309176002 | Bronchial brushings sample (specimen) |`) over a more generic term (eg `258415003 | Biopsy sample (specimen) |`). Specific concepts can always be reclassified to higher-level concepts using SNOMED CT inference (in this case, not just `258415003 | Biopsy sample (specimen) |`, but also `258603007 | Respiratory sample (specimen) |`). The [snomedizer](https://snomedizer.web.app/) package can be used to query SNOMED CT concept parents and descendants.
+
+```{r code_specimen_types}
+microbiology_data$raw <- microbiology_data$raw %>% 
+  mutate(specimen_type_code = case_when(
+    specimen_type_display == "Blood Culture" ~ 
+      "446131002", # Blood specimen obtained for blood culture
+    specimen_type_display == "Faeces" ~ 
+      "119339001", # Stool specimen
+    specimen_type_display == "MRSA Screen" ~ 
+      "697989009", # Anterior nares swab 
+    specimen_type_display == "Urine" ~ 
+      "122575003", # Urine specimen
+    TRUE ~ NA_character_
+  )) %>% 
+  left_join(transmute(reference_specimen_type,
+                      specimen_type_code = conceptId,
+                      specimen_type_name = pt_term))
+
+```
+
+The three data frames can now be created.
+
+```{r create_three_micro_dataframes}
+microbiology_data$specimens <- microbiology_data$raw %>% 
+  transmute(specimen_id,
+            patient_id,
+            status = "available",
+            specimen_datetime,
+            specimen_type_code,
+            specimen_type_name,
+            specimen_type_display) %>% 
+  distinct() # Removing duplicates created by multiple isolates and susceptibility testing
+
+microbiology_data$isolates <- microbiology_data$raw %>% 
+  transmute(organism_id,
+            specimen_id,
+            patient_id,
+            organism_code,
+            organism_name,
+            organism_display_name,
+            isolation_datetime) %>% 
+  distinct() # Removing duplicates created by susceptibility testing
+
+microbiology_data$susceptibilities <- microbiology_data$raw %>% 
+  filter(!is.na(organism_code)) %>%  # Remove no growth
+  transmute(organism_id,
+            specimen_id,
+            patient_id,
+            organism_code,
+            organism_name,
+            organism_display_name,
+            drug_id,
+            drug_name,
+            drug_display_name,
+            rsi_code,
+            concept_code = NA_character_) %>% 
+  distinct()
+
+```
+
+
+An optional step is to classify isolates by multidrug resistance phenotype [@Magiorakos2012]. The AMR package function \code{\link[AMR]{mdro}()} provides classification based on:
+
+* international guidelines on microorganism intrinsic resistance
+* records of susceptibility testing (RSI). 
+
+
+In this vignette, we adopt intrinsic resistances as defined by EUCAST guidelines [@EUCASTExpertRules32]. The tidyr package is used to pivot susceptibility test results into wide format (antimicrobials arranged as columns).
+
+```{r classify_resistance_isolates}
+mdr_classification <- microbiology_data$susceptibilities  %>% 
+  select(organism_id,
+         organism_code,
+         drug_id,
+         rsi_code) %>% 
+  tidyr::pivot_wider(id_cols = c("organism_id", "organism_code"),
+                     names_from = drug_id,
+                     values_from = rsi_code)
+
+mdr_classification$multidrug_resistance <- 
+  as.character(AMR::mdro(
+    x = mdr_classification,
+    guideline = "EUCAST",
+    col_mo = "organism_code"))
+
+# Merging back into the isolates dataset
+microbiology_data$isolates <- left_join(
+  microbiology_data$isolates,
+  select(mdr_classification, organism_id, multidrug_resistance)
+)
+```
+
+The data may now be validated, and loaded.
+
+```{r}
+validate_microbiology(specimens = microbiology_data$specimens,
+                      isolates = microbiology_data$isolates,
+                      susceptibilities = microbiology_data$susceptibilities)
+```
+
+```{r}
+load_inpatient_microbiology(
+  conn = ramses_db,
+  specimens = microbiology_data$specimens,
+  isolates = microbiology_data$isolates,
+  susceptibilities = microbiology_data$susceptibilities,
+  overwrite = TRUE
+)
+```
+
+## Clinical investigations
+
+Finally, we import all other observation and test results, from basic vitals such
+as respiration rate and blood pressure, to urine antigen test results. Analysis of 
+such data requires the use of standard test vocabularies.
+
+The international standard code system for laboratory data is LOINC 
+(\link[Ramses]{reference_loinc}). A sample of important codes may be found in 
+dataset `Ramses::reference_loinc`. Other observable entity concepts or evaluation procedure concepts may be imported from SNOMED-CT.
+
+
+```{r show_inpatient_investigations}
+data(inpatient_investigations)
+str(inpatient_investigations)
+```
+
+One particular set of validation constraints is that units conform to the [Unified Code for Units of Measure (UCUM)](https://ucum.org). Units are implemented using the `units` package in R. Yet, many important units in medicine are not listed in the UCUM. For instance: 
+
+- respiration rate (breaths/min)
+- heart rate (beats/min)
+- alkaline phosphatase in serum (international unit per liter notated U/L)
+
+By default, these three custom units are passed to the `custom_units` argument of `validate_investigations()`. Any other custom unit in the dataset must be handled with this argument. 
+
+```{r validate_invest}
+validate_investigations(inpatient_investigations, 
+                        custom_units = c("breaths", "beats", "U"))
+```
+
+Data may now be loaded into the database.
+
+
+```{r load_invest}
+load_inpatient_investigations(
+  conn = ramses_db,
+  investigations_data = inpatient_investigations, 
+  overwrite = TRUE
+)
+```
+
+
+# Visualisation
+
+You are now able to query the database and visualise admissions and episodes of antimicrobial therapy timeline below.
+
+When hovered for a few seconds, timeline symbols display a tooltip containing detailed information.
+
+```{r}
+therapy_timeline(conn = ramses_db, 
+                 patient_identifier = "99999999999",
+                 date1 = as.Date("2017-02-01"),
+                 date2 = as.Date("2017-03-01"))
+```
+
+
+# Once you are done 
+
+Always remember close database connections when you are finished.
+
+```{r}
 DBI::dbDisconnect(ramses_db)
 ```
+
 
 
 # References

@@ -1,28 +1,202 @@
 
-validate_variable_no_missing <- function(data, vectorname){
+
+#' Verify uniqueness constraints
+#' 
+#' @description Verifies that values in vectors `col_names` in data frame
+#' `data` are unique
+#' @param data  a data frame
+#' @param col_names a character vector of column names. Column names which do
+#' not exist in `data` will be dropped.
+#' @return TRUE if the validation is passed.
+#' @noRd
+.validate_values_unique <- function(data, col_names) {
   
-  validation_result <- TRUE
+  col_names <- col_names[col_names %in% colnames(data)]
   
-  if(!exists(vectorname, data)) {
-    warning(simpleWarning(paste0("`", deparse(substitute(data)), 
-                                 "` must include a `", vectorname, "` variable.")))
-    validation_result <- FALSE
-  } else {
-    
-    if(any(is.na(data[, vectorname]))) {
-      warning(simpleWarning(paste0("Some `", vectorname, "` is missing.")))
-      validation_result <- FALSE
+  if( length(col_names) == 0 ){
+    return(TRUE)
+  }
+  
+  must_be_unique <- subset(data, select = col_names)
+  duplicate_results <- sapply(
+    must_be_unique,
+    function(X) {
+      any(duplicated(X))
     }
-    
-    if(any(na.omit(as.character(data[, vectorname]) == ""))) {
-      warning(simpleWarning(paste0("Some `", vectorname, "` == \"\"")))
-      validation_result <- FALSE
-    }
-    
-  } 
+  )
+  
+  if( any(duplicate_results) ){
+    stop(
+      simpleError(paste(
+        "The following variables must have unique values:",
+        paste(paste0("`", 
+                     must_be_unique[duplicate_results],
+                     "`"), collapse = ", "))
+      )
+    )
+  }
+  
+  validation_result <- !all(duplicate_results)
   
   validation_result
 }
+
+
+#' Validate unit codes
+#'
+#' @param unit_codes a character vector of UCUM unit names to pass
+#' \code{\link[units]{as_units}()}. `NA` and `""` values will be dropped.
+#'
+#' @return TRUE if the validation is passed.
+#' @noRd
+.validate_UCUM_codes <- function(unit_codes) {
+  stopifnot(is.character(unit_codes))
+  unit_codes <- na.omit(unit_codes)
+  unit_codes <- unit_codes[unit_codes != ""]
+  
+  units_validate <- list()
+  units_validate$validation <- lapply(
+    unit_codes,
+    function(X){
+      try(units::as_units(X), silent = T)
+    })
+  units_validate$class <- lapply(
+    units_validate$validation,
+    class
+  )
+  units_validate$errors <- which(units_validate$class == "try-error")
+  
+  if( any(units_validate$class != "units") ){
+    stop(paste(
+      units_validate$validation[units_validate$errors],
+      sep = "\n"
+    ))
+  }
+  
+  return(TRUE)
+}
+
+
+#' Verify variables exist in the data
+#'
+#' @param data a data frame
+#' @param vectorname a character vector of variables which must exist.
+#' @param action whether to throw `"warning"` or `"error"`. Default is "warning"
+#'
+#' @return TRUE if validation is passed
+#' @noRd
+.validate_variable_exist <- function(
+  data,
+  vectorname,
+  action = "warning"
+) {
+  stopifnot(action %in% c("warning", "error"))
+  stopifnot(is.character(vectorname))
+  if( length(vectorname) == 0 ) {
+    return(TRUE)
+  }
+  
+  not_exist <- !sapply(vectorname, exists, where = data)
+  if( any(not_exist) & action == "warning"){
+    warning(
+      simpleWarning(paste(
+        "The following variables must exist:",
+        paste(paste0("`", vectorname[not_exist], "`"), collapse = ", "))
+      )
+    )
+  } else if( any(not_exist) & action == "error"){
+    stop(
+      simpleError(paste(
+        "The following variables must exist:",
+        paste(paste0("`", vectorname[not_exist], "`"), collapse = ", "))
+      )
+    )
+  } else {
+    return(TRUE)
+  }
+}
+
+#' Verify no missing or "" value
+#'
+#' @param data a data frame
+#' @param vectorname a character vector of variables which must not be missing.
+#' Variables that are not present in `data` will be dropped.
+#' @param action whether to throw `"warning"` or `"error"`. Default is "warning"
+#'
+#' @return TRUE if validation is passed
+#' @noRd
+.validate_variable_no_missing <- function(data, 
+                                          vectorname, 
+                                          action = "warning") {
+  
+  stopifnot(action %in% c("warning", "error"))
+  stopifnot(is.character(vectorname))
+  vectorname <- vectorname[vectorname %in% colnames(data)]
+  if( length(vectorname) == 0 ) {
+    return(TRUE)
+  }
+  
+  missing_data <- sapply(
+    vectorname, 
+    function(var, data) {
+      any(is.na(data[, var]))
+    },
+    data = data
+  )
+  
+  empty_data <- sapply(
+    vectorname, 
+    function(var, data) {
+      any(as.character(na.omit(data[, var])) == "")
+    },
+    data = data
+  )
+  
+  if( any(missing_data) & action == "warning"){
+    warning(
+      paste(
+        "The following variables contain missing data:",
+        paste(paste0("`", 
+                     vectorname[missing_data],
+                     "`"), collapse = ", ")
+      ))
+  }
+  
+  if( any(missing_data) & action == "error"){
+    stop(
+      paste(
+        "The following variables must not contain missing data:",
+        paste(paste0("`", 
+                     vectorname[missing_data],
+                     "`"), collapse = ", ")
+      ))
+  }
+  
+  
+  if( any(empty_data) & action == "warning" ){
+    warning(
+      paste(
+        "The following variables contain \"\" values:",
+        paste(paste0("`", 
+                     vectorname[empty_data],
+                     "`"), collapse = ", ")
+      ))
+  }
+  
+  if( any(empty_data) & action == "error" ){
+    stop(
+      paste(
+        "The following variables must not equal \"\":",
+        paste(paste0("`", 
+                     vectorname[empty_data],
+                     "`"), collapse = ", ")
+      ))
+  }
+  
+  !any(empty_data, missing_data)
+}
+
+
 
 #' Validate inpatient episode and ward movement records
 #'
@@ -142,27 +316,14 @@ validate_inpatient_episodes <- function(episodes,
     )
   }
   
-  variable_exists_non_missing <- episode_schema[episode_schema$must_be_nonmissing, 
-                                           "variable_name"]
-  variable_exists_non_missing <- variable_exists_non_missing[
-    variable_exists_non_missing %in% colnames(episodes)]
-  
-  missing_data <- suppressWarnings(
-    !sapply(variable_exists_non_missing, 
-            FUN = validate_variable_no_missing,
-            data = episodes)
+  variable_exists_non_missing <- episode_schema[
+    episode_schema$must_be_nonmissing, 
+    "variable_name"]
+  no_missing_data <- .validate_variable_no_missing(
+    data = episodes,
+    vectorname = variable_exists_non_missing,
+    action = "error"
   )
-  
-  if( any(missing_data) ){
-    stop(
-      simpleError(paste(
-        "The following `episodes` variables must not contain missing data:",
-        paste(paste0("`", 
-                     variable_exists_non_missing[missing_data],
-                     "`"), collapse = ", "))
-      )
-    )
-  }
   
   validation_result <- validate_inpatient_spells(episodes)
   validation_result <- append(
@@ -195,27 +356,14 @@ validate_inpatient_episodes <- function(episodes,
     )
   }
   
-  variable_exists_non_missing <- ward_schema[ward_schema$must_be_nonmissing, 
-                                             "variable_name"]
-  variable_exists_non_missing <- variable_exists_non_missing[
-    variable_exists_non_missing %in% colnames(wards)]
-  
-  missing_data <- suppressWarnings(
-    !sapply(variable_exists_non_missing, 
-            FUN = validate_variable_no_missing,
-            data = wards)
+  variable_exists_non_missing <- ward_schema[
+    ward_schema$must_be_nonmissing, 
+    "variable_name"]
+  no_missing_data <- .validate_variable_no_missing(
+    data = wards,
+    vectorname = variable_exists_non_missing,
+    action = "error"
   )
-  
-  if( any(missing_data) ){
-    stop(
-      simpleError(paste(
-        "The following `wards` variables must not contain missing data:",
-        paste(paste0("`", 
-                     variable_exists_non_missing[missing_data],
-                     "`"), collapse = ", "))
-      )
-    )
-  }
   
   wards <- merge(
     wards, 
@@ -382,58 +530,90 @@ validate_inpatient_episode_dates <- function(data, type = "episodes") {
 
 #' Validate inpatient diagnosis records
 #' 
-#' @description Validate contraints on diagnosis records, namely that the minimum 
-#' variables are present, and that all `icd_code` values can be looked up in an 
-#' ICD-10 reference table
-#' @param diagnoses_data a data frame containing clinical diagnoses, with, at minimum, 
-#' variables `patient_id`, `spell_id`, `episode_number`, `icd_code`, `diagnosis_position`
-#' @param diagnoses_lookup a data frame containing an ICD-10 reference look up table
+#' @description Validate constraints on diagnosis records, namely that the 
+#' minimum variables are present, and that all \code{icd_code} values can be 
+#' looked up in an ICD-10 reference table
+#' @param diagnoses_data a data frame containing clinical diagnoses, with, 
+#' at minimum, variables \code{patient_id}, \code{spell_id}, 
+#' \code{episode_number}, \code{icd_code}, \code{diagnosis_position}
+#' @param diagnoses_lookup a data frame containing an ICD-10 reference look up 
+#' table with, at minimum, variables `icd_description`, `icd_display`, 
+#' `category_code`, `category_description`
 #'
 #' @return A logical value indicating success
 #' @export
 #' @importFrom data.table data.table :=
 #' @examples
-#' lookup_icd <- dplyr::distinct(Ramses::inpatient_diagnoses, icd_code)
-#' lookup_icd <- dplyr::filter(lookup_icd, !is.na(icd_code))
-#' lookup_icd$icd_label <- "ICD-10 code label text"
-#' validate_inpatient_diagnoses(Ramses::inpatient_diagnoses, lookup_icd)
+#' data_icd <- dplyr::filter(Ramses::inpatient_diagnoses, !is.na(icd_code))
+#' lookup_icd <- dplyr::distinct(data_icd, icd_code)
+#' lookup_icd$icd_display <- lookup_icd$icd_code
+#' lookup_icd$icd_description <- "ICD-10 code label text"
+#' lookup_icd$category_code <- substr(lookup_icd$icd_code, 0, 3)
+#' lookup_icd$category_description <- "ICD-10 category label text"
+#' validate_inpatient_diagnoses(data_icd, lookup_icd)
 validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 
-  exists_non_missing <- list(
-    "patient_id", 
-    "spell_id", 
-    "episode_number",
-    "icd_code",
-    "diagnosis_position"
-  )
- 
-  validation_result <- !any(
-    !sapply(exists_non_missing,
-            FUN = validate_variable_no_missing,
-            data = diagnoses_data)
-  )
+  diagnoses_data_schema <- .inpatient_diagnoses_data_variables()
+  diagnoses_lookup_schema <- .inpatient_diagnoses_lookup_variables()
   
-  validation_result <- validation_result & !any(
-    !sapply(list("icd_code", "icd_description", 
-                 "icd_display", "category_code", 
-                 "category_description"),
-            FUN = validate_variable_no_missing,
-            data = diagnoses_lookup)
-  )
-  
-  if (validation_result) {
-    diagnoses_data <- data.table::data.table(diagnoses_data)
-    diagnoses_data <- unique(diagnoses_data[, list(icd_code)])
-    diagnoses_lookup <- data.table::data.table(diagnoses_lookup)[, list(icd_code)]
-    diagnoses_lookup[, missing := FALSE]
-    
-    diagnoses_data <- merge(diagnoses_data, diagnoses_lookup, by = "icd_code", all.x = T)
-    
-    if (any(is.na(diagnoses_data$missing))) {
-      warning(
-        simpleWarning("some `icd_code` values in `diagnoses_data` do not match any `icd_code` in `diagnoses_lookup`")
+  data_var_exists <- diagnoses_data_schema[
+    diagnoses_data_schema[["must_exist"]],
+    "variable_name"
+  ]
+  not_exist <- !sapply(data_var_exists, exists, where = diagnoses_data)
+  if( any(not_exist) ){
+    stop(
+      simpleError(paste(
+        "The following variables must exist:",
+        paste(paste0("`", data_var_exists[not_exist], "`"), collapse = ", "))
       )
-    }
+    )
+  }
+  
+  lkup_var_exists <- diagnoses_lookup_schema[
+    diagnoses_lookup_schema[["must_exist"]],
+    "variable_name"
+  ]
+  not_exist <- !sapply(lkup_var_exists, exists, where = diagnoses_lookup)
+  if( any(not_exist) ){
+    stop(
+      simpleError(paste(
+        "The following variables must exist:",
+        paste(paste0("`", lkup_var_exists[not_exist], "`"), collapse = ", "))
+      )
+    )
+  }
+
+  validation_result <- .validate_variable_no_missing(
+    data = diagnoses_data,
+    vectorname = diagnoses_data_schema[
+      diagnoses_data_schema[["must_be_nonmissing"]],
+      "variable_name"
+    ],
+    action = "warning"
+  )
+  
+  validation_result <- validation_result & 
+    .validate_variable_no_missing(
+    data = diagnoses_lookup,
+    vectorname = diagnoses_lookup_schema[
+      diagnoses_lookup_schema[["must_be_nonmissing"]],
+      "variable_name"
+    ],
+    action = "error"
+  )
+  
+  diagnoses_data <- data.table::data.table(diagnoses_data)
+  diagnoses_data <- unique(diagnoses_data[, list(icd_code)])
+  diagnoses_lookup <- data.table::data.table(diagnoses_lookup)[, list(icd_code)]
+  diagnoses_lookup[, missing := FALSE]
+  
+  diagnoses_data <- merge(diagnoses_data, diagnoses_lookup, by = "icd_code", all.x = T)
+  
+  if (any(is.na(diagnoses_data$missing))) {
+    warning(
+      simpleWarning("some `icd_code` values in `diagnoses_data` do not match any `icd_code` in `diagnoses_lookup`")
+    )
   }
   
   validation_result
@@ -528,17 +708,15 @@ validate_prescriptions <- function(data) {
   
   drug_prescriptions_variables <- .drug_prescriptions_variables()
   
-  variable_exists <- drug_prescriptions_variables[["variable_name"]]
-  variable_exists <- variable_exists[which(
-    drug_prescriptions_variables[["must_exist"]]
-  )]
-  
-  variable_exists_non_missing <- 
-    drug_prescriptions_variables[["variable_name"]]
-  variable_exists_non_missing <- variable_exists_non_missing[which(
-    drug_prescriptions_variables[["must_be_nonmissing"]]
-  )]
-  
+  variable_exists <- drug_prescriptions_variables[
+    drug_prescriptions_variables[["must_exist"]],
+    "variable_name"
+  ]
+  variable_exists_non_missing <- drug_prescriptions_variables[
+    drug_prescriptions_variables[["must_be_nonmissing"]],
+    "variable_name"
+  ]
+
   not_exist <- !sapply(variable_exists, exists, where = data)
   if( any(not_exist) ){
     stop(
@@ -549,23 +727,12 @@ validate_prescriptions <- function(data) {
     )
   }
   
-  missing_data <- suppressWarnings(
-    !sapply(variable_exists_non_missing, 
-            FUN = validate_variable_no_missing,
-            data = data)
+  missing_data <- .validate_variable_no_missing(
+    data = data,
+    vectorname = variable_exists_non_missing,
+    action = "error"
   )
-  
-  if( any(missing_data) ){
-    stop(
-      simpleError(paste(
-        "Some variables must not contain missing data:",
-        paste(paste0("`", 
-                     variable_exists_non_missing[missing_data],
-                     "`"), collapse = ", "))
-      )
-    )
-  }
-  
+ 
   invalid_status <- !data$prescription_status %in% c(
     "active", "on-hold", "cancelled", "completed", 
     "entered-in-error", "stopped", "draft", "unknown"
@@ -684,10 +851,10 @@ validate_administrations <- function(data) {
   
   drug_administrations_variables <- .drug_administrations_variables()
   
-  variable_exists <- drug_administrations_variables[["variable_name"]]
-  variable_exists <- variable_exists[which(
-    drug_administrations_variables[["must_exist"]]
-  )]
+  variable_exists <- drug_administrations_variables[
+    drug_administrations_variables[["must_exist"]],
+    "variable_name"
+  ]
   
   not_exist <- !sapply(variable_exists, exists, where = data)
   if( any(not_exist) ){
@@ -705,22 +872,11 @@ validate_administrations <- function(data) {
     drug_administrations_variables[["must_be_nonmissing"]]
   )]
   
-  missing_data <- suppressWarnings(
-    !sapply(variable_exists_non_missing, 
-            FUN = validate_variable_no_missing,
-            data = data)
+  missing_data <- .validate_variable_no_missing(
+    data = data,
+    vectorname = variable_exists_non_missing,
+    action = "error"
   )
-  
-  if( any(missing_data) ){
-    stop(
-      simpleError(paste(
-        "Some variables must not contain missing data:",
-        paste(paste0("`", 
-                     variable_exists_non_missing[missing_data],
-                     "`"), collapse = ", "))
-      )
-    )
-  }
   
   invalid_status <- !data$administration_status %in% c(
     "in-progress", "not-done", "on-hold", "completed", 
@@ -735,7 +891,6 @@ validate_administrations <- function(data) {
       )
     )
   }
-  
   
   duplicates <- data %>% 
     dplyr::group_by(patient_id, drug_id, dose, route, administration_date) %>% 
@@ -759,8 +914,341 @@ validate_administrations <- function(data) {
   NULL
 }
 
+#' Validate microbial isolates & susceptibility records
+#'
+#' @param specimens a data frame with one row per specimen sent
+#' to laboratory (see details)
+#' @param isolates a data frame with one row per microorganism
+#' isolated from the laboratory specimen (see details)
+#' @param susceptibilities a data frame with one row per susceptibility
+#' (see details)
+#' 
+#' @section \code{specimens} data frame:
+#' \emph{The following fields are mandatory:}
+#' \describe{
+#'    \item{\code{specimen_id}}{a unique specimen identifier with no missing value}
+#'    \item{\code{patient_id}}{a patient identifier with no missing value}
+#'    \item{\code{status}}{one value from the following 
+#'    \href{https://www.hl7.org/fhir/valueset-specimen-status.html}{FHIR R4}
+#'      reference set: \itemize{
+#'        \item \code{"available"}: The physical specimen is present and 
+#'        in good condition.
+#'        \item \code{"unavailable"}: There is no physical specimen because it is either 
+#'        lost, destroyed or consumed.
+#'        \item \code{"unsatisfactory"}: The specimen cannot be used because of a
+#'         quality issue such as a broken container, contamination, or too old.	
+#'        \item \code{"entered-in-error"}: The specimen was entered in error and 
+#'        therefore nullified.
+#'      }}
+#'    \item{\code{specimen_datetime}}{datetime when specimen was sampled or 
+#'    received for processing.}
+#'    \item{\code{specimen_type_code}}{character vector of descendants of 
+#'    the SNOMED CT concept \code{123038009 | Specimen (specimen) |}. Admissible
+#'    values are listed in \link[Ramses]{reference_specimen_type}}
+#'    \item{\code{specimen_type_name}}{character vector of the SNOMED CT
+#'    preferred terms for \code{specimen_type_code}}
+#'    \item{\code{specimen_type_display}}{character vector of custom specimen
+#'    types for display in user interfaces}
+#' }
+#' 
+#' \emph{The following fields are optional:}
+#' \describe{
+#'    \item{\code{spell_id}}{a hospital spell identifier (if the specimen was 
+#'    sampled during admission)}
+#'    \item{\code{test_display}}{free text description of test requested for 
+#'    display in user interfaces. For instance: "Mycobacteria culture" or 
+#'    "Microbial culture, anaerobic, initial isolation". Coded concepts
+#'    should be stored in other custom columns.}
+#'    \item{\code{reason_display}}{free text reason for a procedure for display 
+#'    in user interfaces. For instance, "Suspected urinary tract infection", or
+#'    "Surgical site microbiological sample". Coded concepts should be stored in other 
+#'    custom columns.}
+#' }
+#'    
+#' @section \code{isolates} data frame:
+#' 
+#' \emph{The following fields are mandatory:}
+#' \describe{
+#'    \item{\code{organism_id}}{a unique isolated organism identifier with no missing value}
+#'    \item{\code{specimen_id}}{a specimen identifier with no missing value}
+#'    \item{\code{patient_id}}{a patient identifier with no missing value}
+#'    \item{\code{organism_code}}{a character vector containing either: \itemize{
+#'       \item a microorganism code validated using \code{\link[AMR]{as.mo}()}
+#'       \item \code{NA_character_} if no microorganism was isolated, for instance
+#'       due to no growth or mixed heavy growth
+#'    }}
+#'    \item{\code{organism_name}}{a microorganism name provided by 
+#'    \code{\link[AMR]{mo_name}()}, or \code{NA} if no microorganism was isolated}
+#'    \item{\code{organism_display_name}}{microorganism name as labelled by the
+#'    laboratory, for display in user interfaces. No growth/mixed heavy growth should
+#'    be referenced here}
+#'    \item{\code{isolation_datetime}}{datetime when the organism was first isolated 
+#'    (or reported) by the laboratory}
+#'  }
+#' 
+#' \emph{The following field is optional:}
+#' \describe{
+#'    \item{\code{mdr_classification}}{character vector of classifications produced by 
+#'    \code{\link[AMR]{mdro}}. Admissible values are: \itemize{
+#'       \item \code{NA_character_} when susceptibilities are not available/conclusive
+#'       \item \code{"Negative"} for isolate presenting no wide resistance phenotype
+#'       \item other character codes dependent on the \code{guideline} parameter 
+#'       provided to \code{\link[AMR]{mdro}}
+#'    }}
+#' }  
+#'  
+#' @section \code{susceptibilities} data frame:
+#' 
+#' \emph{The following fields are mandatory:}
+#' \describe{
+#'   \item{\code{organism_id}}{an isolated organism identifier with no missing value}
+#'   \item{\code{specimen_id}}{a specimen identifier with no missing value}
+#'   \item{\code{patient_id}}{a patient identifier with no missing value}
+#'   \item{\code{organism_code}}{a microorganism code validated using 
+#'   \code{\link[AMR]{as.mo}()}, with no missing values}
+#'   \item{\code{organism_name}}{a microorganism name provided by 
+#'   \code{\link[AMR]{mo_name}()}, with no missing values}
+#'   \item{\code{organism_display_name}}{microorganism name as labelled by the
+#'   laboratory, for display in user interfaces, with no missing values}
+#'   \item{\code{drug_id}}{code of the antimicrobial tested as provided by 
+#'   \code{\link[AMR]{as.ab}()}}
+#'   \item{\code{drug_name}}{name of the antimicrobial tested as provided by 
+#'   \code{\link[AMR]{ab_name}()}}
+#'   \item{\code{drug_display_name}}{name of the antimicrobial tested, 
+#'   with no missing values, for  display in reports and user interfaces
+#'   (can be the same as \code{drug_name})}
+#'   \item{\code{rsi_code}}{\code{"R"} (resistant), \code{"S"} (susceptible), 
+#'    or \code{"I"} (intermediate exposure), as determined by the laboratory or by
+#'   \code{\link[AMR]{as.rsi}()} on the basis of minimum inhibitory concentrations
+#'   or disk diffusion diameters}
+#' }
+#' 
+#' @return TRUE if the validation is passed
+#' @export
+validate_microbiology <- function(specimens, isolates, susceptibilities) {
+  
+  schema <- .inpatient_microbiology_variables()
+  
+  forgetme <- .validate_variable_exist(
+    data = specimens,
+    vectorname = schema$specimens$variable_name[
+      schema$specimens$must_exist
+    ],
+    action = "error"
+  )
+  forgetme <- .validate_variable_exist(
+    data = isolates,
+    vectorname = schema$isolates$variable_name[
+      schema$isolates$must_exist
+    ],
+    action = "error"
+  )
+  forgetme <- .validate_variable_exist(
+    data = susceptibilities,
+    vectorname = schema$susceptibilities$variable_name[
+      schema$susceptibilities$must_exist
+    ],
+    action = "error"
+  )
+  
+  forgetme <- .validate_variable_no_missing(
+    specimens, 
+    schema$specimens$variable_name[schema$specimens$must_be_nonmissing])
+  forgetme <- .validate_variable_no_missing(
+    isolates, 
+    schema$isolates$variable_name[schema$isolates$must_be_nonmissing])
+  forgetme <- .validate_variable_no_missing(
+    susceptibilities, 
+    schema$susceptibilities$variable_name[schema$susceptibilities$must_be_nonmissing])
+  
+  forgetme <- .validate_values_unique(
+    specimens,
+    schema$specimens$variable_name[schema$specimens$must_be_unique]
+  )
+  forgetme <- .validate_values_unique(
+    isolates,
+    schema$isolates$variable_name[schema$isolates$must_be_unique]
+  )
+  .validate_values_unique(
+    susceptibilities,
+    schema$susceptibilities$variable_name[schema$susceptibilities$must_be_unique]
+  )
+  
+  invalid_specimen_codes <- !(specimens$specimen_type_code %in% reference_specimen_type$conceptId)
+  if( any(invalid_specimen_codes) ) {
+    warning(paste(
+      c("Some values in `specimen_type_code` are not valid SNOMED CT specimen concepts:",
+        paste(utils::head(unique(specimens$specimen_type_code[invalid_specimen_codes])), collapse = ", ")),
+      collapse = "\n"
+    ))
+  }
+  
+  if( any(!susceptibilities$organism_id %in% isolates$organism_id) ) {
+    stop("Some `organism_id` in `susceptibility` are missing from `isolates`")
+  }
+  if( any(!susceptibilities$specimen_id %in% isolates$specimen_id) ) {
+    stop("Some `specimen_id` in `susceptibility` are missing from `isolates`")
+  }
+  if( any(!susceptibilities$specimen_id %in% specimens$specimen_id) ) {
+    stop("Some `specimen_id` in `susceptibility` are missing from `specimens`")
+  }
+  if( any(!isolates$specimen_id %in% specimens$specimen_id) ) {
+    stop("Some `specimen_id` in `isolates` are missing from `specimens`")
+  }
+  
+  stopifnot(is(specimens$specimen_datetime, "POSIXt"))
+  stopifnot(is(isolates$isolation_datetime, "POSIXt"))
+  
+  invalid_organism_codes <- na.omit(unique(c(isolates$organism_code,
+                                     susceptibilities$organism_code)))
+  invalid_organism_codes <- invalid_organism_codes[
+    !invalid_organism_codes %in% AMR::microorganisms.codes$mo
+  ]
+  if( length(invalid_organism_codes) > 0 ) {
+    stop(paste(
+      "Some `organism_code` values are invalid:",
+      paste(utils::head(invalid_organism_codes), collapse = ", "),
+      collapse = "\n"
+    ))
+  }
+  
+  invalid_drug_codes <- na.omit(unique(c(isolates$drug_id,
+                                 susceptibilities$drug_id)))
+  invalid_drug_codes <- invalid_drug_codes[
+    !invalid_drug_codes %in% AMR::antibiotics$ab
+  ]
+  if( length(invalid_drug_codes) > 0 ) {
+    stop(paste(
+      "Some `organism_code` values are invalid:",
+      paste(utils::head(invalid_drug_codes), collapse = ", "),
+      collapse = "\n"
+    ))
+  }
+  
+  TRUE
+}
+
+
+#' Validate records of observations & investigations
+#'
+#' @param investigations a data frame
+#' @param custom_units a character vector of valid unit codes not listed in
+#' the UCUM. Default is: \code{c("breaths", "beats", "U")}.
+#' @return TRUE if the validation is passed
+#' @section Mandatory variables:
+#' The following variables are required:
+#' \describe{
+#'    \item{\code{"observation_id"}}{a unique identifier with no missing value}
+#'    \item{\code{"patient_id"}}{a patient identifier with no missing value}
+#'    \item{\code{"spell_id"}}{identifier of the hospital spell during which 
+#'    the investigation was performed (if observations are made during admission)}
+#'    \item{\code{"status"}}{Codes from the following value set 
+#'    \url{http://hl7.org/fhir/observation-status} \itemize{
+#'   \item \code{"registered"}: The existence of the observation is registered, but there is no result yet available.
+#'   \item \code{"preliminary"}: his is an initial or interim observation: data may be incomplete or unverified.
+#'   \item \code{"final"}: The observation is complete and there are no further actions needed. 
+#'   \item \code{"amended"}: Subsequent to being Final, the observation has been modified 
+#'   subsequent. This includes updates/new information and corrections.
+#'   \item \code{"corrected"}: Subsequent to being Final, the observation has been modified to 
+#'   correct an error in the test result.
+#'   \item \code{"cancelled"}: The observation is unavailable because the 
+#'   measurement was not started or not completed.
+#'   \item \code{"entered-in-error"}: The observation has been withdrawn following previous 
+#'   final release. This electronic record should never have existed, though it is possible 
+#'   that real-world decisions were based on it. (If real-world activity has occurred, 
+#'   the status should be "cancelled" rather than "entered-in-error".).
+#'   \item \code{"unknown"}: The authoring/source system does not know which of the status 
+#'   values currently applies for this observation. Note: This concept is not to be used for 
+#'   "other" - one of the listed statuses is presumed to apply, but the authoring/source 
+#'   system does not know which.
+#'   }}
+#'    \item{\code{"request_datetime"}}{a datetime when the observation was 
+#'    requested with no missing value}
+#'    \item{\code{"observation_datetime"}}{a datetime when the investigation 
+#'    was performed with no missing value}
+#'    \item{\code{"observation_code_system"}}{URL of the code system (for instance: 
+#'    "http://snomed.info/sct", "http://loinc.org")}
+#'    \item{\code{"observation_code"}}{LOINC concept code or SNOMED-CT concept 
+#'    code corresponding to a SNOMED-CT observable entity or evaluation procedure}
+#'    \item{\code{"observation_name"}}{code system name for the observation}
+#'    \item{\code{"observation_display"}}{observation name to display}
+#'    \item{\code{"observation_value_text"}}{observation string value or codable
+#'    concept, for example: TRUE/FALSE, Yes/No, SNOMED-CT qualifier value}
+#'    \item{\code{"observation_value_numeric"}}{observation numeric value}
+#'    \item{\code{"observation_unit"}}{a unit code passing 
+#'    \code{\link[units]{as_units}()}. See examples. 
+#'    See also: \code{\link[units]{valid_udunits}}, 
+#'    \code{\link[units]{install_symbolic_unit}}
+#'    \url{http://unitsofmeasure.org}}
+#' }
+#' @export 
+#' @examples 
+#' # the units "breaths/min" (http://loinc.org/8867-4) or
+#' # "beats/min" () do not exist in the https://ucum.org/. 
+#' library(units)
+#' \dontrun{as_units("breaths/min")} # fails
+#' 
+#' # Yet, they may be declared.
+#' install_symbolic_unit("breaths") 
+#' as_units("breaths/min") # succeeds
+validate_investigations <- function(investigations, 
+                                    custom_units = c("breaths",
+                                                     "beats",
+                                                     "U")) {
+  
+  investigation_schema <- .inpatient_investigations_variables()
+  
+  variable_exists <- investigation_schema[
+    investigation_schema[["must_exist"]],
+    "variable_name"]
+
+  not_exist <- !sapply(variable_exists, exists, where = investigations)
+  if( any(not_exist) ){
+    stop(
+      simpleError(paste(
+        "The following variables must exist:",
+        paste(paste0("`", variable_exists[not_exist], "`"), collapse = ", "))
+      )
+    )
+  }
+  
+  exists_non_missing <- investigation_schema[
+    investigation_schema$must_be_nonmissing,
+    "variable_name"]
+  missing_data <- suppressWarnings(
+    !sapply(exists_non_missing, 
+            FUN = .validate_variable_no_missing,
+            data = investigations)
+  )
+  if( any(missing_data) ){
+    stop(
+      paste(
+        "The following variables must not contain missing data:",
+        paste(paste0("`", 
+                     exists_non_missing[missing_data],
+                     "`"), collapse = ", ")
+        ))
+  }
+  
+  must_be_unique <- .validate_values_unique(
+    investigations,
+    investigation_schema[
+    investigation_schema$must_be_unique, 
+    "variable_name"])
+  
+  if( !is.null(custom_units) ){
+    custom_units <- custom_units[custom_units != ""]
+    for (unit in custom_units) {
+      units::install_symbolic_unit(unit, warn = FALSE)
+    }
+  }
+  
+  units_validate <- .validate_UCUM_codes(unique(investigations$observation_unit))
+  
+  all(!not_exist, !missing_data, must_be_unique, units_validate)
+}
+
 arrange_variables <- function(data, first_column_names) {
   other_names <- colnames(data)[!colnames(data) %in% first_column_names]
   data[, c(first_column_names, other_names)]
 }
-

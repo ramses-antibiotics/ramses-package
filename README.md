@@ -1,7 +1,11 @@
 # <img src="man/figures/logo.png" align="right" width="190px"/>RAMSES: R package for Antimicrobial Stewardship & Surveillance
 
+<!-- badges: start -->
 [![Build Status](https://travis-ci.com/ramses-antibiotics/ramses-package.svg?token=BqHsttk4zmWyz9yfgCbu&branch=master)](https://travis-ci.com/ramses-antibiotics/ramses-package)
 [![Codecov test coverage](https://codecov.io/gh/ramses-antibiotics/ramses-package/branch/master/graph/badge.svg)](https://codecov.io/gh/ramses-antibiotics/ramses-package?branch=master)
+[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+[![license](https://img.shields.io/badge/license-GPL--3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
+<!-- badges: end -->
 
 <div class="lead"><code>RAMSES</code> is an analytical software package enabling hospitals to protect antibiotics by monitoring their prescribing and the management of infections using routine electronic health records.</div>
 
@@ -24,8 +28,10 @@
 
 ## Features
 
+<!-- - measuring antibiotic consumption -->
+<!-- - measuring drug/bug match and rates of microbial culture sampling -->
 - integration with the [AMR package](https://msberends.gitlab.io/AMR/) for classification/prediction of resistance phenotypes 
-- compatible with SQLite and MS SQL Server databases
+- compatible with SQLite and PostgreSQL databases
 
 ## Funders
 
