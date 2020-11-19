@@ -20,5 +20,5 @@ script:
 
 after_success:
   - if [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ "$RAMSESIMAGE" == "pdutey/ramses:R4.0.2" ]; then 
-      docker-compose exec -w /mnt/Ramses/ r Rscript -e 'covr::codecov(type = "all", token = Sys.getenv("CODECOVETOKEN"))'
-    fi
+      docker-compose exec -w /mnt/Ramses/ r Rscript -e 'covr::codecov(type = "all", token = Sys.getenv("CODECOVETOKEN"))';
+    fi;
