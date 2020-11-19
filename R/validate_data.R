@@ -967,7 +967,7 @@ validate_administrations <- function(data) {
 #'    
 #' @section \code{isolates} data frame:
 #' 
-#' \\emph{The following fields are mandatory:}
+#' \emph{The following fields are mandatory:}
 #' \describe{
 #'    \item{\code{organism_id}}{a unique isolated organism identifier with no missing value}
 #'    \item{\code{specimen_id}}{a specimen identifier with no missing value}
@@ -978,7 +978,7 @@ validate_administrations <- function(data) {
 #'       due to no growth or mixed heavy growth
 #'    }}
 #'    \item{\code{organism_name}}{a microorganism name provided by 
-#'    \code{\link[AMR]{mo_name}(), or \code{NA} if no microorganism was isolated}}
+#'    \code{\link[AMR]{mo_name}()}, or \code{NA} if no microorganism was isolated}
 #'    \item{\code{organism_display_name}}{microorganism name as labelled by the
 #'    laboratory, for display in user interfaces. No growth/mixed heavy growth should
 #'    be referenced here}
@@ -1011,9 +1011,9 @@ validate_administrations <- function(data) {
 #'   \item{\code{organism_display_name}}{microorganism name as labelled by the
 #'   laboratory, for display in user interfaces, with no missing values}
 #'   \item{\code{drug_id}}{code of the antimicrobial tested as provided by 
-#'   \code{\link{AMR}{as.ab}()})}
+#'   \code{\link[AMR]{as.ab}()}}
 #'   \item{\code{drug_name}}{name of the antimicrobial tested as provided by 
-#'   \code{\link{AMR}{ab_name}()})}
+#'   \code{\link[AMR]{ab_name}()}}
 #'   \item{\code{drug_display_name}}{name of the antimicrobial tested, 
 #'   with no missing values, for  display in reports and user interfaces
 #'   (can be the same as \code{drug_name})}
