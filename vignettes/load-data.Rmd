@@ -410,7 +410,7 @@ microbiology_data$raw <- microbiology_data$raw %>%
 
 As for specimen types (eg bood, bronchoalveolar lavage fluid, etc.), they must be coded using [SNOMED CT specimen concepts](https://snowstorm.ihtsdotools.org/?perspective=full&conceptId1=123038009&edition=MAIN/2020-07-31&release=&languages=en). A complete list of concepts from the SNOMED CT International Edition can be found in `reference_specimen_type`.
 
-Susceptibility testing results in the example dataset are already interpreted as Resistant/Increased exposure/Susceptible (RSI). Where needed, minimum inhibitory concentrations can be interpreted as RSI using the `as.rsi()` function provided by the AMR package.
+Susceptibility testing results in the example dataset are already interpreted as Resistant/Increased exposure/Susceptible (RSI). Where needed, minimum inhibitory concentrations and disk diffusion diameters can be interpreted as RSI using the `as.rsi()` function provided by the AMR package.
 
 If possible, use the most specific concept available (eg `309176002 | Bronchial brushings sample (specimen) |`) over a more generic term (eg `258415003 | Biopsy sample (specimen) |`). Specific concepts can always be reclassified to higher-level concepts using SNOMED CT inference (in this case, not just `258415003 | Biopsy sample (specimen) |`, but also `258603007 | Respiratory sample (specimen) |`). The [snomedizer](https://snomedizer.web.app/) package can be used to query SNOMED CT concept parents and descendants.
 
@@ -467,7 +467,7 @@ microbiology_data$susceptibilities <- microbiology_data$raw %>%
             drug_id,
             drug_name,
             drug_display_name,
-            sir_code,
+            rsi_code,
             concept_code = NA_character_) %>% 
   distinct()
 
@@ -487,10 +487,10 @@ mdr_classification <- microbiology_data$susceptibilities  %>%
   select(organism_id,
          organism_code,
          drug_id,
-         sir_code) %>% 
+         rsi_code) %>% 
   tidyr::pivot_wider(id_cols = c("organism_id", "organism_code"),
                      names_from = drug_id,
-                     values_from = sir_code)
+                     values_from = rsi_code)
 
 mdr_classification$multidrug_resistance <- 
   as.character(AMR::mdro(

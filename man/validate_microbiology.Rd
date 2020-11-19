@@ -24,12 +24,10 @@ Validate microbial isolates & susceptibility records
 }
 \section{\code{specimens} data frame}{
 
-The following fields are mandatory:
+\emph{The following fields are mandatory:}
 \describe{
-   \item{\code{specimen_id}}{a unique identifier with no missing value}
+   \item{\code{specimen_id}}{a unique specimen identifier with no missing value}
    \item{\code{patient_id}}{a patient identifier with no missing value}
-   \item{\code{spell_id}}{a hospital spell identifier (if the specimen was 
-   sampled during admission)}
    \item{\code{status}}{one value from the following 
    \href{https://www.hl7.org/fhir/valueset-specimen-status.html}{FHIR R4}
      reference set: \itemize{
@@ -53,47 +51,69 @@ The following fields are mandatory:
    types for display in user interfaces}
 }
 
-The following fields are optional:
+\emph{The following fields are optional:}
 \describe{
-   \item{\code{test}}{a}
-   \item{\code{reason}}{a}
-   \item{\code{conditions}}{a}
+   \item{\code{spell_id}}{a hospital spell identifier (if the specimen was 
+   sampled during admission)}
+   \item{\code{test_display}}{free text description of test requested for 
+   display in user interfaces. For instance: "Mycobacteria culture" or 
+   "Microbial culture, anaerobic, initial isolation". Coded concepts
+   should be stored in other custom columns.}
+   \item{\code{reason_display}}{free text reason for a procedure for display 
+   in user interfaces. For instance, "Suspected urinary tract infection", or
+   "Surgical site microbiological sample". Coded concepts should be stored in other 
+   custom columns.}
+}
+}
+
+\section{\code{isolates} data frame}{
+
+
+\\emph{The following fields are mandatory:}
+\describe{
+   \item{\code{organism_id}}{a unique isolated organism identifier with no missing value}
+   \item{\code{specimen_id}}{a specimen identifier with no missing value}
+   \item{\code{patient_id}}{a patient identifier with no missing value}
+   \item{\code{organism_code}}{a microorganism code validated using \code{\link[AMR]{as.mo}()}}
+   \item{\code{organism_name}}{a microorganism name provided by \code{\link[AMR]{mo_name}()}}
+   \item{\code{organism_display_name}}{microorganism name as labelled by the
+   laboratory, for display in user interfaces}
  }
 
-
-The following fields are mandatory:
+\emph{The following field is optional:}
 \describe{
-   \item{\code{a}}{a}
-   \item{\code{a}}{a}
-   \item{\code{a}}{a}
- }
-
-The following fields are optional:
-\describe{
-   \item{\code{a}}{a}
-   \item{\code{a}}{a}
-   \item{\code{a}}{a}
+   \item{\code{mdr_classification}}{character vector of classifications produced by 
+   \code{\link[AMR]{mdro}}. Admissible values are: \itemize{
+      \item \code{NA_character_} when susceptibilities are not available/conclusive
+      \item \code{"Negative"} for isolate presenting no wide resistance phenotype
+      \item other character codes dependent on the \code{guideline} parameter 
+      provided to \code{\link[AMR]{mdro}}
+   }}
 }
 }
 
 \section{\code{susceptibilities} data frame}{
 
-The following fields are mandatory:
-\describe{
-  \item{specimen_id}{a specimen identifier with no missing value}
-  \item{status}{one value from the following 
-     \href{https://www.hl7.org/fhir/valueset-specimen-status.html}{FHIR reference set}:
-     \itemize{
-        \item \code{"available"}: The physical specimen is present and in good condition.
-        \item \code{"unavailable"}: There is no physical specimen because it is either lost, destroyed or consumed.
-        \item \code{"unsatisfactory"}: The specimen cannot be used because of a quality issue such as a broken container, contamination, or too old.
-        \item \code{"entered-in-error"}: The specimen was entered in error and therefore nullified.
-     }}
-}
 
-The following fields are optional:
+\emph{The following fields are mandatory:}
 \describe{
-  \item{blah}{blah}
+  \item{\code{organism_id}}{an isolated organism identifier with no missing value}
+  \item{\code{specimen_id}}{a specimen identifier with no missing value}
+  \item{\code{patient_id}}{a patient identifier with no missing value}
+  \item{\code{organism_code}}{a microorganism code validated using \code{\link[AMR]{as.mo}()}}
+  \item{\code{organism_name}}{a microorganism name provided by \code{\link[AMR]{mo_name}()}}
+  \item{\code{organism_display_name}}{microorganism name as labelled by the
+  laboratory, for display in user interfaces}
+  \item{\code{drug_id}}{code of the antimicrobial tested as provided by 
+  \code{\link{AMR}{as.ab}()})}
+  \item{\code{drug_name}}{name of the antimicrobial tested as provided by 
+  \code{\link{AMR}{ab_name}()})}
+  \item{\code{drug_display_name}}{name of the antimicrobial tested for 
+  display in reports and user interfaces (can be the same as \code{drug_name})}
+   \item{\code{rsi_code}}{\code{"R"} (resistant), \code{"S"} (susceptible), 
+   or \code{"I"} (intermediate exposure), as determined by the laboratory or by
+   \code{\link[AMR]{as.rsi}()} on the basis of minimum inhibitory concentrations
+   or disk diffusion diameters}
 }
 }
 

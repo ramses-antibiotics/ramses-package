@@ -382,7 +382,7 @@ test_that("validate_microbiology", {
       drug_display_name = c("Ampicillin", "Co-amoxiclav", "Ceftazidime", "Cefotaxime", "Ciprofloxacin",
                             "Cefalexin", "Cefuroxime", "Ertapenem", "Fosfomycin", "Gentamicin", 
                             "Meropenem", "Nitrofurantoin", "Piperacillin + Tazobactam", "Trimethoprim"),
-      sir_code = c("R", "R", "S", "S", "R", "S", "S", "S", "S", "S", "S", "S", "R", "R")
+      rsi_code = c("R", "R", "S", "S", "R", "S", "S", "S", "S", "S", "S", "S", "R", "R")
     ), stringsAsFactors = FALSE)
   )
   
@@ -390,15 +390,6 @@ test_that("validate_microbiology", {
     testdata$specimens,
     testdata$isolates,
     testdata$susceptibilities
-  ))
-  
-  # wrong multidrug resistance variable
-  testdata_wrongmdr <- testdata
-  testdata_wrongmdr$isolates$multidrug_resistance <- "biduletruccleurtruc"
-  expect_error(validate_microbiology(
-    testdata_wrongmdr$specimens,
-    testdata_wrongmdr$isolates,
-    testdata_wrongmdr$susceptibilities
   ))
   
   # wrong specimen code
@@ -433,6 +424,30 @@ test_that("validate_microbiology", {
     testdata_missing_id3$specimens,
     testdata_missing_id3$isolates,
     testdata_missing_id3$susceptibilities
+  ))
+  
+  testdata_invalid_organism_codes <- testdata
+  testdata_invalid_organism_codes$isolates$organism_id[1] <- "biduletruccleurtruc"
+  expect_error(validate_microbiology(
+    testdata_invalid_organism_codes$specimens,
+    testdata_invalid_organism_codes$isolates,
+    testdata_invalid_organism_codes$susceptibilities
+  ))
+  
+  testdata_invalid_organism_codes <- testdata
+  testdata_invalid_organism_codes$susceptibilities$organism_id[1] <- "biduletruccleurtruc"
+  expect_error(validate_microbiology(
+    testdata_invalid_organism_codes$specimens,
+    testdata_invalid_organism_codes$isolates,
+    testdata_invalid_organism_codes$susceptibilities
+  ))
+  
+  testdata_invalid_drug_codes <- testdata
+  testdata_invalid_drug_codes$susceptibilities$drug_id[1] <- "biduletruccleurtruc"
+  expect_error(validate_microbiology(
+    testdata_invalid_drug_codes$specimens,
+    testdata_invalid_drug_codes$isolates,
+    testdata_invalid_drug_codes$susceptibilities
   ))
   
 })

@@ -1190,7 +1190,7 @@ connect_db_local <- function(file) {
               drug_id,
               drug_name,
               drug_display_name,
-              sir_code,
+              rsi_code,
               concept_code = NA_character_) %>% 
     distinct()
   micro$raw <- NULL

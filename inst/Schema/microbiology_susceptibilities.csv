@@ -8,5 +8,4 @@ position,variable_name,must_exist,must_be_nonmissing,must_be_unique
 7,drug_id,TRUE,FALSE,FALSE
 8,drug_name,TRUE,FALSE,FALSE
 9,drug_display_name,TRUE,TRUE,FALSE
-10,sir_code,TRUE,FALSE,FALSE
-11,concept_code,FALSE,FALSE,FALSE
+10,rsi_code,TRUE,FALSE,FALSE
