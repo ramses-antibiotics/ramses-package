@@ -14,8 +14,8 @@
 #' \code{\link{validate_inpatient_diagnoses}()}
 #' @param diagnoses_lookup a data frame containing an ICD-10 reference 
 #' lookup table
-#' @param overwrite if `TRUE` (the default), will overwrite any existing
-#' `inpatient_diagnoses` database table
+#' @param overwrite if \code{TRUE} (the default), will overwrite any existing
+#' \code{inpatient_diagnoses} database table
 #' @seealso \code{\link{validate_inpatient_episodes}()}, 
 #' \code{\link{map_infections_abx_indications}()},
 #' \code{\link{map_charlson_comorbidities}()},
@@ -104,8 +104,8 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
 #' \code{\link{validate_inpatient_episodes}()}
 #' @param wards_data a data frame validated with  
 #' \code{\link{validate_inpatient_episodes}()}#'
-#' @param overwrite if `TRUE` (the default), will overwrite any existing
-#' `inpatient_episodes` database table
+#' @param overwrite if \code{TRUE} (the default), will overwrite any existing
+#' \code{inpatient_episodes} database table
 #' @return `TRUE` if the function ran successfully, otherwise object of class
 #' "try-error" containing error messages trigger during warehouse data loading.
 #' @export
@@ -206,8 +206,8 @@ load_inpatient_episodes <- function(conn, episodes_data,
 #' @param conn a database connection
 #' @param investigations_data a data frame validated with 
 #' \code{\link{validate_investigations}()}
-#' @param overwrite if `TRUE` (the default), will overwrite any existing
-#' `inpatient_investigations` database table
+#' @param overwrite if \code{TRUE} (the default), will overwrite any existing
+#' \code{inpatient_investigations} database table
 #' @seealso \code{\link{validate_investigations}()}, 
 #' @return `TRUE` if the function ran successfully, otherwise object of class
 #' "try-error" containing error messages trigger during warehouse data loading.
@@ -241,7 +241,7 @@ load_inpatient_investigations <- function(conn, investigations_data, overwrite =
 }
 
 
-#' Load observations & investigations into the warehouse
+#' Load microbiology cultures and sensitivities into the warehouse
 #' 
 #' @param conn a database connection
 #' @param specimens a data frame with one row per specimen sent
@@ -252,8 +252,8 @@ load_inpatient_investigations <- function(conn, investigations_data, overwrite =
 #' validated with \code{\link{validate_microbiology}()}
 #' @param susceptibilities a data frame with one row per susceptibility 
 #' validated with \code{\link{validate_microbiology}()}
-#' @param overwrite if `TRUE` (the default), will overwrite any existing
-#' `inpatient_investigations` database table
+#' @param overwrite if \code{TRUE} (the default), will overwrite any existing
+#' microbiology database table
 #' @seealso \code{\link{validate_investigations}()}, 
 #' @return `TRUE` if the function ran successfully, otherwise object of class
 #' "try-error" containing error messages trigger during warehouse data loading.
@@ -405,8 +405,8 @@ transitive_closure_control <- function(max_continuation_gap = 36,
 #' as they are instead of being populated by `Ramses`
 #' @param administrations a data frame of drug administrations passing the 
 #' \code{\link{validate_administrations}()} function
-#' @param overwrite if `TRUE` (the default), will overwrite an existing 
-#' diagnosis table
+#' @param overwrite if \code{TRUE} (the default), will overwrite existing 
+#' medication tables
 #' @param transitive_closure_controls parameters controlling (see 
 #' \code{\link{transitive_closure_control}()})
 #' @param silent a boolean indicating whether the function should be
@@ -1293,5 +1293,204 @@ connect_db_local <- function(file) {
   }
 }
 
- 
- 
+
+#' Create database bridge tables
+#'
+#' @description Create or re-create bridge tables to facilitate linking prescribing
+#' events with spells or episodes of care. Bridge tables are used when computing
+#' rates of prescribing per admission or per 1,000 bed-days.
+#' @param conn a database connection
+#' @param overwrite if \code{TRUE}, will overwrite any existing
+#' database table. The default is \code{FALSE}
+#' @details 
+#' \describe{
+#'    \item{\code{bridge_tables()}}{Generate all tables below.}
+#'    \item{\code{bridge_episode_prescription_overlap()}}{Links prescriptions
+#'    to inpatient episodes during which they were administered. The resulting 
+#'    table is the natural join of \code{inpatient_episodes} and 
+#'    \code{drug_prescriptions} based on a match on the patient identifier 
+#'    and a time overlap between prescriptions and inpatient episodes.}
+#'    \item{\code{bridge_episode_prescription_initiation()}}{Links prescriptions
+#'    with the inpatient episode when they were authored. The resulting table 
+#'    differs from {\code{bridge_episode_therapy_overlap}}: it links prescriptions 
+#'    to the episode referencing the clinical team who prescribed them, rather
+#'    that episodes during which the prescription was administered. The resulting
+#'    table is the natural join of \code{inpatient_episodes} and 
+#'    \code{drug_prescriptions} based on a match on the patient identifier
+#'    and the prescription authoring date being comprised before the episode 
+#'    start and end dates.}
+#'    \item{\code{bridge_episode_therapy_overlap()}}{Links therapy episodes
+#'    to inpatient episodes during which they were administered. The resulting 
+#'    table is the natural join of \code{inpatient_episodes} and 
+#'    \code{drug_prescriptions} based on a match on the patient identifier 
+#'    and a time overlap between prescriptions and inpatient episodes.}
+#' } 
+#' \code{inpatient_episodes}
+#' @return TRUE tables were successfully created
+#' @name bridge_tables
+#' @export
+bridge_tables <- function(conn,
+                          overwrite = FALSE) {
+  x <- c()
+  x[1] <- bridge_episode_therapy_overlap(conn, overwrite)
+  x[2] <- bridge_episode_prescription_initiation(conn, overwrite)
+  x[3] <- bridge_episode_therapy_overlap(conn, overwrite)
+  
+  return(all(x))
+}
+
+#' @export
+#' @name bridge_tables
+bridge_episode_prescription_overlap <- function(conn, 
+                                                overwrite = FALSE) {
+  
+  stopifnot(is.logical(overwrite))
+  stopifnot(is(conn, "SQLiteConnection"))
+
+  tblz_episodes <- tbl(conn, "inpatient_episodes")
+  tblz_prescriptions <- tbl(conn, "drug_prescriptions")
+  
+  tblz_bridge_episode_prescriptions_overlap <- tblz_episodes %>% 
+    dplyr::inner_join(tblz_prescriptions, 
+                     by = "patient_id") %>% 
+    dplyr::filter(
+      dplyr::between(prescription_start, episode_start, episode_end) |
+        dplyr::between(prescription_end, episode_start, episode_end) |
+        dplyr::between(episode_start, prescription_start, prescription_end)
+    ) %>% 
+    dplyr::transmute(
+      patient_id,
+      spell_id,
+      episode_number,
+      prescription_id,
+      DOT = dplyr::sql(
+        "(strftime('%s', min(prescription_end, episode_end)) -
+        strftime('%s', max(prescription_start, episode_start)))/(3600.0*24.0)"
+      ),
+      DDD_prescribed = dplyr::sql(
+        "(strftime('%s', min(prescription_end, episode_end)) -
+        strftime('%s', max(prescription_start, episode_start)))
+         / (3600.0*24.0) * DDD"
+      ))
+  
+  if (overwrite) {
+    if(dplyr::db_has_table(conn, "bridge_episode_prescription_overlap")) {
+      dplyr::db_drop_table(conn, "bridge_episode_prescription_overlap")
+      }
+  }
+  
+  table_creation_error <- try(
+    dplyr::compute(tblz_bridge_episode_prescriptions_overlap, 
+                   name = "bridge_episode_prescription_overlap", 
+                   temporary = FALSE)
+  )
+  
+  if ( is(table_creation_error, "try-error") ) {
+    return(table_creation_error)
+  } else {
+    return(TRUE)
+  }
+}
+
+#' @name bridge_tables
+#' @export
+bridge_episode_prescription_initiation <- function(conn, 
+                                                   overwrite = FALSE) {
+  
+  stopifnot(is.logical(overwrite))
+  stopifnot(is(conn, "SQLiteConnection"))
+  
+  tblz_episodes <- tbl(conn, "inpatient_episodes")
+  tblz_prescriptions <- tbl(conn, "drug_prescriptions")
+  
+  tblz_bridge_episode_prescription_initiation <- tblz_episodes %>% 
+    dplyr::inner_join(tblz_prescriptions, 
+                     by = "patient_id") %>% 
+    dplyr::filter(
+      dplyr::between(authoring_date, episode_start, episode_end) 
+    ) %>% 
+    dplyr::transmute(
+      patient_id,
+      spell_id,
+      episode_number,
+      prescription_id,
+      DOT = dplyr::sql(
+        "(strftime('%s', prescription_end) -
+        strftime('%s', prescription_start))
+        / (3600.0 * 24.0)"
+      ),
+      DDD_prescribed = dplyr::sql(
+        "(strftime('%s', prescription_end) -
+        strftime('%s', prescription_start))
+         / (3600.0 * 24.0) * DDD"
+      ))
+  
+  if (overwrite) {
+    if(dplyr::db_has_table(conn, "bridge_episode_prescription_initiation")) {
+      dplyr::db_drop_table(conn, "bridge_episode_prescription_initiation")
+    }
+  }
+  
+  table_creation_error <- try(
+    dplyr::compute(tblz_bridge_episode_prescription_initiation, 
+                   name = "bridge_episode_prescription_initiation", 
+                   temporary = FALSE)
+  )
+  
+  if ( is(table_creation_error, "try-error") ) {
+    return(table_creation_error)
+  } else {
+    return(TRUE)
+  }
+  
+}
+
+
+#' @name bridge_tables
+#' @export
+bridge_episode_therapy_overlap <- function(conn, 
+                                           overwrite = FALSE) {
+  
+  stopifnot(is.logical(overwrite))
+  stopifnot(is(conn, "SQLiteConnection"))
+  
+  tblz_episodes <- tbl(conn, "inpatient_episodes")
+  tblz_therapies <- tbl(conn, "drug_therapy_episodes")
+  
+  tblz_bridge_episode_therapy_overlap <- tblz_episodes %>% 
+    dplyr::inner_join(tblz_therapies, 
+                      by = "patient_id") %>% 
+    dplyr::filter(
+      dplyr::between(therapy_start, episode_start, episode_end) |
+        dplyr::between(therapy_end, episode_start, episode_end) |
+        dplyr::between(episode_start, therapy_start, therapy_end)
+    ) %>% 
+    dplyr::transmute(
+      patient_id,
+      spell_id,
+      episode_number,
+      therapy_id,
+      LOT = dplyr::sql(
+        "(strftime('%s', min(therapy_end, episode_end)) -
+        strftime('%s', max(therapy_start, episode_start)))/(3600.0*24.0)"
+      ))
+  
+  if (overwrite) {
+    if(dplyr::db_has_table(conn, "bridge_episode_therapy_overlap")) {
+      dplyr::db_drop_table(conn, "bridge_episode_therapy_overlap")
+    }
+  }
+  
+  table_creation_error <- try(
+    dplyr::compute(tblz_bridge_episode_therapy_overlap, 
+                   name = "bridge_episode_therapy_overlap", 
+                   temporary = FALSE)
+  )
+  
+  if ( is(table_creation_error, "try-error") ) {
+    return(table_creation_error)
+  } else {
+    return(TRUE)
+  }
+}
+

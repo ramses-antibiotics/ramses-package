@@ -24,8 +24,8 @@ as they are instead of being populated by `Ramses`}
 \item{administrations}{a data frame of drug administrations passing the 
 \code{\link{validate_administrations}()} function}
 
-\item{overwrite}{if `TRUE` (the default), will overwrite an existing 
-diagnosis table}
+\item{overwrite}{if \code{TRUE} (the default), will overwrite existing 
+medication tables}
 
 \item{transitive_closure_controls}{parameters controlling (see 
 \code{\link{transitive_closure_control}()})}

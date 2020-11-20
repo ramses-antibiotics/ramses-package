@@ -65,6 +65,7 @@ reference:
   desc:  Functions to set up and manage the `RAMSES` database
   contents:
   - connect_db_local
+  - starts_with("bridge_")
 - title: Index
   desc:  All functions in alphabetical order
   contents:

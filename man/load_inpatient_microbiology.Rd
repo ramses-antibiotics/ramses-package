@@ -2,7 +2,7 @@
 % Please edit documentation in R/database.R
 \name{load_inpatient_microbiology}
 \alias{load_inpatient_microbiology}
-\title{Load observations & investigations into the warehouse}
+\title{Load microbiology cultures and sensitivities into the warehouse}
 \usage{
 load_inpatient_microbiology(
   conn,
@@ -26,15 +26,15 @@ validated with \code{\link{validate_microbiology}()}}
 \item{susceptibilities}{a data frame with one row per susceptibility 
 validated with \code{\link{validate_microbiology}()}}
 
-\item{overwrite}{if `TRUE` (the default), will overwrite any existing
-`inpatient_investigations` database table}
+\item{overwrite}{if \code{TRUE} (the default), will overwrite any existing
+microbiology database table}
 }
 \value{
 `TRUE` if the function ran successfully, otherwise object of class
 "try-error" containing error messages trigger during warehouse data loading.
 }
 \description{
-Load observations & investigations into the warehouse
+Load microbiology cultures and sensitivities into the warehouse
 }
 \seealso{
 \code{\link{validate_investigations}()},

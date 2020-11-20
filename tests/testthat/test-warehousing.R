@@ -7,9 +7,8 @@ test_that("Ramses on SQLite", {
   
   if (!identical(Sys.getenv("TRAVISTESTS"), "true")) {
     skip("Test only on Travis")
-  }
+  } 
   
-
   # > validate functions --------------------------------------------------
   
   drug_data <- Ramses:::.prepare_example_drug_records()
@@ -33,6 +32,9 @@ test_that("Ramses on SQLite", {
   expect_true(validate_inpatient_episodes(inpatient_data$episodes))
   expect_true(validate_inpatient_episodes(episodes = inpatient_data$episodes,
                                           wards = inpatient_data$ward_movements))
+  
+  # > database loading functions ------------------------------------------
+  
   medication_loading <- load_medications(conn = conSQLite, 
                          prescriptions = drug_data$drug_rx,
                          administrations = drug_data$drug_admins,
@@ -80,6 +82,45 @@ test_that("Ramses on SQLite", {
            combination_id = c(NA_character_, "0bf9ea7732dd6e904ab670a407382d95"),
            therapy_id = c("592a738e4c2afcae6f625c01856151e0", "0bf9ea7732dd6e904ab670a407382d95")))
   
+  # > other database functions --------------------------------------------
+  
+     # bridge_episode_prescription_overlap
+  expect_true(bridge_episode_prescription_overlap(conSQLite))
+  expect_error(bridge_episode_prescription_overlap(conSQLite))
+  expect_true(bridge_episode_prescription_overlap(conSQLite, overwrite = TRUE))
+  test_bridge_overlap <- tbl(
+    conSQLite,
+    "bridge_episode_prescription_overlap") %>% 
+    dplyr::filter(patient_id == "99999999999" & 
+                    prescription_id == "89094c5dffaad0e56073adaddf286e73") %>% 
+    dplyr::collect()
+  expect_equal(round(sum(test_bridge_overlap$DOT), 1), 2.0)
+  expect_equal(round(sum(test_bridge_overlap$DDD_prescribed), 1), 1.3)
+  
+    # bridge_episode_prescription_initiation
+  expect_true(bridge_episode_prescription_initiation(conSQLite))
+  expect_error(bridge_episode_prescription_initiation(conSQLite))
+  expect_true(bridge_episode_prescription_initiation(conSQLite, overwrite = TRUE))
+  test_bridge_init <- tbl(conSQLite, "bridge_episode_prescription_initiation") %>% 
+    dplyr::filter(patient_id == "99999999999" & 
+                    prescription_id == "89094c5dffaad0e56073adaddf286e73") %>% 
+    dplyr::collect()
+  expect_equal(round(test_bridge_init$DOT, 1), 2.0)
+  expect_equal(round(test_bridge_init$DDD_prescribed, 1), 1.3)
+  
+    # bridge_episode_therapy_overlap
+  expect_true(bridge_episode_therapy_overlap(conSQLite))
+  expect_error(bridge_episode_therapy_overlap(conSQLite))
+  expect_true(bridge_episode_therapy_overlap(conSQLite, overwrite = TRUE))
+  test_bridge_th_overlap <- tbl(
+    conSQLite,
+    "bridge_episode_therapy_overlap") %>% 
+    dplyr::filter(patient_id == "99999999999" &
+                    therapy_id == "4d611fc8886c23ab047ad5f74e5080d7") %>% 
+    dplyr::collect()
+  expect_equal(round(sum(test_bridge_th_overlap$LOT), 1), 2.3)
+  
+  expect_true(bridge_tables(conn = ramses_db, overwrite = TRUE))
   
   # > date and datetime casting on SQLite -------------------------------------
 

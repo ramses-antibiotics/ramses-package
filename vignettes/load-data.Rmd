@@ -565,7 +565,14 @@ load_inpatient_investigations(
 ```
 
 
-# Visualisation
+# Final step
+
+There is one final step to create ancillary tables:
+
+```{r final_tables}
+bridge_tables(ramses_db)
+```
+
 
 You are now able to query the database and visualise admissions and episodes of antimicrobial therapy timeline below.
 

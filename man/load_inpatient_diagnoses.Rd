@@ -20,8 +20,8 @@ load_inpatient_diagnoses(
 \item{diagnoses_lookup}{a data frame containing an ICD-10 reference 
 lookup table}
 
-\item{overwrite}{if `TRUE` (the default), will overwrite any existing
-`inpatient_diagnoses` database table}
+\item{overwrite}{if \code{TRUE} (the default), will overwrite any existing
+\code{inpatient_diagnoses} database table}
 }
 \value{
 `TRUE` if the function ran successfully, otherwise object of class

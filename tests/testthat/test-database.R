@@ -19,3 +19,36 @@ test_that("Batch SQL scripts get split", {
   
 })
 
+
+test_that("bridge_episode_prescription_overlap", {
+  emptydatabase <- dbConnect(RSQLite::SQLite(), ":memory:")
+  expect_error(bridge_episode_prescription_overlap(
+    conn = "not_a_connection", overwrite = TRUE))
+  expect_error(bridge_episode_prescription_overlap(
+    conn = emptydatabase, overwrite = TRUE))
+  expect_error(bridge_episode_prescription_overlap(
+    conn = emptydatabase, overwrite = "TRUE"))
+  dbDisconnect(emptydatabase)
+})
+
+test_that("bridge_episode_prescription_initiation", {
+  emptydatabase <- dbConnect(RSQLite::SQLite(), ":memory:")
+  expect_error(bridge_episode_prescription_initiation(
+    conn = "not_a_connection", overwrite = TRUE))
+  expect_error(bridge_episode_prescription_initiation(
+    conn = emptydatabase, overwrite = TRUE))
+  expect_error(bridge_episode_prescription_initiation(
+    conn = emptydatabase, overwrite = "TRUE"))
+  dbDisconnect(emptydatabase)
+})
+
+test_that("bridge_episode_therapy_overlap", {
+  emptydatabase <- dbConnect(RSQLite::SQLite(), ":memory:")
+  expect_error(bridge_episode_therapy_overlap(
+    conn = "not_a_connection", overwrite = TRUE))
+  expect_error(bridge_episode_therapy_overlap(
+    conn = emptydatabase, overwrite = TRUE))
+  expect_error(bridge_episode_therapy_overlap(
+    conn = emptydatabase, overwrite = "TRUE"))
+  dbDisconnect(emptydatabase)
+})
