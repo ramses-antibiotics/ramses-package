@@ -570,7 +570,7 @@ load_inpatient_investigations(
 There is one final step to create ancillary tables:
 
 ```{r final_tables}
-bridge_tables(ramses_db)
+bridge_tables(conn = ramses_db, overwrite = TRUE)
 ```
 
 
@@ -594,6 +594,10 @@ Always remember close database connections when you are finished.
 DBI::dbDisconnect(ramses_db)
 ```
 
+
+```{r include=FALSE}
+file.remove("ramses-db.sqlite")
+```
 
 
 # References
