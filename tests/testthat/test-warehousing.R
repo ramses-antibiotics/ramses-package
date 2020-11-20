@@ -120,7 +120,7 @@ test_that("Ramses on SQLite", {
     dplyr::collect()
   expect_equal(round(sum(test_bridge_th_overlap$LOT), 1), 2.3)
   
-  expect_true(bridge_tables(conn = ramses_db, overwrite = TRUE))
+  expect_true(bridge_tables(conn = conSQLite, overwrite = TRUE))
   
   # > date and datetime casting on SQLite -------------------------------------
 

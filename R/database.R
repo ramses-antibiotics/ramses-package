@@ -1379,17 +1379,11 @@ bridge_episode_prescription_overlap <- function(conn,
       }
   }
   
-  table_creation_error <- try(
-    dplyr::compute(tblz_bridge_episode_prescriptions_overlap, 
-                   name = "bridge_episode_prescription_overlap", 
-                   temporary = FALSE)
-  )
+  silence <- dplyr::compute(tblz_bridge_episode_prescriptions_overlap, 
+                            name = "bridge_episode_prescription_overlap", 
+                            temporary = FALSE)
   
-  if ( is(table_creation_error, "try-error") ) {
-    return(table_creation_error)
-  } else {
-    return(TRUE)
-  }
+  return(TRUE)
 }
 
 #' @name bridge_tables
@@ -1431,18 +1425,11 @@ bridge_episode_prescription_initiation <- function(conn,
     }
   }
   
-  table_creation_error <- try(
-    dplyr::compute(tblz_bridge_episode_prescription_initiation, 
-                   name = "bridge_episode_prescription_initiation", 
-                   temporary = FALSE)
-  )
+  silence <- dplyr::compute(tblz_bridge_episode_prescription_initiation, 
+                            name = "bridge_episode_prescription_initiation", 
+                            temporary = FALSE)
   
-  if ( is(table_creation_error, "try-error") ) {
-    return(table_creation_error)
-  } else {
-    return(TRUE)
-  }
-  
+  return(TRUE)
 }
 
 
@@ -1481,16 +1468,9 @@ bridge_episode_therapy_overlap <- function(conn,
     }
   }
   
-  table_creation_error <- try(
-    dplyr::compute(tblz_bridge_episode_therapy_overlap, 
-                   name = "bridge_episode_therapy_overlap", 
-                   temporary = FALSE)
-  )
-  
-  if ( is(table_creation_error, "try-error") ) {
-    return(table_creation_error)
-  } else {
-    return(TRUE)
-  }
+  silence <- dplyr::compute(tblz_bridge_episode_therapy_overlap, 
+                            name = "bridge_episode_therapy_overlap", 
+                            temporary = FALSE)
+  return(TRUE)
 }
 
