@@ -66,7 +66,10 @@ These fields are required in order to pass the validation:
         status values currently applies for this observation. \emph{Note:} This 
         concept is not to be used for 'other' - one of the listed statuses is presumed 
         to apply, but the authoring/source system does not know which.         
-     }}
+     }.
+     \emph{Note that prescriptions marked as \code{"on-hold"}, \code{"cancelled"}, 
+     \code{"draft"}, \code{"entered-in-error"}, or \code{"unknown"} will not 
+     count towards antibiotic consumption estimates.}}
      \item{\code{dose}}{a numeric vector of dosage quantities}
      \item{\code{unit}}{a character vector of dosage units}
      \item{\code{route}}{the route of administration value natively assigned by system}
