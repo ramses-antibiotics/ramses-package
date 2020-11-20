@@ -1332,7 +1332,7 @@ connect_db_local <- function(file) {
 bridge_tables <- function(conn,
                           overwrite = FALSE) {
   x <- c()
-  x[1] <- bridge_episode_therapy_overlap(conn, overwrite)
+  x[1] <- bridge_episode_prescription_overlap(conn, overwrite)
   x[2] <- bridge_episode_prescription_initiation(conn, overwrite)
   x[3] <- bridge_episode_therapy_overlap(conn, overwrite)
   
