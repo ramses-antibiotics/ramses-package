@@ -1,14 +1,18 @@
 
 #' Download the ICD-10-CM reference file by the US National Center for 
 #' Health Statistics
-#'
+#' 
+#' @param silent if \code{TRUE}, suppress status messages, and the progress bar.
+#' The default is \code{FALSE}.
+#' 
 #' @return A data frame containing ICD-10-CM codes 
 #' (\code{icd_code}) and labels (\code{icd_description})
 #' @export
-download_icd10cm <- function() {
+download_icd10cm <- function(silent = FALSE) {
+  stopifnot(is.logical(silent))
   icd10cm_url <- "https://www.cms.gov/Medicare/Coding/ICD10/Downloads/2020-ICD-10-CM-Codes.zip"
   icd10cm_file <- tempfile()
-  utils::download.file(url = icd10cm_url, destfile = icd10cm_file)
+  utils::download.file(url = icd10cm_url, destfile = icd10cm_file, quiet = silent)
   icd10cm_file <- unz(
     icd10cm_file, 
     grep("icd10cm_order_[0-9]{4}.txt$", 
@@ -398,6 +402,8 @@ map_ICD10_CCSR <- function(df, icd_column) {
 #' be the total dose given in one day
 #' @param unit a character vector coercible to a `units` object with 
 #' \code{\link[units]{as.units}()}. 
+#' @param silent if \code{TRUE}, the progress bar will be hidden. 
+#' The default is \code{FALSE}.
 #' @details This function queries the WHO ATC website for the most 
 #' up-to-date reference values of the DDDs.
 #'   
@@ -452,7 +458,7 @@ map_ICD10_CCSR <- function(df, icd_column) {
 #'     ATC_administration = if_else(route == "ORAL", "O", "P"),
 #'     dose = dose * daily_frequency,
 #'     unit = units))
-compute_DDDs <- function(ATC_code, ATC_administration, dose, unit) {
+compute_DDDs <- function(ATC_code, ATC_administration, dose, unit, silent = FALSE) {
   
   if (any(!requireNamespace("curl", quietly = TRUE),
           !requireNamespace("xml2", quietly = TRUE),
@@ -460,6 +466,7 @@ compute_DDDs <- function(ATC_code, ATC_administration, dose, unit) {
     stop("Packages \"curl\", \"rvest\" and \"xml2\" are required for this function to work. Please install them.",
          call. = FALSE)
   }
+  stopifnot(is.logical(silent))
   
   if (!curl::has_internet()) {
     stop("An internet connection is required for this function to work.")
@@ -491,72 +498,11 @@ compute_DDDs <- function(ATC_code, ATC_administration, dose, unit) {
   
   reference_DDD <- list()
   who_url <- "https://www.whocc.no/atc_ddd_index/?code=%s&showdescription=no"
-  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # Incorporating an adaptation of lines 126-180 
-  # of atc_online.R of the AMR package
-  # https://gitlab.com/msberends/AMR/-/blob/219cff403fa7515c07faab129f55f39ae648feb9/R/atc_online.R#L126
-  # Original code verbatim below:
-  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # progress <- progress_estimated(n = length(atc_code))
-  # 
-  # for (i in seq_len(length(atc_code))) {
-  #   
-  #   progress$tick()$print()
-  #   
-  #   atc_url <- sub("%s", atc_code[i], url, fixed = TRUE)
-  #   
-  #   if (property == "groups") {
-  #     tbl <- xml2::read_html(atc_url) %>%
-  #       rvest::html_node("#content") %>%
-  #       rvest::html_children() %>%
-  #       rvest::html_node("a")
-  #     
-  #     # get URLS of items
-  #     hrefs <- tbl %>% rvest::html_attr("href")
-  #     # get text of items
-  #     texts <- tbl %>% rvest::html_text()
-  #     # select only text items where URL like "code="
-  #     texts <- texts[grepl("?code=", tolower(hrefs), fixed = TRUE)]
-  #     # last one is antibiotics, skip it
-  #     texts <- texts[seq_len(length(texts)) - 1]
-  #     returnvalue <- c(list(texts), returnvalue)
-  #     
-  #   } else {
-  #     tbl <- xml2::read_html(atc_url) %>%
-  #       rvest::html_nodes("table") %>%
-  #       rvest::html_table(header = TRUE) %>%
-  #       as.data.frame(stringsAsFactors = FALSE)
-  #     
-  #     # case insensitive column names
-  #     colnames(tbl) <- tolower(colnames(tbl)) %>% gsub("^atc.*", "atc", .)
-  #     
-  #     if (length(tbl) == 0) {
-  #       warning("ATC not found: ", atc_code[i], ". Please check ", atc_url, ".", call. = FALSE)
-  #       returnvalue[i] <- NA
-  #       next
-  #     }
-  #     
-  #     if (property %in% c("atc", "name")) {
-  #       # ATC and name are only in first row
-  #       returnvalue[i] <- tbl[1, property]
-  #     } else {
-  #       if (!"adm.r" %in% colnames(tbl) | is.na(tbl[1, "adm.r"])) {
-  #         returnvalue[i] <- NA
-  #         next
-  #       } else {
-  #         for (j in seq_len(nrow(tbl))) {
-  #           if (tbl[j, "adm.r"] == administration) {
-  #             returnvalue[i] <- tbl[j, property]
-  #           }
-  #         }
-  #       }
-  #     }
-  #   }
-  # }
-
-  progress <- progress_estimated(n = length(search_ATC))
+  
+  if(!silent) progress <- dplyr::progress_estimated(n = length(search_ATC))
+  
   for (i in seq_len(length(search_ATC))) {
-    progress$tick()$print()
+    if(!silent) progress$tick()$print()
     atc_url <- sub("%s", search_ATC[i], who_url, fixed = TRUE)
     atc_page <- xml2::read_html(atc_url) 
     if( length(rvest::html_nodes(
@@ -576,7 +522,6 @@ compute_DDDs <- function(ATC_code, ATC_administration, dose, unit) {
       reference_DDD[[i]] <- dplyr::select(atc_page, -.data$name, -.data$note)
     }
   }
-  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   reference_DDD <- data.table::rbindlist(reference_DDD)
   x <- data.table(
@@ -635,7 +580,7 @@ get_ATC_name <- function(x) {
     output <- list()
     who_url <- "https://www.whocc.no/atc_ddd_index/?code=%s&showdescription=no"
     
-    progress <- progress_estimated(n = length(search_ATC))
+    progress <- dplyr::progress_estimated(n = length(search_ATC))
     for (i in seq_len(length(search_ATC))) {
       progress$tick()$print()
       atc_url <- sub("%s", search_ATC[i], who_url, fixed = TRUE)

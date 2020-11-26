@@ -14,7 +14,7 @@ test_that("Ramses on SQLite", {
   drug_data <- Ramses:::.prepare_example_drug_records()
   inpatient_data <- Ramses:::.prepare_example_inpatient_records()
   icd10cm <- download_icd10cm()
-  conSQLite <- suppressWarnings(connect_db_local("test.sqlite"))
+  conSQLite <- suppressWarnings(connect_local_database("test.sqlite"))
   
   expect_null(validate_prescriptions(drug_data$drug_rx))
   expect_null(validate_administrations(drug_data$drug_admins))
@@ -181,7 +181,7 @@ test_that("SQLite does transitive closure", {
   )
   
   conSQLite <- suppressWarnings(
-    connect_db_local("test.sqlite"))
+    connect_local_database("test.sqlite"))
   
   dbplyr::db_copy_to(conSQLite,
                      "ramses_test_edges",

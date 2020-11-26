@@ -64,7 +64,8 @@ reference:
 - title: Database administration
   desc:  Functions to set up and manage the `RAMSES` database
   contents:
-  - connect_db_local
+  - connect_local_database
+  - create_mock_database
   - starts_with("bridge_")
 - title: Index
   desc:  All functions in alphabetical order

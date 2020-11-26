@@ -5,7 +5,11 @@
 \title{Download the ICD-10-CM reference file by the US National Center for 
 Health Statistics}
 \usage{
-download_icd10cm()
+download_icd10cm(silent = FALSE)
+}
+\arguments{
+\item{silent}{if \code{TRUE}, suppress status messages, and the progress bar.
+The default is \code{FALSE}.}
 }
 \value{
 A data frame containing ICD-10-CM codes 

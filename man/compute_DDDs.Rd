@@ -4,7 +4,7 @@
 \alias{compute_DDDs}
 \title{Compute Defined Daily Doses (DDDs)}
 \usage{
-compute_DDDs(ATC_code, ATC_administration, dose, unit)
+compute_DDDs(ATC_code, ATC_administration, dose, unit, silent = FALSE)
 }
 \arguments{
 \item{ATC_code}{a character vector of ATC codes (can be easily obtained from)
@@ -19,6 +19,9 @@ be the total dose given in one day}
 
 \item{unit}{a character vector coercible to a `units` object with 
 \code{\link[units]{as.units}()}.}
+
+\item{silent}{if \code{TRUE}, the progress bar will be hidden. 
+The default is \code{FALSE}.}
 }
 \value{
 a numeric vector containing the DDDs

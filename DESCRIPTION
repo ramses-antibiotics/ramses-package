@@ -29,8 +29,8 @@ Depends:
 Imports: 
     RSQLite (>= 2.1.4),
     DBI,
-    dplyr (>= 0.8.3),
-    dbplyr (>= 1.4.2),
+    dplyr (>= 1.0.2),
+    dbplyr (>= 2.0.0),
     magrittr,
     stringr,
     Rdpack (>= 0.7),

@@ -41,7 +41,7 @@ library(magrittr) # for the pipe operator `%>%`
 Second, a relational database server is needed. In this vignette, we will create a small \href{https://www.sqlite.org}{SQLite 3} database on the local hard drive. This database will behave in a similar way as a large Microsoft SQL Server or MySQL relational database. The database connection information is stored in an object entitled `ramses_db` which must be provided to most functions in the Ramses package.
 
 ```{r}
-ramses_db <- connect_db_local("ramses-db.sqlite")
+ramses_db <- connect_local_database("ramses-db.sqlite")
 ```
 
 We can now begin preparing records and loading them into the database. This involves three steps:
@@ -573,18 +573,9 @@ There is one final step to create ancillary tables:
 bridge_tables(conn = ramses_db, overwrite = TRUE)
 ```
 
+The database is now ready.
 
-You are now able to query the database and visualise admissions and episodes of antimicrobial therapy timeline below.
-
-When hovered for a few seconds, timeline symbols display a tooltip containing detailed information.
-
-```{r}
-therapy_timeline(conn = ramses_db, 
-                 patient_identifier = "99999999999",
-                 date1 = as.Date("2017-02-01"),
-                 date2 = as.Date("2017-03-01"))
-```
-
+The main vignette (getting started) demonstrates how to use it.
 
 # Once you are done 
 

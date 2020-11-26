@@ -69,28 +69,34 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
   }
   
   load_errors <- try({
-    dbplyr::db_copy_to(con = conn, table = "inpatient_diagnoses", 
-                       values = diagnoses_data, overwrite = overwrite, temporary = FALSE,
-                       indexes = list("patient_id", "spell_id", "episode_number", "icd_code"))
-    dbplyr::db_copy_to(con = conn, table = "reference_icd", 
-                       values = diagnoses_lookup, overwrite = overwrite, temporary = FALSE,
-                       indexes = list("icd_code"))
-    dbplyr::db_copy_to(con = conn, table = "reference_icd_comorbidity", 
-                       values = reference_icd_comorbidity, overwrite = overwrite, temporary = FALSE,
-                       indexes = list("icd_code", "comorb", "comorb_group"))
-    dbplyr::db_copy_to(con = conn, table = "reference_icd_infections", 
-                       values = reference_icd_infections, overwrite = overwrite, temporary = FALSE,
-                       indexes = list("icd_code"))
-    dbplyr::db_copy_to(con = conn, table = "reference_icd_ccs", 
-                       values = reference_icd_ccs, overwrite = overwrite, temporary = FALSE,
-                       indexes = list("icd_code", "ccs_cat_code", "ccs_L1_code", "ccs_L2_code"))
-    dbplyr::db_copy_to(con = conn, table = "reference_icd_ccsr", 
-                       values = reference_icd_ccsr, overwrite = overwrite, temporary = FALSE,
-                       indexes = list("icd_code", "ccsr_body_system_code", "ccsr_cat_code"))
+    dplyr::copy_to(
+      dest = conn, name = "inpatient_diagnoses", 
+      df = diagnoses_data, overwrite = overwrite, temporary = FALSE,
+      indexes = list("patient_id", "spell_id", "episode_number", "icd_code"))
+    dplyr::copy_to(
+      dest = conn, name = "reference_icd", 
+      df = diagnoses_lookup, overwrite = overwrite, temporary = FALSE,
+      indexes = list("icd_code"))
+    dplyr::copy_to(
+      dest = conn, name = "reference_icd_comorbidity", 
+      df = reference_icd_comorbidity, overwrite = overwrite, temporary = FALSE,
+      indexes = list("icd_code", "comorb", "comorb_group"))
+    dplyr::copy_to(
+      dest = conn, name = "reference_icd_infections", 
+      df = reference_icd_infections, overwrite = overwrite, temporary = FALSE,
+      indexes = list("icd_code"))
+    dplyr::copy_to(
+      dest = conn, name = "reference_icd_ccs", 
+      df = reference_icd_ccs, overwrite = overwrite, temporary = FALSE,
+      indexes = list("icd_code", "ccs_cat_code", "ccs_L1_code", "ccs_L2_code"))
+    dplyr::copy_to(
+      dest = conn, name = "reference_icd_ccsr", 
+      df = reference_icd_ccsr, overwrite = overwrite, temporary = FALSE,
+      indexes = list("icd_code", "ccsr_body_system_code", "ccsr_cat_code"))
   })
   
   if (is(load_errors, "try-error")) {
-    return(load_errors)
+    stop(load_errors)
   } else {
     return(TRUE)
   }
@@ -109,8 +115,10 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
 #' @return `TRUE` if the function ran successfully, otherwise object of class
 #' "try-error" containing error messages trigger during warehouse data loading.
 #' @export
-load_inpatient_episodes <- function(conn, episodes_data, 
-                                    wards_data = NULL, overwrite = TRUE) {
+load_inpatient_episodes <- function(conn, 
+                                    episodes_data, 
+                                    wards_data = NULL, 
+                                    overwrite = TRUE) {
   #TODO: define index in the variable schema + add reference tables
   episodes_data <- dplyr::arrange(episodes_data, 
                                   patient_id, episode_start)
@@ -128,25 +136,23 @@ load_inpatient_episodes <- function(conn, episodes_data,
     }
   }
   
-  episodes_load_errors <- try({
-    dbplyr::db_copy_to(
-      con = conn,
-      table = "inpatient_episodes",
-      values = episodes_data,
-      temporary = FALSE,
-      overwrite = overwrite,
-      indexes = list(
-        "patient_id", 
-        "spell_id",
-        "admission_date",
-        "discharge_date",
-        "episode_number",
-        "episode_start",
-        "episode_end",
-        "consultant_code",
-        "main_specialty_code"
-      ))
-  })
+  dplyr::copy_to(
+    dest = conn, 
+    name = "inpatient_episodes",
+    df = episodes_data,
+    temporary = FALSE,
+    overwrite = overwrite,
+    indexes = list(
+      "patient_id", 
+      "spell_id",
+      "admission_date",
+      "discharge_date",
+      "episode_number",
+      "episode_start",
+      "episode_end",
+      "consultant_code",
+      "main_specialty_code"
+    ))
   
   if(!is.null(wards_data)) {
     wards_data <- dplyr::arrange(wards_data,
@@ -165,38 +171,20 @@ load_inpatient_episodes <- function(conn, episodes_data,
       }
     }
     
-    wards_load_errors <- try({
-      dbplyr::db_copy_to(
-        con = conn,
-        table = "inpatient_ward_movements",
-        values = wards_data,
-        temporary = FALSE,
-        overwrite = overwrite,
-        indexes = list(
-          "patient_id", 
-          "spell_id",
-          "ward_start",
-          "ward_end"
-        ))
-    })
+    dplyr::copy_to(
+      dest = conn, 
+      name = "inpatient_ward_movements",
+      df = wards_data,
+      temporary = FALSE,
+      overwrite = overwrite,
+      indexes = list(
+        "patient_id", 
+        "spell_id",
+        "ward_start",
+        "ward_end"
+      )
+    )
   }
-  
-  if(episodes_load_errors == "inpatient_episodes") {
-    episodes_load_errors <- TRUE
-  } 
-  
-  if(exists("wards_load_errors")) {
-    if(wards_load_errors == "inpatient_ward_movements") {
-      wards_load_errors <- TRUE
-    } 
-    
-    return(list(
-      episodes_load_errors = episodes_load_errors,
-      wards_load_errors = wards_load_errors
-    ))
-  } else {
-    return(list(episodes_load_errors = episodes_load_errors))
-  }  
 }
 
 
@@ -228,9 +216,16 @@ load_inpatient_investigations <- function(conn, investigations_data, overwrite =
   }
   
   load_errors <- try({
-    dbplyr::db_copy_to(con = conn, table = "inpatient_investigations", 
-                       values = investigations_data, overwrite = overwrite, temporary = FALSE,
-                       indexes = list("patient_id", "spell_id", "observation_code", "status"))
+    dplyr::copy_to(
+      dest = conn, 
+      name = "inpatient_investigations", 
+      df = investigations_data, 
+      overwrite = overwrite, 
+      temporary = FALSE,
+      indexes = list("patient_id", 
+                     "spell_id", 
+                     "observation_code", 
+                     "status"))
   })
   
   if (is(load_errors, "try-error")) {
@@ -300,23 +295,35 @@ load_inpatient_microbiology <- function(conn,
   
   load_errors <- list()
   load_errors$specimens <- try({
-    dbplyr::db_copy_to(con = conn, table = "microbiology_specimens", 
-                       values = specimens, overwrite = overwrite, temporary = FALSE,
-                       indexes = list("patient_id", "specimen_id", "status",
-                                      "specimen_datetime", "specimen_type_code",
-                                      "specimen_type_name"))
+    dplyr::copy_to(
+      dest = conn,
+      name = "microbiology_specimens", 
+      df = specimens, 
+      overwrite = overwrite, 
+      temporary = FALSE,
+      indexes = list("patient_id", "specimen_id", "status",
+                     "specimen_datetime", "specimen_type_code",
+                     "specimen_type_name"))
   })
   load_errors$isolates <- try({
-    dbplyr::db_copy_to(con = conn, table = "microbiology_isolates", 
-                       values = isolates, overwrite = overwrite, temporary = FALSE,
-                       indexes = list("patient_id", "organism_id", "specimen_id", 
-                                      "organism_code"))
+    dplyr::copy_to(
+      dest = conn,
+      name = "microbiology_isolates", 
+      df = isolates, 
+      overwrite = overwrite, 
+      temporary = FALSE,
+      indexes = list("patient_id", "organism_id", 
+                     "specimen_id", "organism_code"))
   })
   load_errors$susceptibilities <- try({
-    dbplyr::db_copy_to(con = conn, table = "microbiology_susceptibilities", 
-                       values = susceptibilities, overwrite = overwrite, temporary = FALSE,
-                       indexes = list("patient_id", "organism_id", "specimen_id", 
-                                      "organism_code", "drug_id"))
+    dplyr::copy_to(
+      dest = conn,
+      name = "microbiology_susceptibilities", 
+      df = susceptibilities, 
+      overwrite = overwrite, 
+      temporary = FALSE,
+      indexes = list("patient_id", "organism_id", "specimen_id", 
+                     "organism_code", "drug_id"))
   })
   
   if ( any(sapply(load_errors, is, class2 = "try-error")) ) {
@@ -475,11 +482,11 @@ load_medications.SQLiteConnection <- function(
   # TODO: antiinfective type
   if (!exists("prescription_text", prescriptions)) {
     prescriptions <- prescriptions %>% 
-      mutate(prescription_text = paste0(
+      dplyr::mutate(prescription_text = paste0(
       drug_display_name, " ",
       route, " ",
       dose, unit, " ",
-      if_else(daily_frequency < 0, "one-off", frequency)
+      dplyr::if_else(daily_frequency < 0, "one-off", frequency)
     ))
   }
   if(create_combination_id) prescriptions$combination_id <- NA_character_
@@ -494,25 +501,26 @@ load_medications.SQLiteConnection <- function(
     prescriptions, 
     first_column_names = first_column_names) 
   
-  prescriptions <- dbplyr::db_copy_to(
-      con = conn,
-      table = "drug_prescriptions",
-      values = prescriptions,
-      temporary = FALSE,
-      overwrite = overwrite,
-      indexes = list(
-        "id",
-        "patient_id", 
-        "prescription_id",
-        "combination_id",
-        "therapy_id",
-        "drug_id",
-        "ATC_code",
-        "ATC_route",
-        "authoring_date",
-        "prescription_start", 
-        "prescription_end"
-      ))
+  dplyr::copy_to(
+    dest = conn,
+    name = "drug_prescriptions",
+    df = prescriptions,
+    temporary = FALSE,
+    overwrite = overwrite,
+    indexes = list(
+      "id",
+      "patient_id", 
+      "prescription_id",
+      "combination_id",
+      "therapy_id",
+      "drug_id",
+      "ATC_code",
+      "ATC_route",
+      "authoring_date",
+      "prescription_start", 
+      "prescription_end"
+    )
+  )
   
   .create_table_drug_prescriptions_edges.SQLiteConnection(
     conn = conn, transitive_closure_controls)
@@ -599,11 +607,11 @@ load_medications.SQLiteConnection <- function(
                     id, prescription_id), 
       by = c("id" = "id")
     ) %>% 
-    group_by(grp) %>% 
-    mutate(therapy_id = min(prescription_id, na.rm = TRUE)) %>% 
-    ungroup() %>% 
-    distinct(prescription_id, therapy_id) %>% 
-    compute(name = "ramses_TC_therapy")
+    dplyr::group_by(grp) %>% 
+    dplyr::mutate(therapy_id = min(prescription_id, na.rm = TRUE)) %>% 
+    dplyr::ungroup() %>% 
+    dplyr::distinct(prescription_id, therapy_id) %>% 
+    dplyr::compute(name = "ramses_TC_therapy")
   
   update_therapy_id <- .read_sql_syntax("update_drug_prescriptions_therapy_id_SQLite.sql")
   update_therapy_id <- gsub("@@@ramses_TC_table", "ramses_TC_therapy", update_therapy_id)
@@ -626,13 +634,16 @@ load_medications.SQLiteConnection <- function(
     dplyr::group_by(patient_id, therapy_id) %>% # TODO antiinfective_type
     dplyr::summarise(therapy_start = min(prescription_start, na.rm = TRUE),
                      therapy_end = max(prescription_end, na.rm = TRUE)) %>% 
-    compute(name = "drug_therapy_episodes", temporary = FALSE)
+    dplyr::compute(name = "drug_therapy_episodes", temporary = FALSE)
   
-  dplyr::db_create_indexes(con = conn, 
-                           table = "drug_therapy_episodes",
-                           indexes = list("patient_id",
-                                       "therapy_id"))
-
+  dplyr::db_create_index(
+    con = conn, 
+    table = "drug_therapy_episodes",
+    columns = "patient_id")
+  dplyr::db_create_index(
+    con = conn, 
+    table = "drug_therapy_episodes",
+    columns = "therapy_id")
 }
 
 
@@ -667,11 +678,11 @@ load_medications.SQLiteConnection <- function(
                     id, prescription_id), 
       by = c("id" = "id")
     ) %>% 
-    group_by(grp) %>% 
-    mutate(combination_id = min(prescription_id, na.rm = T)) %>% 
-    ungroup() %>% 
-    distinct(prescription_id, combination_id) %>% 
-    compute(name = "ramses_TC_combination")
+    dplyr::group_by(grp) %>% 
+    dplyr::mutate(combination_id = min(prescription_id, na.rm = T)) %>% 
+    dplyr::ungroup() %>% 
+    dplyr::distinct(prescription_id, combination_id) %>% 
+    dplyr::compute(name = "ramses_TC_combination")
   
   update_combination_id <- .read_sql_syntax("update_drug_prescriptions_combination_id_SQLite.sql")
   update_combination_id <- gsub("@@@ramses_TC_table", "ramses_TC_combination", update_combination_id)
@@ -699,26 +710,29 @@ load_medications.SQLiteConnection <- function(
     administrations, 
     first_column_names = first_column_names) 
   
-  load_output <- dbplyr::db_copy_to(
-    con = conn,
-    table = "drug_administrations",
-    values = administrations,
-    temporary = FALSE,
-    overwrite = overwrite,
-    indexes = list(
-      "id",
-      "patient_id", 
-      "administration_id",
-      "drug_id",
-      "ATC_code",
-      "ATC_route",
-      "administration_date"
-    ))
+  load_output <- try({
+    dplyr::copy_to(
+      dest = conn,
+      name = "drug_administrations",
+      df = administrations,
+      temporary = FALSE,
+      overwrite = overwrite,
+      indexes = list(
+        "id",
+        "patient_id", 
+        "administration_id",
+        "drug_id",
+        "ATC_code",
+        "ATC_route",
+        "administration_date"
+      )
+    )
+  })
   
-  if(load_output == "drug_administrations") {
-    TRUE
+  if(is(load_output, "try-error")) {
+    stop(load_output$message)
   } else {
-    load_output
+    TRUE
   }
 }
 
@@ -747,7 +761,7 @@ load_medications.SQLiteConnection <- function(
 #'
 #' @examples
 #'     # Create database and load data
-#'     con <- connect_db_local("ramses-db.sqlite")
+#'     con <- connect_local_database("ramses-db.sqlite")
 #'     
 #'     dplyr::copy_to(dest = con, df = reference_aware, name = "reference_aware", 
 #'                    overwrite = FALSE, temporary = FALSE)      
@@ -756,26 +770,111 @@ load_medications.SQLiteConnection <- function(
 #'     DBI::dbDisconnect(con)
 #'     
 #'     # Connect to the database again and show data
-#'     con <- connect_db_local("ramses-db.sqlite")
+#'     con <- connect_local_database("ramses-db.sqlite")
 #'     dplyr::tbl(con, "reference_aware")
 #'     DBI::dbDisconnect(con)
-connect_db_local <- function(file) {
-  con <- DBI::dbConnect(RSQLite::SQLite(), file)
-  .build_tally_table(con)
-  warning(paste0("SQLite database created in \n", con@dbname, 
-                 "\nPlease do not use real patient data."))
+connect_local_database <- function(file) {
+  if(!file.exists(file)){
+    con <- DBI::dbConnect(RSQLite::SQLite(), file)
+    .build_tally_table(con)
+    message(paste0("SQLite database created in \n", con@dbname, 
+                   "\nPlease do not use real patient data."))
+  } else {
+    con <- DBI::dbConnect(RSQLite::SQLite(), file)
+    message(paste0("Connected to ", con@dbname, 
+                   "\nPlease do not use real patient data."))
+  }
   
   con
 }
 
 
+
+#' Create a mock database for training/demonstration purposes
+#'
+#' @description Create a local database on disk using 
+#' \code{\link[RSQLite]{SQLite}()} and load synthetic data ready for analysis.
+#' @details This function creates a database on disk at the desired path. 
+#' The database and its content will persist on disconnection.
+#'
+#' @param file A file path to an existing or new database file with a
+#'  ".sqlite" extension.
+#' @param silent if \code{TRUE}, progress bar will be hidden. The default is 
+#' \code{FALSE}.
+#' @return An object of class SQLiteConnection.
+#' @seealso The dbplyr website provides excellent guidance on how to connect to databases: 
+#' \url{https://db.rstudio.com/getting-started/connect-to-database}
+#' @importFrom DBI dbConnect dbDisconnect
+#' @export
+create_mock_database <- function(file, silent = FALSE) {
+  
+  stopifnot(is.logical(silent))
+  if(!silent) {
+    progress_bar <- dplyr::progress_estimated(12)
+  }
+  mock_db <- DBI::dbConnect(RSQLite::SQLite(), file)
+  if(!silent) progress_bar$tick()
+  
+  .build_tally_table(mock_db)
+  if(!silent) progress_bar$tick()
+  
+  drug_data <- .prepare_example_drug_records()
+  inpatient_data <- .prepare_example_inpatient_records()
+  icd10cm <- download_icd10cm(silent = TRUE)
+  if(!silent) progress_bar$tick()
+  
+  load_medications(
+    conn = mock_db, 
+    prescriptions = drug_data$drug_rx,
+    administrations = drug_data$drug_admins,
+    overwrite = TRUE, 
+    silent = TRUE
+  )
+  if(!silent) progress_bar$tick()
+  load_inpatient_episodes(
+    conn = mock_db,
+    episodes_data = inpatient_data$episodes,
+    wards_data = inpatient_data$ward_movements,
+    overwrite = TRUE
+  ) 
+  if(!silent) progress_bar$tick()
+  suppressWarnings(
+    load_inpatient_diagnoses(
+      conn = mock_db,
+      diagnoses_data = inpatient_data$diagnoses,
+      diagnoses_lookup = icd10cm,
+      overwrite = TRUE
+    )
+  )
+  if(!silent) progress_bar$tick()
+  load_inpatient_investigations(
+    conn = mock_db,
+    investigations_data = inpatient_data$investigations,
+    overwrite = TRUE
+  )
+  if(!silent) progress_bar$tick()
+  load_inpatient_microbiology(
+    conn = mock_db,
+    inpatient_data$micro$specimens,
+    inpatient_data$micro$isolates,
+    inpatient_data$micro$susceptibilities,
+    overwrite = TRUE
+  )
+  if(!silent) progress_bar$tick()
+  bridge_tables(conn = mock_db, 
+                overwrite = TRUE)
+  if(!silent) progress_bar$tick()
+  
+  return(mock_db)
+}
+
 .build_tally_table <- function(conn) {
   # Build table to use in joins to create therapy tables
-  dbplyr::db_copy_to(conn, 
-                     table = "ramses_tally",
-                     values = data.frame(t = 1:20000),
-                     temporary = FALSE,
-                     overwrite = TRUE)
+  dplyr::copy_to(conn, 
+                 name = "ramses_tally",
+                 df = data.frame(t = 1:20000),
+                 temporary = FALSE,
+                 overwrite = TRUE)
 }
 
 
@@ -1007,9 +1106,9 @@ connect_db_local <- function(file) {
   drug_rx$ab <- as.character(AMR::as.ab(drug_rx$ab))
   drug_rx$drug_name <- AMR::ab_name(drug_rx$ab)
   ## recoding route of administration
-  drug_rx <- mutate(
+  drug_rx <- dplyr::mutate(
     drug_rx, 
-    ATC_route = case_when(
+    ATC_route = dplyr::case_when(
       route %in% c(NULL) ~ "Implant", 
       route %in% c("NEB", "INHAL") ~ "Inhal", 
       route %in% c("TOP", "EYE", "EYEL", "EYER", "EYEB", 
@@ -1040,7 +1139,7 @@ connect_db_local <- function(file) {
   
   drug_rx <- merge(drug_rx, compound_strength_lookup, all.x = T)
   drug_rx <- drug_rx %>% 
-    mutate(strength = if_else(is.na(strength), dose, strength),  
+    dplyr::mutate(strength = if_else(is.na(strength), dose, strength),  
            basis_of_strength = if_else(is.na(basis_of_strength),
                                        as.character(ab), basis_of_strength))
   
@@ -1048,17 +1147,18 @@ connect_db_local <- function(file) {
   
   # computing the prescription DDD the reference DDD from the ATC
   drug_rx <- drug_rx %>% 
-    mutate(DDD = compute_DDDs(
+    dplyr::mutate(DDD = compute_DDDs(
       ATC_code = AMR::ab_atc(basis_of_strength),
       ATC_administration = ATC_route,
       dose = strength * daily_frequency,
-      unit = units),
-      duration_days = if_else(
+      unit = units, 
+      silent = TRUE),
+      duration_days = dplyr::if_else(
         daily_frequency == -1,
         "one-off", paste( difftime(
           prescription_end, prescription_start, units = "days"),
           "days"))) %>% 
-    transmute(patient_id,
+    dplyr::transmute(patient_id,
               prescription_id,
               prescription_text = paste0(
                 drug_name, " ", route, " ", dose, units,
@@ -1087,9 +1187,9 @@ connect_db_local <- function(file) {
   drug_admins$ab <- as.character(AMR::as.ab(drug_admins$ab))
   drug_admins$drug_name <- AMR::ab_name(drug_admins$ab)
   # recoding route of administration
-  drug_admins <- mutate(
+  drug_admins <- dplyr::mutate(
     drug_admins, 
-    ATC_route = case_when(
+    ATC_route = dplyr::case_when(
       route %in% c(NULL) ~ "Implant", 
       route %in% c("NEB", "INHAL") ~ "Inhal", 
       route %in% c("TOP", "EYE", "EYEL", "EYER", "EYEB", 
@@ -1108,26 +1208,32 @@ connect_db_local <- function(file) {
   
   drug_admins <- merge(drug_admins, compound_strength_lookup, all.x = T)
   drug_admins <- drug_admins %>% 
-    mutate(strength = if_else(is.na(strength), dose, strength),
-           basis_of_strength = if_else(is.na(basis_of_strength),
-                                       as.character(ab), basis_of_strength))
+    dplyr::mutate(
+      strength = if_else(is.na(strength), dose, strength),
+      basis_of_strength = if_else(is.na(basis_of_strength),
+                                  as.character(ab), basis_of_strength))
   
   drug_admins <- drug_admins %>% 
-    mutate(DDD = compute_DDDs(
+    dplyr::mutate(
+      DDD = compute_DDDs(
       ATC_code = AMR::ab_atc(basis_of_strength),
       ATC_administration = ATC_route,
       dose = dose,
-      unit = units 
+      unit = units,
+      silent = TRUE
     ))
   
-  drug_admins$administration_id <- drug_admins %>%
-    dplyr::group_indices(
+  drug_admins <- drug_admins %>% 
+    dplyr::group_by(
       patient_id,
       ab,
       route,
       dose,
       units,
-      administration_date)
+      administration_date) %>% 
+    dplyr::mutate(administration_id = cur_group_id()) %>% 
+    dplyr::ungroup()
+  
   drug_admins <- transmute(drug_admins,
       patient_id,
       administration_id = as.character(administration_id),
@@ -1158,7 +1264,7 @@ connect_db_local <- function(file) {
 .prepare_example_inpatient_records <- function() {
   
   ip_diagnoses <- Ramses::inpatient_diagnoses
-  ip_diagnoses <- filter(ip_diagnoses, !is.na(.data$icd_code))
+  ip_diagnoses <- dplyr::filter(ip_diagnoses, !is.na(.data$icd_code))
   
   ip_episodes <- Ramses::inpatient_episodes
   ip_episodes <- ip_episodes %>% 
@@ -1182,7 +1288,7 @@ connect_db_local <- function(file) {
     dplyr::mutate(organism_name = AMR::mo_name(organism_code),
                   drug_name = AMR::ab_name(drug_id))
   micro$raw <- micro$raw %>% 
-    mutate(specimen_type_code = case_when(
+    dplyr::mutate(specimen_type_code = case_when(
       specimen_type_display == "Blood Culture" ~ 
         "446131002", # Blood specimen obtained for blood culture
       specimen_type_display == "Faeces" ~ 
@@ -1193,32 +1299,35 @@ connect_db_local <- function(file) {
         "122575003", # Urine specimen
       TRUE ~ NA_character_
     )) %>% 
-    left_join(transmute(reference_specimen_type,
-                        specimen_type_code = conceptId,
-                        specimen_type_name = pt_term))
+    dplyr::left_join(
+      dplyr::transmute(reference_specimen_type,
+                       specimen_type_code = conceptId,
+                       specimen_type_name = pt_term),
+      by = "specimen_type_code"
+    )
   micro$specimens <- micro$raw %>% 
-    transmute(specimen_id,
+    dplyr::transmute(specimen_id,
               patient_id,
               status = "available",
               specimen_datetime,
               specimen_type_code,
               specimen_type_name,
               specimen_type_display) %>% 
-    distinct() # Removing duplicates created by multiple isolates and susceptibility testing
+    dplyr::distinct() # Removing duplicates created by multiple isolates and susceptibility testing
   
   micro$isolates <- micro$raw %>% 
-    transmute(organism_id,
+    dplyr::transmute(organism_id,
               specimen_id,
               patient_id,
               organism_code,
               organism_name,
               organism_display_name,
               isolation_datetime) %>% 
-    distinct() # Removing duplicates created by susceptibility testing
+    dplyr::distinct() # Removing duplicates created by susceptibility testing
   
   micro$susceptibilities <- micro$raw %>% 
-    filter(!is.na(organism_code)) %>%  # Remove no growth
-    transmute(organism_id,
+    dplyr::filter(!is.na(organism_code)) %>%  # Remove no growth
+    dplyr::transmute(organism_id,
               specimen_id,
               patient_id,
               organism_code,
@@ -1229,7 +1338,7 @@ connect_db_local <- function(file) {
               drug_display_name,
               rsi_code,
               concept_code = NA_character_) %>% 
-    distinct()
+    dplyr::distinct()
   micro$raw <- NULL
   list(
     episodes = ip_episodes,
@@ -1374,14 +1483,14 @@ bridge_episode_prescription_overlap <- function(conn,
       ))
   
   if (overwrite) {
-    if(dplyr::db_has_table(conn, "bridge_episode_prescription_overlap")) {
-      dplyr::db_drop_table(conn, "bridge_episode_prescription_overlap")
+    if(DBI::dbExistsTable(conn, "bridge_episode_prescription_overlap")) {
+      DBI::dbRemoveTable(conn, "bridge_episode_prescription_overlap")
       }
   }
   
-  silence <- dplyr::compute(tblz_bridge_episode_prescriptions_overlap, 
-                            name = "bridge_episode_prescription_overlap", 
-                            temporary = FALSE)
+  dplyr::compute(tblz_bridge_episode_prescriptions_overlap, 
+                 name = "bridge_episode_prescription_overlap", 
+                 temporary = FALSE)
   
   return(TRUE)
 }
@@ -1420,8 +1529,8 @@ bridge_episode_prescription_initiation <- function(conn,
       ))
   
   if (overwrite) {
-    if(dplyr::db_has_table(conn, "bridge_episode_prescription_initiation")) {
-      dplyr::db_drop_table(conn, "bridge_episode_prescription_initiation")
+    if(DBI::dbExistsTable(conn, "bridge_episode_prescription_initiation")) {
+      DBI::dbRemoveTable(conn, "bridge_episode_prescription_initiation")
     }
   }
   
@@ -1463,8 +1572,8 @@ bridge_episode_therapy_overlap <- function(conn,
       ))
   
   if (overwrite) {
-    if(dplyr::db_has_table(conn, "bridge_episode_therapy_overlap")) {
-      dplyr::db_drop_table(conn, "bridge_episode_therapy_overlap")
+    if(DBI::dbExistsTable(conn, "bridge_episode_therapy_overlap")) {
+      DBI::dbRemoveTable(conn, "bridge_episode_therapy_overlap")
     }
   }
   
