@@ -52,3 +52,21 @@ test_that("bridge_episode_therapy_overlap", {
     conn = emptydatabase, overwrite = "TRUE"))
   dbDisconnect(emptydatabase)
 })
+
+test_that(".compute_bed_days.SQLiteConnection", {
+  temp_db <- dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(
+    dest = temp_db,
+    df = data.frame(
+      episode_start = "2015-01-01 10:00:00",
+      episode_end = "2015-01-02 16:00:00"
+    ), 
+    name = "inpatient_episodes", 
+    temporary = FALSE
+  )
+  .compute_bed_days.SQLiteConnection(temp_db)
+  expect_equal(
+    dplyr::collect(tbl(temp_db, "inpatient_episodes"))[["ramses_bed_days"]],
+    1.25)
+  dbDisconnect(temp_db)
+})

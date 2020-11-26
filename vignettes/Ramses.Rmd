@@ -14,7 +14,10 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.width=6, 
+  fig.height=4,
+  fig.align = "center"
 )
 ```
 
@@ -56,7 +59,7 @@ Antimicrobial resistance jeopardizes many achievements of modern medicine, such 
 </div>
 </div>
 
-# Features
+<!-- # Features -->
 
 
 # Getting started 
@@ -77,6 +80,8 @@ synthectic electronic health records.
 
 ```{r setup_mock_db}
 library(Ramses)
+library(ggplot2)
+library(dplyr)
 ramses_db <- create_mock_database("ramses-db.sqlite")
 ```
 
@@ -86,20 +91,110 @@ You are now able to query the database and visualise admissions and episodes of 
 
 When hovered for a few seconds, timeline symbols display a tooltip containing detailed information.
 
-```{r show_timeline}
+```{r show_timeline, out.width = '100%'}
 therapy_timeline(conn = ramses_db, 
                  patient_identifier = "99999999999",
                  date1 = as.Date("2017-02-01"),
                  date2 = as.Date("2017-03-01"))
 ```
 
+## Data model
+
+```{r list_tables}
+DBI::dbListTables(ramses_db)
+```
+
+
+## Antibiotic consumption
+
+### Overview
+
+In this example, we extract total Defined Daily Doses, Days on Therapy, and Length of Therapy by years. Definitions correspond to those given by @Morris2014:
+
+The approach follows three steps:
+
+1. define the study population (encounters for which metrics should be extracted)
+2. choose a bridge table
+3. summarise
+
+
+### Consumption based on the episode of administration 
+
+Consumption can be attributed to specialty based on the specialty of the episode during which the antibiotic is administered. In this case, the appropriate bridge table is `bridge_episode_prescription_overlap`.
+
+```{r AC1}
+study_pop <- tbl(ramses_db, "inpatient_episodes") %>% 
+  filter(main_specialty_code %in% c("100", "101", "300") &
+           discharge_date >= "2016-01-01")
+
+consumption_episodes <- study_pop %>% 
+  left_join(tbl(ramses_db, "bridge_episode_prescription_overlap")) %>% 
+  mutate(calendar_year = year(discharge_date),
+         calendar_month = month(discharge_date)) %>% 
+  group_by(calendar_year, calendar_month, main_specialty_code) %>% 
+  summarise(DOT_prescribed = sum(ifNull(DOT, 0.0)),
+            DDD_prescribed = sum(ifNULL(DDD_prescribed, 0.0)),
+            bed_days = sum(ifNull(ramses_bed_days, 0.0))) %>% 
+  collect()  %>% 
+  mutate(month_starting = as.Date(paste0(calendar_year, "/", calendar_month, "/01")))
+
+head(consumption_episodes)
+```
+
+```{r plot_AC1,  width = 10}
+ggplot(consumption_episodes, 
+       aes(x = month_starting,
+           y = DOT_prescribed/bed_days*1000, 
+           group = main_specialty_code,
+           color = main_specialty_code)) +
+  geom_line() +
+  scale_x_date(date_labels = "%b %Y") +
+  xlab("Month") +
+  ylab("Days of Therapy (DOTs)\nper 1,000 bed-days")
+```
+
+
+### Consumption base on the episode of initiation 
+
+Alternatively, consumption can be attributed to the episode when prescriptions are issued (`authoring_date` field in `drug_prescriptions`). In this case, the appropriate bridge table is `bridge_episode_prescription_initiation`. This amounts to attributing antibiotic consumption to the initial prescriber.
+ 
+
+```{r AC2}
+consumption_initiation <- study_pop %>% 
+  left_join(tbl(ramses_db, "bridge_episode_prescription_initiation")) %>% 
+  mutate(calendar_year = year(discharge_date),
+         calendar_month = month(discharge_date)) %>% 
+  group_by(calendar_year, calendar_month, main_specialty_code) %>% 
+  summarise(DOT_prescribed = sum(ifNull(DOT, 0.0)),
+            DDD_prescribed = sum(ifNULL(DDD_prescribed, 0.0)),
+            bed_days = sum(ifNull(ramses_bed_days, 0.0))) %>% 
+  collect()  %>% 
+  mutate(month_starting = as.Date(paste0(calendar_year, "/", calendar_month, "/01")))
+```
+
+```{r plot_AC2}
+ggplot(consumption_initiation, 
+       aes(x = month_starting,
+           y = DOT_prescribed/bed_days*1000, 
+           group = main_specialty_code,
+           color = main_specialty_code)) +
+  geom_line() +
+  scale_x_date(date_labels = "%b %Y") +
+  xlab("Month") +
+  ylab("Days of Therapy (DOTs)\nper 1,000 bed-days")
+```
+
+
+<!-- ### Length of therapy -->
+
+<!-- Length of Therapy is the time elapsed during a prescribing episodes (sequence of antimicrobial prescriptions separated by at the most 36 hours by default). To measure it, the bridge table `bridge_episode_therapy_overlap` is required. -->
 
 
 # Once you are done 
 
 Always remember close database connections when you are finished.
 
-```{r}
+```{r dbDisconnect}
 DBI::dbDisconnect(ramses_db)
 ```
 

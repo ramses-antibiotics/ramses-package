@@ -153,6 +153,7 @@ load_inpatient_episodes <- function(conn,
       "consultant_code",
       "main_specialty_code"
     ))
+  .compute_bed_days.SQLiteConnection(conn = conn)
   
   if(!is.null(wards_data)) {
     wards_data <- dplyr::arrange(wards_data,
@@ -1231,7 +1232,7 @@ create_mock_database <- function(file, silent = FALSE) {
       dose,
       units,
       administration_date) %>% 
-    dplyr::mutate(administration_id = cur_group_id()) %>% 
+    dplyr::mutate(administration_id = group_indices()) %>% 
     dplyr::ungroup()
   
   drug_admins <- transmute(drug_admins,
@@ -1581,5 +1582,29 @@ bridge_episode_therapy_overlap <- function(conn,
                             name = "bridge_episode_therapy_overlap", 
                             temporary = FALSE)
   return(TRUE)
+}
+
+
+#' Compute episode bed days in inpatient_episodes table
+#' 
+#' @description compute the bed-days of every episodes in the inpatient_episodes 
+#' table. Bed-days are not rounded. A patient admitted today at 10:00 AM and 
+#' discharged tomorrow at 16:00 has 1.25 bed-days.
+#' @param conn a database connection
+#' @noRd
+.compute_bed_days.SQLiteConnection <- function(conn) {
+  if( !("ramses_bed_days" %in% 
+        DBI::dbListFields(conn, "inpatient_episodes")) ) {
+    DBI::dbExecute(conn = conn,
+                   statement = "ALTER TABLE inpatient_episodes
+                           ADD COLUMN ramses_bed_days real;")
+  }
+  DBI::dbExecute(
+    conn = conn,
+    statement = "
+    UPDATE inpatient_episodes
+    SET ramses_bed_days = ( strftime('%s', episode_end) - 
+    strftime('%s', episode_start) ) / ( 24.0 * 3600.0 );"
+  )
 }
 
