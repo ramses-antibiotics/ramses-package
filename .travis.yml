@@ -16,6 +16,7 @@ before_install:
   - docker-compose ps
 
 script:
+  - docker-compose logs -f -t
   - docker-compose exec -w /mnt/Ramses/ r Rscript -e 'devtools::check()'
 
 after_success:
