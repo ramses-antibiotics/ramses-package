@@ -1,26 +1,41 @@
-language: minimal
+language: r
 
-env:
-  - RAMSESIMAGE="pdutey/ramses:R3.6.2" COMPOSE_FILE="travis/docker-compose.yml" CODECOVETOKEN=$CODECOVETOKEN
-  - RAMSESIMAGE="pdutey/ramses:R4.0.2" COMPOSE_FILE="travis/docker-compose.yml" CODECOVETOKEN=$CODECOVETOKEN
+r:
+  - oldrel
+  - release
+  - devel
+
+addons:
+  apt:
+    packages:
+      - xdg-utils 
+      - libcairo2-dev 
+      - libclang-dev
+      - libcurl4-openssl-dev
+      - libjpeg-dev 
+      - libudunits2-dev
+      - libnode-dev
+      - libxml2-dev 
+      - mesa-common-dev
+      - qpdf
+      - unixodbc
+      - unixodbc-dev
+      
+r_github_packages:
+  - ramses-antibiotics/snomedizer
 
 services:
-  - docker
+  - postgresql
 
-before_install:
-  - echo $BASH_VERSION
-  - echo $PWD
-  - docker-compose --version
-  - echo "$DOCKER_PASSWORD" | docker login --username pdutey --password-stdin
-  - docker-compose up --no-start
-  - docker-compose start
-  - docker-compose ps
+before_script:
+  - psql -c 'create database travis_ci_test;' -U postgres
 
 script:
-  - docker-compose exec -w /mnt/Ramses/ r Rscript -e 'print("hello world")'
-  - docker-compose exec -w /mnt/Ramses/ r Rscript -e 'devtools::check()'
+  - R -e 'print("hello world")'
+  - R -e 'devtools::check()'
 
 after_success:
-  - if [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ "$RAMSESIMAGE" == "pdutey/ramses:R4.0.2" ]; then 
-      docker-compose exec -w /mnt/Ramses/ r Rscript -e 'covr::codecov(type = "all", token = Sys.getenv("CODECOVETOKEN"))';
+  - if [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ "$TRAVIS_R_VERSION_STRING" == "release" ]; then
+    R -e 'covr::codecov(type = "all", token = Sys.getenv("CODECOVETOKEN"))';
     fi;
+
