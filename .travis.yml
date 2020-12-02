@@ -20,7 +20,9 @@ addons:
       - qpdf
       - unixodbc
       - unixodbc-dev
-      
+
+r_packages:
+  - devtools
 r_github_packages:
   - ramses-antibiotics/snomedizer
 
