@@ -44,7 +44,7 @@ after_success:
     fi;
 
 before_deploy:
-  - if [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ] && [ "$TRAVIS_R_VERSION_STRING" = "release" ]; then 
+  - if [ "$TRAVIS_BRANCH" = "master" -o "$TRAVIS_BRANCH" = "develop" ] && [ "$TRAVIS_R_VERSION_STRING" = "release" ]; then 
     R -e ./pkgdown/build.R; 
     fi;
 
