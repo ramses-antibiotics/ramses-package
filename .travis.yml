@@ -21,6 +21,8 @@ addons:
       - qpdf
       - unixodbc
       - unixodbc-dev
+      - libharfbuzz-dev 
+      - libfribidi-dev 
 
 r_packages:
   - devtools
