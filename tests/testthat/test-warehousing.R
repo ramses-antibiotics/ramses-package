@@ -3,7 +3,36 @@
 # SQLite ------------------------------------------------------------------
 
 
-test_that("Ramses on SQLite", {
+test_that("Ramses on SQLite 1", {
+  
+  # > create_mock_database ----------------------------------------------
+  
+  if (!identical(Sys.getenv("TRAVIS"), "true")) {
+    skip("Test only on Travis")
+  }
+  
+  conSQLite <- create_mock_database(file = "test1.sqlite", silent = TRUE)
+  expect_true(is(conSQLite, "SQLiteConnection"))
+  test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
+    filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", 
+                                  "89ac870bc1c1e4b2a37cec79d188cb08")) %>% 
+    select(prescription_id, combination_id, therapy_id) %>% 
+    collect()
+  expect_equivalent(
+    test_output, 
+    tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0",
+                               "89ac870bc1c1e4b2a37cec79d188cb08"),
+           combination_id = c(NA_character_, "0bf9ea7732dd6e904ab670a407382d95"),
+           therapy_id = c("592a738e4c2afcae6f625c01856151e0", 
+                          "0bf9ea7732dd6e904ab670a407382d95")))
+  expect_equal(.nrow_sql_table(conSQLite, "ramses_tally"), 20000)
+  dbDisconnect(conSQLite)
+  file.remove("test1.sqlite")
+  rm(conSQLite)
+})
+
+
+test_that("Ramses on SQLite 2", {
   
   if (!identical(Sys.getenv("TRAVIS"), "true")) {
     skip("Test only on Travis")

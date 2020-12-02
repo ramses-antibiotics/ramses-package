@@ -704,9 +704,7 @@ load_medications.SQLiteConnection <- function(
   })
   
   if(is(load_output, "try-error")) {
-    stop(load_output$message)
-  } else {
-    TRUE
+    stop(load_output)
   }
 }
 
