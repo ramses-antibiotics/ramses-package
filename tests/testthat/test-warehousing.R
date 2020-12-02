@@ -11,8 +11,6 @@ test_that("Ramses on SQLite", {
   
   # > validate functions --------------------------------------------------
   
-  testthat::expect_success(stop("checking that Travis is running this"))
-  
   drug_data <- Ramses:::.prepare_example_drug_records()
   inpatient_data <- Ramses:::.prepare_example_inpatient_records()
   icd10cm <- download_icd10cm()
