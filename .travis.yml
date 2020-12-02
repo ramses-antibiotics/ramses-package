@@ -11,12 +11,13 @@ before_install:
   - echo $BASH_VERSION
   - echo $PWD
   - docker-compose --version
-  - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+  - echo "$DOCKER_PASSWORD" | docker login --username pdutey --password-stdin
   - docker-compose up --no-start
   - docker-compose start
   - docker-compose ps
 
 script:
+  - docker-compose exec -w /mnt/Ramses/ r Rscript -e 'print("hello world")'
   - docker-compose exec -w /mnt/Ramses/ r Rscript -e 'devtools::check()'
 
 after_success:
