@@ -1197,7 +1197,7 @@ create_mock_database <- function(file, silent = FALSE) {
       silent = TRUE
     ))
   
-  if ( packageVersion("dplyr") >= "1.0.0" ) {
+  if ( utils::packageVersion("dplyr") >= "1.0.0" ) {
     drug_admins <- drug_admins %>% 
       dplyr::group_by(
         patient_id,

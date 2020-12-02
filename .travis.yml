@@ -24,6 +24,7 @@ addons:
 
 r_packages:
   - devtools
+  - comorbidity
 r_github_packages:
   - ramses-antibiotics/snomedizer
 
