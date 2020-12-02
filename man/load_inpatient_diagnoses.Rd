@@ -23,10 +23,6 @@ lookup table}
 \item{overwrite}{if \code{TRUE} (the default), will overwrite any existing
 \code{inpatient_diagnoses} database table}
 }
-\value{
-`TRUE` if the function ran successfully, otherwise object of class
-"try-error" containing error messages trigger during warehouse data loading.
-}
 \description{
 Validate, then load inpatient diagnosis records into the 
 warehouse. This function automatically generates derived ICD-10 look up 

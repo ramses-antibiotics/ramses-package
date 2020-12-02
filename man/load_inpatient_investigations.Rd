@@ -15,13 +15,9 @@ load_inpatient_investigations(conn, investigations_data, overwrite = TRUE)
 \item{overwrite}{if \code{TRUE} (the default), will overwrite any existing
 \code{inpatient_investigations} database table}
 }
-\value{
-`TRUE` if the function ran successfully, otherwise object of class
-"try-error" containing error messages trigger during warehouse data loading.
-}
 \description{
 Load observations & investigations into the warehouse
 }
 \seealso{
-\code{\link{validate_investigations}()},
+\code{\link{validate_investigations}()}
 }

@@ -23,10 +23,6 @@ load_inpatient_episodes(
 \item{overwrite}{if \code{TRUE} (the default), will overwrite any existing
 \code{inpatient_episodes} database table}
 }
-\value{
-`TRUE` if the function ran successfully, otherwise object of class
-"try-error" containing error messages trigger during warehouse data loading.
-}
 \description{
 Load episodes of care records into the warehouse
 }

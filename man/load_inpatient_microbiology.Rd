@@ -29,13 +29,9 @@ validated with \code{\link{validate_microbiology}()}}
 \item{overwrite}{if \code{TRUE} (the default), will overwrite any existing
 microbiology database table}
 }
-\value{
-`TRUE` if the function ran successfully, otherwise object of class
-"try-error" containing error messages trigger during warehouse data loading.
-}
 \description{
 Load microbiology cultures and sensitivities into the warehouse
 }
 \seealso{
-\code{\link{validate_investigations}()},
+\code{\link{validate_investigations}()}
 }

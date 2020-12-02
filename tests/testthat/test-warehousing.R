@@ -35,41 +35,40 @@ test_that("Ramses on SQLite", {
   
   # > database loading functions ------------------------------------------
   
-  medication_loading <- load_medications(conn = conSQLite, 
-                         prescriptions = drug_data$drug_rx,
-                         administrations = drug_data$drug_admins,
-                         overwrite = TRUE)
-  
-  expect_true(medication_loading$prescription_load_errors)
-  expect_true(medication_loading$administration_load_errors)
-  
-  expect_equivalent(
+  expect_invisible(
+    load_medications(conn = conSQLite, 
+                     prescriptions = drug_data$drug_rx,
+                     administrations = drug_data$drug_admins,
+                     overwrite = TRUE)
+  )
+
+  expect_invisible(
     load_inpatient_episodes(conn = conSQLite,
                             episodes_data = inpatient_data$episodes,
                             wards_data = inpatient_data$ward_movements,
-                            overwrite = TRUE),
-    list(episodes_load_errors = TRUE,
-         wards_load_errors = TRUE)
+                            overwrite = TRUE)
   )
-  expect_true(
+  expect_invisible(
     expect_warning(
       load_inpatient_diagnoses(conn = conSQLite,
                            diagnoses_data = inpatient_data$diagnoses,
                            diagnoses_lookup = icd10cm,
                            overwrite = TRUE)))
-  expect_true(
+  expect_invisible(
     load_inpatient_investigations(
       conn = conSQLite,
       investigations_data = inpatient_data$investigations,
       overwrite = TRUE
     ))
-  expect_true(load_inpatient_microbiology(
-    conn = conSQLite,
-    inpatient_data$micro$specimens,
-    inpatient_data$micro$isolates,
-    inpatient_data$micro$susceptibilities,
-    overwrite = TRUE
-  ))
+  expect_invisible(
+    load_inpatient_microbiology(
+      conn = conSQLite,
+      inpatient_data$micro$specimens,
+      inpatient_data$micro$isolates,
+      inpatient_data$micro$susceptibilities,
+      overwrite = TRUE
+    )
+  )
   
   test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
     filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08")) %>% 

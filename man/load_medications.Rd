@@ -33,10 +33,6 @@ medication tables}
 \item{silent}{a boolean indicating whether the function should be
 executed without progress bar. Default is `TRUE`.}
 }
-\value{
-`TRUE` if the function ran successfully, otherwise object of class
-"try-error" containing error messages trigger during warehouse data loading.
-}
 \description{
 Load drug prescription records into the warehouse
 }

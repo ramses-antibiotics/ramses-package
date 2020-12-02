@@ -21,8 +21,6 @@
 #' \code{\link{map_charlson_comorbidities}()},
 #' \code{\link{map_ICD10_CCS}()},
 #' \code{\link{map_ICD10_CCSR}()}
-#' @return `TRUE` if the function ran successfully, otherwise object of class
-#' "try-error" containing error messages trigger during warehouse data loading.
 #' @import methods
 #' @export
 load_inpatient_diagnoses <- function(conn, diagnoses_data,
@@ -95,12 +93,9 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
       indexes = list("icd_code", "ccsr_body_system_code", "ccsr_cat_code"))
   })
   
-  if (is(load_errors, "try-error")) {
+  if ( is(load_errors, "try-error") ) {
     stop(load_errors)
-  } else {
-    return(TRUE)
   }
-  
 }
 
 #' Load episodes of care records into the warehouse
@@ -112,8 +107,6 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
 #' \code{\link{validate_inpatient_episodes}()}#'
 #' @param overwrite if \code{TRUE} (the default), will overwrite any existing
 #' \code{inpatient_episodes} database table
-#' @return `TRUE` if the function ran successfully, otherwise object of class
-#' "try-error" containing error messages trigger during warehouse data loading.
 #' @export
 load_inpatient_episodes <- function(conn, 
                                     episodes_data, 
@@ -172,19 +165,25 @@ load_inpatient_episodes <- function(conn,
       }
     }
     
-    dplyr::copy_to(
-      dest = conn, 
-      name = "inpatient_ward_movements",
-      df = wards_data,
-      temporary = FALSE,
-      overwrite = overwrite,
-      indexes = list(
-        "patient_id", 
-        "spell_id",
-        "ward_start",
-        "ward_end"
+    load_errors <- try({
+      dplyr::copy_to(
+        dest = conn, 
+        name = "inpatient_ward_movements",
+        df = wards_data,
+        temporary = FALSE,
+        overwrite = overwrite,
+        indexes = list(
+          "patient_id", 
+          "spell_id",
+          "ward_start",
+          "ward_end"
+        )
       )
-    )
+    })
+    
+    if ( is(load_errors, "try-error") ) {
+      stop(load_errors)
+    }
   }
 }
 
@@ -197,9 +196,7 @@ load_inpatient_episodes <- function(conn,
 #' \code{\link{validate_investigations}()}
 #' @param overwrite if \code{TRUE} (the default), will overwrite any existing
 #' \code{inpatient_investigations} database table
-#' @seealso \code{\link{validate_investigations}()}, 
-#' @return `TRUE` if the function ran successfully, otherwise object of class
-#' "try-error" containing error messages trigger during warehouse data loading.
+#' @seealso \code{\link{validate_investigations}()}
 #' @export
 load_inpatient_investigations <- function(conn, investigations_data, overwrite = TRUE) {
   
@@ -229,11 +226,9 @@ load_inpatient_investigations <- function(conn, investigations_data, overwrite =
                      "status"))
   })
   
-  if (is(load_errors, "try-error")) {
-    return(load_errors)
-  } else {
-    return(TRUE)
-  }
+  if ( is(load_errors, "try-error") ) {
+    stop(load_errors)
+  } 
 }
 
 
@@ -250,9 +245,7 @@ load_inpatient_investigations <- function(conn, investigations_data, overwrite =
 #' validated with \code{\link{validate_microbiology}()}
 #' @param overwrite if \code{TRUE} (the default), will overwrite any existing
 #' microbiology database table
-#' @seealso \code{\link{validate_investigations}()}, 
-#' @return `TRUE` if the function ran successfully, otherwise object of class
-#' "try-error" containing error messages trigger during warehouse data loading.
+#' @seealso \code{\link{validate_investigations}()}
 #' @export
 load_inpatient_microbiology <- function(conn, 
                                         specimens, 
@@ -294,8 +287,7 @@ load_inpatient_microbiology <- function(conn,
     }
   }
   
-  load_errors <- list()
-  load_errors$specimens <- try({
+  load_errors <- try({
     dplyr::copy_to(
       dest = conn,
       name = "microbiology_specimens", 
@@ -305,8 +297,6 @@ load_inpatient_microbiology <- function(conn,
       indexes = list("patient_id", "specimen_id", "status",
                      "specimen_datetime", "specimen_type_code",
                      "specimen_type_name"))
-  })
-  load_errors$isolates <- try({
     dplyr::copy_to(
       dest = conn,
       name = "microbiology_isolates", 
@@ -315,8 +305,6 @@ load_inpatient_microbiology <- function(conn,
       temporary = FALSE,
       indexes = list("patient_id", "organism_id", 
                      "specimen_id", "organism_code"))
-  })
-  load_errors$susceptibilities <- try({
     dplyr::copy_to(
       dest = conn,
       name = "microbiology_susceptibilities", 
@@ -327,10 +315,8 @@ load_inpatient_microbiology <- function(conn,
                      "organism_code", "drug_id"))
   })
   
-  if ( any(sapply(load_errors, is, class2 = "try-error")) ) {
-    return(load_errors)
-  } else {
-    return(TRUE)
+  if ( is(load_errors, "try-error") ) {
+    stop(load_errors)
   }
 }
 
@@ -419,9 +405,6 @@ transitive_closure_control <- function(max_continuation_gap = 36,
 #' \code{\link{transitive_closure_control}()})
 #' @param silent a boolean indicating whether the function should be
 #' executed without progress bar. Default is `TRUE`.
-#'
-#' @return `TRUE` if the function ran successfully, otherwise object of class
-#' "try-error" containing error messages trigger during warehouse data loading.
 #' @rdname load_medications
 #' @export
 load_medications <- function(
@@ -436,34 +419,24 @@ load_medications.SQLiteConnection <- function(
   transitive_closure_controls = transitive_closure_control(),
   silent = TRUE) {
   
-  prescription_load_errors <- try({
+  load_errors <- try({
     .load_prescriptions.SQLiteConnection(
       conn = conn, 
       prescriptions = prescriptions, 
       overwrite = overwrite,
       transitive_closure_controls,
       silent = silent)
-  })
-  
-  
   if(!is.null(administrations)) {
-    administration_load_errors <- try({
     .load_administrations.SQLiteConnection(
       conn = conn, 
       administrations = administrations, 
       overwrite = overwrite)
-    })
-    
-    return(list(prescription_load_errors = 
-                  prescription_load_errors,
-                administration_load_errors = 
-                  administration_load_errors))
-  } else {
-    
-    return(list(prescription_load_errors = 
-                  prescription_load_errors))
   }
+  })
   
+  if( is(load_errors, "try-error") ) {
+    stop(load_errors)
+  }
 }
 
 
@@ -1224,16 +1197,29 @@ create_mock_database <- function(file, silent = FALSE) {
       silent = TRUE
     ))
   
-  drug_admins <- drug_admins %>% 
-    dplyr::group_by(
-      patient_id,
-      ab,
-      route,
-      dose,
-      units,
-      administration_date) %>% 
-    dplyr::mutate(administration_id = group_indices()) %>% 
-    dplyr::ungroup()
+  if ( packageVersion("dplyr") >= "1.0.0" ) {
+    drug_admins <- drug_admins %>% 
+      dplyr::group_by(
+        patient_id,
+        ab,
+        route,
+        dose,
+        units,
+        administration_date) %>% 
+      dplyr::mutate(administration_id = cur_group_id()) %>% 
+      dplyr::ungroup()
+  } else {
+    drug_admins <- drug_admins %>% 
+      dplyr::group_by(
+        patient_id,
+        ab,
+        route,
+        dose,
+        units,
+        administration_date) %>% 
+      dplyr::mutate(administration_id = group_indices()) %>% 
+      dplyr::ungroup()
+  }
   
   drug_admins <- transmute(drug_admins,
       patient_id,
