@@ -45,7 +45,7 @@ after_success:
 
 before_deploy:
   - if [ "$TRAVIS_BRANCH" = "master" -o "$TRAVIS_BRANCH" = "develop" ] && [ "$TRAVIS_R_VERSION_STRING" = "release" ]; then 
-    R -e ./pkgdown/build.R; 
+    Rscript ./pkgdown/build.R; 
     fi;
 
 deploy:
