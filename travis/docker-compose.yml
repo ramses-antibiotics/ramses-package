@@ -9,6 +9,17 @@ services:
       POSTGRES_PASSWORD: password
     ports:
        - 5432:5432
+  db-mssql:
+    image: mcr.microsoft.com/mssql/server:2017-latest
+    environment:
+      MSSQL_PID: Developer
+      ACCEPT_EULA: "true"
+      MSSQL_SA_USER: user
+      MSSQL_SA_PASSWORD: bidultrukCestLeurTruc!
+      MSSQL_TCP_PORT: 1234
+      MSSQL_DB: RamsesDB
+    ports:
+      - 1234:1234
   r:
     image: ${RAMSESIMAGE}
     environment:
