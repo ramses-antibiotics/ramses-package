@@ -2,9 +2,9 @@ language: r
 cache: packages
 
 r:
-  - oldrel
   - release
-  - devel
+  # - oldrel
+  # - devel
 
 addons:
   apt:
