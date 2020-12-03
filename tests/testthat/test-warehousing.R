@@ -230,33 +230,33 @@ test_that("SQLite does transitive closure", {
 })
 
 # PostgreSQL --------------------------------------------------------------
-# 
-# test_that("Ramses on PosgreSQL", {
-#   
-#   if (!identical(Sys.getenv("CI"), "true")) {
-#     skip("Test only on Travis")
-#   }
-#   
-#   conPostgreSQL <- DBI::dbConnect(RPostgreSQL::PostgreSQL(),
-#                                   user = "user", password = "password",
-#                                   host = "postgres", dbname="RamsesDB")
-#   
-#   expect_equal(
-#     dplyr::copy_to(
-#       dest = conPostgreSQL, 
-#       df = data.frame(data=1:10),
-#       name = "mydata",
-#       temporary = FALSE),
-#     "mydata"
-#   )
-#   
-#   expect_equal(
-#     dplyr::tbl(conPostgreSQL, "mydata"),
-#     1:10
-#   )
-#   
-#   DBI::dbDisconnect(conPostgreSQL)
-# })
+
+test_that("Ramses on PosgreSQL", {
+
+  if (!identical(Sys.getenv("CI"), "true")) {
+    skip("Test only on Travis")
+  }
+
+  conPostgreSQL <- DBI::dbConnect(RPostgreSQL::PostgreSQL(),
+                                  user = "user", password = "password",
+                                  host = "postgres", dbname="RamsesDB")
+
+  expect_equal(
+    dplyr::copy_to(
+      dest = conPostgreSQL,
+      df = data.frame(data=1:10),
+      name = "mydata",
+      temporary = FALSE),
+    "mydata"
+  )
+
+  expect_equal(
+    dplyr::tbl(conPostgreSQL, "mydata"),
+    1:10
+  )
+
+  DBI::dbDisconnect(conPostgreSQL)
+})
 
 
 # MS SQL Server -----------------------------------------------------------

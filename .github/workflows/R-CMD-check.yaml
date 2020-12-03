@@ -113,4 +113,5 @@ jobs:
         with:
           args: deploy --only hosting
         env:
+          PROJECT_ID: ramses-antibiotics
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
