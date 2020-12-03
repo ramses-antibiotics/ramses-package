@@ -107,3 +107,9 @@ jobs:
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push' 
         run: Rscript ./pkgdown/build.R
         
+      - name: Deploy to Firebase
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only hosting
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

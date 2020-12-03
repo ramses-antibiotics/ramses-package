@@ -51,7 +51,8 @@ Suggests:
     DiagrammeR,
     odbc,
     RPostgres,
-    timevis
+    timevis,
+    pkgdown
 Remotes: 
     ramses-antibiotics/snomedizer
 RdMacros: Rdpack    
