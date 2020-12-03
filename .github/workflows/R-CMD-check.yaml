@@ -42,7 +42,6 @@ jobs:
       RSPM: ${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       CODECOVETOKEN: ${{ secrets.CODECOVETOKEN }}
-      TRAVISTESTS: "true"
 
     steps:
       - uses: actions/checkout@v2
@@ -100,11 +99,11 @@ jobs:
       #     path: check
           
       - name: Code coverage
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push' 
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release' 
         run: covr::codecov(type = "all", token = Sys.getenv("CODECOVETOKEN"))
         shell: Rscript {0}
         
       - name: Build pkgdown
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push' 
-        run: Rscript /pkgdown/build.R
+        run: Rscript ./pkgdown/build.R
         

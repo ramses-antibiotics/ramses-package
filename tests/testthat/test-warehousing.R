@@ -7,7 +7,7 @@ test_that("Ramses on SQLite 1", {
   
   # > create_mock_database ----------------------------------------------
   
-  if (!identical(Sys.getenv("TRAVIS"), "true")) {
+  if (!identical(Sys.getenv("CI"), "true")) {
     skip("Test only on Travis")
   }
   
@@ -230,13 +230,32 @@ test_that("SQLite does transitive closure", {
 })
 
 # PostgreSQL --------------------------------------------------------------
-
+# 
 # test_that("Ramses on PosgreSQL", {
-# conPostgreSQL <- DBI::dbConnect(RPostgreSQL::PostgreSQL(), 
-#                                 user = "user", password = "password", 
-#                                 host = "db-postgres", dbname="RamsesDB")
-#   test_warehousing(conPostgreSQL, drug_data, overwrite = T)
 #   
+#   if (!identical(Sys.getenv("CI"), "true")) {
+#     skip("Test only on Travis")
+#   }
+#   
+#   conPostgreSQL <- DBI::dbConnect(RPostgreSQL::PostgreSQL(),
+#                                   user = "user", password = "password",
+#                                   host = "postgres", dbname="RamsesDB")
+#   
+#   expect_equal(
+#     dplyr::copy_to(
+#       dest = conPostgreSQL, 
+#       df = data.frame(data=1:10),
+#       name = "mydata",
+#       temporary = FALSE),
+#     "mydata"
+#   )
+#   
+#   expect_equal(
+#     dplyr::tbl(conPostgreSQL, "mydata"),
+#     1:10
+#   )
+#   
+#   DBI::dbDisconnect(conPostgreSQL)
 # })
 
 
