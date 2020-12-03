@@ -745,6 +745,7 @@ load_medications.SQLiteConnection <- function(
 #'     con <- connect_local_database("ramses-db.sqlite")
 #'     dplyr::tbl(con, "reference_aware")
 #'     DBI::dbDisconnect(con)
+#'     file.remove("ramses-db.sqlite")
 connect_local_database <- function(file) {
   if(!file.exists(file)){
     con <- DBI::dbConnect(RSQLite::SQLite(), file)

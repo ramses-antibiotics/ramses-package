@@ -40,6 +40,7 @@ method with mock data unless you operate within a secure data enclave.
     con <- connect_local_database("ramses-db.sqlite")
     dplyr::tbl(con, "reference_aware")
     DBI::dbDisconnect(con)
+    file.remove("ramses-db.sqlite")
 }
 \seealso{
 The dbplyr website provides excellent guidance on how to connect to databases: 

@@ -8,8 +8,8 @@
 \description{
 \if{html}{\figure{logo.png}{options: align='right' alt='logo' width='120'}}
 
-Ramses is a one-stop shop for antimicrobial stewardship data warehousing for hospitals. 
-    It supports the modelling and analysis of hospital electronic health records 
+A one-stop shop for antimicrobial stewardship data warehousing for hospitals. 
+    Ramses supports the modelling and analysis of hospital electronic health records 
     (episode of care, prescriptions, administration, pathology and investigations) to help
     keep antibiotics working for years to come.
 }

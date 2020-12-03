@@ -239,7 +239,8 @@ test_that("Ramses on PosgreSQL", {
 
   conPostgreSQL <- DBI::dbConnect(RPostgreSQL::PostgreSQL(),
                                   user = "user", password = "password",
-                                  host = "postgres", dbname="RamsesDB")
+                                  host = "localhost", port = 5432, 
+                                  dbname="RamsesDB")
 
   expect_equal(
     dplyr::copy_to(
