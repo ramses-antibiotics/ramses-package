@@ -104,10 +104,11 @@ jobs:
         shell: Rscript {0}
         
       - name: Build pkgdown
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push' 
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release' 
         run: Rscript ./pkgdown/build.R
         
       - name: Deploy to Firebase
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release' 
         uses: w9jds/firebase-action@master
         with:
           args: deploy --only hosting

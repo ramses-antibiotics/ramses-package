@@ -52,7 +52,8 @@ Suggests:
     odbc,
     RPostgres,
     timevis,
-    pkgdown
+    pkgdown,
+    R.utils
 Remotes: 
     ramses-antibiotics/snomedizer
 RdMacros: Rdpack    
