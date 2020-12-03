@@ -1,0 +1,54 @@
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    branches:
+      - master
+      - develop
+
+name: R-CMD-check-linux
+
+jobs:
+  # Label of the container job
+  linux-job:
+    runs-on: ubuntu-latest
+    container: pdutey/ramses:4.0.2
+    env:
+      CODECOVETOKEN: ${CODECOVETOKEN}
+      TRAVISTESTS: "true"
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_DB: RamsesDB
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      # Downloads a copy of the code in your repository before running CI tests
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
+      - name: Hello world
+        run: R -e 'print("hello")'
+        
+      - name: CMD check
+        run: R -e 'devtools::check()'
+        
+      - name: Code coverage
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push' 
+        run: R -e 'covr::codecov(type = "all", token = Sys.getenv("CODECOVETOKEN"))'
+        
+      - name: Build pkgdown
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push' 
+        run: Rscript /pkgdown/build.R
+        

@@ -5,6 +5,7 @@
 [![Codecov test coverage](https://codecov.io/gh/ramses-antibiotics/ramses-package/branch/master/graph/badge.svg)](https://codecov.io/gh/ramses-antibiotics/ramses-package?branch=master)
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 [![license](https://img.shields.io/badge/license-GPL--3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
+[![R build status](https://github.com/ramses-antibiotics/ramses-package/workflows/R-CMD-check/badge.svg)](https://github.com/ramses-antibiotics/ramses-package/actions)
 <!-- badges: end -->
 
 <div class="lead"><code>RAMSES</code> is an analytical software package enabling hospitals to protect antibiotics by monitoring their prescribing and the management of infections using routine electronic health records.</div>

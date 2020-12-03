@@ -16,3 +16,4 @@
 ^vignettes/*.html
 ^\.covrignore$
 ^firebase\.json$
+^\.github$
