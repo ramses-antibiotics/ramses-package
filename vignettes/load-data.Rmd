@@ -390,7 +390,7 @@ will be required to create three separate data frames:
 2. `isolates` contains zero, one, or multiple rows for every specimen -- as many rows as the number of microorganisms isolated from the specimen, whatever the technique (eg mass spectrometry, PCR, bacterial culture)
 3. `susceptibility` contains results of susceptibility testing: one row per substance tested.
 
-For this, we create a list of data frames named `microbiology_data`, and commence with cleaning the raw data. We employ the [AMR](https://cran.r-project.org/web/packages/AMR/index.html) package to code microorganism species names (`AMR::as.mo()`) and antimicrobial names (`AMR::as.ab`). 
+For this, we create a list of data frames named `microbiology_data`, and commence with cleaning the raw data. We employ the [AMR](https://CRAN.R-project.org/package=AMR) package to code microorganism species names (`AMR::as.mo()`) and antimicrobial names (`AMR::as.ab`). 
 
 ```{r}
 microbiology_data <- list()

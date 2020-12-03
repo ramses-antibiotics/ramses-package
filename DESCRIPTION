@@ -14,8 +14,8 @@ Authors@R: c(
            email = "l.shallcross@ucl.ac.uk",
            comment = c(ORCID = "0000-0003-1713-2555")),
     person("University College London", role = c("cph")))
-Description: Ramses is a one-stop shop for antimicrobial stewardship data warehousing for hospitals. 
-    It supports the modelling and analysis of hospital electronic health records 
+Description: A one-stop shop for antimicrobial stewardship data warehousing for hospitals. 
+    Ramses supports the modelling and analysis of hospital electronic health records 
     (episode of care, prescriptions, administration, pathology and investigations) to help
     keep antibiotics working for years to come.
 License: GPL-3
@@ -51,8 +51,9 @@ Suggests:
     DiagrammeR,
     odbc,
     RPostgres,
-    timevis,
-    snomedizer
+    timevis
+Remotes: 
+    ramses-antibiotics/snomedizer
 RdMacros: Rdpack    
 RoxygenNote: 7.1.1
 VignetteBuilder: knitr,rmarkdown
