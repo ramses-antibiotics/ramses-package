@@ -10,15 +10,21 @@
 #' }
 #' It was adapted by Public Health England for antibiotic stewardship
 #' and quality improvement in English hospitals 
-#' \insertCite{PHE-aware2019}{Ramses} 
+#' \insertCite{PHE-aware2019}{Ramses}.
 #' 
+#' The version included in Ramses contains an additional row for metronidazole
+#' J01XD01 with administered orally (classified as Access). This is sometimes 
+#' used in combination with other antibacterials that do not cover anaerobic 
+#' organisms, but is not present in the Anatomical Therapeutic Chemical (ATC) 
+#' classification.
+#'
 #' @format A data frame with 208 antimicrobial agents, referenced 
 #' against the Anatomical Therapeutic Chemical (ATC) 
 #' classification \insertCite{WHO-ATC2020}{Ramses}, the World Health Organisation's
 #' and Public Health England's respective AWaRe Indices, 
-#' and the SNOMED-CT medical product concept codes and names 
-#' (from Virtual Therapeutic Moieties codes of the UK NHS Dictionary of Medicines 
-#' (dm+d) \insertCite{DMD2015}{Ramses}).
+#' and the SNOMED CT medical product concept codes and names 
+#' (from Virtual Therapeutic Moieties codes of the SNOMED CT UK Drug Extension 
+#' \insertCite{SNOMEDDrugUK2020}{Ramses}).
 #' It contains 6 columns:
 #' \describe{
 #' \item{\code{ATC_code}}{ATC code of the antibiotic}
@@ -29,18 +35,18 @@
 #' \item{\code{aware_category}}{AWaRe index ("Access", "Watch", "Reserve")}
 #' \item{\code{version}}{AWaRe Index version (eg. "WHO", "England")}
 #' \item{\code{year}}{AWaRe Index version year}
-#' \item{\code{WHONET_ab_code}}{WHONET antibiotic code (from \code{\link[AMR]{as.ab}()})}
-#' \item{\code{WHONET_ab_name}}{WHONET antibiotic name (from \code{\link[AMR]{ab_name}()})}
-#' \item{\code{VTM_code}}{SNOMED-CT medicinal product code/Virtual Therapeutic Moiety 
-#' concept code in the SNOMED-CT UK Drug Extension (see \insertCite{DMD2015}{Ramses})}
-#' \item{\code{VTM_name}}{SNOMED-CT medicinal product code/Virtual Therapeutic Moiety 
-#' concept name in the SNOMED-CT UK Drug Extension (see \insertCite{DMD2015}{Ramses})}
+#' \item{\code{ab_code}}{antibiotic code from \code{\link[AMR]{as.ab}()}}
+#' \item{\code{ab_name}}{antibiotic name from \code{\link[AMR]{ab_name}()}}
+#' \item{\code{VTM_code}}{SNOMED CT medicinal product code/Virtual Therapeutic Moiety 
+#' code in the SNOMED CT UK Drug Extension (see \insertCite{SNOMEDDrugUK2020}{Ramses})}
+#' \item{\code{VTM_name}}{SNOMED CT medicinal product code/Virtual Therapeutic Moiety 
+#' name in the SNOMED CT UK Drug Extension (see \insertCite{SNOMEDDrugUK2020}{Ramses})}
 #' }
 #' @docType data
 #' @name reference_aware
 #' @source Adapted from \insertCite{WHO-aware2019,PHE-aware2019;textual}{Ramses} with Virtual  
 #' Therapeutic Moiety equivalents from the NHS Dictionary of Medicines (dm+d)
-#' \insertCite{DMD2015}{Ramses}.
+#' \insertCite{SNOMEDDrugUK2020}{Ramses}.
 #' @references{\insertAllCited{}}
 "reference_aware"
 

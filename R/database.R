@@ -789,6 +789,13 @@ create_mock_database <- function(file, silent = FALSE) {
   if(!silent) progress_bar$tick()
   
   .build_tally_table(mock_db)
+  dplyr::copy_to(
+    dest = mock_db,
+    df = dplyr::filter(reference_aware, version == "England" & year == "2019"),
+    name = "reference_aware",
+    temporary = FALSE,
+    overwrite = TRUE
+  )
   if(!silent) progress_bar$tick()
   
   drug_data <- .prepare_example_drug_records()

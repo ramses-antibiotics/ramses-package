@@ -26,7 +26,7 @@ The following fields are required in order to pass the validation:
      \item{\code{administration_id}}{an administration identifier with no missing value}
      \item{\code{administration_text}}{a character string summarising the drug to administer 
      (to be displayed in user interfaces, eg: \code{'Amoxicillin Oral 500mg'})}
-     \item{\code{drug_id}}{identifier of the drug (from a dictionary such as SNOMED-CT or
+     \item{\code{drug_id}}{identifier of the drug (from a dictionary such as SNOMED CT or
       from \code{\link{AMR}{as.ab}()})}
      \item{\code{drug_name}}{preferred name of the drug in the drug dictionary}
      \item{\code{drug_display_name}}{drug name to display in reports and user interfaces

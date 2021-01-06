@@ -14,12 +14,12 @@
 "MINOCYCLINE","J01AA08","O","Watch","13512003","Minocycline"
 "PYRAZINAMIDE","J04AK01","O","Other","13592004","Pyrazinamide"
 "CAPREOMYCIN","J04AB30","P","Other","14170004","Capreomycin"
-"SULFAPYRIDINE","J01EB04","O","Other","1.55e+16","Sulfapyridine"
-"PRISTINAMYCIN","J01FG01","O","Watch","1.63e+16","Pristinamycin"
+"SULFAPYRIDINE","J01EB04","O","Other","15465811000001106","Sulfapyridine"
+"PRISTINAMYCIN","J01FG01","O","Watch","16251011000001105","Pristinamycin"
 "CEFRADINE","J01DB09","O","Watch","16791000","Cefradine"
 "CEFRADINE","J01DB09","P","Watch","16791000","Cefradine"
-"CO-TRIMOXAZOLE","J01EE01","P","Access","1.8e+16","Co-trimoxazole"
-"CO-TRIMOXAZOLE","J01EE01","O","Access","1.8e+16","Co-trimoxazole"
+"CO-TRIMOXAZOLE","J01EE01","P","Access","18037511000001105","Co-trimoxazole"
+"CO-TRIMOXAZOLE","J01EE01","O","Access","18037511000001105","Co-trimoxazole"
 "NETILMICIN","J01GB07","O","Other","19405002","Netilmicin"
 "CEFTRIAXONE","J01DD04","P","Watch","19841008","Ceftriaxone"
 "FIDAXOMICIN","A07AA12","O","Watch","2.06e+16","Fidaxomicin"
@@ -33,7 +33,7 @@
 "SPIRAMYCIN","J01FA02","O","Watch","302007","Spiramycin"
 "ERYTHROMYCIN","J01FA01","O","Watch","30427009","Erythromycin"
 "ERYTHROMYCIN","J01FA01","P","Watch","30427009","Erythromycin"
-"CEFTOBIPROLE","J01DI01","P","Reserve","3.1e+16","Ceftobiprole"
+"CEFTOBIPROLE","J01DI01","P","Reserve","31009711000001109","Ceftobiprole"
 "AMPICILLIN","J01CA01","O","Access","31087008","Ampicillin"
 "AMPICILLIN","J01CA01","P","Access","31087008","Ampicillin"
 "BENZATHINE BENZYLPENICILLIN","J01CE08","P","Access","323404007","Benzathine benzylpenicillin"
@@ -170,7 +170,7 @@
 "PELFLOXACIN","J01MA03","P","Watch",NA,NA
 "ROKITAMYCIN","J01FA12","O","Watch",NA,NA
 "JOSAMYCIN","J01FA07","O","Watch","713477009","Josamycin"
-"ERYTHROMYCIN ETHYLSUCCINATE","J01FA01","O","Watch","3.64e+16","Erythromycin ethyl succinate"
+"ERYTHROMYCIN ETHYLSUCCINATE","J01FA01","O","Watch","36408511000001102","Erythromycin ethyl succinate"
 "CLOXACILLIN","J01CF02","O","Access","68422006","Cloxacillin"
 "SITAFLOXACIN","J01MA21","O","Watch",NA,NA
 "FAROPENEM","J01DI03","O","Watch",NA,NA

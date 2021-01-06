@@ -632,7 +632,7 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'      \item{\code{prescription_id}}{a prescription identifier with no missing value}
 #'      \item{\code{prescription_text}}{a character string summarising the prescription 
 #'      (to be displayed in user interfaces, eg: \code{'Amoxicillin Oral 500mg BDS'})}
-#'      \item{\code{drug_id}}{identifier of the drug (from a dictionary such as SNOMED-CT or
+#'      \item{\code{drug_id}}{identifier of the drug (from a dictionary such as SNOMED CT or
 #'       from \code{\link{AMR}{as.ab}()})}
 #'      \item{\code{drug_name}}{preferred name of the drug in the drug dictionary}
 #'      \item{\code{drug_display_name}}{drug name to display in reports and user interfaces
@@ -809,7 +809,7 @@ validate_prescriptions <- function(data) {
 #'      \item{\code{administration_id}}{an administration identifier with no missing value}
 #'      \item{\code{administration_text}}{a character string summarising the drug to administer 
 #'      (to be displayed in user interfaces, eg: \code{'Amoxicillin Oral 500mg'})}
-#'      \item{\code{drug_id}}{identifier of the drug (from a dictionary such as SNOMED-CT or
+#'      \item{\code{drug_id}}{identifier of the drug (from a dictionary such as SNOMED CT or
 #'       from \code{\link{AMR}{as.ab}()})}
 #'      \item{\code{drug_name}}{preferred name of the drug in the drug dictionary}
 #'      \item{\code{drug_display_name}}{drug name to display in reports and user interfaces
@@ -1172,11 +1172,11 @@ validate_microbiology <- function(specimens, isolates, susceptibilities) {
 #'    \item{\code{"observation_code_system"}}{URL of the code system (for instance: 
 #'    "http://snomed.info/sct", "http://loinc.org")}
 #'    \item{\code{"observation_code"}}{LOINC concept code or SNOMED-CT concept 
-#'    code corresponding to a SNOMED-CT observable entity or evaluation procedure}
+#'    code corresponding to a SNOMED CT observable entity or evaluation procedure}
 #'    \item{\code{"observation_name"}}{code system name for the observation}
 #'    \item{\code{"observation_display"}}{observation name to display}
 #'    \item{\code{"observation_value_text"}}{observation string value or codable
-#'    concept, for example: TRUE/FALSE, Yes/No, SNOMED-CT qualifier value}
+#'    concept, for example: TRUE/FALSE, Yes/No, SNOMED CT qualifier value}
 #'    \item{\code{"observation_value_numeric"}}{observation numeric value}
 #'    \item{\code{"observation_unit"}}{a unit code passing 
 #'    \code{\link[units]{as_units}()}. See examples. 

@@ -109,7 +109,7 @@ DBI::dbListTables(ramses_db)
 
 ### Overview
 
-In this example, we extract total Defined Daily Doses, Days on Therapy, and Length of Therapy by years. Definitions correspond to those given by @Morris2014:
+In this example, we extract monthly total Defined Daily Doses, Days on Therapy, and Length of Therapy. Definitions correspond to those given by @Morris2014.
 
 The approach follows three steps:
 
@@ -125,12 +125,12 @@ Consumption can be attributed to specialty based on the specialty of the episode
 ```{r AC1}
 study_pop <- tbl(ramses_db, "inpatient_episodes") %>% 
   filter(main_specialty_code %in% c("100", "101", "300") &
-           discharge_date >= "2016-01-01")
+           discharge_date >= "2016-01-01") %>% 
+  mutate(calendar_year = year(discharge_date),
+         calendar_month = month(discharge_date))  
 
 consumption_episodes <- study_pop %>% 
   left_join(tbl(ramses_db, "bridge_episode_prescription_overlap")) %>% 
-  mutate(calendar_year = year(discharge_date),
-         calendar_month = month(discharge_date)) %>% 
   group_by(calendar_year, calendar_month, main_specialty_code) %>% 
   summarise(DOT_prescribed = sum(ifNull(DOT, 0.0)),
             DDD_prescribed = sum(ifNULL(DDD_prescribed, 0.0)),
@@ -154,7 +154,7 @@ ggplot(consumption_episodes,
 ```
 
 
-### Consumption base on the episode of initiation 
+### Consumption based on the episode of initiation 
 
 Alternatively, consumption can be attributed to the episode when prescriptions are issued (`authoring_date` field in `drug_prescriptions`). In this case, the appropriate bridge table is `bridge_episode_prescription_initiation`. This amounts to attributing antibiotic consumption to the initial prescriber.
  
@@ -162,8 +162,6 @@ Alternatively, consumption can be attributed to the episode when prescriptions a
 ```{r AC2}
 consumption_initiation <- study_pop %>% 
   left_join(tbl(ramses_db, "bridge_episode_prescription_initiation")) %>% 
-  mutate(calendar_year = year(discharge_date),
-         calendar_month = month(discharge_date)) %>% 
   group_by(calendar_year, calendar_month, main_specialty_code) %>% 
   summarise(DOT_prescribed = sum(ifNull(DOT, 0.0)),
             DDD_prescribed = sum(ifNULL(DDD_prescribed, 0.0)),
@@ -185,6 +183,63 @@ ggplot(consumption_initiation,
 ```
 
 
+### Consumption based on the type of antibiotic
+
+To measure rates of prescribing by antibiotic class or AWaRe category, the query design is different because different dimensions are sought for the numerator and denominator.
+Unlike before, this task takes three steps:
+
+1. compute numerator table
+2. compute denominator table
+3. join tables
+
+```{r}
+consumption_aware_episodes_num <- tbl(ramses_db, "drug_prescriptions") %>% 
+  select(patient_id, prescription_id, ATC_code, ATC_route) %>% 
+  left_join(tbl(ramses_db, "reference_aware"), 
+            by = c("ATC_code", "ATC_route")) %>% 
+  select(patient_id, prescription_id, aware_category) %>% 
+  left_join(tbl(ramses_db, "bridge_episode_prescription_overlap")) %>% 
+  inner_join(study_pop) %>% 
+  group_by(calendar_year, calendar_month, aware_category) %>% 
+  summarise(DOT_prescribed = sum(ifNull(DOT, 0.0))) %>% 
+  collect()
+ 
+consumption_aware_episodes_denom <- study_pop %>% 
+  group_by(calendar_year, calendar_month) %>% 
+  summarise(bed_days =  sum(ifNull(ramses_bed_days, 0.0))) %>% 
+  collect()
+
+consumption_aware_episodes <- left_join(
+  consumption_aware_episodes_denom,
+  consumption_aware_episodes_num
+) %>% 
+  mutate(month_starting = as.Date(paste0(calendar_year, "/", calendar_month, "/01")),
+         aware_category = factor(aware_category, 
+                                    levels = c("Access", "Watch", "Reserve")))
+
+```
+
+```{r}
+aware_colours <- c(
+  "Access" = "#1cb1d1", 
+  "Watch" = "#008ab1", 
+  "Reserve" = "#ff9667"
+  )
+
+ggplot(consumption_aware_episodes, 
+       aes(x = month_starting,
+           y = DOT_prescribed/bed_days*1000, 
+           group = aware_category,
+           color = aware_category)) +
+  geom_line() +
+  scale_x_date(date_labels = "%b %Y") +
+  scale_color_manual(name = "AWaRe category", 
+                     values = aware_colours) +
+  xlab("Month") +
+  ylab("Days of Therapy (DOTs)\nper 1,000 bed-days")
+```
+
+
 <!-- ### Length of therapy -->
 
 <!-- Length of Therapy is the time elapsed during a prescribing episodes (sequence of antimicrobial prescriptions separated by at the most 36 hours by default). To measure it, the bridge table `bridge_episode_therapy_overlap` is required. -->
@@ -201,6 +256,15 @@ DBI::dbDisconnect(ramses_db)
 
 ```{r include=FALSE}
 file.remove("ramses-db.sqlite")
+```
+
+
+```{r eval=FALSE, include=FALSE}
+# Do by Aware Rating next
+# rx_atc_codes <- tbl(ramses_db, "drug_prescriptions") %>% 
+#   select(prescription_id, ATC_code, ATC_route)
+#   left_join(rx_atc_codes, by = "prescription_id") %>% 
+#   left_join(tbl(ramses_db, "reference_aware"), by = c("ATC_code", "ATC_route")) %>% 
 ```
 
 ## Reference

@@ -532,7 +532,7 @@ such data requires the use of standard test vocabularies.
 
 The international standard code system for laboratory data is LOINC 
 (\link[Ramses]{reference_loinc}). A sample of important codes may be found in 
-dataset `Ramses::reference_loinc`. Other observable entity concepts or evaluation procedure concepts may be imported from SNOMED-CT.
+dataset `Ramses::reference_loinc`. Other observable entity concepts or evaluation procedure concepts may be imported from SNOMED CT.
 
 
 ```{r show_inpatient_investigations}
@@ -565,12 +565,20 @@ load_inpatient_investigations(
 ```
 
 
-# Final step
+# Final steps
 
 There is one final step to create ancillary tables:
 
 ```{r final_tables}
+# Create bridge tables
 bridge_tables(conn = ramses_db, overwrite = TRUE)
+
+# Create reference AWaRe table (see ?reference_aware)
+dplyr::copy_to(dest = ramses_db,
+               df = filter(reference_aware, version == "England" & year == "2019"),
+               name = "reference_aware",
+               temporary = FALSE,
+               overwrite = TRUE)
 ```
 
 The database is now ready.

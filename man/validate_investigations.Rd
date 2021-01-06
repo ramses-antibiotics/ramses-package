@@ -56,11 +56,11 @@ The following variables are required:
    \item{\code{"observation_code_system"}}{URL of the code system (for instance: 
    "http://snomed.info/sct", "http://loinc.org")}
    \item{\code{"observation_code"}}{LOINC concept code or SNOMED-CT concept 
-   code corresponding to a SNOMED-CT observable entity or evaluation procedure}
+   code corresponding to a SNOMED CT observable entity or evaluation procedure}
    \item{\code{"observation_name"}}{code system name for the observation}
    \item{\code{"observation_display"}}{observation name to display}
    \item{\code{"observation_value_text"}}{observation string value or codable
-   concept, for example: TRUE/FALSE, Yes/No, SNOMED-CT qualifier value}
+   concept, for example: TRUE/FALSE, Yes/No, SNOMED CT qualifier value}
    \item{\code{"observation_value_numeric"}}{observation numeric value}
    \item{\code{"observation_unit"}}{a unit code passing 
    \code{\link[units]{as_units}()}. See examples. 

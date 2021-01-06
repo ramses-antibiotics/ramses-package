@@ -25,7 +25,7 @@ These fields are required in order to pass the validation:
      \item{\code{prescription_id}}{a prescription identifier with no missing value}
      \item{\code{prescription_text}}{a character string summarising the prescription 
      (to be displayed in user interfaces, eg: \code{'Amoxicillin Oral 500mg BDS'})}
-     \item{\code{drug_id}}{identifier of the drug (from a dictionary such as SNOMED-CT or
+     \item{\code{drug_id}}{identifier of the drug (from a dictionary such as SNOMED CT or
       from \code{\link{AMR}{as.ab}()})}
      \item{\code{drug_name}}{preferred name of the drug in the drug dictionary}
      \item{\code{drug_display_name}}{drug name to display in reports and user interfaces
