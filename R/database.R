@@ -791,7 +791,7 @@ create_mock_database <- function(file, silent = FALSE) {
   .build_tally_table(mock_db)
   dplyr::copy_to(
     dest = mock_db,
-    df = dplyr::filter(reference_aware, version == "England" & year == "2019"),
+    df = dplyr::filter(Ramses::reference_aware, version == "England" & year == "2019"),
     name = "reference_aware",
     temporary = FALSE,
     overwrite = TRUE
@@ -1082,6 +1082,8 @@ create_mock_database <- function(file, silent = FALSE) {
   drug_rx <- Ramses::drug_prescriptions
   drug_admins <- Ramses::drug_administrations
   
+  drug_rx$antiinfective_type <- "antibacterial"
+  drug_admins$antiinfective_type <- "antibacterial"
   drug_rx$ab <- gsub("Vancomycin protocol", "Vancomycin", drug_rx$tr_DESC)
   drug_rx$ab <- as.character(AMR::as.ab(drug_rx$ab))
   drug_rx$drug_name <- AMR::ab_name(drug_rx$ab)
@@ -1149,6 +1151,7 @@ create_mock_database <- function(file, silent = FALSE) {
               ATC_code,
               ATC_group, 
               ATC_route,
+              antiinfective_type,
               authoring_date,
               prescription_start,
               prescription_end,
@@ -1236,6 +1239,7 @@ create_mock_database <- function(file, silent = FALSE) {
       drug_id = ab,
       drug_name,
       drug_display_name = drug_name,
+      antiinfective_type,
       ATC_code,
       ATC_group,
       ATC_route,

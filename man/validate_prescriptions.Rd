@@ -30,6 +30,8 @@ These fields are required in order to pass the validation:
      \item{\code{drug_name}}{preferred name of the drug in the drug dictionary}
      \item{\code{drug_display_name}}{drug name to display in reports and user interfaces
      (can be the same as \code{drug_name})}
+     \item{\code{antiinfective_type}}{type of antiinfective ("antibacterial", "antifungal",
+     "antiviral", or "antiparasitic")}
      \item{\code{ATC_code}}{the ATC code, see \code{\link{AMR}{ab_atc}()}}
      \item{\code{ATC_group}}{the ATC group, see \code{\link{AMR}{ab_group1}()}}
      \item{\code{ATC_route}}{route of administration as defined in the ATC ("O" = oral; 

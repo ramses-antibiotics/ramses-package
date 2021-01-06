@@ -157,6 +157,8 @@ drug_prescriptions <- drug_prescriptions %>%
             drug_id,
             drug_name = drug_name,
             drug_display_name = drug_name,
+            # in this example dataset, only antibacterial drugs are included
+            antiinfective_type = "antibacterial", 
             ATC_code,
             ATC_group,
             ATC_route,
@@ -242,6 +244,8 @@ drug_administrations <- drug_administrations %>%
       drug_id,
       drug_name,
       drug_display_name = drug_name,
+      # in this example dataset, only antibacterial drugs are included
+      antiinfective_type = "antibacterial", 
       ATC_code,
       ATC_group,
       ATC_route,

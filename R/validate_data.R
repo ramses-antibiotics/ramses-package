@@ -637,6 +637,8 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'      \item{\code{drug_name}}{preferred name of the drug in the drug dictionary}
 #'      \item{\code{drug_display_name}}{drug name to display in reports and user interfaces
 #'      (can be the same as \code{drug_name})}
+#'      \item{\code{antiinfective_type}}{type of antiinfective ("antibacterial", "antifungal",
+#'      "antiviral", or "antiparasitic")}
 #'      \item{\code{ATC_code}}{the ATC code, see \code{\link{AMR}{ab_atc}()}}
 #'      \item{\code{ATC_group}}{the ATC group, see \code{\link{AMR}{ab_group1}()}}
 #'      \item{\code{ATC_route}}{route of administration as defined in the ATC ("O" = oral; 
@@ -771,6 +773,19 @@ validate_prescriptions <- function(data) {
         )))
   }
   
+  if( any(
+    !data$antiinfective_type %in% c(
+      "antibacterial",
+      "antifungal",
+      "antiviral",
+      "antiparasitic"
+    )
+  )) {
+    stop(paste(
+      '`antiinfective_type` must be one of: "antibacterial", "antifungal",',
+      '"antiviral", or "antiparasitic"'))
+  }
+  
   duplicates <- data %>% 
     dplyr::group_by(patient_id, drug_id, dose, route, prescription_start) %>% 
     dplyr::summarise(n = n()) %>% 
@@ -814,6 +829,8 @@ validate_prescriptions <- function(data) {
 #'      \item{\code{drug_name}}{preferred name of the drug in the drug dictionary}
 #'      \item{\code{drug_display_name}}{drug name to display in reports and user interfaces
 #'      (can be the same as \code{drug_name})}
+#'      \item{\code{antiinfective_type}}{type of antiinfective ("antibacterial", "antifungal",
+#'      "antiviral", or "antiparasitic")}
 #'      \item{\code{ATC_code}}{the ATC code, see \code{\link{AMR}{ab_atc}()}}
 #'      \item{\code{ATC_group}}{the ATC group, see \code{\link{AMR}{ab_group1}()}}
 #'      \item{\code{ATC_route}}{route of administration as defined in the ATC ("O" = oral; 
@@ -893,6 +910,19 @@ validate_administrations <- function(data) {
         "on-hold", "completed", "entered-in-error", "stopped", or "unknown"'
       )
     )
+  }
+  
+  if( any(
+    !data$antiinfective_type %in% c(
+      "antibacterial",
+      "antifungal",
+      "antiviral",
+      "antiparasitic"
+    )
+  )) {
+    stop(paste(
+      '`antiinfective_type` must be one of: "antibacterial", "antifungal",',
+      '"antiviral", or "antiparasitic"'))
   }
   
   duplicates <- data %>% 

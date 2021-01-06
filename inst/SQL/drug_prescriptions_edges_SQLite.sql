@@ -37,6 +37,7 @@ WITH rx_edges AS (
          ON a.[patient_id] = b.[patient_id]
              and a.[prescription_id] <> b.[prescription_id]
              and a.[prescription_context] = b.[prescription_context]
+             and a.[antiinfective_type] = b.[antiinfective_type]
 )
 
 INSERT

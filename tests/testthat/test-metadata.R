@@ -20,6 +20,7 @@ test_that("Infection mapping", {
 })
 
 test_that("dosage and DDDs", {
+  expect_equivalent(compute_DDDs("J02AC01", "O", 200, "mg"), 1)
   expect_equivalent(compute_DDDs("J01CA04", "O", 1500, "mg"), 1)
   expect_true(is.na(compute_DDDs("J01CA04", "O", 1500, NA)))
   expect_error(compute_DDDs("J01CA04", "O", 1500, "fake_unit"))

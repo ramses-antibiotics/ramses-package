@@ -31,6 +31,7 @@ FROM [temp_prescriptions] a
      ON a.[patient_id] = b.[patient_id]
          and a.[prescription_id] <> b.[prescription_id]
          and a.[prescription_context] = [b.prescription_context]
+         and a.[antiinfective_type] = b.[antiinfective_type]
          -- -- Edit 19 April 2019: added combinations
          -- and a.[drug_id] <> b.[drug_id] ---- CONDITION FOR COMBINATION this excludes the doxi and gent combos
          and
