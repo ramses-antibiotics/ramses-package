@@ -54,6 +54,7 @@ Suggests:
     timevis,
     pkgdown,
     R.utils,
+    comorbidity,
     RPostgreSQL
 Remotes: 
     ramses-antibiotics/snomedizer

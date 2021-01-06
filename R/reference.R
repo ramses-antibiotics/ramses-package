@@ -35,8 +35,6 @@
 #' \item{\code{aware_category}}{AWaRe index ("Access", "Watch", "Reserve")}
 #' \item{\code{version}}{AWaRe Index version (eg. "WHO", "England")}
 #' \item{\code{year}}{AWaRe Index version year}
-#' \item{\code{ab_code}}{antibiotic code from \code{\link[AMR]{as.ab}()}}
-#' \item{\code{ab_name}}{antibiotic name from \code{\link[AMR]{ab_name}()}}
 #' \item{\code{VTM_code}}{SNOMED CT medicinal product code/Virtual Therapeutic Moiety 
 #' code in the SNOMED CT UK Drug Extension (see \insertCite{SNOMEDDrugUK2020}{Ramses})}
 #' \item{\code{VTM_name}}{SNOMED CT medicinal product code/Virtual Therapeutic Moiety 
