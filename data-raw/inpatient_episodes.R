@@ -22,6 +22,11 @@ inpatient_episodes2 <- read.csv(
                  "character", "character"))
 inpatient_episodes <- dplyr::bind_rows(inpatient_episodes,
                                        inpatient_episodes2)
+
+for (i in which(sapply(inpatient_episodes, is, class2 = "POSIXct"))) {
+  attr(inpatient_episodes[[i]], "tzone") <- "Europe/London"
+}
+
 usethis::use_data(inpatient_episodes, overwrite = T)
 
 inpatient_diagnoses <- read.csv(
@@ -38,6 +43,11 @@ inpatient_diagnoses2 <- read.csv(
                  "POSIXct", "character"))
 inpatient_diagnoses <- dplyr::bind_rows(inpatient_diagnoses,
                                         inpatient_diagnoses2)
+
+for (i in which(sapply(inpatient_diagnoses, is, class2 = "POSIXct"))) {
+  attr(inpatient_diagnoses[[i]], "tzone") <- "Europe/London"
+}
+
 usethis::use_data(inpatient_diagnoses, overwrite = T)
 
 inpatient_wards <- read.csv(
@@ -50,6 +60,11 @@ inpatient_wards2 <- read.csv(
                  "POSIXct", "POSIXct"))
 inpatient_wards <- dplyr::bind_rows(inpatient_wards,
                                     inpatient_wards2)
+
+for (i in which(sapply(inpatient_wards, is, class2 = "POSIXct"))) {
+  attr(inpatient_wards[[i]], "tzone") <- "Europe/London"
+}
+
 usethis::use_data(inpatient_wards, overwrite = T)
 
 inpatient_investigations <- read.csv(
@@ -57,6 +72,11 @@ inpatient_investigations <- read.csv(
   colClasses = c("character", "character",  "character", "character", 
                  "POSIXct", "POSIXct", "character", "numeric", "character",
                  "character", "character", "character", "character"))
+
+for (i in which(sapply(inpatient_investigations, is, class2 = "POSIXct"))) {
+  attr(inpatient_investigations[[i]], "tzone") <- "Europe/London"
+}
+
 usethis::use_data(inpatient_investigations, overwrite = T)
 
 
@@ -72,6 +92,10 @@ inpatient_microbiology <- read.csv(
   mutate(status = NA_character_,
          specimen_datetime = lubridate::as_datetime(specimen_datetime),
          isolation_datetime = lubridate::as_datetime(specimen_datetime) %m+% days(3))
-  
+
+for (i in which(sapply(inpatient_microbiology, is, class2 = "POSIXct"))) {
+  attr(inpatient_microbiology[[i]], "tzone") <- "Europe/London"
+}
+
 usethis::use_data(inpatient_microbiology, overwrite = TRUE)
 
