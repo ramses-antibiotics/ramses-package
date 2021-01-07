@@ -111,12 +111,15 @@ test_that("Ramses on SQLite 2", {
            therapy_id = c("592a738e4c2afcae6f625c01856151e0", "0bf9ea7732dd6e904ab670a407382d95")))
   
   test_output <- tbl(conSQLite, "drug_therapy_episodes") %>% 
-    filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
-    collect()
+    dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
+    dplyr::collect()
+  
+  
+  print(test_output)
   
   expect_equivalent(
     test_output, 
-    tibble(
+    dplyr::tibble(
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
       therapy_start = "2016-08-01 11:15:19",
@@ -133,12 +136,14 @@ test_that("Ramses on SQLite 2", {
   expect_silent(create_therapy_episodes(conSQLite))
   
   test_output <- tbl(conSQLite, "drug_therapy_episodes") %>% 
-    filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
-    collect()
+    dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
+    dplyr::collect()
+  
+  print(test_output)
   
   expect_equivalent(
     test_output, 
-    tibble(
+    dplyr::tibble(
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
       therapy_start = "2016-08-01 11:15:19",

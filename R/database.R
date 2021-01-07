@@ -723,7 +723,7 @@ load_medications.SQLiteConnection <- function(
 #' @description This function should be used to recreate therapy episodes
 #' and therapy combinations, for example in order to try new 
 #' \code{transitive_closure_controls} parameters. Note that 
-#' \code{\link[Ramses]{load_medication}()} creates 
+#' \code{\link[Ramses]{load_medications}()} creates 
 #' episodes and combinations by default.
 #' 
 #' @param conn a connection to a database containing a
