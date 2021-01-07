@@ -453,7 +453,7 @@ load_medications.SQLiteConnection <- function(
   prescriptions$prescription_start <- as.character(prescriptions$prescription_start)
   prescriptions$prescription_end <- as.character(prescriptions$prescription_end)
   prescriptions$therapy_rank <- NA_integer_
-  # TODO: antiinfective type
+  
   if (!exists("prescription_text", prescriptions)) {
     prescriptions <- prescriptions %>% 
       dplyr::mutate(prescription_text = paste0(
@@ -488,6 +488,7 @@ load_medications.SQLiteConnection <- function(
       "combination_id",
       "therapy_id",
       "drug_id",
+      "antiinfective_type",
       "ATC_code",
       "ATC_route",
       "authoring_date",
@@ -496,14 +497,17 @@ load_medications.SQLiteConnection <- function(
     )
   )
   
-  .create_table_drug_prescriptions_edges.SQLiteConnection(
-    conn = conn, transitive_closure_controls)
-  
-  if(create_therapy_id) .create_therapy_id.SQLiteConnection(conn = conn, 
-                                                            silent = silent)
-  if(create_combination_id) .create_combination_id.SQLiteConnection(conn = conn, 
-                                                                    silent = silent)
-  
+  if (create_therapy_id | create_combination_id) {
+    .create_table_drug_prescriptions_edges.SQLiteConnection(
+      conn = conn, transitive_closure_controls)
+    .create_therapy_id.SQLiteConnection(conn = conn, 
+                                        silent = silent)
+    .create_combination_id.SQLiteConnection(conn = conn, 
+                                            silent = silent)
+  } else {
+    .create_table_drug_therapy_episodes(conn = conn)
+  }
+   
   TRUE
 }
 
@@ -605,7 +609,7 @@ load_medications.SQLiteConnection <- function(
   .remove_db_tables(conn = conn, "drug_therapy_episodes")
 
   forget <- tbl(conn, "drug_prescriptions") %>%
-    dplyr::group_by(patient_id, therapy_id) %>% # TODO antiinfective_type
+    dplyr::group_by(patient_id, therapy_id) %>% 
     dplyr::summarise(therapy_start = min(prescription_start, na.rm = TRUE),
                      therapy_end = max(prescription_end, na.rm = TRUE)) %>% 
     dplyr::compute(name = "drug_therapy_episodes", temporary = FALSE)
@@ -668,8 +672,12 @@ load_medications.SQLiteConnection <- function(
   
 }
 
+
 .load_administrations.SQLiteConnection <- function(
-  conn, administrations, overwrite) {
+  conn, 
+  administrations, 
+  overwrite
+  ) {
   
   administrations <- dplyr::arrange(administrations, 
                                     patient_id, administration_date)
@@ -682,7 +690,8 @@ load_medications.SQLiteConnection <- function(
   )
   administrations <- arrange_variables(
     administrations, 
-    first_column_names = first_column_names) 
+    first_column_names = first_column_names
+    ) 
   
   load_output <- try({
     dplyr::copy_to(
@@ -708,6 +717,69 @@ load_medications.SQLiteConnection <- function(
   }
 }
 
+
+#' Re-create therapy episodes and therapy combinations
+#'
+#' @description This function should be used to recreate therapy episodes
+#' and therapy combinations, for example in order to try new 
+#' \code{transitive_closure_controls} parameters. Note that 
+#' \code{\link[Ramses]{load_medication}()} creates 
+#' episodes and combinations by default.
+#' 
+#' @param conn a connection to a database containing a
+#' \code{drug_prescriptions} table previously created with 
+#' \code{\link{load_medications}()})
+#' @param transitive_closure_controls parameters controlling (see 
+#' \code{\link{transitive_closure_control}()})
+#' @param silent a boolean indicating whether the function should be
+#' executed without progress bar. Default is `TRUE`.
+#' 
+#' @details This function performs the following tasks:
+#' \enumerate{
+#'    \item verify that a valid \code{drug_prescriptions} table exists
+#'    \item delete any existing \code{drug_prescription_edges} and
+#'    \code{drug_therapy_episodes} table
+#'    \item recreate the \code{drug_prescription_edges} table
+#'    \item repopulate the \code{therapy_id} and \code{combination_id}
+#'    fields in \code{drug_prescriptions} table
+#'    \item recreate the \code{drug_therapy_episodes} table
+#' }
+#' @rdname create_therapy_episodes
+#' @export
+create_therapy_episodes <- function(
+  conn,
+  transitive_closure_controls = transitive_closure_control(),
+  silent = TRUE
+) {
+  UseMethod("create_therapy_episodes", conn)
+}
+
+#' @rdname create_therapy_episodes
+#' @method create_therapy_episodes SQLiteConnection
+#' @export  
+create_therapy_episodes.SQLiteConnection <- function(
+  conn,
+  transitive_closure_controls = transitive_closure_control(),
+  silent = TRUE
+) {
+  
+  if( !DBI::dbExistsTable(conn, "drug_prescriptions") ){
+    stop("No `drug_prescriptions` table found on `conn`")
+  }
+  
+  .create_table_drug_prescriptions_edges.SQLiteConnection(
+    conn = conn, 
+    transitive_closure_controls = transitive_closure_controls
+  )
+  .create_therapy_id.SQLiteConnection(
+    conn = conn, 
+    silent = silent
+  )
+  .create_combination_id.SQLiteConnection(
+    conn = conn, 
+    silent = silent
+  )
+}
 
 # Database management -----------------------------------------------------
 

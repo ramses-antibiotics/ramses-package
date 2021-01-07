@@ -10,7 +10,7 @@ test_that("Ramses on SQLite 1", {
   if (!identical(Sys.getenv("CI"), "true")) {
     skip("Test only on Travis")
   }
-  
+
   conSQLite <- create_mock_database(file = "test1.sqlite", silent = TRUE)
   expect_true(is(conSQLite, "SQLiteConnection"))
   test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
@@ -110,6 +110,45 @@ test_that("Ramses on SQLite 2", {
            combination_id = c(NA_character_, "0bf9ea7732dd6e904ab670a407382d95"),
            therapy_id = c("592a738e4c2afcae6f625c01856151e0", "0bf9ea7732dd6e904ab670a407382d95")))
   
+  test_output <- tbl(conSQLite, "drug_therapy_episodes") %>% 
+    filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
+    collect()
+  
+  expect_equivalent(
+    test_output, 
+    tibble(
+      patient_id = "1555756339",
+      therapy_id = "592a738e4c2afcae6f625c01856151e0",
+      therapy_start = "2016-08-01 11:15:19",
+      therapy_end = "2016-08-03 11:15:19"
+    )
+  )
+
+# > recreate therapy episodes and combinations --------------------------------
+
+  
+  DBI::dbRemoveTable(conSQLite, "drug_prescriptions_edges")
+  DBI::dbRemoveTable(conSQLite, "drug_therapy_episodes")
+  
+  expect_silent(create_therapy_episodes(conSQLite))
+  
+  test_output <- tbl(conSQLite, "drug_therapy_episodes") %>% 
+    filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
+    collect()
+  
+  expect_equivalent(
+    test_output, 
+    tibble(
+      patient_id = "1555756339",
+      therapy_id = "592a738e4c2afcae6f625c01856151e0",
+      therapy_start = "2016-08-01 11:15:19",
+      therapy_end = "2016-08-03 11:15:19"
+    )
+    )
+  
+  
+  
+  
   # > other database functions --------------------------------------------
   
      # bridge_episode_prescription_overlap
@@ -136,7 +175,7 @@ test_that("Ramses on SQLite 2", {
   expect_equal(round(test_bridge_init$DOT, 1), 2.0)
   expect_equal(round(test_bridge_init$DDD_prescribed, 1), 1.3)
   
-    # bridge_episode_therapy_overlap
+  # bridge_episode_therapy_overlap
   expect_true(bridge_episode_therapy_overlap(conSQLite))
   expect_error(bridge_episode_therapy_overlap(conSQLite))
   expect_true(bridge_episode_therapy_overlap(conSQLite, overwrite = TRUE))
