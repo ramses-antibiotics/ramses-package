@@ -116,6 +116,9 @@ test_that("Ramses on SQLite 2", {
   
   
   print(test_output)
+  dplyr::filter(drug_prescriptions, prescription_id == "592a738e4c2afcae6f625c01856151e0")
+  dplyr::filter(tbl(conSQLite, "drug_prescriptions"), prescription_id == "592a738e4c2afcae6f625c01856151e0") %>% 
+    select(prescription_start, prescription_end)
   
   expect_equivalent(
     test_output, 
