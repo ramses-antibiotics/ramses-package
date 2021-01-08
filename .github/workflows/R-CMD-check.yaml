@@ -93,18 +93,18 @@ jobs:
       #   with:
       #     name: ${{ runner.os }}-r${{ matrix.config.r }}-results
       #     path: check
-          
+
       - name: Code coverage
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release' 
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release'
         run: covr::codecov(type = "all", token = Sys.getenv("CODECOVETOKEN"))
         shell: Rscript {0}
-        
+
       - name: Build pkgdown
-        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release' 
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release'
         run: Rscript ./pkgdown/build.R
-        
+
       - name: Deploy to Firebase
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release' 
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release'
         uses: w9jds/firebase-action@master
         with:
           args: deploy --only hosting

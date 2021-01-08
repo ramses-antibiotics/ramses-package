@@ -17,12 +17,12 @@ navbar:
     - text: "PASS"
       icon: "fas fa-capsules fa-lg"
       href: https://pass-antibiotics.github.io/
-      
+
 home:
   description: >
-    Ramses is an analytical software package enabling hospitals to 
-    monitor and query their use of antibiotics and the management of 
-    infections. 
+    Ramses is an analytical software package enabling hospitals to
+    monitor and query their use of antibiotics and the management of
+    infections.
   links:
   - text: Visit project website
     href: https://pass-antibiotics.github.io/
@@ -72,4 +72,3 @@ reference:
   desc:  All functions in alphabetical order
   contents:
   - matches(".*")
-

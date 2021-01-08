@@ -16,7 +16,7 @@ drug_prescriptions$dose <- as.numeric(drug_prescriptions$dose)
 drug_prescriptions2$dose <- as.numeric(drug_prescriptions2$dose)
 drug_prescriptions <- dplyr::bind_rows(drug_prescriptions,
                                        drug_prescriptions2)
-for (i in which(sapply(drug_prescriptions, is, class2 = "POSIXct"))) {
+for (i in which(vapply(drug_prescriptions, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
   attr(drug_prescriptions[[i]], "tzone") <- "Europe/London"
 }
 usethis::use_data(drug_prescriptions, overwrite = T)
@@ -36,7 +36,10 @@ drug_administrations2$dose <- as.numeric(drug_administrations2$dose)
 drug_administrations <- dplyr::bind_rows(drug_administrations,
                                          drug_administrations2)
 
-for (i in which(sapply(drug_administrations, is, class2 = "POSIXct"))) {
+for (i in which(vapply(drug_administrations, 
+                       is, 
+                       class2 = "POSIXct", 
+                       FUN.VALUE = logical(1)))) {
   attr(drug_administrations[[i]], "tzone") <- "Europe/London"
 }
 

@@ -18,11 +18,12 @@
   }
   
   must_be_unique <- subset(data, select = col_names)
-  duplicate_results <- sapply(
+  duplicate_results <- vapply(
     must_be_unique,
     function(X) {
       any(duplicated(X))
-    }
+    },
+    FUN.VALUE = logical(1)
   )
   
   if( any(duplicate_results) ){
@@ -96,7 +97,7 @@
     return(TRUE)
   }
   
-  not_exist <- !sapply(vectorname, exists, where = data)
+  not_exist <- !vapply(vectorname, exists, where = data, FUN.VALUE = logical(1))
   if( any(not_exist) & action == "warning"){
     warning(
       simpleWarning(paste(
@@ -136,20 +137,22 @@
     return(TRUE)
   }
   
-  missing_data <- sapply(
+  missing_data <- vapply(
     vectorname, 
     function(var, data) {
       any(is.na(data[, var]))
     },
-    data = data
+    data = data,
+    FUN.VALUE = logical(1)
   )
   
-  empty_data <- sapply(
+  empty_data <- vapply(
     vectorname, 
     function(var, data) {
       any(as.character(na.omit(data[, var])) == "")
     },
-    data = data
+    data = data,
+    FUN.VALUE = logical(1)
   )
   
   if( any(missing_data) & action == "warning"){
@@ -306,7 +309,8 @@ validate_inpatient_episodes <- function(episodes,
   episode_schema <- .inpatient_episodes_variables()
   
   variable_exists <- episode_schema[episode_schema$must_exist, "variable_name"]
-  not_exist <- !sapply(variable_exists, exists, where = episodes)
+  not_exist <- !vapply(variable_exists, exists, where = episodes,
+                       FUN.VALUE = logical(1))
   if( any(not_exist) ){
     stop(
       simpleError(paste(
@@ -346,7 +350,8 @@ validate_inpatient_episodes <- function(episodes,
   ward_schema <- .inpatient_wards_variables()
   
   variable_exists <- ward_schema[ward_schema$must_exist, "variable_name"]
-  not_exist <- !sapply(variable_exists, exists, where = wards)
+  not_exist <- !vapply(variable_exists, exists, where = wards,
+                       FUN.VALUE = logical(1))
   if( any(not_exist) ){
     stop(
       simpleError(paste(
@@ -560,7 +565,8 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
     diagnoses_data_schema[["must_exist"]],
     "variable_name"
   ]
-  not_exist <- !sapply(data_var_exists, exists, where = diagnoses_data)
+  not_exist <- !vapply(data_var_exists, exists, where = diagnoses_data,
+                       FUN.VALUE = logical(1))
   if( any(not_exist) ){
     stop(
       simpleError(paste(
@@ -574,7 +580,8 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
     diagnoses_lookup_schema[["must_exist"]],
     "variable_name"
   ]
-  not_exist <- !sapply(lkup_var_exists, exists, where = diagnoses_lookup)
+  not_exist <- !vapply(lkup_var_exists, exists, where = diagnoses_lookup,
+                       FUN.VALUE = logical(1))
   if( any(not_exist) ){
     stop(
       simpleError(paste(
@@ -716,7 +723,8 @@ validate_prescriptions <- function(data) {
     "variable_name"
   ]
 
-  not_exist <- !sapply(variable_exists, exists, where = data)
+  not_exist <- !vapply(variable_exists, exists, where = data,
+                       FUN.VALUE = logical(1))
   if( any(not_exist) ){
     stop(
       simpleError(paste(
@@ -870,7 +878,8 @@ validate_administrations <- function(data) {
     "variable_name"
   ]
   
-  not_exist <- !sapply(variable_exists, exists, where = data)
+  not_exist <- !vapply(variable_exists, exists, where = data,
+                       FUN.VALUE = logical(1))
   if( any(not_exist) ){
     stop(
       simpleError(paste(
@@ -1229,7 +1238,8 @@ validate_investigations <- function(investigations,
     investigation_schema[["must_exist"]],
     "variable_name"]
 
-  not_exist <- !sapply(variable_exists, exists, where = investigations)
+  not_exist <- !vapply(variable_exists, exists, where = investigations,
+                       FUN.VALUE = logical(1))
   if( any(not_exist) ){
     stop(
       simpleError(paste(
@@ -1243,9 +1253,10 @@ validate_investigations <- function(investigations,
     investigation_schema$must_be_nonmissing,
     "variable_name"]
   missing_data <- suppressWarnings(
-    !sapply(exists_non_missing, 
+    !vapply(exists_non_missing, 
             FUN = .validate_variable_no_missing,
-            data = investigations)
+            data = investigations,
+            FUN.VALUE = logical(1))
   )
   if( any(missing_data) ){
     stop(

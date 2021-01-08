@@ -61,7 +61,7 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
     ))
   
   if ( is(conn, "SQLiteConnection" )) {
-    for(i in which(sapply(diagnoses_data, is, class2 = "POSIXct"))) {
+    for(i in which(vapply(diagnoses_data, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
       diagnoses_data[[i]] <- as.character(diagnoses_data[[i]])
     }
   }
@@ -124,7 +124,7 @@ load_inpatient_episodes <- function(conn,
     first_column_names = first_column_names_episodes) 
   
   if ( is(conn, "SQLiteConnection" )) {
-    for(i in which(sapply(episodes_data, is, class2 = "POSIXct"))) {
+    for(i in which(vapply(episodes_data, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
       episodes_data[[i]] <- as.character(episodes_data[[i]])
     }
   }
@@ -160,7 +160,7 @@ load_inpatient_episodes <- function(conn,
       first_column_names = first_column_names_wards)   
     
     if ( is(conn, "SQLiteConnection" )) {
-      for(i in which(sapply(wards_data, is, class2 = "POSIXct"))) {
+      for(i in which(vapply(wards_data, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
         wards_data[[i]] <- as.character(wards_data[[i]])
       }
     }
@@ -208,7 +208,7 @@ load_inpatient_investigations <- function(conn, investigations_data, overwrite =
     first_column_names = first_variables)
   
   if ( is(conn, "SQLiteConnection" )) {
-    for(i in which(sapply(investigations_data, is, class2 = "POSIXct"))) {
+    for(i in which(vapply(investigations_data, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
       investigations_data[[i]] <- as.character(investigations_data[[i]])
     }
   }
@@ -276,13 +276,13 @@ load_inpatient_microbiology <- function(conn,
     first_column_names = first_variables$susceptibilities)
   
   if ( is(conn, "SQLiteConnection" )) {
-    for(i in which(sapply(specimens, is, class2 = "POSIXct"))) {
+    for(i in which(vapply(specimens, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
       specimens[[i]] <- as.character(specimens[[i]])
     }
-    for(i in which(sapply(isolates, is, class2 = "POSIXct"))) {
+    for(i in which(vapply(isolates, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
       isolates[[i]] <- as.character(isolates[[i]])
     }
-    for(i in which(sapply(susceptibilities, is, class2 = "POSIXct"))) {
+    for(i in which(vapply(susceptibilities, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
       susceptibilities[[i]] <- as.character(susceptibilities[[i]])
     }
   }
@@ -367,17 +367,21 @@ transitive_closure_control <- function(max_continuation_gap = 36,
                                        max_combination_authoring_gap = 6,
                                        max_combination_start_gap = 24) {
   
-  argument_length <- sapply(list(max_continuation_gap,
+  argument_length <- vapply(list(max_continuation_gap,
                                  max_combination_authoring_gap,
-                                 max_combination_start_gap), length) != 1
+                                 max_combination_start_gap), 
+                            length,
+                            FUN.VALUE = double(1)) != 1
   
   if(any(argument_length)) {
     stop(simpleError("Parameters must have length == 1"))
   }
   
-  argument_negative <- sapply(list(max_continuation_gap,
+  argument_negative <- vapply(list(max_continuation_gap,
                                    max_combination_authoring_gap,
-                                   max_combination_start_gap), sign) == -1
+                                   max_combination_start_gap), 
+                              sign,
+                              FUN.VALUE = double(1)) == -1
   
   if(any(argument_negative)) {
     stop(simpleError("Parameters must be >= 0"))
@@ -448,7 +452,7 @@ load_medications.SQLiteConnection <- function(
   create_combination_id <- !exists("combination_id", prescriptions)
   
   prescriptions <- dplyr::arrange(prescriptions, patient_id, prescription_start)
-  prescriptions$id <- 1:nrow(prescriptions)
+  prescriptions$id <- seq_len(nrow(prescriptions))
   prescriptions$authoring_date <- as.character(prescriptions$authoring_date)
   prescriptions$prescription_start <- as.character(prescriptions$prescription_start)
   prescriptions$prescription_end <- as.character(prescriptions$prescription_end)
@@ -679,7 +683,7 @@ load_medications.SQLiteConnection <- function(
   
   administrations <- dplyr::arrange(administrations, 
                                     patient_id, administration_date)
-  administrations$id <- 1:nrow(administrations)
+  administrations$id <- seq_len(nrow(administrations))
    
   first_column_names <- .drug_administrations_variables()[["variable_name"]]
   first_column_names <- c(
@@ -941,7 +945,7 @@ create_mock_database <- function(file, silent = FALSE) {
     system.file("SQL", script.name, package = "Ramses", mustWork = TRUE)
   )
   # remove comments
-  statement <- sapply(statement, gsub, pattern = "--.*", replacement = "")
+  statement <- lapply(statement, gsub, pattern = "--.*", replacement = "")
   # concatenate on single line
   statement <- paste(statement, collapse = " ")
   
@@ -1507,7 +1511,7 @@ create_mock_database <- function(file, silent = FALSE) {
 #' @export
 bridge_tables <- function(conn,
                           overwrite = FALSE) {
-  x <- c()
+  x <- vector()
   x[1] <- bridge_episode_prescription_overlap(conn, overwrite)
   x[2] <- bridge_episode_prescription_initiation(conn, overwrite)
   x[3] <- bridge_spell_therapy_overlap(conn, overwrite)

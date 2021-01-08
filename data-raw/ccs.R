@@ -17,7 +17,7 @@ names(ccs) <- c(
   "ccs_L2_desc"
 )
 ccs <- ccs[, -3]
-for (i in 1:ncol(ccs)) {
+for (i in seq_len(ncol(ccs))) {
   ccs[, i] <- gsub("(^')|('$)", "", ccs[, i])
 }
 

@@ -23,7 +23,7 @@ inpatient_episodes2 <- read.csv(
 inpatient_episodes <- dplyr::bind_rows(inpatient_episodes,
                                        inpatient_episodes2)
 
-for (i in which(sapply(inpatient_episodes, is, class2 = "POSIXct"))) {
+for (i in which(vapply(inpatient_episodes, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
   attr(inpatient_episodes[[i]], "tzone") <- "Europe/London"
 }
 
@@ -44,7 +44,7 @@ inpatient_diagnoses2 <- read.csv(
 inpatient_diagnoses <- dplyr::bind_rows(inpatient_diagnoses,
                                         inpatient_diagnoses2)
 
-for (i in which(sapply(inpatient_diagnoses, is, class2 = "POSIXct"))) {
+for (i in which(vapply(inpatient_diagnoses, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
   attr(inpatient_diagnoses[[i]], "tzone") <- "Europe/London"
 }
 
@@ -61,7 +61,7 @@ inpatient_wards2 <- read.csv(
 inpatient_wards <- dplyr::bind_rows(inpatient_wards,
                                     inpatient_wards2)
 
-for (i in which(sapply(inpatient_wards, is, class2 = "POSIXct"))) {
+for (i in which(vapply(inpatient_wards, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
   attr(inpatient_wards[[i]], "tzone") <- "Europe/London"
 }
 
@@ -73,7 +73,7 @@ inpatient_investigations <- read.csv(
                  "POSIXct", "POSIXct", "character", "numeric", "character",
                  "character", "character", "character", "character"))
 
-for (i in which(sapply(inpatient_investigations, is, class2 = "POSIXct"))) {
+for (i in which(vapply(inpatient_investigations, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
   attr(inpatient_investigations[[i]], "tzone") <- "Europe/London"
 }
 
@@ -93,7 +93,7 @@ inpatient_microbiology <- read.csv(
          specimen_datetime = lubridate::as_datetime(specimen_datetime),
          isolation_datetime = lubridate::as_datetime(specimen_datetime) %m+% days(3))
 
-for (i in which(sapply(inpatient_microbiology, is, class2 = "POSIXct"))) {
+for (i in which(vapply(inpatient_microbiology, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
   attr(inpatient_microbiology[[i]], "tzone") <- "Europe/London"
 }
 

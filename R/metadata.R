@@ -189,7 +189,7 @@ map_charlson_comorbidities <- function(df, icd_column){
   }
 
   icd <- unique(df[, icd_column])
-  loc <- sapply(charlson_regex, grep, icd, value = TRUE)
+  loc <- lapply(charlson_regex, grep, icd, value = TRUE)
   loc <- utils::stack(loc)
   names(loc)[1] <- "icd_code"
   names(loc)[2] <- "comorb"
@@ -471,13 +471,13 @@ compute_DDDs <- function(ATC_code, ATC_administration, dose, unit, silent = FALS
   }
   
   check_units <- na.omit(unique(as.character(unit)))
-  invalid_units <- sapply(check_units, function(X) {
+  invalid_units <- vapply(check_units, function(X) {
     inherits(
       try(units::as_units(X), silent = TRUE),
       "try-error")
-  }, simplify = T)
+  }, FUN.VALUE = logical(1))
   
-  if(any(invalid_units)) {
+  if( any(invalid_units) ) {
     stop(simpleError(paste(
       "Invalid `unit` found:",
       paste(paste0("`", check_units, "`"), collapse = ", ")
