@@ -4,7 +4,7 @@
 \alias{bridge_tables}
 \alias{bridge_episode_prescription_overlap}
 \alias{bridge_episode_prescription_initiation}
-\alias{bridge_episode_therapy_overlap}
+\alias{bridge_spell_therapy_overlap}
 \title{Create database bridge tables}
 \usage{
 bridge_tables(conn, overwrite = FALSE)
@@ -13,7 +13,7 @@ bridge_episode_prescription_overlap(conn, overwrite = FALSE)
 
 bridge_episode_prescription_initiation(conn, overwrite = FALSE)
 
-bridge_episode_therapy_overlap(conn, overwrite = FALSE)
+bridge_spell_therapy_overlap(conn, overwrite = FALSE)
 }
 \arguments{
 \item{conn}{a database connection}
@@ -39,18 +39,18 @@ rates of prescribing per admission or per 1,000 bed-days.
    and a time overlap between prescriptions and inpatient episodes.}
    \item{\code{bridge_episode_prescription_initiation()}}{Links prescriptions
    with the inpatient episode when they were authored. The resulting table 
-   differs from {\code{bridge_episode_therapy_overlap}}: it links prescriptions 
+   differs from {\code{bridge_spell_therapy_overlap}}: it links prescriptions 
    to the episode referencing the clinical team who prescribed them, rather
    that episodes during which the prescription was administered. The resulting
    table is the natural join of \code{inpatient_episodes} and 
    \code{drug_prescriptions} based on a match on the patient identifier
    and the prescription authoring date being comprised before the episode 
    start and end dates.}
-   \item{\code{bridge_episode_therapy_overlap()}}{Links therapy episodes
-   to inpatient episodes during which they were administered. The resulting 
+   \item{\code{bridge_spell_therapy_overlap()}}{Links therapy episodes
+   to inpatient spells during which they were administered. The resulting 
    table is the natural join of \code{inpatient_episodes} and 
    \code{drug_prescriptions} based on a match on the patient identifier 
-   and a time overlap between prescriptions and inpatient episodes.}
+   and a time overlap between prescriptions and dates of admission and discharge.}
 } 
 \code{inpatient_episodes}
 }

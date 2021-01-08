@@ -67,16 +67,15 @@ Antimicrobial resistance jeopardizes many achievements of modern medicine, such 
 
 ## Setup 
 
-\code{Ramses} is currently in development. The latest stable version can be installed
-using the \code{devtools} package.
+`Ramses` is currently in development. The latest stable version can be installed using the `devtools` package.
 
 ```{r install ramses, eval=FALSE}
 devtools::install_github("ramses-antibiotics/ramses-package")
 ```
 
-\code{Ramses} comes with synthetic data for testing and training purposes.
-You can use it to create a demonstration SQlite database fully loaded with 
-synthectic electronic health records. 
+`Ramses` comes with synthetic data for testing and training purposes.
+You can use it to create a demonstration SQLite database fully loaded with 
+synthetic electronic health records. 
 
 ```{r setup_mock_db}
 library(Ramses)
@@ -109,16 +108,22 @@ DBI::dbListTables(ramses_db)
 
 ### Overview
 
-In this example, we extract monthly total Defined Daily Doses, Days on Therapy, and Length of Therapy. Definitions correspond to those given by @Morris2014.
+Three main metrics are used to describe antimicrobial consumption in hospitals: Defined Daily Doses, Days on Therapy, and Length of Therapy. Definitions given by @StanicBenic2018 are reproduced below:
 
-The approach follows three steps:
+- **Defined Daily Doses (DDDs)** designate "the assumed average maintenance dose per day for a drug used for its main indication in adults" as defined by the WHO Collaborating Centre for Drug Statistics Methodology (@WHO-ATC2020).
+- **Days of Therapy (DOTs)** designate	"the number of days that a patient receives antibiotics regardless of the dose. When a patient receives more than one antibiotic, more than one DOT may be counted".
+- **Length of Therapy (LOT)** designate "the number of days that a patient receives systemic antimicrobial agents, irrespective of the number of different antibiotics. Therefore, LOT will be lower than or equal to days of therapy (DOT) because the DOT is calculated for each antibiotic".
 
-1. define the study population (encounters for which metrics should be extracted)
-2. choose a bridge table
-3. summarise
+Formulae are available from @Ibrahim2014 along with a discussion of rates which can be derived from these metrics (eg per 1,000 admissions, per 1,000 bed-days). Statistical adjustment of these metrics is discussed by @VanSanten2018 and @Yu2018.
+
+The approach to create tables of antimicrobial consumption follows three steps:
+
+1. define the study population (encounters for which the above metrics should be derived)
+2. choose a bridge table to link encounters with prescriptions
+3. compute the metrics by aggregation.
 
 
-### Consumption based on the episode of administration 
+### DOTs/DDDs based on the episode of administration 
 
 Consumption can be attributed to specialty based on the specialty of the episode during which the antibiotic is administered. In this case, the appropriate bridge table is `bridge_episode_prescription_overlap`.
 
@@ -154,7 +159,7 @@ ggplot(consumption_episodes,
 ```
 
 
-### Consumption based on the episode of initiation 
+### DOTs/DDDs based on the episode of initiation 
 
 Alternatively, consumption can be attributed to the episode when prescriptions are issued (`authoring_date` field in `drug_prescriptions`). In this case, the appropriate bridge table is `bridge_episode_prescription_initiation`. This amounts to attributing antibiotic consumption to the initial prescriber.
  
@@ -165,7 +170,7 @@ consumption_initiation <- study_pop %>%
   group_by(calendar_year, calendar_month, main_specialty_code) %>% 
   summarise(DOT_prescribed = sum(ifNull(DOT, 0.0)),
             DDD_prescribed = sum(ifNULL(DDD_prescribed, 0.0)),
-            bed_days = sum(ifNull(ramses_bed_days, 0.0))) %>% 
+            total_admissions = n_distinct(paste0(patient_id, spell_id))) %>% 
   collect()  %>% 
   mutate(month_starting = as.Date(paste0(calendar_year, "/", calendar_month, "/01")))
 ```
@@ -173,19 +178,57 @@ consumption_initiation <- study_pop %>%
 ```{r plot_AC2}
 ggplot(consumption_initiation, 
        aes(x = month_starting,
-           y = DOT_prescribed/bed_days*1000, 
+           y = DOT_prescribed/total_admissions*1000, 
            group = main_specialty_code,
            color = main_specialty_code)) +
   geom_line() +
   scale_x_date(date_labels = "%b %Y") +
   xlab("Month") +
-  ylab("Days of Therapy (DOTs)\nper 1,000 bed-days")
+  ylab("Days of Therapy (DOTs)\nper 1,000 admissions")
+```
+
+### Length of therapy
+
+Length of Therapy is the time elapsed during a prescribing episodes (sequence of antimicrobial prescriptions separated by at the most 36 hours by default). To measure it, the bridge table `bridge_spell_therapy_overlap` is available. It calculate the total LOT during between admission and discharge (excluding to-take-home medications).
+
+```{r message=FALSE}
+length_therapy_by_spell <- study_pop %>% 
+  distinct(patient_id, spell_id, admission_method) %>% 
+  left_join(tbl(ramses_db, "bridge_spell_therapy_overlap")) %>% 
+  group_by(patient_id, spell_id, admission_method) %>% 
+  summarise(LOT = sum(LOT, na.rm = T)) %>% 
+  collect()
+
+length_therapy_by_spell %>% 
+  group_by(admission_method) %>% 
+  summarise(
+    `Total admissions` = sum(1),
+    `Total admissions with therapy` = sum(!is.na(LOT)),
+    `Mean LOT` = round(mean(LOT, na.rm = T), 1),
+    `Median LOT` = round(median(LOT, na.rm = T), 1),
+    percentile25 = round(quantile(x = LOT, probs = .25, na.rm = T), 1),
+    percentile75 = round(quantile(x = LOT, probs = .75, na.rm = T), 1)
+    ) %>% 
+  transmute(
+    `Admission method` = case_when(
+      admission_method == 1 ~ "Elective",
+      admission_method == 2 ~ "Emergency"),
+    `Total admissions`,
+    `Mean LOT`,
+    `Median LOT`,
+    `Inter-quartile range` = paste0(
+      percentile25,
+      "-",
+      percentile75
+    )
+  )
 ```
 
 
 ### Consumption based on the type of antibiotic
 
 To measure rates of prescribing by antibiotic class or AWaRe category, the query design is different because different dimensions are sought for the numerator and denominator.
+
 Unlike before, this task takes three steps:
 
 1. compute numerator table
@@ -240,9 +283,7 @@ ggplot(consumption_aware_episodes,
 ```
 
 
-<!-- ### Length of therapy -->
 
-<!-- Length of Therapy is the time elapsed during a prescribing episodes (sequence of antimicrobial prescriptions separated by at the most 36 hours by default). To measure it, the bridge table `bridge_episode_therapy_overlap` is required. -->
 
 
 # Once you are done 
@@ -267,4 +308,4 @@ file.remove("ramses-db.sqlite")
 #   left_join(tbl(ramses_db, "reference_aware"), by = c("ATC_code", "ATC_route")) %>% 
 ```
 
-## Reference
+# References

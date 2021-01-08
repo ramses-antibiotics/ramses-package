@@ -1,12 +1,5 @@
 
 
-# TODO
-# ramses_ui_data_filter_prescription_status <- function(){
-#   # keep "cancelled" and "draft" out
-#   c("active", "on-hold", "completed", "entered-in-error", "stopped", "unknown")
-# }
-
-
 #' Build an antiinfective timeline visualisation
 #'
 #' @param conn a database connection
@@ -205,7 +198,7 @@ therapy_timeline <- function(conn, patient_identifier,
     ) %>% 
     dplyr::collect()
   
-  #TODO: reintroduce the micro-requests when we have a date of reporting
+  
   if(nrow(micro) == 0){
     return(data.frame())
   } else {
@@ -231,6 +224,7 @@ therapy_timeline <- function(conn, patient_identifier,
         subgroup = "micro"
       )
     
+    # TODO: reintroduce the micro-requests when we have a date of reporting
     # timeline_micro_requests <- micro %>%
     #   dplyr::group_by(specimen_id) %>%
     #   dplyr::summarise(

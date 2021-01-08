@@ -42,13 +42,13 @@ test_that("bridge_episode_prescription_initiation", {
   dbDisconnect(emptydatabase)
 })
 
-test_that("bridge_episode_therapy_overlap", {
+test_that("bridge_spell_therapy_overlap", {
   emptydatabase <- dbConnect(RSQLite::SQLite(), ":memory:")
-  expect_error(bridge_episode_therapy_overlap(
+  expect_error(bridge_spell_therapy_overlap(
     conn = "not_a_connection", overwrite = TRUE))
-  expect_error(bridge_episode_therapy_overlap(
+  expect_error(bridge_spell_therapy_overlap(
     conn = emptydatabase, overwrite = TRUE))
-  expect_error(bridge_episode_therapy_overlap(
+  expect_error(bridge_spell_therapy_overlap(
     conn = emptydatabase, overwrite = "TRUE"))
   dbDisconnect(emptydatabase)
 })

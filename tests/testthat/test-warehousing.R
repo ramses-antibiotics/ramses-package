@@ -184,13 +184,13 @@ test_that("Ramses on SQLite 2", {
   expect_equal(round(test_bridge_init$DOT, 1), 2.0)
   expect_equal(round(test_bridge_init$DDD_prescribed, 1), 1.3)
   
-  # bridge_episode_therapy_overlap
-  expect_true(bridge_episode_therapy_overlap(conSQLite))
-  expect_error(bridge_episode_therapy_overlap(conSQLite))
-  expect_true(bridge_episode_therapy_overlap(conSQLite, overwrite = TRUE))
+  # bridge_spell_therapy_overlap
+  expect_true(bridge_spell_therapy_overlap(conSQLite))
+  expect_error(bridge_spell_therapy_overlap(conSQLite))
+  expect_true(bridge_spell_therapy_overlap(conSQLite, overwrite = TRUE))
   test_bridge_th_overlap <- tbl(
     conSQLite,
-    "bridge_episode_therapy_overlap") %>% 
+    "bridge_spell_therapy_overlap") %>% 
     dplyr::filter(patient_id == "99999999999" &
                     therapy_id == "4d611fc8886c23ab047ad5f74e5080d7") %>% 
     dplyr::collect()

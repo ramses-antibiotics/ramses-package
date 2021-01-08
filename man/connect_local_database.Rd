@@ -10,7 +10,7 @@ connect_local_database(file)
 \item{file}{A file path to an existing or new database file with an .sqlite extension.}
 }
 \value{
-An object of class SQLiteConnection.
+An database connection object of class SQLiteConnection.
 }
 \description{
 Create a local database in memory or on disk using \code{\link[RSQLite]{SQLite}()}. 

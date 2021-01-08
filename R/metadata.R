@@ -241,8 +241,6 @@ map_charlson_comorbidities <- function(df, icd_column){
 #' mock_icd_data
 map_infections_abx_indications <- function(df, icd_column) {
   
-  # TODO: assess quality of mapping on UK ICD
-  
   if (length(icd_column) != 1) {
     stop(simpleError(
       "`icd_column` must be of length 1"

@@ -112,7 +112,7 @@ load_inpatient_episodes <- function(conn,
                                     episodes_data, 
                                     wards_data = NULL, 
                                     overwrite = TRUE) {
-  #TODO: define index in the variable schema + add reference tables
+  
   episodes_data <- dplyr::arrange(episodes_data, 
                                   patient_id, episode_start)
   first_column_names_episodes <- .inpatient_episodes_variables()[["variable_name"]]
@@ -519,8 +519,6 @@ load_medications.SQLiteConnection <- function(
 #' `drug_prescriptions_edges` and populate by drawing edges between
 #' prescriptions in the `drug_prescriptions` table based on 
 #' patterns of overlap determined by `transitive_closure_controls`
-#' TODO:put link to online documentation describing the classification
-#' of patterns of prescription overlap  
 #' @param conn a database connection
 #' @param transitive_closure_controls parameters controlling the creation
 #' of edges between prescriptions
@@ -797,7 +795,7 @@ create_therapy_episodes.SQLiteConnection <- function(
 #' method with mock data unless you operate within a secure data enclave.
 #'
 #' @param file A file path to an existing or new database file with an .sqlite extension.
-#' @return An object of class SQLiteConnection.
+#' @return An database connection object of class SQLiteConnection.
 #' @seealso The dbplyr website provides excellent guidance on how to connect to databases: 
 #' \url{https://db.rstudio.com/getting-started/connect-to-database}
 #' @importFrom DBI dbConnect dbDisconnect
@@ -1490,18 +1488,18 @@ create_mock_database <- function(file, silent = FALSE) {
 #'    and a time overlap between prescriptions and inpatient episodes.}
 #'    \item{\code{bridge_episode_prescription_initiation()}}{Links prescriptions
 #'    with the inpatient episode when they were authored. The resulting table 
-#'    differs from {\code{bridge_episode_therapy_overlap}}: it links prescriptions 
+#'    differs from {\code{bridge_spell_therapy_overlap}}: it links prescriptions 
 #'    to the episode referencing the clinical team who prescribed them, rather
 #'    that episodes during which the prescription was administered. The resulting
 #'    table is the natural join of \code{inpatient_episodes} and 
 #'    \code{drug_prescriptions} based on a match on the patient identifier
 #'    and the prescription authoring date being comprised before the episode 
 #'    start and end dates.}
-#'    \item{\code{bridge_episode_therapy_overlap()}}{Links therapy episodes
-#'    to inpatient episodes during which they were administered. The resulting 
+#'    \item{\code{bridge_spell_therapy_overlap()}}{Links therapy episodes
+#'    to inpatient spells during which they were administered. The resulting 
 #'    table is the natural join of \code{inpatient_episodes} and 
 #'    \code{drug_prescriptions} based on a match on the patient identifier 
-#'    and a time overlap between prescriptions and inpatient episodes.}
+#'    and a time overlap between prescriptions and dates of admission and discharge.}
 #' } 
 #' \code{inpatient_episodes}
 #' @return TRUE tables were successfully created
@@ -1512,7 +1510,7 @@ bridge_tables <- function(conn,
   x <- c()
   x[1] <- bridge_episode_prescription_overlap(conn, overwrite)
   x[2] <- bridge_episode_prescription_initiation(conn, overwrite)
-  x[3] <- bridge_episode_therapy_overlap(conn, overwrite)
+  x[3] <- bridge_spell_therapy_overlap(conn, overwrite)
   
   return(all(x))
 }
@@ -1613,41 +1611,41 @@ bridge_episode_prescription_initiation <- function(conn,
 
 #' @name bridge_tables
 #' @export
-bridge_episode_therapy_overlap <- function(conn, 
+bridge_spell_therapy_overlap <- function(conn, 
                                            overwrite = FALSE) {
   
   stopifnot(is.logical(overwrite))
   stopifnot(is(conn, "SQLiteConnection"))
   
-  tblz_episodes <- tbl(conn, "inpatient_episodes")
+  tblz_spells <- tbl(conn, "inpatient_episodes") %>% 
+    dplyr::distinct(patient_id, spell_id, admission_date, discharge_date)
   tblz_therapies <- tbl(conn, "drug_therapy_episodes")
   
-  tblz_bridge_episode_therapy_overlap <- tblz_episodes %>% 
+  tblz_bridge_spell_therapy_overlap <- tblz_spells %>% 
     dplyr::inner_join(tblz_therapies, 
                       by = "patient_id") %>% 
     dplyr::filter(
-      dplyr::between(therapy_start, episode_start, episode_end) |
-        dplyr::between(therapy_end, episode_start, episode_end) |
-        dplyr::between(episode_start, therapy_start, therapy_end)
+      dplyr::between(therapy_start, admission_date, discharge_date) |
+        dplyr::between(therapy_end, admission_date, discharge_date) |
+        dplyr::between(admission_date, therapy_start, therapy_end)
     ) %>% 
     dplyr::transmute(
       patient_id,
       spell_id,
-      episode_number,
       therapy_id,
       LOT = dplyr::sql(
-        "(strftime('%s', min(therapy_end, episode_end)) -
-        strftime('%s', max(therapy_start, episode_start)))/(3600.0*24.0)"
+        "(strftime('%s', min(therapy_end, discharge_date)) -
+        strftime('%s', max(therapy_start, admission_date)))/(3600.0*24.0)"
       ))
   
   if (overwrite) {
-    if(DBI::dbExistsTable(conn, "bridge_episode_therapy_overlap")) {
-      DBI::dbRemoveTable(conn, "bridge_episode_therapy_overlap")
+    if(DBI::dbExistsTable(conn, "bridge_spell_therapy_overlap")) {
+      DBI::dbRemoveTable(conn, "bridge_spell_therapy_overlap")
     }
   }
   
-  silence <- dplyr::compute(tblz_bridge_episode_therapy_overlap, 
-                            name = "bridge_episode_therapy_overlap", 
+  silence <- dplyr::compute(tblz_bridge_spell_therapy_overlap, 
+                            name = "bridge_spell_therapy_overlap", 
                             temporary = FALSE)
   return(TRUE)
 }

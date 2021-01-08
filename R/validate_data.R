@@ -705,12 +705,6 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #' @export
 validate_prescriptions <- function(data) {
   
-  # TODO: prescription id is unique
-  # TODO: Indication data should be loaded separately, see \code{\link{load_indications}()}
-  # TODO: check uniqueness
-  # TODO: check for lonely OOF
-  # TODO: validate prescriptions and administrations together... potentially?
-  
   drug_prescriptions_variables <- .drug_prescriptions_variables()
   
   variable_exists <- drug_prescriptions_variables[
