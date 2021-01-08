@@ -20,7 +20,7 @@ navbar:
       
 home:
   description: >
-    RAMSES is an analytical software package enabling hospitals to 
+    Ramses is an analytical software package enabling hospitals to 
     monitor and query their use of antibiotics and the management of 
     infections. 
   links:
@@ -29,7 +29,7 @@ home:
 
 reference:
 - title: Reference datasets
-  desc:  Metadata provided with `RAMSES`
+  desc:  Metadata provided with `Ramses`
   contents:
   - antibiotic_icd_indications
   - ccs
@@ -62,11 +62,12 @@ reference:
   - drug_prescriptions
   - drug_administrations
 - title: Database administration
-  desc:  Functions to set up and manage the `RAMSES` database
+  desc:  Functions to set up and manage the `Ramses` database
   contents:
   - connect_local_database
   - create_mock_database
   - starts_with("bridge_")
+  - create_therapy_episodes
 - title: Index
   desc:  All functions in alphabetical order
   contents:

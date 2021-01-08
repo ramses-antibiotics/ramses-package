@@ -191,7 +191,7 @@ ggplot(consumption_initiation,
 
 Length of Therapy is the time elapsed during a prescribing episodes (sequence of antimicrobial prescriptions separated by at the most 36 hours by default). To measure it, the bridge table `bridge_spell_therapy_overlap` is available. It calculate the total LOT during between admission and discharge (excluding to-take-home medications).
 
-```{r message=FALSE}
+```{r message=FALSE, results='asis'}
 length_therapy_by_spell <- study_pop %>% 
   distinct(patient_id, spell_id, admission_method) %>% 
   left_join(tbl(ramses_db, "bridge_spell_therapy_overlap")) %>% 
@@ -202,12 +202,12 @@ length_therapy_by_spell <- study_pop %>%
 length_therapy_by_spell %>% 
   group_by(admission_method) %>% 
   summarise(
-    `Total admissions` = sum(1),
+    `Total admissions` = n(),
     `Total admissions with therapy` = sum(!is.na(LOT)),
-    `Mean LOT` = round(mean(LOT, na.rm = T), 1),
-    `Median LOT` = round(median(LOT, na.rm = T), 1),
-    percentile25 = round(quantile(x = LOT, probs = .25, na.rm = T), 1),
-    percentile75 = round(quantile(x = LOT, probs = .75, na.rm = T), 1)
+    `Mean LOT` = mean(LOT, na.rm = T),
+    `Median LOT` = median(LOT, na.rm = T),
+    percentile25 = quantile(x = LOT, probs = .25, na.rm = T),
+    percentile75 = quantile(x = LOT, probs = .75, na.rm = T)
     ) %>% 
   transmute(
     `Admission method` = case_when(
@@ -217,11 +217,12 @@ length_therapy_by_spell %>%
     `Mean LOT`,
     `Median LOT`,
     `Inter-quartile range` = paste0(
-      percentile25,
+      formatC(percentile25, format = "f", digits = 1),
       "-",
-      percentile75
+      formatC(percentile75, format = "f", digits = 1)
     )
-  )
+  ) %>% 
+  knitr::kable(digits = 1)
 ```
 
 

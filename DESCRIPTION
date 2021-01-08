@@ -1,7 +1,7 @@
 Package: Ramses
 Type: Package
 Title: R Package for Antimicrobial Stewardship & Surveillance 
-Version: 0.0.1
+Version: 0.1.0
 Authors@R: c(
     person(given = "Peter",
            family = "Dutey-Magni",

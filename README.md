@@ -1,4 +1,4 @@
-# <img src="man/figures/logo.png" align="right" width="190px"/>RAMSES: R package for Antimicrobial Stewardship & Surveillance
+# <img src="man/figures/logo.png" align="right" width="190px"/>Ramses: R package for Antimicrobial Stewardship & Surveillance
 
 <!-- badges: start -->
 [![R build status](https://github.com/ramses-antibiotics/ramses-package/workflows/R-CMD-check/badge.svg?branch=master)](https://github.com/ramses-antibiotics/ramses-package/actions)
@@ -7,18 +7,18 @@
 [![license](https://img.shields.io/badge/license-GPL--3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 <!-- badges: end -->
 
-<div class="lead"><code>RAMSES</code> is an analytical software package enabling hospitals to protect antibiotics by monitoring their prescribing and the management of infections using routine electronic health records.</div>
+<div class="lead"><code>Ramses</code> is an analytical software package enabling hospitals to protect antibiotics by monitoring their prescribing and the management of infections using routine electronic health records.</div>
 
 ## Overview
 
-`RAMSES` is a start-to-finish tool for data warehousing and analysis, supporting:
+`Ramses` is a start-to-finish tool for data warehousing and analysis, supporting:
 
 - initial data preparation and validation; 
 - database loading and transformation
 - analyses of antibiotic consumption, initiation, and de-escalation
 - analyses of infection diagnosing and treatment.
 
-`RAMSES` supports routine electronic health records:
+`Ramses` supports routine electronic health records:
 
 - admission/discharge/transfer data and ward movements
 - antibiotic prescription and administration records
@@ -28,7 +28,7 @@
 
 ## Features
 
-<!-- - measuring antibiotic consumption -->
+- measuring antibiotic consumption
 <!-- - measuring drug/bug match and rates of microbial culture sampling -->
 - integration with the [AMR package](https://msberends.gitlab.io/AMR/) for classification/prediction of resistance phenotypes 
 - compatible with SQLite and PostgreSQL databases
