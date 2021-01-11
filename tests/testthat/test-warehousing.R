@@ -112,14 +112,7 @@ test_that("Ramses on SQLite 2", {
   
   test_output <- tbl(conSQLite, "drug_therapy_episodes") %>% 
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
-    dplyr::collect()
-  
-  
-  print(test_output)
-  dplyr::filter(drug_prescriptions, prescription_id == "592a738e4c2afcae6f625c01856151e0") %>% print
-  dplyr::filter(tbl(conSQLite, "drug_prescriptions"), prescription_id == "592a738e4c2afcae6f625c01856151e0") %>% 
-    select(prescription_start, prescription_end) %>% 
-    print
+    dplyr::collect() 
   
   expect_equivalent(
     test_output, 
@@ -143,8 +136,6 @@ test_that("Ramses on SQLite 2", {
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
     dplyr::collect()
   
-  print(test_output)
-  
   expect_equivalent(
     test_output, 
     dplyr::tibble(
@@ -154,9 +145,6 @@ test_that("Ramses on SQLite 2", {
       therapy_end = "2016-08-03 11:15:19"
     )
     )
-  
-  
-  
   
   # > other database functions --------------------------------------------
   
@@ -244,13 +232,13 @@ test_that("Ramses on SQLite 2", {
 })
 
 
+   # > transitive closure ----------------------------------------------------
 test_that("SQLite does transitive closure", {
   
   test_edges <- tibble(
-    id1 = as.character(c(1,1,2,5,6,7)),
-    id2 = as.character(c(2,3,4,6,7,8))
+    id1 = as.integer(c(1,1,2,5,6,7)),
+    id2 = as.integer(c(2,3,4,6,7,8))
   )
-  
   test_solution <- tibble(
     id =  as.integer(c(1,2,3,4,5,6,7,8)),
     grp = as.integer(c(1,1,1,1,5,5,5,5))
@@ -265,7 +253,7 @@ test_that("SQLite does transitive closure", {
                      overwrite = T,
                      temporary = F)
   
-  test_output <- Ramses:::.run_transitive_closure.SQLiteConnection(
+  test_output <- Ramses:::.run_transitive_closure(
     conSQLite,"ramses_test_edges", silent = TRUE) %>% 
     dplyr::select(id, grp) %>% 
     dplyr::arrange(id) %>% 
@@ -277,45 +265,114 @@ test_that("SQLite does transitive closure", {
   file.remove("test.sqlite")  
 })
 
+
+
+
+
+
+
 # PostgreSQL --------------------------------------------------------------
 
-test_that("Ramses on PosgreSQL", {
+
+# > transitive closure ----------------------------------------------------
+
+test_that("Postgres does transitive closure", {
+  
   if (!identical(Sys.getenv("CI"), "true")) {
     skip("Test only on Travis")
   }
-  conPostgreSQL <- DBI::dbConnect(RPostgreSQL::PostgreSQL(),
-                                  user = "user", password = "password",
-                                  host = "localhost", port = 5432, 
+  
+  test_edges <- tibble(
+    id1 = as.integer(c(1,1,2,5,6,7)),
+    id2 = as.integer(c(2,3,4,6,7,8))
+  )
+  test_solution <- tibble(
+    id =  as.integer(c(1,2,3,4,5,6,7,8)),
+    grp = as.integer(c(1,1,1,1,5,5,5,5))
+  )
+  
+  conPostgreSQL <- DBI::dbConnect(RPostgres::Postgres(),
+                                  user = "user", 
+                                  password = "password",
+                                  host = "localhost", 
                                   dbname="RamsesDB")
+  
+  dbplyr::db_copy_to(conPostgreSQL,
+                     "ramses_test_edges",
+                     test_edges,
+                     overwrite = T,
+                     temporary = F)
+  
   expect_true(
-    is(dplyr::copy_to(
-      dest = conPostgreSQL,
-      df = data.frame(data = 1:10),
-      name = "mydata",
-      temporary = FALSE),
-    "tbl_PostgreSQLConnection")
+    is(tbl(conPostgreSQL,
+           "ramses_test_edges"),
+      "tbl_PqConnection")
   )
   expect_equivalent(
-    dplyr::collect(dplyr::tbl(conPostgreSQL, "mydata")),
-    data.frame(data = 1:10)
+    dplyr::collect(dplyr::tbl(conPostgreSQL, "ramses_test_edges")),
+    test_edges
   )
+  
+  test_output <- Ramses:::.run_transitive_closure(
+    conPostgreSQL,"ramses_test_edges", silent = TRUE) %>% 
+    dplyr::select(id, grp) %>% 
+    dplyr::arrange(id) %>% 
+    dplyr::collect()
+  
+  expect_equal(test_output,
+               test_solution)
+  DBI::dbRemoveTable(conPostgreSQL, "ramses_tc_group")
   DBI::dbDisconnect(conPostgreSQL)
 })
 
 
-# MS SQL Server -----------------------------------------------------------
+test_that("Ramses on PosgreSQL", {
+  
+  if (!identical(Sys.getenv("CI"), "true")) {
+    skip("Test only on Travis")
+  }
 
+  # > database loading functions ------------------------------------------
+  
+  conPostgreSQL <- DBI::dbConnect(RPostgres::Postgres(),
+                                  user = "user", 
+                                  password = "password",
+                                  host = "localhost", 
+                                  dbname="RamsesDB")
 
-# 
-# test_that("Ramses on MS SQL Server", {
-#   test_warehousing(conMS, drug_data, overwrite = T)
-    # requireNamespace("odbc", quietly = TRUE)
-    # conSQLServer <- dbConnect(
-    #   odbc::odbc(),
-    #   .connection_string = "Driver={ODBC Driver 17 for SQL Server}; Server=db-mssql,1433;Uid=Sa; Pwd=bidultrukCestLeurTruc!;")
-
-# 
-# })
-
-
-
+  drug_data <- Ramses:::.prepare_example_drug_records()
+  expect_invisible(
+    load_medications(conn = conPostgreSQL, 
+                     prescriptions = drug_data$drug_rx,
+                     administrations = drug_data$drug_admins,
+                     overwrite = TRUE)
+  )
+  
+  
+  test_output <- tbl(conPostgreSQL, "drug_prescriptions") %>% 
+    filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08")) %>% 
+    select(prescription_id, combination_id, therapy_id) %>% 
+    collect()
+  
+  expect_equivalent(
+    test_output, 
+    tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08"),
+           combination_id = c(NA_character_, "0bf9ea7732dd6e904ab670a407382d95"),
+           therapy_id = c("592a738e4c2afcae6f625c01856151e0", "0bf9ea7732dd6e904ab670a407382d95")))
+  
+  test_output <- tbl(conPostgreSQL, "drug_therapy_episodes") %>% 
+    dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
+    dplyr::collect() 
+  
+  expect_equivalent(
+    test_output, 
+    dplyr::tibble(
+      patient_id = "1555756339",
+      therapy_id = "592a738e4c2afcae6f625c01856151e0",
+      therapy_start = "2016-08-01 11:15:19",
+      therapy_end = "2016-08-03 11:15:19"
+    )
+  )
+  
+  DBI::dbDisconnect(conPostgreSQL)
+})
