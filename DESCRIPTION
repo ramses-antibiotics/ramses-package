@@ -38,7 +38,8 @@ Imports:
     readr,
     units (>= 0.6-1),
     methods,
-    lubridate
+    lubridate,
+    progress
 Suggests: 
     testthat (>= 2.1.0),
     knitr,

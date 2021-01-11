@@ -857,10 +857,12 @@ create_mock_database <- function(file, silent = FALSE) {
   
   stopifnot(is.logical(silent))
   if(!silent) {
-    progress_bar <- dplyr::progress_estimated(12)
+    progress_bar <- progress::progress_bar$new(
+      format = "  building mock db [:bar] :percent",
+      total = 8)
+    progress_bar$tick(0)
   }
   mock_db <- DBI::dbConnect(RSQLite::SQLite(), file)
-  if(!silent) progress_bar$tick()
   
   .build_tally_table(mock_db)
   dplyr::copy_to(
@@ -1038,8 +1040,10 @@ create_mock_database <- function(file, silent = FALSE) {
   var_rowcount <- nrow(var_ids)
   
   if(!silent) {
-    progress <- dplyr::progress_estimated(
-      n = .nrow_sql_table(conn, edge_table))
+    progress_bar <- progress::progress_bar$new(
+      format = "  linking prescriptions [:bar] :percent (:eta)",
+      total = .nrow_sql_table(conn, edge_table) + 1)
+    progress_bar$tick(0)
   }
   
   while (var_rowcount > 0) {
@@ -1059,8 +1063,7 @@ create_mock_database <- function(file, silent = FALSE) {
             "AND id2 =", var_ids$id2, ";"))
     
     if(!silent) {
-      progress$i <- progress$n - nrow_deleted
-      progress$print()
+      progress_bar$tick(nrow_deleted)
     }
     
     while(var_rowcount > 0) {  
@@ -1087,7 +1090,7 @@ create_mock_database <- function(file, silent = FALSE) {
         "  WHERE lvl =", var_lvl - 1,");"))
       
       if(!silent) {
-        progress$i <- progress$n - nrow_deleted
+        progress_bar$tick(nrow_deleted)
       }
       
       var_rowcount <- DBI::dbExecute(conn, paste(
@@ -1118,7 +1121,7 @@ create_mock_database <- function(file, silent = FALSE) {
         "  WHERE lvl =", var_lvl - 1,");"))
       
       if(!silent) {
-        progress$i <- progress$n - nrow_deleted
+        progress_bar$tick(nrow_deleted)
       }
       
       var_rowcount <- var_rowcount + DBI::dbExecute(conn, paste(
@@ -1141,8 +1144,7 @@ create_mock_database <- function(file, silent = FALSE) {
     
   }
   if(!silent) {
-    progress$i <- progress$n
-    progress$print()
+    progress_bar$terminate()
   }
   
   .remove_db_tables(conn, "ramses_TC_CurIds")
@@ -1482,6 +1484,8 @@ create_mock_database <- function(file, silent = FALSE) {
 #' @param conn a database connection
 #' @param overwrite if \code{TRUE}, will overwrite any existing
 #' database table. The default is \code{FALSE}
+#' @param silent a boolean indicating whether the function should be
+#' executed without progress bar. Default is \code{FALSE}.
 #' @details 
 #' \describe{
 #'    \item{\code{bridge_tables()}}{Generate all tables below.}
@@ -1510,11 +1514,21 @@ create_mock_database <- function(file, silent = FALSE) {
 #' @name bridge_tables
 #' @export
 bridge_tables <- function(conn,
-                          overwrite = FALSE) {
+                          overwrite = FALSE,
+                          silent = FALSE) {
   x <- vector()
+  if( !silent ) {
+    progress_bar <- progress::progress_bar$new(
+      format = "  building bridge tables [:bar] :percent",
+      total = 3)
+    progress_bar$tick(0)
+  }
   x[1] <- bridge_episode_prescription_overlap(conn, overwrite)
+  if( !silent ) progress_bar$tick()
   x[2] <- bridge_episode_prescription_initiation(conn, overwrite)
+  if( !silent ) progress_bar$tick()
   x[3] <- bridge_spell_therapy_overlap(conn, overwrite)
+  if( !silent ) progress_bar$tick()
   
   return(all(x))
 }

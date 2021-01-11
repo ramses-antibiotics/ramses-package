@@ -4,10 +4,13 @@
 \alias{get_ATC_name}
 \title{Look up ATC name on the WHO website}
 \usage{
-get_ATC_name(x)
+get_ATC_name(x, silent = FALSE)
 }
 \arguments{
 \item{x}{a character vector of ATC codes}
+
+\item{silent}{if \code{TRUE}, the progress bar will be hidden. 
+The default is \code{FALSE}.}
 }
 \value{
 a character vector of ATC names (lowercase).

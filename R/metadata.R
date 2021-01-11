@@ -497,10 +497,15 @@ compute_DDDs <- function(ATC_code, ATC_administration, dose, unit, silent = FALS
   reference_DDD <- list()
   who_url <- "https://www.whocc.no/atc_ddd_index/?code=%s&showdescription=no"
   
-  if(!silent) progress <- dplyr::progress_estimated(n = length(search_ATC))
-  
+  if(!silent) {
+    progress_bar <- progress::progress_bar$new(
+      format = "  computing Defined Daily Doses [:bar] :percent",
+      total = length(search_ATC))
+    progress_bar$tick(0)
+  }
+
   for (i in seq_len(length(search_ATC))) {
-    if(!silent) progress$tick()$print()
+    if(!silent) progress_bar$tick()
     atc_url <- sub("%s", search_ATC[i], who_url, fixed = TRUE)
     atc_page <- xml2::read_html(atc_url) 
     if( length(rvest::html_nodes(
@@ -548,14 +553,16 @@ compute_DDDs <- function(ATC_code, ATC_administration, dose, unit, silent = FALS
 #' @description Look up drug name from an ATC code using the WHO DDD website.
 #' Requires an internet connection.
 #' @param x a character vector of ATC codes
-#'
+#' @param silent if \code{TRUE}, the progress bar will be hidden. 
+#' The default is \code{FALSE}.
+#' 
 #' @return a character vector of ATC names (lowercase).
 #' @export
 #' @references Adapted from \code{\link[AMR]{atc_online_property}()} with thanks to 
 #' the \link{AMR} package authors.
 #' @examples
 #' get_ATC_name("J01XA01")
-get_ATC_name <- function(x) {
+get_ATC_name <- function(x, silent = FALSE) {
     if (any(!requireNamespace("curl", quietly = TRUE),
             !requireNamespace("xml2", quietly = TRUE),
             !requireNamespace("rvest", quietly = TRUE))) {
@@ -578,9 +585,15 @@ get_ATC_name <- function(x) {
     output <- list()
     who_url <- "https://www.whocc.no/atc_ddd_index/?code=%s&showdescription=no"
     
-    progress <- dplyr::progress_estimated(n = length(search_ATC))
+    if( !silent ){
+      progress_bar <- progress::progress_bar$new(
+        format = "  [:bar] :percent",
+        total = length(search_ATC))
+      progress_bar$tick(0)
+    }
+
     for (i in seq_len(length(search_ATC))) {
-      progress$tick()$print()
+      if( !silent ) progress_bar$tick()
       atc_url <- sub("%s", search_ATC[i], who_url, fixed = TRUE)
       atc_page <- xml2::read_html(atc_url) 
       if( length(rvest::html_nodes(

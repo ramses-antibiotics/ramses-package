@@ -7,7 +7,7 @@
 \alias{bridge_spell_therapy_overlap}
 \title{Create database bridge tables}
 \usage{
-bridge_tables(conn, overwrite = FALSE)
+bridge_tables(conn, overwrite = FALSE, silent = FALSE)
 
 bridge_episode_prescription_overlap(conn, overwrite = FALSE)
 
@@ -20,6 +20,9 @@ bridge_spell_therapy_overlap(conn, overwrite = FALSE)
 
 \item{overwrite}{if \code{TRUE}, will overwrite any existing
 database table. The default is \code{FALSE}}
+
+\item{silent}{a boolean indicating whether the function should be
+executed without progress bar. Default is \code{FALSE}.}
 }
 \value{
 TRUE tables were successfully created
