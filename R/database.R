@@ -515,6 +515,83 @@ load_medications.SQLiteConnection <- function(
   TRUE
 }
 
+.load_prescriptions.PqConnection <- function(
+  conn, prescriptions, overwrite, 
+  transitive_closure_controls, silent) {
+  
+  create_therapy_id <- !exists("therapy_id", prescriptions)
+  create_combination_id <- !exists("combination_id", prescriptions)
+  
+  prescriptions <- dplyr::arrange(prescriptions, patient_id, prescription_start)
+  prescriptions$id <- seq_len(nrow(prescriptions))
+  
+  if( !is(prescriptions$authoring_date, "Date") ){
+    stop("prescriptions$authoring_date must be of class Date")
+  }
+  if( !is(prescriptions$prescription_start, "POSIXct") ){
+    stop("prescriptions$prescription_start must be of class POSIXct")
+  }
+  if( !is(prescriptions$prescription_end, "POSIXct") ){
+    stop("prescriptions$prescription_end must be of class POSIXct")
+  }
+  prescriptions$therapy_rank <- NA_integer_
+  
+  if (!exists("prescription_text", prescriptions)) {
+    prescriptions <- prescriptions %>% 
+      dplyr::mutate(prescription_text = paste0(
+        drug_display_name, " ",
+        route, " ",
+        dose, unit, " ",
+        dplyr::if_else(daily_frequency < 0, "one-off", frequency)
+      ))
+  }
+  if(create_combination_id) prescriptions$combination_id <- NA_character_
+  if(create_therapy_id) prescriptions$therapy_id <- NA_character_
+  
+  first_column_names <- .drug_prescriptions_variables()[["variable_name"]]
+  first_column_names <- c(
+    "id",
+    first_column_names[first_column_names %in% names(prescriptions)]
+  )
+  prescriptions <- arrange_variables(
+    prescriptions, 
+    first_column_names = first_column_names) 
+  
+  dplyr::copy_to(
+    dest = conn,
+    name = "drug_prescriptions",
+    df = prescriptions,
+    temporary = FALSE,
+    overwrite = overwrite,
+    indexes = list(
+      "id",
+      "patient_id", 
+      "prescription_id",
+      "combination_id",
+      "therapy_id",
+      "drug_id",
+      "antiinfective_type",
+      "ATC_code",
+      "ATC_route",
+      "authoring_date",
+      "prescription_start", 
+      "prescription_end"
+    )
+  )
+  
+  if (create_therapy_id | create_combination_id) {
+    .create_table_drug_prescriptions_edges.PqConnection(
+      conn = conn, transitive_closure_controls)
+    .create_therapy_id.PqConnection(conn = conn, 
+                                        silent = silent)
+    .create_combination_id.PqConnection(conn = conn, 
+                                            silent = silent)
+  } else {
+    .create_table_drug_therapy_episodes(conn = conn)
+  }
+  
+  TRUE
+}
 
 
 #' Create table `drug_prescriptions_edges`
@@ -555,6 +632,33 @@ load_medications.SQLiteConnection <- function(
     conn = conn,
     statement = statement_edges)
 }
+
+.create_table_drug_prescriptions_edges.PqConnection <- 
+  function(conn, transitive_closure_controls) {
+    
+    stopifnot(is(conn, "PqConnection"))
+    
+    if( DBI::dbExistsTable(conn, "drug_prescriptions_edges") ){
+      DBI::dbRemoveTable(conn, "drug_prescriptions_edges")
+    }
+    DBI::dbExecute(
+      conn = conn,
+      statement = .read_sql_syntax("create_drug_prescription_edges_SQLite.sql"))
+    
+    statement_edges <- .read_sql_syntax("drug_prescriptions_edges_SQLite.sql")
+    
+    # replace variables in SQL code by their value
+    for(i in seq_along(transitive_closure_controls)) {
+      statement_edges <- gsub(
+        paste0("@", names(transitive_closure_controls[i])),
+        transitive_closure_controls[[i]], statement_edges)
+    }
+    
+    DBI::dbExecute(
+      conn = conn,
+      statement = statement_edges)
+}
+
 
 
 #' Populate `drug_prescription.therapy_id`
@@ -961,7 +1065,7 @@ create_mock_database <- function(file, silent = FALSE) {
 #' all script lines into one line ready for parsing.
 #' @note IMPORTANT: This function may not be used for statements containing
 #' nested loops (WHILE, BEGIN, END; within a loop)
-#' @param script.name file name of a script located under `inst/SQL/`
+#' @param string character vector produced by \code{\link{readLines}()}
 #' @return A character vector of SQL statements
 #' @noRd
 .split_sql_batch <- function(string) {
@@ -1152,6 +1256,132 @@ create_mock_database <- function(file, silent = FALSE) {
   tbl(conn, "ramses_TC_group")
 }
 
+.run_transitive_closure.PqConnection <- function(conn, edge_table, silent) {
+  
+  stopifnot(is(conn, "PostgresConnection"))
+  .create_ramses_TC_graphs(conn)
+  
+  var_lvl <- 1
+  var_ids <- tbl(conn, edge_table) %>% 
+    dplyr::arrange(id1, id2) %>% 
+    utils::head(.data, n = 1) %>% 
+    dplyr::collect() %>% 
+    data.frame()
+  
+  var_rowcount <- nrow(var_ids)
+  
+  if(!silent) {
+    progress_bar <- progress::progress_bar$new(
+      format = "  linking prescriptions [:bar] :percent (:eta)",
+      total = .nrow_sql_table(conn, edge_table) + 1)
+    progress_bar$tick(0)
+  }
+  
+  while (var_rowcount > 0) {
+    
+    DBI::dbAppendTable(conn = conn, 
+                       name = "ramses_TC_group",
+                       value = data.frame(cbind(
+                         id = c(var_ids$id1, var_ids$id2),
+                         grp = c(var_ids$id1, var_ids$id1),
+                         lvl = c(var_lvl, var_lvl)
+                       ), stringsAsFactors = F))
+    
+    nrow_deleted <- DBI::dbExecute(
+      conn, 
+      paste("DELETE FROM", edge_table, 
+            "WHERE id1 =", var_ids$id1,
+            "AND id2 =", var_ids$id2, ";"))
+    
+    if(!silent) {
+      progress_bar$tick(nrow_deleted)
+    }
+    
+    while(var_rowcount > 0) {  
+      
+      var_lvl <- var_lvl + 1
+      
+      .remove_db_tables(conn, "ramses_TC_CurIds")
+      DBI::dbExecute(conn,
+                     "CREATE TEMPORARY TABLE ramses_TC_CurIds(id INTEGER NOT NULL);")
+      
+      DBI::dbExecute(conn, paste(
+        "INSERT INTO ramses_TC_CurIds",
+        "SELECT T1.id2",
+        "FROM ramses_TC_group AS G",
+        " INNER JOIN", edge_table, "AS T1",
+        " ON G.id = T1.id1",
+        "WHERE lvl =", var_lvl - 1, ";"))
+      
+      nrow_deleted <- DBI::dbExecute(conn, paste(
+        "DELETE FROM", edge_table,
+        "WHERE id1 IN(", 
+        "  SELECT id",
+        "  FROM ramses_TC_group",
+        "  WHERE lvl =", var_lvl - 1,");"))
+      
+      if(!silent) {
+        progress_bar$tick(nrow_deleted)
+      }
+      
+      var_rowcount <- DBI::dbExecute(conn, paste(
+        "INSERT INTO ramses_TC_group",
+        "SELECT DISTINCT id,", var_ids$id1, "AS grp,", var_lvl, "AS lvl",
+        "FROM ramses_TC_CurIds AS C",
+        "WHERE NOT EXISTS (",
+        "   SELECT * FROM ramses_TC_group AS G",
+        "   WHERE G.id = C.id);"))
+      
+      .remove_db_tables(conn, "ramses_TC_CurIds")
+      DBI::dbExecute(conn,
+                     "CREATE TEMPORARY TABLE ramses_TC_CurIds(id INTEGER NOT NULL);")
+      
+      DBI::dbExecute(conn, paste(
+        "INSERT INTO ramses_TC_CurIds",
+        "SELECT T1.id1",
+        "FROM ramses_TC_group AS G",
+        " INNER JOIN", edge_table, "AS T1",
+        " ON G.id = T1.id2",
+        "WHERE lvl =", var_lvl - 1, ";"))
+      
+      nrow_deleted <- DBI::dbExecute(conn, paste(
+        "DELETE FROM", edge_table,
+        "WHERE id2 IN(", 
+        "  SELECT id",
+        "  FROM ramses_TC_group",
+        "  WHERE lvl =", var_lvl - 1,");"))
+      
+      if(!silent) {
+        progress_bar$tick(nrow_deleted)
+      }
+      
+      var_rowcount <- var_rowcount + DBI::dbExecute(conn, paste(
+        "INSERT INTO ramses_TC_group",
+        "SELECT DISTINCT id,", var_ids$id1, "AS grp,", var_lvl, "AS lvl",
+        "FROM ramses_TC_CurIds AS C",
+        "WHERE NOT EXISTS (",
+        "   SELECT * FROM ramses_TC_group AS G",
+        "   WHERE G.id = C.id);"))
+      
+    }
+    
+    var_ids <- tbl(conn, edge_table) %>% 
+      dplyr::arrange(id1, id2) %>% 
+      utils::head(.data, n = 1) %>% 
+      dplyr::collect() %>% 
+      data.frame()
+    
+    var_rowcount <- nrow(var_ids)
+    
+  }
+  if(!silent) {
+    progress_bar$terminate()
+  }
+  
+  .remove_db_tables(conn, "ramses_TC_CurIds")
+  
+  tbl(conn, "ramses_TC_group")
+}
 
 .prepare_example_drug_records <- function() {
   
