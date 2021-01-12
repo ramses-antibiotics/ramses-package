@@ -13,40 +13,37 @@ digraph G {
           fontsize = 8
   ]
 
-tbl_MSSQL [
-  label = "tbl_Microsoft SQL Server"
-]
-
-TherapyTable [
-  label = "{TherapyTable|
+therapy_episode [
+  width = 2.2
+  label = "{therapy_episode|
   + patient_id: character\l
-  + therapy_id:character\l
-  + type: \"therapy-table\"\l
-  + lazy_status: boolean\l
-  + t: integer\l+ intravenous: boolean\l
-  + last_CRP: numeric \l
-  + last_NEUTS: numeric\l|
+  + therapy_id: character\l
+  + type: \"therapy_episode\"\l
+  - conn: DBIConnection\l
+  - therapy_table: tbl_sql\l|
   
-  + fetch(): data.frame\l
-  + therapy_table(): list\l}"
+  + collect(): tbl_df\l
+  + compute(): therapy_table\l
+  + therapy_episode(): therapy_episode\l}"
 ]
 
 dataframe [
   label="data.frame"
 ]
 
-RamsesObject -> TherapyTable [dir=back]
-tbl -> TherapyTable [dir=back]
+ramses_object -> therapy_episode [dir=back]
+therapy_episode -> tbl_sql[arrowtail=odiamond dir=back constraint=false]
+tbl -> therapy_episode [dir=back]
 tbl -> tbl_lazy [dir=back]
 tbl_lazy -> tbl_sql [dir=back]
 tbl_sql -> tbl_dbi [dir=back]
 tbl_dbi -> tbl_SQLiteConnection [dir=back]
-tbl_dbi -> tbl_PostgreSQLConnection [dir=back]
-tbl_dbi -> tbl_MSSQL [dir=back]
+tbl_dbi -> tbl_PqSQLConnection [dir=back]
 tbl -> tbl_df [dir=back]
 tbl_df -> dataframe [dir=back]
 
 
 DBIObject -> DBIConnection [dir=back]
 DBIConnection -> SQLiteConnection [dir=back]
+DBIConnection -> PqConnection [dir=back]
 }

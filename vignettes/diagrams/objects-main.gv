@@ -21,13 +21,14 @@ digraph G {
 # Aggregation odiamond
 # Composition diamond
 
-RamsesEntity [
+RamsesObject [
   width = 3
-  label = "{RamsesEntity|
+  label = "{RamsesObject|
   + id: character\l|
   
-  + create(id, type): RamsesEntity\l
-  + fetch(collect = FALSE): tbl_sql \| tbl_df \l}"
+  + create(id, type): RamsesObject\l
+  + compute(): tbl_sql\l
+  + collect(): tbl_df \l}"
 ]
 
 Patient [
@@ -66,12 +67,11 @@ MedicationRequest [
   width = 2.5
   label = "{MedicationRequest|
   + id \l
-  + patient_id \l
-  + prescription_id\l
-  + lazy_status: boolean\l|
+  + record: tbl \l|
   
-  + get_therapy_id(): RamsesEntity\l
-  + fetch()\l}"
+  + MedicationRequest(conn, id)\l
+  + get_therapy_episode(): TherapyEpisode\l
+  + collect() MedicationRequest \l}"
 ]
 
 TherapyEpisode [
@@ -81,6 +81,7 @@ TherapyEpisode [
   - therapy_table: tbl\l
   + lazy_status: boolean\l|
   
+  + TherapyEpisode(conn, id)\l
   + fetch(): data.frame\l
   + therapy_table(): data.frame\l}"
 ]
@@ -90,7 +91,17 @@ MicrobialCulture [
   label = "{MicrobialCulture|
   + specimen_id: character\l
   + patient_id: character\l
-  + isolates: tbl\l
+  + isolates: tbl\l|
+
+  + ...(): tbl\l}"
+]
+
+Microorganism [
+  width = 2.2
+  label = "{Microorganism|
+  + patient_id: character\l
+  + isolate_id: character\l
+  
   + susceptibilities: tbl\l|
   
   + fetch_antibiogram(): tbl\l
@@ -103,11 +114,11 @@ label = "{TherapyList|\l+ id: list\l+ type: \"therapy-list\"\l- TherapyTable: tb
 ]
 */
 
-RamsesEntity -> Prescription [dir=back]
-RamsesEntity -> Patient [dir=back]
-RamsesEntity -> Clinician [dir=back]
-RamsesEntity -> MicrobialCulture [dir=back]
-RamsesEntity -> TherapyEpisode [dir=back]
+RamsesObject -> Prescription [dir=back]
+RamsesObject -> Patient [dir=back]
+RamsesObject -> Clinician [dir=back]
+RamsesObject -> MicrobialCulture [dir=back]
+RamsesObject -> TherapyEpisode [dir=back]
 
 Prescription -> Combination [dir=back] 
 Prescription -> MedicationRequest [dir=back]
@@ -119,7 +130,10 @@ Combination -> MedicationRequest [
   arrowhead=odiamond
   headlabel = "2..*   "
   taillabel = "1  "]
-
+MicrobialCulture -> Microorganism [ constraint=false
+  arrowhead=odiamond
+  headlabel = "1..*   "
+  taillabel = "1   "]
 /*
 TherapyEpisode -> TherapyList [constraint=false
   arrowtail=odiamond
