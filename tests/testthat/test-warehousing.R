@@ -402,8 +402,8 @@ test_that("Ramses on PosgreSQL", {
     dplyr::tibble(
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
-      therapy_start = as.POSIXct("2016-08-01 11:15:19 BST"),
-      therapy_end = as.POSIXct("2016-08-03 11:15:19 BST")
+      therapy_start = lubridate::with_tz(as.POSIXct("2016-08-01 11:15:19", tz="Europe/London"), tz = Sys.timezone()),
+      therapy_end = lubridate::with_tz(as.POSIXct("2016-08-03 11:15:19", tz="Europe/London"), tz = Sys.timezone())
     )
   )
   
@@ -419,13 +419,16 @@ test_that("Ramses on PosgreSQL", {
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
     dplyr::collect()
   
+  print(test_output$therapy_start)
+  attributes(print(test_output$therapy_start))
+  
   expect_equivalent(
     test_output, 
     dplyr::tibble(
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
-      therapy_start = as.POSIXct("2016-08-01 11:15:19 BST"),
-      therapy_end = as.POSIXct("2016-08-03 11:15:19 BST")
+      therapy_start = lubridate::with_tz(as.POSIXct("2016-08-01 11:15:19", tz="Europe/London"), tz = Sys.timezone()),
+      therapy_end = lubridate::with_tz(as.POSIXct("2016-08-03 11:15:19", tz="Europe/London"), tz = Sys.timezone())
     )
   )
   
