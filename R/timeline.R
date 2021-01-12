@@ -300,14 +300,14 @@ therapy_timeline <- function(conn, patient_identifier,
          CASE WHEN ABS( EXTRACT(EPOCH FROM( 
              (LAG(episode_end, 1, 0)
                  OVER(PARTITION BY patient_id, icd_code
-                      ORDER BY [episode_start])))::TIMESTAMP -
+                      ORDER BY episode_start)))::TIMESTAMP -
              - episode_start::TIMESTAMP )) <= (6 * 3600) 
          THEN NULL
          ELSE ROW_NUMBER() OVER(ORDER BY episode_start) END")) %>% 
       dplyr::mutate(grp = dplyr::sql(
         "MAX(grp) 
          OVER(PARTITION BY patient_id, icd_code, prim_diag
-         ORDER BY patient_id, [episode_start])"
+         ORDER BY patient_id, episode_start)"
       ))
   } else {
     stop(paste(
