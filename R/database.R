@@ -1875,7 +1875,7 @@ bridge_episode_prescription_overlap <- function(conn,
         "EXTRACT(EPOCH FROM (
            LEAST(prescription_end::TIMESTAMP, episode_end::TIMESTAMP) -
            GREATEST(prescription_start::TIMESTAMP, episode_start::TIMESTAMP) ))
-         / ( 3600.0 * 24.0 ) * DDD"
+         / ( 3600.0 * 24.0 ) * \"DDD\""
       ))
   } else {
     stop(paste(
@@ -1949,10 +1949,10 @@ bridge_episode_prescription_initiation <- function(conn,
          / ( 3600.0 * 24.0 )"
       ),
       DDD_prescribed = dplyr::sql(
-        "EEXTRACT(EPOCH FROM (
+        "EXTRACT(EPOCH FROM (
            prescription_end::TIMESTAMP -
            prescription_start::TIMESTAMP ))
-         / ( 3600.0 * 24.0 ) * DDD")
+         / ( 3600.0 * 24.0 ) * \"DDD\"")
     )
   } else {
     stop(paste(
