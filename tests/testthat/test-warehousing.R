@@ -119,8 +119,8 @@ test_that("Ramses on SQLite 2", {
     dplyr::tibble(
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
-      therapy_start = as.POSIXct("2016-08-01 11:15:19", tz = "Europe/London"),
-      therapy_end = as.POSIXct("2016-08-03 11:15:19", tz = "Europe/London")
+      therapy_start = "2016-08-01 11:15:19",
+      therapy_end = "2016-08-03 11:15:19"
     )
   )
 
@@ -342,12 +342,47 @@ test_that("Ramses on PosgreSQL", {
                                   host = "localhost", 
                                   dbname="RamsesDB")
 
+  
+  # > database loading functions ------------------------------------------
+  
   drug_data <- Ramses:::.prepare_example_drug_records()
+  inpatient_data <- Ramses:::.prepare_example_inpatient_records()
+  icd10cm <- download_icd10cm()
+  
   expect_invisible(
     load_medications(conn = conPostgreSQL, 
                      prescriptions = drug_data$drug_rx,
                      administrations = drug_data$drug_admins,
                      overwrite = TRUE)
+  )
+  
+  
+  expect_invisible(
+    load_inpatient_episodes(conn = conPostgreSQL,
+                            episodes_data = inpatient_data$episodes,
+                            wards_data = inpatient_data$ward_movements,
+                            overwrite = TRUE)
+  )
+  expect_invisible(
+    expect_warning(
+      load_inpatient_diagnoses(conn = conPostgreSQL,
+                               diagnoses_data = inpatient_data$diagnoses,
+                               diagnoses_lookup = icd10cm,
+                               overwrite = TRUE)))
+  expect_invisible(
+    load_inpatient_investigations(
+      conn = conPostgreSQL,
+      investigations_data = inpatient_data$investigations,
+      overwrite = TRUE
+    ))
+  expect_invisible(
+    load_inpatient_microbiology(
+      conn = conPostgreSQL,
+      inpatient_data$micro$specimens,
+      inpatient_data$micro$isolates,
+      inpatient_data$micro$susceptibilities,
+      overwrite = TRUE
+    )
   )
   
   
@@ -375,7 +410,97 @@ test_that("Ramses on PosgreSQL", {
       therapy_end = as.POSIXct("2016-08-03 11:15:19", tz = "Europe/London")
     )
   )
- 
   
+  # > recreate therapy episodes and combinations --------------------------------
+  
+  
+  DBI::dbRemoveTable(conPostgreSQL, "drug_prescriptions_edges")
+  DBI::dbRemoveTable(conPostgreSQL, "drug_therapy_episodes")
+  
+  expect_silent(create_therapy_episodes(conPostgreSQL))
+  
+  test_output <- tbl(conPostgreSQL, "drug_therapy_episodes") %>% 
+    dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
+    dplyr::collect()
+  
+  expect_equivalent(
+    test_output, 
+    dplyr::tibble(
+      patient_id = "1555756339",
+      therapy_id = "592a738e4c2afcae6f625c01856151e0",
+      therapy_start = as.POSIXct("2016-08-01 11:15:19", tz = "Europe/London"),
+      therapy_end = as.POSIXct("2016-08-03 11:15:19", tz = "Europe/London")
+    )
+  )
+  
+  # > other database functions --------------------------------------------
+  
+  # bridge_episode_prescription_overlap
+  expect_true(bridge_episode_prescription_overlap(conPostgreSQL))
+  expect_error(bridge_episode_prescription_overlap(conPostgreSQL))
+  expect_true(bridge_episode_prescription_overlap(conPostgreSQL, overwrite = TRUE))
+  test_bridge_overlap <- tbl(
+    conPostgreSQL,
+    "bridge_episode_prescription_overlap") %>% 
+    dplyr::filter(patient_id == "99999999999" & 
+                    prescription_id == "89094c5dffaad0e56073adaddf286e73") %>% 
+    dplyr::collect()
+  expect_equal(round(sum(test_bridge_overlap$DOT), 1), 2.0)
+  expect_equal(round(sum(test_bridge_overlap$DDD_prescribed), 1), 1.3)
+  
+  # bridge_episode_prescription_initiation
+  expect_true(bridge_episode_prescription_initiation(conPostgreSQL))
+  expect_error(bridge_episode_prescription_initiation(conPostgreSQL))
+  expect_true(bridge_episode_prescription_initiation(conPostgreSQL, overwrite = TRUE))
+  test_bridge_init <- tbl(conPostgreSQL, "bridge_episode_prescription_initiation") %>% 
+    dplyr::filter(patient_id == "99999999999" & 
+                    prescription_id == "89094c5dffaad0e56073adaddf286e73") %>% 
+    dplyr::collect()
+  expect_equal(round(test_bridge_init$DOT, 1), 2.0)
+  expect_equal(round(test_bridge_init$DDD_prescribed, 1), 1.3)
+  
+  # bridge_spell_therapy_overlap
+  expect_true(bridge_spell_therapy_overlap(conPostgreSQL))
+  expect_error(bridge_spell_therapy_overlap(conPostgreSQL))
+  expect_true(bridge_spell_therapy_overlap(conPostgreSQL, overwrite = TRUE))
+  test_bridge_th_overlap <- tbl(
+    conPostgreSQL,
+    "bridge_spell_therapy_overlap") %>% 
+    dplyr::filter(patient_id == "99999999999" &
+                    therapy_id == "4d611fc8886c23ab047ad5f74e5080d7") %>% 
+    dplyr::collect()
+  expect_equal(round(sum(test_bridge_th_overlap$LOT), 1), 2.3)
+  
+  expect_true(bridge_tables(conn = conPostgreSQL, overwrite = TRUE))
+  
+  # > therapy timeline -------------------------------------------------
+  
+  expect_error(
+    therapy_timeline(conn = conPostgreSQL, 
+                     patient_identifier =  "I don't exist")
+  )
+  expect_is(
+    therapy_timeline(conn = conPostgreSQL, 
+                     patient_identifier =  "99999999999"),
+    "timevis")
+  expect_is(
+    therapy_timeline(conn = conPostgreSQL, 
+                     patient_identifier =  "99999999999",
+                     date1 = "2017-01-01",
+                     date2 = "2017-03-01"), 
+    "timevis")
+  expect_is(
+    therapy_timeline(conn = conPostgreSQL, 
+                     patient_identifier =  "99999999999",
+                     date1 = "2017-01-01"),
+    "timevis")
+  expect_is(
+    therapy_timeline(conn = conPostgreSQL, 
+                     patient_identifier =  "99999999999",
+                     date2 = "2017-03-01"), 
+    "timevis")
+  
+  
+  # > close connection ----------------------------------------------------
   DBI::dbDisconnect(conPostgreSQL)
 })

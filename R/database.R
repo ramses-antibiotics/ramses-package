@@ -146,7 +146,7 @@ load_inpatient_episodes <- function(conn,
       "consultant_code",
       "main_specialty_code"
     ))
-  .compute_bed_days.SQLiteConnection(conn = conn)
+  .compute_bed_days(conn = conn)
   
   if(!is.null(wards_data)) {
     wards_data <- dplyr::arrange(wards_data,
@@ -905,6 +905,33 @@ create_therapy_episodes.SQLiteConnection <- function(
   }
   
   .create_table_drug_prescriptions_edges.SQLiteConnection(
+    conn = conn, 
+    transitive_closure_controls = transitive_closure_controls
+  )
+  .create_therapy_id.SQLiteConnection(
+    conn = conn, 
+    silent = silent
+  )
+  .create_combination_id.SQLiteConnection(
+    conn = conn, 
+    silent = silent
+  )
+}
+
+#' @rdname create_therapy_episodes
+#' @method create_therapy_episodes PqConnection
+#' @export  
+create_therapy_episodes.PqConnection <- function(
+  conn,
+  transitive_closure_controls = transitive_closure_control(),
+  silent = TRUE
+) {
+  
+  if( !DBI::dbExistsTable(conn, "drug_prescriptions") ){
+    stop("No `drug_prescriptions` table found on `conn`")
+  }
+  
+  .create_table_drug_prescriptions_edges.PqConnection(
     conn = conn, 
     transitive_closure_controls = transitive_closure_controls
   )
@@ -1808,9 +1835,8 @@ bridge_tables <- function(conn,
 #' @name bridge_tables
 bridge_episode_prescription_overlap <- function(conn, 
                                                 overwrite = FALSE) {
-  
   stopifnot(is.logical(overwrite))
-  stopifnot(is(conn, "SQLiteConnection"))
+  stopifnot(is(conn, "SQLiteConnection") | is(conn, "PqConnection"))
 
   tblz_episodes <- tbl(conn, "inpatient_episodes")
   tblz_prescriptions <- tbl(conn, "drug_prescriptions")
@@ -1822,12 +1848,11 @@ bridge_episode_prescription_overlap <- function(conn,
       dplyr::between(prescription_start, episode_start, episode_end) |
         dplyr::between(prescription_end, episode_start, episode_end) |
         dplyr::between(episode_start, prescription_start, prescription_end)
-    ) %>% 
-    dplyr::transmute(
-      patient_id,
-      spell_id,
-      episode_number,
-      prescription_id,
+    )
+  
+  if( is(conn, "SQLiteConnection") ) {
+    tblz_bridge_episode_prescriptions_overlap <- dplyr::mutate(
+      tblz_bridge_episode_prescriptions_overlap,
       DOT = dplyr::sql(
         "(strftime('%s', min(prescription_end, episode_end)) -
         strftime('%s', max(prescription_start, episode_start)))/(3600.0*24.0)"
@@ -1837,6 +1862,38 @@ bridge_episode_prescription_overlap <- function(conn,
         strftime('%s', max(prescription_start, episode_start)))
          / (3600.0*24.0) * DDD"
       ))
+  } else if( is(conn, "PqConnection") ) {
+    tblz_bridge_episode_prescriptions_overlap <- dplyr::mutate(
+      tblz_bridge_episode_prescriptions_overlap,
+      DOT = dplyr::sql(
+        "EXTRACT(EPOCH FROM (
+           LEAST(prescription_end::TIMESTAMP, episode_end::TIMESTAMP) -
+           GREATEST(prescription_start::TIMESTAMP, episode_start::TIMESTAMP) ))
+         / ( 3600.0 * 24.0 )"
+      ),
+      DDD_prescribed = dplyr::sql(
+        "EXTRACT(EPOCH FROM (
+           LEAST(prescription_end::TIMESTAMP, episode_end::TIMESTAMP) -
+           GREATEST(prescription_start::TIMESTAMP, episode_start::TIMESTAMP) ))
+         / ( 3600.0 * 24.0 ) * DDD"
+      ))
+  } else {
+    stop(paste(
+      "bridge_episode_prescription_overlap() is not implemented for this type of database.",
+      "Please report this issue on https://github.com/ramses-antibiotics/ramses-package/issues",
+      collapse = "\n"
+    ))
+  }
+  
+  tblz_bridge_episode_prescriptions_overlap <- dplyr::transmute(
+    tblz_bridge_episode_prescriptions_overlap,
+    patient_id,
+    spell_id,
+    episode_number,
+    prescription_id,
+    DOT,
+    DDD_prescribed
+  )
   
   if (overwrite) {
     if(DBI::dbExistsTable(conn, "bridge_episode_prescription_overlap")) {
@@ -1851,13 +1908,13 @@ bridge_episode_prescription_overlap <- function(conn,
   return(TRUE)
 }
 
-#' @name bridge_tables
 #' @export
+#' @name bridge_tables
 bridge_episode_prescription_initiation <- function(conn, 
                                                    overwrite = FALSE) {
   
   stopifnot(is.logical(overwrite))
-  stopifnot(is(conn, "SQLiteConnection"))
+  stopifnot(is(conn, "SQLiteConnection") | is(conn, "PqConnection"))
   
   tblz_episodes <- tbl(conn, "inpatient_episodes")
   tblz_prescriptions <- tbl(conn, "drug_prescriptions")
@@ -1867,12 +1924,11 @@ bridge_episode_prescription_initiation <- function(conn,
                      by = "patient_id") %>% 
     dplyr::filter(
       dplyr::between(authoring_date, episode_start, episode_end) 
-    ) %>% 
-    dplyr::transmute(
-      patient_id,
-      spell_id,
-      episode_number,
-      prescription_id,
+    )
+  
+  if( is(conn, "SQLiteConnection") ) {
+    tblz_bridge_episode_prescription_initiation <- dplyr::mutate(
+      tblz_bridge_episode_prescription_initiation,
       DOT = dplyr::sql(
         "(strftime('%s', prescription_end) -
         strftime('%s', prescription_start))
@@ -1881,8 +1937,40 @@ bridge_episode_prescription_initiation <- function(conn,
       DDD_prescribed = dplyr::sql(
         "(strftime('%s', prescription_end) -
         strftime('%s', prescription_start))
-         / (3600.0 * 24.0) * DDD"
-      ))
+         / (3600.0 * 24.0) * DDD")
+    )
+  } else if( is(conn, "PqConnection") ) {
+    tblz_bridge_episode_prescription_initiation <- dplyr::mutate(
+      tblz_bridge_episode_prescription_initiation,
+      DOT = dplyr::sql(
+        "EXTRACT(EPOCH FROM (
+           prescription_end::TIMESTAMP -
+           prescription_start::TIMESTAMP ))
+         / ( 3600.0 * 24.0 )"
+      ),
+      DDD_prescribed = dplyr::sql(
+        "EEXTRACT(EPOCH FROM (
+           prescription_end::TIMESTAMP -
+           prescription_start::TIMESTAMP ))
+         / ( 3600.0 * 24.0 ) * DDD")
+    )
+  } else {
+    stop(paste(
+      "bridge_episode_prescription_initiation() is not implemented for this type of database.",
+      "Please report this issue on https://github.com/ramses-antibiotics/ramses-package/issues",
+      collapse = "\n"
+    ))
+  }
+  
+  tblz_bridge_episode_prescription_initiation <- dplyr::transmute(
+    tblz_bridge_episode_prescription_initiation,
+    patient_id,
+    spell_id,
+    episode_number,
+    prescription_id,
+    DOT,
+    DDD_prescribed
+  )
   
   if (overwrite) {
     if(DBI::dbExistsTable(conn, "bridge_episode_prescription_initiation")) {
@@ -1897,14 +1985,12 @@ bridge_episode_prescription_initiation <- function(conn,
   return(TRUE)
 }
 
-
 #' @name bridge_tables
 #' @export
 bridge_spell_therapy_overlap <- function(conn, 
-                                           overwrite = FALSE) {
-  
+                                         overwrite = FALSE) {
   stopifnot(is.logical(overwrite))
-  stopifnot(is(conn, "SQLiteConnection"))
+  stopifnot(is(conn, "SQLiteConnection") | is(conn, "PqConnection"))
   
   tblz_spells <- tbl(conn, "inpatient_episodes") %>% 
     dplyr::distinct(patient_id, spell_id, admission_date, discharge_date)
@@ -1917,15 +2003,41 @@ bridge_spell_therapy_overlap <- function(conn,
       dplyr::between(therapy_start, admission_date, discharge_date) |
         dplyr::between(therapy_end, admission_date, discharge_date) |
         dplyr::between(admission_date, therapy_start, therapy_end)
-    ) %>% 
-    dplyr::transmute(
-      patient_id,
-      spell_id,
-      therapy_id,
+    )
+  
+  if( is(conn, "SQLiteConnection") ) {
+    tblz_bridge_spell_therapy_overlap <- dplyr::mutate(
+      tblz_bridge_spell_therapy_overlap,
       LOT = dplyr::sql(
         "(strftime('%s', min(therapy_end, discharge_date)) -
         strftime('%s', max(therapy_start, admission_date)))/(3600.0*24.0)"
-      ))
+      )
+    )
+  } else if( is(conn, "PqConnection") ) {
+    tblz_bridge_spell_therapy_overlap <- dplyr::mutate(
+      tblz_bridge_spell_therapy_overlap,
+      LOT = dplyr::sql(
+        "EXTRACT(EPOCH FROM (
+           LEAST(therapy_end::TIMESTAMP, discharge_date::TIMESTAMP) -
+           GREATEST(therapy_start::TIMESTAMP, admission_date::TIMESTAMP) ))
+         / ( 3600.0 * 24.0 )"
+      )
+    )
+  } else {
+    stop(paste(
+      "bridge_spell_therapy_overlap() is not implemented for this type of database.",
+      "Please report this issue on https://github.com/ramses-antibiotics/ramses-package/issues",
+      collapse = "\n"
+    ))
+  }
+  
+  tblz_bridge_spell_therapy_overlap <- dplyr::transmute(
+    tblz_bridge_spell_therapy_overlap,
+    patient_id,
+    spell_id,
+    therapy_id,
+    LOT
+  )
   
   if (overwrite) {
     if(DBI::dbExistsTable(conn, "bridge_spell_therapy_overlap")) {
@@ -1939,7 +2051,6 @@ bridge_spell_therapy_overlap <- function(conn,
   return(TRUE)
 }
 
-
 #' Compute episode bed days in inpatient_episodes table
 #' 
 #' @description compute the bed-days of every episodes in the inpatient_episodes 
@@ -1947,6 +2058,10 @@ bridge_spell_therapy_overlap <- function(conn,
 #' discharged tomorrow at 16:00 has 1.25 bed-days.
 #' @param conn a database connection
 #' @noRd
+.compute_bed_days <- function(conn){
+UseMethod(".compute_bed_days")
+}
+
 .compute_bed_days.SQLiteConnection <- function(conn) {
   if( !("ramses_bed_days" %in% 
         DBI::dbListFields(conn, "inpatient_episodes")) ) {
@@ -1963,3 +2078,19 @@ bridge_spell_therapy_overlap <- function(conn,
   )
 }
 
+.compute_bed_days.PqConnection <- function(conn) {
+  if( !("ramses_bed_days" %in% 
+        DBI::dbListFields(conn, "inpatient_episodes")) ) {
+    DBI::dbExecute(conn = conn,
+                   statement = "ALTER TABLE inpatient_episodes
+                           ADD COLUMN ramses_bed_days real;")
+  }
+  DBI::dbExecute(
+    conn = conn,
+    statement = "
+    UPDATE inpatient_episodes
+    SET ramses_bed_days = EXTRACT(EPOCH FROM ( 
+    episode_end::TIMESTAMP - episode_start::TIMESTAMP )) 
+    / ( 24.0 * 3600.0 );"
+  )
+}

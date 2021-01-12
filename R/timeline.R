@@ -22,8 +22,12 @@ therapy_timeline <- function(conn, patient_identifier,
   
   # Retrieve inpatient records
   base <- tbl(conn, "inpatient_episodes") %>%
-    dplyr::filter(patient_id == patient_identifier) %>%
-    .sqlite_date_collect()
+    dplyr::filter(patient_id == patient_identifier)
+  
+  if( is(conn, "SQLiteConnection") ) {
+    base <- .sqlite_date_collect(base)
+  }
+    
   if (nrow(base) == 0) {
     stop("Patient was not found.")
   }
@@ -273,7 +277,6 @@ therapy_timeline <- function(conn, patient_identifier,
     return(data.frame())
   } 
   
-  
   if( is(diag, "tbl_SQLiteConnection") ) {
     # combining episodes together for diagnoses that span several episodes
     diag <- diag %>%
@@ -290,40 +293,25 @@ therapy_timeline <- function(conn, patient_identifier,
         "MAX(grp) 
          OVER(PARTITION BY patient_id, icd_code, prim_diag
          ORDER BY patient_id, [episode_start])"
-      )) %>%
-      dplyr::group_by(patient_id, icd_code, grp, prim_diag, 
-                      infection_group1_code,
-                      infection_group1_label,
-                      infection_group2_code,
-                      infection_group2_label) %>%
-      dplyr::summarise(start_time = min(episode_start, na.rm = TRUE),
-                       end_time = max(episode_end, na.rm = TRUE)) %>%
-      dplyr::compute()
-    
+      )) 
+  } else if( is(diag, "tbl_PqConnection") ) {
+    # combining episodes together for diagnoses that span several episodes
     diag <- diag %>%
-      dplyr::left_join(icd_lu, by = c('icd_code')) %>% 
-      dplyr::collect() %>% data.table() %>% unique() %>%
-      dplyr::mutate(icd_text = paste0(
-        dplyr::if_else(prim_diag == 1, "<strong>", ""), 
-        icd_display, " &ndash; ", icd_description,
-        dplyr::if_else(prim_diag == 1, "</strong>", "")))
-    
-    diag <- dplyr::transmute(
-      diag,
-      id = NA, 
-      content = icd_text, 
-      title = paste0(icd_description, ifelse(prim_diag == 1, " (PRIMARY DIAGNOSIS)", "")),
-      start = lubridate::as_datetime(start_time),  
-      end = lubridate::as_datetime(end_time),
-      group =  2,
-      subgroup = infection_group1_code,
-      type = 'range',
-      style = "background-color: #97e2f8",#paste0("background-color: #97e2f8", graph_colour), # TODO why not move this to CSS!
-      className = "") %>% 
-      unique() %>%
-      as.data.frame()
-    
-    return(diag)
+      dplyr::mutate(
+        prim_diag = dplyr::if_else(diagnosis_position == 1, 1, 0),
+        grp = dplyr::sql("
+         CASE WHEN ABS( EXTRACT(EPOCH FROM( 
+             (LAG(episode_end, 1, 0)
+                 OVER(PARTITION BY patient_id, icd_code
+                      ORDER BY [episode_start])))::TIMESTAMP -
+             - episode_start::TIMESTAMP )) <= (6 * 3600) 
+         THEN NULL
+         ELSE ROW_NUMBER() OVER(ORDER BY episode_start) END")) %>% 
+      dplyr::mutate(grp = dplyr::sql(
+        "MAX(grp) 
+         OVER(PARTITION BY patient_id, icd_code, prim_diag
+         ORDER BY patient_id, [episode_start])"
+      ))
   } else {
     stop(paste(
       ".therapy_timeline_get_diagnoses() is not implemented for this type of database.",
@@ -331,6 +319,41 @@ therapy_timeline <- function(conn, patient_identifier,
       collapse = "\n"
       ))
   }
+  
+  diag <- diag %>%
+    dplyr::group_by(patient_id, icd_code, grp, prim_diag, 
+                    infection_group1_code,
+                    infection_group1_label,
+                    infection_group2_code,
+                    infection_group2_label) %>%
+    dplyr::summarise(start_time = min(episode_start, na.rm = TRUE),
+                     end_time = max(episode_end, na.rm = TRUE)) %>%
+    dplyr::compute()
+  
+  diag <- diag %>%
+    dplyr::left_join(icd_lu, by = c('icd_code')) %>% 
+    dplyr::collect() %>% data.table() %>% unique() %>%
+    dplyr::mutate(icd_text = paste0(
+      dplyr::if_else(prim_diag == 1, "<strong>", ""), 
+      icd_display, " &ndash; ", icd_description,
+      dplyr::if_else(prim_diag == 1, "</strong>", "")))
+  
+  diag <- dplyr::transmute(
+    diag,
+    id = NA, 
+    content = icd_text, 
+    title = paste0(icd_description, ifelse(prim_diag == 1, " (PRIMARY DIAGNOSIS)", "")),
+    start = lubridate::as_datetime(start_time),  
+    end = lubridate::as_datetime(end_time),
+    group =  2,
+    subgroup = infection_group1_code,
+    type = 'range',
+    style = "background-color: #97e2f8",#paste0("background-color: #97e2f8", graph_colour), # TODO why not move this to CSS!
+    className = "") %>% 
+    unique() %>%
+    as.data.frame()
+  
+  return(diag)
 }
 
 

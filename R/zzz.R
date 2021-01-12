@@ -115,7 +115,10 @@ global_vars <- c(
   "infection_group1_label",
   "infection_group2_code",
   "infection_group2_label",
-  "year"
+  "year",
+  "DDD_prescribed",
+  "DOT",
+  "LOT"
 )
 
 utils::globalVariables(global_vars)
