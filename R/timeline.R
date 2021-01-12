@@ -22,11 +22,8 @@ therapy_timeline <- function(conn, patient_identifier,
   
   # Retrieve inpatient records
   base <- tbl(conn, "inpatient_episodes") %>%
-    dplyr::filter(patient_id == patient_identifier)
-  
-  if( is(conn, "SQLiteConnection") ) {
-    base <- .sqlite_date_collect(base)
-  }
+    dplyr::filter(patient_id == patient_identifier) %>% 
+    .sqlite_date_collect()
     
   if (nrow(base) == 0) {
     stop("Patient was not found.")

@@ -342,9 +342,6 @@ test_that("Ramses on PosgreSQL", {
                                   host = "localhost", 
                                   dbname="RamsesDB")
 
-  
-  # > database loading functions ------------------------------------------
-  
   drug_data <- Ramses:::.prepare_example_drug_records()
   inpatient_data <- Ramses:::.prepare_example_inpatient_records()
   icd10cm <- download_icd10cm()
@@ -385,7 +382,6 @@ test_that("Ramses on PosgreSQL", {
     )
   )
   
-  
   test_output <- tbl(conPostgreSQL, "drug_prescriptions") %>% 
     filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08")) %>% 
     select(prescription_id, combination_id, therapy_id) %>% 
@@ -401,14 +397,13 @@ test_that("Ramses on PosgreSQL", {
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
     dplyr::collect()
   
-  # TEST SWITCHING TO POSIXlt
   expect_equivalent(
     test_output, 
     dplyr::tibble(
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
-      therapy_start = as.POSIXlt(as.POSIXct("2016-08-01 11:15:19", tz = "Europe/London")),
-      therapy_end = as.POSIXlt(as.POSIXct("2016-08-03 11:15:19", tz = "Europe/London"))
+      therapy_start = as.POSIXct("2016-08-01 11:15:19 BST"),
+      therapy_end = as.POSIXct("2016-08-03 11:15:19 BST")
     )
   )
   
@@ -424,14 +419,13 @@ test_that("Ramses on PosgreSQL", {
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
     dplyr::collect()
   
-  # TEST SWITCHING TO POSIXlt
   expect_equivalent(
     test_output, 
     dplyr::tibble(
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
-      therapy_start = as.POSIXlt(as.POSIXct("2016-08-01 11:15:19", tz = "Europe/London")),
-      therapy_end = as.POSIXlt(as.POSIXct("2016-08-03 11:15:19", tz = "Europe/London"))
+      therapy_start = as.POSIXct("2016-08-01 11:15:19 BST"),
+      therapy_end = as.POSIXct("2016-08-03 11:15:19 BST")
     )
   )
   
