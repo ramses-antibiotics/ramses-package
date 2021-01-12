@@ -247,11 +247,12 @@ test_that("SQLite does transitive closure", {
   conSQLite <- suppressWarnings(
     connect_local_database("test.sqlite"))
   
-  dbplyr::db_copy_to(conSQLite,
-                     "ramses_test_edges",
-                     test_edges,
-                     overwrite = T,
-                     temporary = F)
+  dplyr::copy_to(
+    dest = conSQLite,
+    name = "ramses_test_edges",
+    df = test_edges,
+    temporary = FALSE,
+    overwrite = TRUE)
   
   test_output <- Ramses:::.run_transitive_closure(
     conSQLite,"ramses_test_edges", silent = TRUE) %>% 
@@ -297,11 +298,12 @@ test_that("Postgres does transitive closure", {
                                   host = "localhost", 
                                   dbname="RamsesDB")
   
-  dbplyr::db_copy_to(conPostgreSQL,
-                     "ramses_test_edges",
-                     test_edges,
-                     overwrite = T,
-                     temporary = F)
+  dplyr::copy_to(
+    dest = conPostgreSQL,
+    name = "ramses_test_edges",
+    df = test_edges,
+    temporary = FALSE,
+    overwrite = TRUE) 
   
   expect_true(
     is(tbl(conPostgreSQL,
