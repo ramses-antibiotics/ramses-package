@@ -101,7 +101,6 @@ Microorganism [
   label = "{Microorganism|
   + patient_id: character\l
   + isolate_id: character\l
-  
   + susceptibilities: tbl\l|
   
   + fetch_antibiogram(): tbl\l
@@ -113,6 +112,7 @@ TherapyList [
 label = "{TherapyList|\l+ id: list\l+ type: \"therapy-list\"\l- TherapyTable: tbl\l+ lazy_status: boolean\l|+ fetch(): data.frame\l + therapy_table(): list\l}"
 ]
 */
+
 
 RamsesObject -> Prescription [dir=back]
 RamsesObject -> Patient [dir=back]
@@ -130,10 +130,13 @@ Combination -> MedicationRequest [
   arrowhead=odiamond
   headlabel = "2..*   "
   taillabel = "1  "]
+
 MicrobialCulture -> Microorganism [ constraint=false
   arrowhead=odiamond
   headlabel = "1..*   "
   taillabel = "1   "]
+
+
 /*
 TherapyEpisode -> TherapyList [constraint=false
   arrowtail=odiamond

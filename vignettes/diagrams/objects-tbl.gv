@@ -16,9 +16,8 @@ digraph G {
 therapy_episode [
   width = 2.2
   label = "{therapy_episode|
-  + patient_id: character\l
-  + therapy_id: character\l
-  + type: \"therapy_episode\"\l
+  + id: character\l
+  + record: tbl_sql\l
   - conn: DBIConnection\l
   - therapy_table: tbl_sql\l|
   
@@ -46,4 +45,5 @@ tbl_df -> dataframe [dir=back]
 DBIObject -> DBIConnection [dir=back]
 DBIConnection -> SQLiteConnection [dir=back]
 DBIConnection -> PqConnection [dir=back]
+
 }
