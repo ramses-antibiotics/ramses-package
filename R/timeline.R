@@ -294,21 +294,24 @@ therapy_timeline <- function(conn, patient_identifier,
   } else if( is(diag, "tbl_PqConnection") ) {
     # combining episodes together for diagnoses that span several episodes
     diag <- diag %>%
+      dplyr::mutate(diagnosis_episode_end = dplyr::sql("
+      LAG(episode_end, 1)
+      OVER(PARTITION BY patient_id, icd_code
+           ORDER BY episode_start)")) %>% 
       dplyr::mutate(
         prim_diag = dplyr::if_else(diagnosis_position == 1, 1, 0),
         grp = dplyr::sql("
          CASE WHEN ABS( EXTRACT(EPOCH FROM( 
-             (LAG(episode_end, 1, 0)
-                 OVER(PARTITION BY patient_id, icd_code
-                      ORDER BY episode_start)))::TIMESTAMP -
-             - episode_start::TIMESTAMP )) <= (6 * 3600) 
+               diagnosis_episode_end::TIMESTAMP
+                - episode_start::TIMESTAMP ))) <= (6 * 3600) 
          THEN NULL
          ELSE ROW_NUMBER() OVER(ORDER BY episode_start) END")) %>% 
       dplyr::mutate(grp = dplyr::sql(
         "MAX(grp) 
          OVER(PARTITION BY patient_id, icd_code, prim_diag
-         ORDER BY patient_id, episode_start)"
-      ))
+              ORDER BY patient_id, episode_start)"
+      )) %>% 
+      dplyr::select(-diagnosis_episode_end)
   } else {
     stop(paste(
       ".therapy_timeline_get_diagnoses() is not implemented for this type of database.",
