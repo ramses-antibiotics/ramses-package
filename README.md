@@ -36,8 +36,8 @@
 ## Funders
 
 <div style="display: table-cell;">
-<a href="https://www.nihr.ac.uk/" ><img height="60px" style="vertical-align: bottom;" alt="National Institute of Health Research" src="man/figures/partner-logos/NIHR.svg" ></a> &nbsp;&nbsp;
-<a href="https://www.esrc.ukri.org" ><img height="50px" style="vertical-align: bottom; bottom;margin-bottom: -5px;" alt="Economic and Social Research Council" src="man/figures/partner-logos/ESRC.svg" ></a> &nbsp;&nbsp;
+<a href="https://www.nihr.ac.uk/"><img height="60px" style="vertical-align: bottom;" alt="National Institute of Health Research" src="man/figures/partner-logos/NIHR.svg" ></a> &nbsp;&nbsp;
+<a href="https://esrc.ukri.org/"><img height="50px" style="vertical-align: bottom; bottom;margin-bottom: -5px;" alt="Economic and Social Research Council" src="man/figures/partner-logos/ESRC.svg" ></a> &nbsp;&nbsp;
 <a href="https://rosetreestrust.co.uk/"><img style="vertical-align: bottom;margin-bottom: -7px;" alt="Rosetree Trust" src="man/figures/partner-logos/rosetree.png" height="50px"></a>
 </div>
 

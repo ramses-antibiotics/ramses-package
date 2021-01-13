@@ -103,7 +103,7 @@ import_icd <- function(archive, version) {
   source_files <- utils::unzip(archive, exdir = temp)
   
   icd_source <- readr::read_delim(
-    grep("CodesAndTitlesAndMetadata_GB", source_files, value = T),
+    grep("CodesAndTitlesAndMetadata_", source_files, value = T),
     delim = "\t", guess_max = 10000)
   rm(temp)
   
