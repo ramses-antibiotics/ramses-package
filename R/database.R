@@ -489,15 +489,6 @@ load_medications.PqConnection <- function(
   prescriptions$prescription_end <- as.character(prescriptions$prescription_end)
   prescriptions$therapy_rank <- NA_integer_
   
-  if (!exists("prescription_text", prescriptions)) {
-    prescriptions <- prescriptions %>% 
-      dplyr::mutate(prescription_text = paste0(
-      drug_display_name, " ",
-      route, " ",
-      dose, unit, " ",
-      dplyr::if_else(daily_frequency < 0, "one-off", frequency)
-    ))
-  }
   if(create_combination_id) prescriptions$combination_id <- NA_character_
   if(create_therapy_id) prescriptions$therapy_id <- NA_character_
   
@@ -567,15 +558,6 @@ load_medications.PqConnection <- function(
   }
   prescriptions$therapy_rank <- NA_integer_
   
-  if (!exists("prescription_text", prescriptions)) {
-    prescriptions <- prescriptions %>% 
-      dplyr::mutate(prescription_text = paste0(
-        drug_display_name, " ",
-        route, " ",
-        dose, unit, " ",
-        dplyr::if_else(daily_frequency < 0, "one-off", frequency)
-      ))
-  }
   if(create_combination_id) prescriptions$combination_id <- NA_character_
   if(create_therapy_id) prescriptions$therapy_id <- NA_character_
   
