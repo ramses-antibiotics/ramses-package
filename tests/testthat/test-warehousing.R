@@ -499,7 +499,11 @@ test_that("Ramses on PosgreSQL", {
                      date2 = "2017-03-01"), 
     "timevis")
   
-  
   # > close connection ----------------------------------------------------
+  
+  lapply(DBI::dbListTables(conPostgreSQL), 
+         DBI::dbRemoveTable, 
+         conn = conPostgreSQL)
+
   DBI::dbDisconnect(conPostgreSQL)
 })
