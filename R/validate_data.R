@@ -647,7 +647,7 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'      \item{\code{antiinfective_type}}{type of antiinfective ("antibacterial", "antifungal",
 #'      "antiviral", or "antiparasitic")}
 #'      \item{\code{ATC_code}}{the ATC code, see \code{\link{AMR}{ab_atc}()}}
-#'      \item{\code{ATC_group}}{the ATC group, see \code{\link{AMR}{ab_group1}()}}
+#'      \item{\code{ATC_group}}{the ATC group, see \code{\link{AMR}{ab_atc_group1}()}}
 #'      \item{\code{ATC_route}}{route of administration as defined in the ATC ("O" = oral; 
 #'      "P" = parenteral; "R" = rectal; "V" = vaginal)}
 #'      \item{\code{authoring_date}}{timestamp for when the prescription was issued}

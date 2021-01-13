@@ -12,7 +12,7 @@ map_ICD10_CCSR(df, icd_column)
 \arguments{
 \item{df}{a data frame containing ICD-10 codes}
 
-\item{icd_column}{a variable name or column number in `df` 
+\item{icd_column}{a variable name or column number in \code{df} 
 containing ICD-10 codes.}
 }
 \value{
@@ -23,7 +23,7 @@ CCS categories are mutually exclusive. CCSR categories are not.
 Map ICD-10 codes to clinically meaning full 
 categories within the Clinical Classifications Software
 and the Clinical Classifications Software Refined (CCSR), 
-further described in [`ccs`](css) and 
+further described in \code{\link{ccs}} and 
 \code{\link{ccsr}}.
 }
 \details{

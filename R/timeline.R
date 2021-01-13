@@ -7,7 +7,7 @@
 #' @param date1 (optional) a date window minimum to focus the timeline on by default
 #' @param date2 (optional) a date window maximum to focus the timeline on by default
 #' @param load_timevis_dependencies a boolean indicating whether jQuery 
-#' and Boostrap should be loaded (default is FALSE). See \link[timevis]{timevis}
+#' and Bootstrap should be loaded (default is \code{FALSE}). See \link[timevis]{timevis}
 #' for detail
 #' @return a timevis object
 #' @importFrom dplyr tbl

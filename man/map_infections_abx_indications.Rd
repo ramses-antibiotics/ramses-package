@@ -9,7 +9,7 @@ map_infections_abx_indications(df, icd_column)
 \arguments{
 \item{df}{a data frame containing ICD-10 codes}
 
-\item{icd_column}{a variable name or column number in `df` 
+\item{icd_column}{a variable name or column number in \code{df} 
 containing ICD-10 codes.}
 }
 \value{

@@ -33,7 +33,7 @@ create_therapy_episodes(
 \code{\link{transitive_closure_control}()})}
 
 \item{silent}{a boolean indicating whether the function should be
-executed without progress bar. Default is `TRUE`.}
+executed without progress bar. Default is \code{TRUE}.}
 }
 \description{
 This function should be used to recreate therapy episodes

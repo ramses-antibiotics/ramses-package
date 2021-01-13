@@ -38,8 +38,8 @@ load_medications(
 
 \item{prescriptions}{a data frame of prescriptions passing the 
 \code{\link{validate_prescriptions}()} function. Note: if variables 
-`therapy_id` or `combination_id` are provided, they will be preserved
-as they are instead of being populated by `Ramses`}
+\code{therapy_id} or \code{combination_id} are provided, they will be preserved
+as they are instead of being populated by Ramses}
 
 \item{administrations}{a data frame of drug administrations passing the 
 \code{\link{validate_administrations}()} function}
@@ -51,7 +51,7 @@ medication tables}
 \code{\link{transitive_closure_control}()})}
 
 \item{silent}{a boolean indicating whether the function should be
-executed without progress bar. Default is `TRUE`.}
+executed without progress bar. Default is \code{TRUE}.}
 }
 \description{
 Load drug prescription records into the warehouse
