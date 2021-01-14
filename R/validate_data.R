@@ -206,7 +206,7 @@
 #' @description This function performs a series of checks for mandatory and
 #' optional requirements on episodes of care records. The data definitions 
 #' closely follow those of the  
-#' \href{https://www.datadictionary.nhs.uk/data_dictionary/messages/cds_v6-2/data_sets/cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds_fr.asp}{English NHS Admitted Patient Care Commissioning Datasets}.
+#' \href{https://datadictionary.nhs.uk/data_sets/cds_v6-2/cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds.html#dataset_cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds}{English NHS Admitted Patient Care Commissioning Datasets}.
 #' @param episodes data frame containing one row per episode of care
 #' @param wards (optional) data frame containing one row per ward stay. 
 #'   Default is `NULL`.
@@ -220,8 +220,10 @@
 #'        \item \code{"3"} transfer/other admission
 #'     }
 #'   \emph{Note:} \code{"1"} and \code{"2"} corresponds to the first character 
-#'   of the \href{https://www.datadictionary.nhs.uk/data_dictionary/attributes/a/add/admission_method_de.asp}{NHS admission method value set}; \code{"3"} corresponds to 
-#'   the remaining values starting with \code{3} or \code{8}.}
+#'   of the 
+#'   \href{https://datadictionary.nhs.uk/attributes/admission_method.html}{NHS admission method value set};
+#'   \code{"3"} corresponds to the remaining values starting with 
+#'   \code{3} or \code{8}.}
 #'   \item{\code{admission_date}}{a \code{POSIXct} timestamp for 
 #'   the hospital admission. Must not be missing.}
 #'   \item{\code{discharge_date}}{a \code{POSIXct} timestamp for 
@@ -647,7 +649,7 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'      \item{\code{antiinfective_type}}{type of antiinfective ("antibacterial", "antifungal",
 #'      "antiviral", or "antiparasitic")}
 #'      \item{\code{ATC_code}}{the ATC code, see \code{\link{AMR}{ab_atc}()}}
-#'      \item{\code{ATC_group}}{the ATC group, see \code{\link{AMR}{ab_group1}()}}
+#'      \item{\code{ATC_group}}{the ATC group, see \code{\link{AMR}{ab_atc_group1}()}}
 #'      \item{\code{ATC_route}}{route of administration as defined in the ATC ("O" = oral; 
 #'      "P" = parenteral; "R" = rectal; "V" = vaginal)}
 #'      \item{\code{authoring_date}}{timestamp for when the prescription was issued}
@@ -1179,7 +1181,7 @@ validate_microbiology <- function(specimens, isolates, susceptibilities) {
 #'    \item{\code{"spell_id"}}{identifier of the hospital spell during which 
 #'    the investigation was performed (if observations are made during admission)}
 #'    \item{\code{"status"}}{Codes from the following value set 
-#'    \url{http://hl7.org/fhir/observation-status} \itemize{
+#'    \url{http://hl7.org/fhir/observation-status/} \itemize{
 #'   \item \code{"registered"}: The existence of the observation is registered, but there is no result yet available.
 #'   \item \code{"preliminary"}: his is an initial or interim observation: data may be incomplete or unverified.
 #'   \item \code{"final"}: The observation is complete and there are no further actions needed. 
@@ -1215,7 +1217,7 @@ validate_microbiology <- function(specimens, isolates, susceptibilities) {
 #'    \code{\link[units]{as_units}()}. See examples. 
 #'    See also: \code{\link[units]{valid_udunits}}, 
 #'    \code{\link[units]{install_symbolic_unit}}
-#'    \url{http://unitsofmeasure.org}}
+#'    \url{https://ucum.org/}}
 #' }
 #' @export 
 #' @examples 

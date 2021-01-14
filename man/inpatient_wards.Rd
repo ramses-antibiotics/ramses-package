@@ -20,6 +20,6 @@ movements during hospitalisation spells recorded in
 
 This data was simulated to reproduce relevant characteristics of English 
 NHS Admitted Patient Care datasets. More information can be found on the 
-\href{https://www.datadictionary.nhs.uk/data_dictionary/messages/cds_v6-2/data_sets/cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds_fr.asp?shownav=1}{NHS data dictionary website}.
+\href{https://datadictionary.nhs.uk/data_sets/cds_v6-2/cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds.html#dataset_cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds}{NHS data dictionary website}.
 }
 \keyword{datasets}

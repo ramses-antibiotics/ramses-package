@@ -12,11 +12,11 @@ map_charlson_comorbidities(df, icd_column)
 \arguments{
 \item{df}{a data frame containing ICD-10 look up data}
 
-\item{icd_column}{a variable name or column number in `df` 
+\item{icd_column}{a variable name or column number in \code{df} 
 containing ICD-10 codes.}
 }
 \value{
-The input data frame `df` enhanced with the following 
+The input data frame \code{df} enhanced with the following 
 variables:
   \itemize{
     \item \code{comorb} a character vector of 17 comorbidity 

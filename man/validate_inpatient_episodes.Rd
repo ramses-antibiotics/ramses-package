@@ -19,7 +19,7 @@ A logical value indicating success
 This function performs a series of checks for mandatory and
 optional requirements on episodes of care records. The data definitions 
 closely follow those of the  
-\href{https://www.datadictionary.nhs.uk/data_dictionary/messages/cds_v6-2/data_sets/cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds_fr.asp}{English NHS Admitted Patient Care Commissioning Datasets}.
+\href{https://datadictionary.nhs.uk/data_sets/cds_v6-2/cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds.html#dataset_cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds}{English NHS Admitted Patient Care Commissioning Datasets}.
 }
 \section{Episode mandatory variables}{
 
@@ -32,8 +32,10 @@ closely follow those of the
        \item \code{"3"} transfer/other admission
     }
   \emph{Note:} \code{"1"} and \code{"2"} corresponds to the first character 
-  of the \href{https://www.datadictionary.nhs.uk/data_dictionary/attributes/a/add/admission_method_de.asp}{NHS admission method value set}; \code{"3"} corresponds to 
-  the remaining values starting with \code{3} or \code{8}.}
+  of the 
+  \href{https://datadictionary.nhs.uk/attributes/admission_method.html}{NHS admission method value set};
+  \code{"3"} corresponds to the remaining values starting with 
+  \code{3} or \code{8}.}
   \item{\code{admission_date}}{a \code{POSIXct} timestamp for 
   the hospital admission. Must not be missing.}
   \item{\code{discharge_date}}{a \code{POSIXct} timestamp for 

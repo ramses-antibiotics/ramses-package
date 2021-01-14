@@ -399,8 +399,8 @@ transitive_closure_control <- function(max_continuation_gap = 36,
 #' @param conn a database connection
 #' @param prescriptions a data frame of prescriptions passing the 
 #' \code{\link{validate_prescriptions}()} function. Note: if variables 
-#' `therapy_id` or `combination_id` are provided, they will be preserved
-#' as they are instead of being populated by `Ramses`
+#' \code{therapy_id} or \code{combination_id} are provided, they will be preserved
+#' as they are instead of being populated by Ramses
 #' @param administrations a data frame of drug administrations passing the 
 #' \code{\link{validate_administrations}()} function
 #' @param overwrite if \code{TRUE} (the default), will overwrite existing 
@@ -408,7 +408,7 @@ transitive_closure_control <- function(max_continuation_gap = 36,
 #' @param transitive_closure_controls parameters controlling (see 
 #' \code{\link{transitive_closure_control}()})
 #' @param silent a boolean indicating whether the function should be
-#' executed without progress bar. Default is `TRUE`.
+#' executed without progress bar. Default is \code{TRUE}.
 #' @rdname load_medications
 #' @export
 load_medications <- function(
@@ -489,15 +489,6 @@ load_medications.PqConnection <- function(
   prescriptions$prescription_end <- as.character(prescriptions$prescription_end)
   prescriptions$therapy_rank <- NA_integer_
   
-  if (!exists("prescription_text", prescriptions)) {
-    prescriptions <- prescriptions %>% 
-      dplyr::mutate(prescription_text = paste0(
-      drug_display_name, " ",
-      route, " ",
-      dose, unit, " ",
-      dplyr::if_else(daily_frequency < 0, "one-off", frequency)
-    ))
-  }
   if(create_combination_id) prescriptions$combination_id <- NA_character_
   if(create_therapy_id) prescriptions$therapy_id <- NA_character_
   
@@ -567,15 +558,6 @@ load_medications.PqConnection <- function(
   }
   prescriptions$therapy_rank <- NA_integer_
   
-  if (!exists("prescription_text", prescriptions)) {
-    prescriptions <- prescriptions %>% 
-      dplyr::mutate(prescription_text = paste0(
-        drug_display_name, " ",
-        route, " ",
-        dose, unit, " ",
-        dplyr::if_else(daily_frequency < 0, "one-off", frequency)
-      ))
-  }
   if(create_combination_id) prescriptions$combination_id <- NA_character_
   if(create_therapy_id) prescriptions$therapy_id <- NA_character_
   
@@ -869,7 +851,7 @@ load_medications.PqConnection <- function(
 #' @param transitive_closure_controls parameters controlling (see 
 #' \code{\link{transitive_closure_control}()})
 #' @param silent a boolean indicating whether the function should be
-#' executed without progress bar. Default is `TRUE`.
+#' executed without progress bar. Default is \code{TRUE}.
 #' 
 #' @details This function performs the following tasks:
 #' \enumerate{

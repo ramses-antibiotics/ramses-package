@@ -5,6 +5,7 @@
 [![Codecov test coverage](https://codecov.io/gh/ramses-antibiotics/ramses-package/branch/master/graph/badge.svg)](https://codecov.io/gh/ramses-antibiotics/ramses-package?branch=master)
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 [![license](https://img.shields.io/badge/license-GPL--3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.en.html)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4428900.svg)](https://doi.org/10.5281/zenodo.4428900)
 <!-- badges: end -->
 
 <div class="lead"><code>Ramses</code> is an analytical software package enabling hospitals to protect antibiotics by monitoring their prescribing and the management of infections using routine electronic health records.</div>
@@ -36,8 +37,8 @@
 ## Funders
 
 <div style="display: table-cell;">
-<a href="https://www.nihr.ac.uk/" ><img height="60px" style="vertical-align: bottom;" alt="National Institute of Health Research" src="man/figures/partner-logos/NIHR.svg" ></a> &nbsp;&nbsp;
-<a href="https://www.esrc.ukri.org" ><img height="50px" style="vertical-align: bottom; bottom;margin-bottom: -5px;" alt="Economic and Social Research Council" src="man/figures/partner-logos/ESRC.svg" ></a> &nbsp;&nbsp;
+<a href="https://www.nihr.ac.uk/"><img height="60px" style="vertical-align: bottom;" alt="National Institute of Health Research" src="man/figures/partner-logos/NIHR.svg" ></a> &nbsp;&nbsp;
+<a href="https://esrc.ukri.org/"><img height="50px" style="vertical-align: bottom; bottom;margin-bottom: -5px;" alt="Economic and Social Research Council" src="man/figures/partner-logos/ESRC.svg" ></a> &nbsp;&nbsp;
 <a href="https://rosetreestrust.co.uk/"><img style="vertical-align: bottom;margin-bottom: -7px;" alt="Rosetree Trust" src="man/figures/partner-logos/rosetree.png" height="50px"></a>
 </div>
 

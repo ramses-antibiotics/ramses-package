@@ -49,3 +49,10 @@ test_that("CCS mapping", {
   expect_equal(mock_icd_data$ccsr_cat_code, c("RSP008", "RSP008", "RSP008"))
   expect_equal(mock_icd_data$ccs_L2_code, c("8.2", "8.2", "8.2"))
 })
+
+test_that("import_icd", {
+  mock_icd_file <- system.file(package = "Ramses", "ICD10_mock_file.zip")
+  imported_mock_icd <- import_icd(mock_icd_file, version = "blurg")
+  expect_equal(imported_mock_icd$icd_display, c("A00.0", "A00.1"))
+  expect_equal(imported_mock_icd$category_description, c("Cholera", "Cholera"))
+})

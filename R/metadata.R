@@ -103,7 +103,7 @@ import_icd <- function(archive, version) {
   source_files <- utils::unzip(archive, exdir = temp)
   
   icd_source <- readr::read_delim(
-    grep("CodesAndTitlesAndMetadata_GB", source_files, value = T),
+    grep("CodesAndTitlesAndMetadata_", source_files, value = T),
     delim = "\t", guess_max = 10000)
   rm(temp)
   
@@ -149,9 +149,9 @@ import_icd <- function(archive, version) {
 #' comorbidities, comorbidity groups, and Charlson Comorbidity Index 
 #' weights from \insertCite{Quan2005}{Ramses}.
 #' @param df a data frame containing ICD-10 look up data
-#' @param icd_column  a variable name or column number in `df` 
+#' @param icd_column  a variable name or column number in \code{df} 
 #' containing ICD-10 codes.
-#' @return The input data frame `df` enhanced with the following 
+#' @return The input data frame \code{df} enhanced with the following 
 #' variables:
 #'   \itemize{
 #'     \item \code{comorb} a character vector of 17 comorbidity 
@@ -221,7 +221,7 @@ map_charlson_comorbidities <- function(df, icd_column){
 #' and whether antibiotics are commonly indicated based on definitions
 #' set by \insertCite{Hashimoto2020}{Ramses}.
 #' @param df a data frame containing ICD-10 codes
-#' @param icd_column a variable name or column number in `df` 
+#' @param icd_column a variable name or column number in \code{df} 
 #' containing ICD-10 codes.
 #' @details For more detail on infection categories and indications
 #' for antibiotic therapy, see \code{\link{antibiotic_icd_indications}}.
@@ -287,10 +287,10 @@ map_infections_abx_indications <- function(df, icd_column) {
 #' @description Map ICD-10 codes to clinically meaning full 
 #' categories within the Clinical Classifications Software
 #' and the Clinical Classifications Software Refined (CCSR), 
-#' further described in [`ccs`](css) and 
+#' further described in \code{\link{ccs}} and 
 #' \code{\link{ccsr}}.
 #' @param df a data frame containing ICD-10 codes
-#' @param icd_column a variable name or column number in `df` 
+#' @param icd_column a variable name or column number in \code{df} 
 #' containing ICD-10 codes.
 #' @details This function is designed to be compatible with 
 #' both ICD-10 and ICD-10-CM versions.
@@ -392,14 +392,14 @@ map_ICD10_CCSR <- function(df, icd_column) {
 #' This function includes modified source code by \code{
 #' \link[AMR]{atc_online_property}()}.
 #' @param ATC_code a character vector of ATC codes (can be easily obtained from)
-#' \code{\link[AMR]{ab_atc}() in the `AMR` package} 
+#' \code{\link[AMR]{ab_atc}() in the AMR package} 
 #' @param ATC_administration a character vector indicating the ATC route of 
 #' administration (see Details)
 #' @param dose a numeric vector indicating the total dose for the basis 
 #' of strength of the ATC DDD: in the case of prescriptions, this should
 #' be the total dose given in one day
-#' @param unit a character vector coercible to a `units` object with 
-#' \code{\link[units]{as.units}()}. 
+#' @param unit a character vector coercible to a \code{units} object with 
+#' \code{\link[units]{as_units}()}. 
 #' @param silent if \code{TRUE}, the progress bar will be hidden. 
 #' The default is \code{FALSE}.
 #' @details This function queries the WHO ATC website for the most 

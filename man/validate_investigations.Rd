@@ -30,7 +30,7 @@ The following variables are required:
    \item{\code{"spell_id"}}{identifier of the hospital spell during which 
    the investigation was performed (if observations are made during admission)}
    \item{\code{"status"}}{Codes from the following value set 
-   \url{http://hl7.org/fhir/observation-status} \itemize{
+   \url{http://hl7.org/fhir/observation-status/} \itemize{
   \item \code{"registered"}: The existence of the observation is registered, but there is no result yet available.
   \item \code{"preliminary"}: his is an initial or interim observation: data may be incomplete or unverified.
   \item \code{"final"}: The observation is complete and there are no further actions needed. 
@@ -66,7 +66,7 @@ The following variables are required:
    \code{\link[units]{as_units}()}. See examples. 
    See also: \code{\link[units]{valid_udunits}}, 
    \code{\link[units]{install_symbolic_unit}}
-   \url{http://unitsofmeasure.org}}
+   \url{https://ucum.org/}}
 }
 }
 
