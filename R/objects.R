@@ -1,13 +1,33 @@
 
 
-
-
-
 setOldClass("tbl_sql")
+
+
+
+#' An S4 class to represent patients
+#'
+#' @slot id a character identifier 
+#' @slot conn a database connection
+#' @slot record a `tbl_sql` for the corresponding database record
+#' @slot therapy_table a `tbl_sql` for the longitudinal therapy table
+#'
+#' @return
+#' @export
+setClass(
+  "TherapyEpisode", 
+  slots = c(
+    id = "character", 
+    record = "tbl_sql",
+    therapy_table = "tbl_sql"
+  ),
+  package = "dplyr"
+)
+
 
 #' An S4 class to handle therapy episodes
 #'
 #' @slot id a character therapy episode identifier 
+#' @slot conn a database connection
 #' @slot record a `tbl_sql` for the corresponding database record
 #' @slot therapy_table a `tbl_sql` for the longitudinal therapy table
 #'
@@ -67,6 +87,9 @@ TherapyEpisode <- function(conn, id, verify = FALSE) {
   new("TherapyTable", id = id, record = record, therapy_table = therapy_table)
 }
 
+# TherapyEpisode <- function(medication_record) {
+#   
+# }
 
 .create_therapy_table <- function(conn, id) {
   

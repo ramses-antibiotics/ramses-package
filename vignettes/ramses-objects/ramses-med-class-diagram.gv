@@ -1,0 +1,143 @@
+digraph G {
+  fontsize = 8
+
+  node [
+          fontname = "monospace"
+          fontsize = 8
+          shape = "record"
+          width = 1.5
+  ]
+
+  edge [
+          fontname = "monospace"
+          fontsize = 8
+  ]
+
+# arrowheads
+# Association open
+# Inheritance empty
+# Realisation/implementation empty + style=dashed
+# Dependency open + style=dashed
+# Aggregation odiamond
+# Composition diamond
+
+
+# Interface
+RamsesObject [
+  width = 3
+  label = "{«interface»\n
+  RamsesObject|
+  + class: character\l
+  + id: character\l
+  + conn: DBIConnection\l
+  - record: tbl_sql\l|
+  
+  + class(): character\l
+  + compute(): RamsesObject\l
+  + collect(): tbl_df\l}"
+]
+
+Prescription [
+  width = 3.2
+  label = "{Prescription|
+  - prescription_type: \{\"mono\", \"combo\"\}\l
+  - patient_id\l
+  - medication_requests\l
+  + therapy_id: character\l|
+  
+  + Patient(): Patient\l
+  + get_prescription_type(): \{\"mono\", \"combo\"\}\l
+  + get_medication_requests(): list\l
+  + TherapyEpisode(): TherapyEpisode\l}"
+]
+
+Prescription_Mono [
+  label = "{Prescription_Mono|
+  - type: \"mono\"\l
+  }"
+]
+
+Prescription_Combo [
+  label = "{Prescription_Combo|
+  - type: \"combo\"\l
+  }"
+]
+
+MedicationRequest [
+  width = 2.5
+  label = "{MedicationRequest|
+  - patient_id\l|
+  
+  + MedicationRequest(conn, id)\l
+  + Patient(): Patient\l
+  + Clinician(): Clinician\l
+  + Prescription(): Prescription\l
+  + TherapyEpisode(): TherapyEpisode\l}"
+]
+
+TherapyEpisode [
+  width = 3
+  label = "{TherapyEpisode|
+  - therapy_table: tbl_sql\l|
+  
+  + TherapyEpisode(conn, id): TherapyEpisode\l}"
+]
+
+Patient [
+  width = 2.1
+  label = "{Patient|
+  \l|
+  + Patient(conn, id): Patient\l}"
+]
+
+Clinician [
+  width = 2.4
+  label = "{Clinician|
+  \l|
+  + Clinician(conn, id): Clinician\l
+  + get_specialty(): character\l
+  + get_lead_clinician: Clinician\l}"
+]
+
+/*
+TherapyList [
+label = "{TherapyList|\l+ id: list\l+ type: \"therapy-list\"\l- TherapyTable: tbl\l+ lazy_status: boolean\l|+ fetch(): data.frame\l + therapy_table(): list\l}"
+]
+*/
+
+
+RamsesObject -> Prescription [dir=back]
+Prescription -> Prescription_Mono [dir=back]
+Prescription -> Prescription_Combo [dir=back]
+RamsesObject -> MedicationRequest [dir=back]
+
+RamsesObject -> Patient [dir=back]
+RamsesObject -> Clinician [dir=back]
+RamsesObject -> TherapyEpisode [dir=back]
+
+TherapyEpisode -> MedicationRequest [ constraint=false
+  arrowhead=odiamond
+  headlabel = "1..*  "
+  taillabel = "1   "]
+Prescription_Mono -> MedicationRequest [ constraint=false
+  arrowhead=odiamond
+  headlabel = "1..*       "
+  taillabel = "1"]
+Prescription_Combo -> MedicationRequest [
+  arrowhead=odiamond
+  headlabel = "2..*    "
+  taillabel = "1"]
+
+
+Patient -> Clinician [ style = invis ]; 
+TherapyEpisode -> Clinician  [ style = invis ]; 
+Patient -> TherapyEpisode  [ style = invis ]; 
+
+
+/*
+TherapyEpisode -> TherapyList [constraint=false
+  arrowtail=odiamond
+  headlabel = "2..*  "
+  taillabel = "0..*  "]
+*/  
+}

@@ -35,10 +35,12 @@ The two ways `Ramses` links prescriptions into episodes and combinations are:
 - by default, using the `load_medications()` function
 - on request, by calling the `create_therapy_episodes()` function.
 
-Both functions include a `transitive_closure_controls` argument, which sets the parameters for linking prescriptions together into episodes and/or combinations, based on patterns of overlap or time elapsed between prescriptions (see table below).
+Both functions include a `transitive_closure_controls` argument, which controls parameters for linking prescriptions together into episodes and/or combinations, based on patterns of overlap or time elapsed between prescriptions (see defaults in the table below). 
+
+To change the default settings, consult the documentation `?transitive_closure_control`.
 
 
-Table: Prescription overlap pattern classification rules and default parameters 
+Table: Prescription overlap pattern classification rules and default parameters
 
  Category | Pattern	| Conditions for <br> combination therapy |	Conditions for <br> continuation of therapy* |
  :-: | :-----: | --------- | --------- | 
@@ -62,3 +64,5 @@ Table: Prescription overlap pattern classification rules and default parameters
 
 
 
+
+# References
