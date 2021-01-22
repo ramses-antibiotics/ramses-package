@@ -1639,7 +1639,6 @@ create_mock_database <- function(file, silent = FALSE) {
 .prepare_example_inpatient_records <- function() {
   
   ip_patients <- Ramses::patients
-  
   ip_diagnoses <- Ramses::inpatient_diagnoses
   ip_diagnoses <- dplyr::filter(ip_diagnoses, !is.na(.data$icd_code))
   

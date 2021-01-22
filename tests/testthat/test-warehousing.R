@@ -58,8 +58,10 @@ test_that("Ramses on SQLite 2", {
     inpatient_data$micro$isolates,
     inpatient_data$micro$susceptibilities
     ))
-  expect_true(validate_inpatient_episodes(inpatient_data$episodes))
-  expect_true(validate_inpatient_episodes(episodes = inpatient_data$episodes,
+  expect_true(validate_inpatient_episodes(inpatient_data$patients,
+                                          inpatient_data$episodes))
+  expect_true(validate_inpatient_episodes(patients = inpatient_data$patients,
+                                          episodes = inpatient_data$episodes,
                                           wards = inpatient_data$ward_movements))
   
   # > database loading functions ------------------------------------------
@@ -73,6 +75,7 @@ test_that("Ramses on SQLite 2", {
 
   expect_invisible(
     load_inpatient_episodes(conn = conSQLite,
+                            patients_data = inpatient_data$patients,
                             episodes_data = inpatient_data$episodes,
                             wards_data = inpatient_data$ward_movements,
                             overwrite = TRUE)
@@ -356,6 +359,7 @@ test_that("Ramses on PosgreSQL", {
   
   expect_invisible(
     load_inpatient_episodes(conn = conPostgreSQL,
+                            patients_data = inpatient_data$patients,
                             episodes_data = inpatient_data$episodes,
                             wards_data = inpatient_data$ward_movements,
                             overwrite = TRUE)
@@ -408,7 +412,6 @@ test_that("Ramses on PosgreSQL", {
   )
   
   # > recreate therapy episodes and combinations --------------------------------
-  
   
   DBI::dbRemoveTable(conPostgreSQL, "drug_prescriptions_edges")
   DBI::dbRemoveTable(conPostgreSQL, "drug_therapy_episodes")
