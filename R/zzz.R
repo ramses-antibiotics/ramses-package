@@ -13,6 +13,13 @@
                 package = "Ramses"), stringsAsFactors = F)
 }
 
+.inpatient_patients_variables <- function() {
+  utils::read.csv(
+    system.file("Schema", 
+                "patients.csv", 
+                package = "Ramses"), stringsAsFactors = F)
+}
+
 .inpatient_episodes_variables <- function() {
   utils::read.csv(
     system.file("Schema", 

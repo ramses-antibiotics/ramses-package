@@ -6,6 +6,7 @@
 \usage{
 load_inpatient_episodes(
   conn,
+  patients_data,
   episodes_data,
   wards_data = NULL,
   overwrite = TRUE
@@ -13,6 +14,9 @@ load_inpatient_episodes(
 }
 \arguments{
 \item{conn}{a database connection}
+
+\item{patients_data}{a data frame validated with
+\code{\link{validate_inpatient_episodes}()}}
 
 \item{episodes_data}{a data frame validated with 
 \code{\link{validate_inpatient_episodes}()}}

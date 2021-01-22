@@ -49,6 +49,7 @@ Suggests:
     rvest,
     xml2,
     curl,
+    ggplot2,
     DiagrammeR,
     odbc,
     RPostgres,

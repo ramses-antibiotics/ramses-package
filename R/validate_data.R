@@ -207,62 +207,25 @@
 #' optional requirements on episodes of care records. The data definitions 
 #' closely follow those of the  
 #' \href{https://datadictionary.nhs.uk/data_sets/cds_v6-2/cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds.html#dataset_cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds}{English NHS Admitted Patient Care Commissioning Datasets}.
+#' @param patients data frame containing one row per patient
 #' @param episodes data frame containing one row per episode of care
 #' @param wards (optional) data frame containing one row per ward stay. 
 #'   Default is `NULL`.
-#' @section Episode mandatory variables:
+#' @section Patient variables:
 #' \describe{
 #'   \item{\code{patient_id}}{a patient identifier with no missing value}
-#'   \item{\code{spell_id}}{a hospital spell identifier with no missing value}
-#'   \item{\code{admission_method}}{a non-missing character code: \itemize{
-#'        \item \code{"1"} elective admission
-#'        \item \code{"2"} emergency admission
-#'        \item \code{"3"} transfer/other admission
-#'     }
-#'   \emph{Note:} \code{"1"} and \code{"2"} corresponds to the first character 
-#'   of the 
-#'   \href{https://datadictionary.nhs.uk/attributes/admission_method.html}{NHS admission method value set};
-#'   \code{"3"} corresponds to the remaining values starting with 
-#'   \code{3} or \code{8}.}
-#'   \item{\code{admission_date}}{a \code{POSIXct} timestamp for 
-#'   the hospital admission. Must not be missing.}
-#'   \item{\code{discharge_date}}{a \code{POSIXct} timestamp for 
-#'   the hospital discharge. Must not be missing.}
-#'   \item{\code{episode_number}}{a strictly positive integer indicating the
-#'   number of the episode within an admission. Must not be missing.}
-#'   \item{\code{last_episode_in_spell_indicator}}{a character indicating whether
-#'   the patient is discharged at the end of the episode: \itemize{
-#'        \item \code{"1"} the episode is the last episode in the spell
-#'        \item \code{"2"} the episode is \strong{not} the last episode in the spell
-#'    }
-#'    Must not be missing.}
-#'   \item{\code{episode_start}}{a \code{POSIXct} timestamp for 
-#'   the hospital start. Must not be missing.}
-#'   \item{\code{episode_end}}{a \code{POSIXct} timestamp for 
-#'   the hospital end Must not be missing.}
-#'   \item{\code{consultant_code}}{a code uniquely identifying the medical 
-#'   professional responsible for the episode of care. Must not be missing.}
-#'   \item{\code{care_professional_main_specialty_code}}{a code identifying
-#'   the main specialty of the medical professional responsible for the 
-#'   episode of care. Must not be missing.}
-#' }
-#' @section Episode optional variables:
-#' \describe{
-#'   \item{\code{activity_treatment_function_code}}{0}
-#'   \item{\code{local_sub-specialty_code}}{0}
-#'   \item{\code{patient_forename}}{the patient's forename}
-#'   \item{\code{patient_surname}}{the patient's surname}
-#'   \item{\code{date_of_birth}}{a \code{Date} for the birth date}
-#'   \item{\code{date_of_death}}{a missing value or a \code{Date} of death}
-#'   \item{\code{patient_sex}}{the following values are valid: \itemize{
+#'   \item{\code{forename}}{[optional] the patient's forename}
+#'   \item{\code{surname}}{[optional] the patient's surname}
+#'   \item{\code{date_of_birth}}{[optional] a \code{Date} for the birth date}
+#'   \item{\code{date_of_death}}{[optional] a missing value or a \code{Date} of death}
+#'   \item{\code{sex}}{[optional] the following values are valid: \itemize{
 #'        \item \code{"male"}  
 #'        \item \code{"female"}  
 #'        \item \code{"other"}
 #'        \item \code{"unknown"}
 #'    }
 #'   Must not be missing.}
-#'   \item{\code{age_on_admission}}{age in years at start of hospital spell}
-#'   \item{\code{ethnic_category_UK}}{Reserved for UK users for \code{Ramses} to compute
+#'   \item{\code{ethnic_category_UK}}{[optional] reserved for UK users for \code{Ramses} to compute
 #'   the empirical glomerular filtration rate (eGFR). The following codes are valid:
 #'   
 #'   White \itemize{
@@ -303,11 +266,49 @@
 #'       \item \code{"Z"} Not stated
 #'   }}
 #' }
+#' @section Episode mandatory variables:
+#' \describe{
+#'   \item{\code{patient_id}}{a patient identifier with no missing value}
+#'   \item{\code{spell_id}}{a hospital spell identifier with no missing value}
+#'   \item{\code{admission_method}}{a non-missing character code: \itemize{
+#'        \item \code{"1"} elective admission
+#'        \item \code{"2"} emergency admission
+#'        \item \code{"3"} transfer/other admission
+#'     }
+#'   \emph{Note:} \code{"1"} and \code{"2"} corresponds to the first character 
+#'   of the 
+#'   \href{https://datadictionary.nhs.uk/attributes/admission_method.html}{NHS admission method value set};
+#'   \code{"3"} corresponds to the remaining values starting with 
+#'   \code{3} or \code{8}.}
+#'   \item{\code{admission_date}}{a \code{POSIXct} timestamp for 
+#'   the hospital admission. Must not be missing.}
+#'   \item{\code{discharge_date}}{a \code{POSIXct} timestamp for 
+#'   the hospital discharge. Must not be missing.}
+#'   \item{\code{episode_number}}{a strictly positive integer indicating the
+#'   number of the episode within an admission. Must not be missing.}
+#'   \item{\code{last_episode_in_spell_indicator}}{a character indicating whether
+#'   the patient is discharged at the end of the episode: \itemize{
+#'        \item \code{"1"} the episode is the last episode in the spell
+#'        \item \code{"2"} the episode is \strong{not} the last episode in the spell
+#'    }
+#'    Must not be missing.}
+#'   \item{\code{episode_start}}{a \code{POSIXct} timestamp for 
+#'   the hospital start. Must not be missing.}
+#'   \item{\code{episode_end}}{a \code{POSIXct} timestamp for 
+#'   the hospital end Must not be missing.}
+#'   \item{\code{consultant_code}}{a code uniquely identifying the medical 
+#'   professional responsible for the episode of care. Must not be missing.}
+#'   \item{\code{care_professional_main_specialty_code}}{a code identifying
+#'   the main specialty of the medical professional responsible for the 
+#'   episode of care. Must not be missing.}
+#' }
 #' @return A logical value indicating success
 #' @export
-validate_inpatient_episodes <- function(episodes,
+validate_inpatient_episodes <- function(patients,
+                                        episodes,
                                         wards = NULL) {
   
+  patient_schema <- .inpatient_patients_variables()
   episode_schema <- .inpatient_episodes_variables()
   
   variable_exists <- episode_schema[episode_schema$must_exist, "variable_name"]
@@ -330,6 +331,31 @@ validate_inpatient_episodes <- function(episodes,
     vectorname = variable_exists_non_missing,
     action = "error"
   )
+  
+  variable_exists <- patient_schema[patient_schema$must_exist, "variable_name"]
+  not_exist <- !vapply(variable_exists, exists, where = patients,
+                       FUN.VALUE = logical(1))
+  if( any(not_exist) ){
+    stop(
+      simpleError(paste(
+        "The following variables must exist:",
+        paste(paste0("`", variable_exists[not_exist], "`"), collapse = ", "))
+      )
+    )
+  }
+  
+  variable_exists_non_missing <- patient_schema[
+    patient_schema$must_be_nonmissing, 
+    "variable_name"]
+  no_missing_data <- .validate_variable_no_missing(
+    data = patients,
+    vectorname = variable_exists_non_missing,
+    action = "error"
+  )
+  
+  if( !all(unique(episodes$patient_id) %in% unique(patients$patient_id)) ) {
+    stop("All patients in `episodes` must exist in `patients`")
+  }
   
   validation_result <- validate_inpatient_spells(episodes)
   validation_result <- append(
