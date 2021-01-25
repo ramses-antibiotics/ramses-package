@@ -73,7 +73,7 @@ test_that("validate_inpatient_spells()/validate_inpatient_episodes()", {
   expect_false(expect_warning(validate_inpatient_spells(faulty_spells[-1, ])))
   
   healthy_episodes <- data.frame(list(
-    patient_id = 1,
+    patient_id = "1",
     spell_id = 2,
     admission_date = date1,
     discharge_date = date1 + 3*3600,
@@ -86,7 +86,19 @@ test_that("validate_inpatient_spells()/validate_inpatient_episodes()", {
     main_specialty_code = "100"
   ))
   
-  expect_equal(validate_inpatient_episodes(healthy_episodes), TRUE)
+  expect_equal(
+    validate_inpatient_episodes(patients = dplyr::tibble(patient_id = "1"),
+                                episodes = healthy_episodes),
+    TRUE
+  )
+  expect_error(
+    validate_inpatient_episodes(patients = dplyr::tibble(wrong_variable = "1"),
+                                episodes = healthy_episodes)
+  )
+  expect_error(
+    validate_inpatient_episodes(patients = dplyr::tibble(patient_id = "2"),
+                                episodes = healthy_episodes)
+  )
   
   overlap_episode <- data.frame(list(
     patient_id = 1,
@@ -144,10 +156,14 @@ test_that("validate_inpatient_spells()/validate_inpatient_episodes()", {
     main_specialty_code = "100"
   ))
   
-  expect_true(expect_warning(validate_inpatient_episodes(missing_first_episode)))
-  expect_true(expect_warning(validate_inpatient_episodes(missing_intermediate_episode)))
-  expect_true(expect_warning(validate_inpatient_episodes(missing_final_episode)))
-  expect_false(expect_warning(validate_inpatient_episodes(overlap_episode)))
+  expect_true(expect_warning(validate_inpatient_episodes(tibble(patient_id = 1),
+                                                         missing_first_episode)))
+  expect_true(expect_warning(validate_inpatient_episodes(tibble(patient_id = 1),
+                                                         missing_intermediate_episode)))
+  expect_true(expect_warning(validate_inpatient_episodes(tibble(patient_id = 1),
+                                                         missing_final_episode)))
+  expect_false(expect_warning(validate_inpatient_episodes(tibble(patient_id = 1),
+                                                          overlap_episode)))
  
 })
 

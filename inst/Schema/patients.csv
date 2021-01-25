@@ -1,0 +1,8 @@
+position,variable_name,must_exist,must_be_nonmissing,must_be_unique
+1,patient_id,TRUE,TRUE,TRUE
+2,forename,FALSE,FALSE,FALSE
+3,surname,FALSE,FALSE,FALSE
+4,sex,FALSE,TRUE,FALSE
+5,ethnic_category_UK,FALSE,FALSE,FALSE
+6,date_of_birth,FALSE,FALSE,FALSE
+7,date_of_death,FALSE,FALSE,FALSE

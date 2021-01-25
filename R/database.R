@@ -101,7 +101,9 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
 #' Load episodes of care records into the warehouse
 #'
 #' @param conn a database connection
-#' @param episodes_data  a data frame validated with 
+#' @param patients_data a data frame validated with
+#' \code{\link{validate_inpatient_episodes}()}
+#' @param episodes_data a data frame validated with 
 #' \code{\link{validate_inpatient_episodes}()}
 #' @param wards_data a data frame validated with  
 #' \code{\link{validate_inpatient_episodes}()}#'
@@ -109,10 +111,20 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
 #' \code{inpatient_episodes} database table
 #' @export
 load_inpatient_episodes <- function(conn, 
+                                    patients_data,
                                     episodes_data, 
                                     wards_data = NULL, 
                                     overwrite = TRUE) {
   
+  patients_data <- dplyr::arrange(patients_data, 
+                                  patient_id)
+  patients_data <- patients_data[
+    , c(
+      "patient_id",
+      colnames(patients_data)[!colnames(patients_data) == "patient_id"]
+    )
+  ]
+
   episodes_data <- dplyr::arrange(episodes_data, 
                                   patient_id, episode_start)
   first_column_names_episodes <- .inpatient_episodes_variables()[["variable_name"]]
@@ -128,6 +140,15 @@ load_inpatient_episodes <- function(conn,
       episodes_data[[i]] <- as.character(episodes_data[[i]])
     }
   }
+  
+  dplyr::copy_to(
+    dest = conn, 
+    name = "patients",
+    df = patients_data,
+    temporary = FALSE,
+    overwrite = overwrite,
+    indexes = "patient_id"
+    )
   
   dplyr::copy_to(
     dest = conn, 
@@ -1032,7 +1053,8 @@ create_mock_database <- function(file, silent = FALSE) {
   )
   if(!silent) progress_bar$tick()
   load_inpatient_episodes(
-    conn = mock_db,
+    conn = mock_db, 
+    patients_data = inpatient_data$patients,
     episodes_data = inpatient_data$episodes,
     wards_data = inpatient_data$ward_movements,
     overwrite = TRUE
@@ -1493,9 +1515,18 @@ create_mock_database <- function(file, silent = FALSE) {
       silent = TRUE),
       duration_days = dplyr::if_else(
         daily_frequency == -1,
-        "one-off", paste( difftime(
-          prescription_end, prescription_start, units = "days"),
-          "days"))) %>% 
+        "one-off", 
+        if_else(
+          round(difftime(prescription_end, 
+                         prescription_start, 
+                         units = "days")) == 1,
+          "1 day", 
+          paste(round(difftime(prescription_end, 
+                               prescription_start, 
+                               units = "days")),
+                "days")
+          )
+        )) %>% 
     dplyr::transmute(patient_id,
               prescription_id,
               prescription_text = paste0(
@@ -1616,6 +1647,7 @@ create_mock_database <- function(file, silent = FALSE) {
 
 .prepare_example_inpatient_records <- function() {
   
+  ip_patients <- Ramses::patients
   ip_diagnoses <- Ramses::inpatient_diagnoses
   ip_diagnoses <- dplyr::filter(ip_diagnoses, !is.na(.data$icd_code))
   
@@ -1694,6 +1726,7 @@ create_mock_database <- function(file, silent = FALSE) {
     dplyr::distinct()
   micro$raw <- NULL
   list(
+    patients = ip_patients,
     episodes = ip_episodes,
     diagnoses = ip_diagnoses,
     ward_movements = Ramses::inpatient_wards,

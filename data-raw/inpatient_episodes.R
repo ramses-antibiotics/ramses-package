@@ -1,8 +1,9 @@
-## code to prepare `data-raw/inpatient_episodes.csv` dataset goes here
-## code to prepare `data-raw/inpatient_diagnoses.csv` dataset goes here
-## code to prepare `data-raw/inpatient_wards.csv` dataset goes here
-## code to prepare `data-raw/inpatient_microbiology.csv` dataset goes here
-## code to prepare `data-raw/inpatient_investigations.csv` dataset goes here
+## code to prepare `data/patients.rda` dataset goes here
+## code to prepare `data/inpatient_episodes.rda` dataset goes here
+## code to prepare `data/inpatient_diagnoses.rda` dataset goes here
+## code to prepare `data/inpatient_wards.rda` dataset goes here
+## code to prepare `data/inpatient_microbiology.rda` dataset goes here
+## code to prepare `data/inpatient_investigations.rda` dataset goes here
 
 inpatient_episodes <- read.csv(
   file = "data-raw/inpatient_episodes.csv", stringsAsFactors = F,
@@ -22,6 +23,31 @@ inpatient_episodes2 <- read.csv(
                  "character", "character"))
 inpatient_episodes <- dplyr::bind_rows(inpatient_episodes,
                                        inpatient_episodes2)
+
+patients <- dplyr::transmute(
+  inpatient_episodes,
+  patient_id,
+  NHS_number,
+  forename,
+  surname,
+  sex,
+  ethnic_category_UK = ethnic_group,
+  date_of_birth,
+  date_of_death
+) %>% 
+  dplyr::distinct()
+
+usethis::use_data(patients, overwrite = T)
+
+inpatient_episodes <- dplyr::select(
+  inpatient_episodes,
+  -NHS_number,
+  -forename,
+  -surname,
+  -sex,
+  -ethnic_group,
+  -age_on_admission
+)
 
 for (i in which(vapply(inpatient_episodes, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
   attr(inpatient_episodes[[i]], "tzone") <- "Europe/London"

@@ -1,4 +1,15 @@
 
+
+#' Simulated patients
+#' 
+#' @description This simulated dataset contains records of 200 patients 
+#' corresponding to hospitalisation records in \link{inpatient_episodes}.
+#' @format A data frame of patient demographics.
+#' @docType data
+#' @name patients
+#' @source Simulated data
+"patients"
+
 #' Simulated episodes of inpatient care
 #' 
 #' @description This simulated activity data consists of records of finished 

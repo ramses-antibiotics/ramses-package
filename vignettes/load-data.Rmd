@@ -150,9 +150,21 @@ drug_prescriptions <- drug_prescriptions %>%
     ATC_code = AMR::ab_atc(basis_of_strength),
     ATC_administration = ATC_route,
     dose = daily_dose,
-    unit = units))
-
-
+    unit = units)) %>% 
+  mutate(duration_days = if_else(
+    daily_frequency == -1,
+    "one-off", 
+    if_else(
+      round(difftime(prescription_end, 
+                     prescription_start, 
+                     units = "days")) == 1,
+      "1 day", 
+      paste(round(difftime(prescription_end, 
+                           prescription_start, 
+                           units = "days")),
+            "days")
+      )
+  ))
 ```
 
 
@@ -160,6 +172,13 @@ drug_prescriptions <- drug_prescriptions %>%
 drug_prescriptions <- drug_prescriptions %>% 
   transmute(patient_id,
             prescription_id,
+            # prescription summary for displaying in interfaces
+            prescription_text = paste0(
+              drug_name, " ", 
+              route, " ", 
+              dose, units, " ", 
+              duration_days
+            ),
             drug_id,
             drug_name = drug_name,
             drug_display_name = drug_name,
@@ -281,7 +300,7 @@ load_medications(conn = ramses_db,
 
 ## Admissions
 
-We now turn to records of admissions, discharges and transfers. Ramses is designed around the notion of *hospital spells* identified by variable `spell_id`, which correspond to the window from the time a patient is admitted to the time a patient is discharged. 
+We now turn to records of patient demographics, admissions, discharges and transfers. Ramses is designed around the notion of *hospital spells* identified by variable `spell_id`, which correspond to the window from the time a patient is admitted to the time a patient is discharged. 
 
 In addition, Ramses use subdivisions of *hospital spells* called *episodes of care*, which designate a continuous period of inpatient care under the responsibility of a department, specialty, or clinical team. This corresponds to the 'finished consultant episode' in the UK NHS Admitted Patient Care data model [@Herbert2017]. All *hospital spells* consist of at least one *episode of care*.
 Episodes of care are used to calculate bed-days as well as rates of infection, prescribing and other stewardship metrics for individal specialties and teams of clinicians. 
@@ -298,13 +317,15 @@ Dates of admissions and episode start/end must be valid:
 * there must be no gap between episodes in an admission.
 
 ```{r}
-validate_inpatient_episodes(episodes = inpatient_episodes)
+validate_inpatient_episodes(patients = patients,
+                            episodes = inpatient_episodes)
 ```
 
 Optionally, Ramses can use data on ward movements. These records must be validated together with episodes of care
 
 ```{r}
-validate_inpatient_episodes(episodes = inpatient_episodes, 
+validate_inpatient_episodes(patients = patients,
+                            episodes = inpatient_episodes, 
                             wards = inpatient_wards)
 ```
 
@@ -312,8 +333,9 @@ The data can now be loaded into the database.
 
 ```{r}
 load_inpatient_episodes(conn = ramses_db,
-                        episodes_data = Ramses::inpatient_episodes,
-                        wards_data =  Ramses::inpatient_wards)
+                        patients_data = patients,
+                        episodes_data = inpatient_episodes,
+                        wards_data =  inpatient_wards)
 ```
 
 ## Diagnosis codes (ICD-10)
