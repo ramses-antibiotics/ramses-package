@@ -150,9 +150,21 @@ drug_prescriptions <- drug_prescriptions %>%
     ATC_code = AMR::ab_atc(basis_of_strength),
     ATC_administration = ATC_route,
     dose = daily_dose,
-    unit = units))
-
-
+    unit = units)) %>% 
+  mutate(duration_days = if_else(
+    daily_frequency == -1,
+    "one-off", 
+    if_else(
+      round(difftime(prescription_end, 
+                     prescription_start, 
+                     units = "days")) == 1,
+      "1 day", 
+      paste(round(difftime(prescription_end, 
+                           prescription_start, 
+                           units = "days")),
+            "days")
+      )
+  ))
 ```
 
 
@@ -160,6 +172,13 @@ drug_prescriptions <- drug_prescriptions %>%
 drug_prescriptions <- drug_prescriptions %>% 
   transmute(patient_id,
             prescription_id,
+            # prescription summary for displaying in interfaces
+            prescription_text = paste0(
+              drug_name, " ", 
+              route, " ", 
+              dose, units, " ", 
+              duration_days
+            ),
             drug_id,
             drug_name = drug_name,
             drug_display_name = drug_name,

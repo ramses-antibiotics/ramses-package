@@ -1515,9 +1515,18 @@ create_mock_database <- function(file, silent = FALSE) {
       silent = TRUE),
       duration_days = dplyr::if_else(
         daily_frequency == -1,
-        "one-off", paste( difftime(
-          prescription_end, prescription_start, units = "days"),
-          "days"))) %>% 
+        "one-off", 
+        if_else(
+          round(difftime(prescription_end, 
+                         prescription_start, 
+                         units = "days")) == 1,
+          "1 day", 
+          paste(round(difftime(prescription_end, 
+                               prescription_start, 
+                               units = "days")),
+                "days")
+          )
+        )) %>% 
     dplyr::transmute(patient_id,
               prescription_id,
               prescription_text = paste0(
