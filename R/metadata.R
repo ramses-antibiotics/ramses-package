@@ -89,8 +89,7 @@ download_icd10cm <- function(silent = FALSE) {
 #'     \item{category_description}{charactor vector three-character ICD-10 code descriptions}
 #'     \item{edition}{edition label provided in parameter \code{version}}
 #'     \item{\code{...}}{any other variables present in the \code{archive} source}
-#' }
-#' @import dplyr magrittr  
+#' }  
 #' @export
 #'
 #' @examples
