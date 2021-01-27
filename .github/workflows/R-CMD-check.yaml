@@ -95,6 +95,14 @@ jobs:
       #     name: ${{ runner.os }}-r${{ matrix.config.r }}-results
       #     path: check
 
+      - name: check environment set up properly
+        run: print(identical(Sys.getenv("CI"), "true"))
+        shell: Rscript {0}
+      
+      - names: test
+        run: devtools::test()
+        shell: Rscript {0}
+        
       - name: Code coverage
         if: github.ref == 'refs/heads/master' && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release'
         run: covr::codecov(type = "all", quiet = FALSE, token = Sys.getenv("CODECOVETOKEN"))
