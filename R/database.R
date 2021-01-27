@@ -704,7 +704,7 @@ load_medications.PqConnection <- function(
 #' @noRd
 .create_therapy_id.SQLiteConnection <- function(conn, silent) {
   
-  DBI::dbRemoveTable(conn, "ramses_tc_edges", fail_if_missing = F)
+  .remove_db_tables(conn, "ramses_tc_edges")
   
   edges_table <- tbl(conn, "drug_prescriptions_edges") %>% 
     dplyr::transmute(id1 = from_id, id2 = to_id) %>% 
@@ -714,9 +714,11 @@ load_medications.PqConnection <- function(
   DBI::dbExecute(conn, "CREATE INDEX ramses_tc_edges_idx2 ON ramses_tc_edges (id2, id1);")
   
   if(!silent) message("Transitive closure of therapy episodes beginning...")
-  therapy_grps <- .run_transitive_closure(conn = conn, 
-                                          edge_table = "ramses_tc_edges",
-                                          silent = silent)
+  therapy_grps <- .run_transitive_closure.SQLiteConnection(
+    conn = conn, 
+    edge_table = "ramses_tc_edges",
+    silent = silent
+  )
   if(!silent) message("\n")
   
   therapy_grps <- tbl(conn, "ramses_tc_group") %>% 
@@ -774,7 +776,7 @@ load_medications.PqConnection <- function(
 #' @noRd
 .create_combination_id.SQLiteConnection <- function(conn, silent) {
   
-  DBI::dbRemoveTable(conn, "ramses_tc_edges", fail_if_missing = F)
+  .remove_db_tables(conn, "ramses_tc_edges")
   
   edges_table <- tbl(conn, "drug_prescriptions_edges") %>% 
     dplyr::filter(edge_type == "combination") %>% 
@@ -785,9 +787,11 @@ load_medications.PqConnection <- function(
   DBI::dbExecute(conn, "CREATE INDEX ramses_tc_edges_idx2 ON ramses_tc_edges (id2, id1);")
   
   if(!silent) message("Transitive closure of therapy combinations beginning...")
-  therapy_grps <- .run_transitive_closure(conn = conn, 
-                                          edge_table = "ramses_tc_edges",
-                                          silent = silent)
+  therapy_grps <- .run_transitive_closure.SQLiteConnection(
+    conn = conn, 
+    edge_table = "ramses_tc_edges",
+    silent = silent
+  )
   if(!silent) message("\n")
   
   therapy_grps <- tbl(conn, "ramses_tc_group") %>% 
@@ -1150,9 +1154,11 @@ create_mock_database <- function(file, silent = FALSE) {
 .remove_db_tables <- function(conn, table_names){
   
   for( i in table_names) {
-    DBI::dbRemoveTable(conn = conn,
-                       name = i, 
-                       fail_if_missing = FALSE)
+    if(DBI::dbExistsTable(conn = conn,
+                          name = i)) {
+      DBI::dbRemoveTable(conn = conn,
+                         name = i)
+    }
   }
   
   NULL
@@ -1197,10 +1203,6 @@ create_mock_database <- function(file, silent = FALSE) {
 #' https://www.itprotoday.com/sql-server/t-sql-puzzle-challenge-grouping-connected-items
 #' @keywords internal
 #' @noRd
-.run_transitive_closure <- function(conn, edge_table, silent = FALSE) {
-  UseMethod(".run_transitive_closure")
-}
-
 .run_transitive_closure.SQLiteConnection <- function(conn, edge_table, silent) {
   
   stopifnot(is(conn, "SQLiteConnection"))
