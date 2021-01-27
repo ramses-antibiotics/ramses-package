@@ -2,23 +2,9 @@
 % Please edit documentation in R/database.R
 \name{create_therapy_episodes}
 \alias{create_therapy_episodes}
-\alias{create_therapy_episodes.SQLiteConnection}
-\alias{create_therapy_episodes.PqConnection}
 \title{Re-create therapy episodes and therapy combinations}
 \usage{
 create_therapy_episodes(
-  conn,
-  transitive_closure_controls = transitive_closure_control(),
-  silent = TRUE
-)
-
-\method{create_therapy_episodes}{SQLiteConnection}(
-  conn,
-  transitive_closure_controls = transitive_closure_control(),
-  silent = TRUE
-)
-
-\method{create_therapy_episodes}{PqConnection}(
   conn,
   transitive_closure_controls = transitive_closure_control(),
   silent = TRUE

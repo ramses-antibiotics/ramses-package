@@ -547,9 +547,9 @@ load_medications.PqConnection <- function(
   if (create_therapy_id | create_combination_id) {
     .create_table_drug_prescriptions_edges.SQLiteConnection(
       conn = conn, transitive_closure_controls)
-    .create_therapy_id.SQLiteConnection(conn = conn, 
+    .create_therapy_id(conn = conn, 
                                         silent = silent)
-    .create_combination_id.SQLiteConnection(conn = conn, 
+    .create_combination_id(conn = conn, 
                                             silent = silent)
   } else {
     .create_table_drug_therapy_episodes(conn = conn)
@@ -616,13 +616,13 @@ load_medications.PqConnection <- function(
   if (create_therapy_id | create_combination_id) {
     .create_table_drug_prescriptions_edges.PqConnection(
       conn = conn, transitive_closure_controls)
-    .create_therapy_id.SQLiteConnection(conn = conn, 
-                                        silent = silent)
-    .create_combination_id.SQLiteConnection(conn = conn, 
-                                            silent = silent)
+    .create_therapy_id(conn = conn, silent = silent)
+    .create_combination_id(conn = conn, silent = silent)
   } else {
     .create_table_drug_therapy_episodes(conn = conn)
   }
+  
+  
   
   TRUE
 }
@@ -702,7 +702,7 @@ load_medications.PqConnection <- function(
 #' @param silent a boolean indicating whether the function should be
 #' executed without progress message
 #' @noRd
-.create_therapy_id.SQLiteConnection <- function(conn, silent) {
+.create_therapy_id <- function(conn, silent) {
   
   .remove_db_tables(conn, "ramses_tc_edges")
   
@@ -714,7 +714,7 @@ load_medications.PqConnection <- function(
   DBI::dbExecute(conn, "CREATE INDEX ramses_tc_edges_idx2 ON ramses_tc_edges (id2, id1);")
   
   if(!silent) message("Transitive closure of therapy episodes beginning...")
-  therapy_grps <- .run_transitive_closure.SQLiteConnection(
+  therapy_grps <- .run_transitive_closure(
     conn = conn, 
     edge_table = "ramses_tc_edges",
     silent = silent
@@ -774,7 +774,7 @@ load_medications.PqConnection <- function(
 #' @param silent a boolean indicating whether the function should be
 #' executed without progress message
 #' @noRd
-.create_combination_id.SQLiteConnection <- function(conn, silent) {
+.create_combination_id <- function(conn, silent) {
   
   .remove_db_tables(conn, "ramses_tc_edges")
   
@@ -895,62 +895,28 @@ create_therapy_episodes <- function(
   transitive_closure_controls = transitive_closure_control(),
   silent = TRUE
 ) {
-  UseMethod("create_therapy_episodes", conn)
-}
-
-#' @rdname create_therapy_episodes
-#' @method create_therapy_episodes SQLiteConnection
-#' @export  
-create_therapy_episodes.SQLiteConnection <- function(
-  conn,
-  transitive_closure_controls = transitive_closure_control(),
-  silent = TRUE
-) {
-  
   if( !DBI::dbExistsTable(conn, "drug_prescriptions") ){
     stop("No `drug_prescriptions` table found on `conn`")
   }
   
-  .create_table_drug_prescriptions_edges.SQLiteConnection(
-    conn = conn, 
-    transitive_closure_controls = transitive_closure_controls
-  )
-  .create_therapy_id.SQLiteConnection(
-    conn = conn, 
-    silent = silent
-  )
-  .create_combination_id.SQLiteConnection(
-    conn = conn, 
-    silent = silent
-  )
+  if( is(conn, "SQLiteConnection") ) {
+    .create_table_drug_prescriptions_edges.SQLiteConnection(
+      conn = conn, 
+      transitive_closure_controls = transitive_closure_controls
+    )
+  } else if ( is(conn, "PqConnection") ) {
+    .create_table_drug_prescriptions_edges.PqConnection(
+      conn = conn, 
+      transitive_closure_controls = transitive_closure_controls
+    )
+  } # else {
+    # .throw_error_DBI_subclass_not_implemented("create_therapy_episodes()")
+  # }
+  .create_therapy_id(conn = conn, silent = silent)
+  .create_combination_id(conn = conn, silent = silent)
 }
 
-#' @rdname create_therapy_episodes
-#' @method create_therapy_episodes PqConnection
-#' @export  
-create_therapy_episodes.PqConnection <- function(
-  conn,
-  transitive_closure_controls = transitive_closure_control(),
-  silent = TRUE
-) {
-  
-  if( !DBI::dbExistsTable(conn, "drug_prescriptions") ){
-    stop("No `drug_prescriptions` table found on `conn`")
-  }
-  
-  .create_table_drug_prescriptions_edges.PqConnection(
-    conn = conn, 
-    transitive_closure_controls = transitive_closure_controls
-  )
-  .create_therapy_id.SQLiteConnection(
-    conn = conn, 
-    silent = silent
-  )
-  .create_combination_id.SQLiteConnection(
-    conn = conn, 
-    silent = silent
-  )
-}
+
 
 # Database management -----------------------------------------------------
 
@@ -1203,6 +1169,10 @@ create_mock_database <- function(file, silent = FALSE) {
 #' https://www.itprotoday.com/sql-server/t-sql-puzzle-challenge-grouping-connected-items
 #' @keywords internal
 #' @noRd
+.run_transitive_closure <- function(conn, edge_table, silent = FALSE) {
+UseMethod(".run_transitive_closure")
+}
+
 .run_transitive_closure.SQLiteConnection <- function(conn, edge_table, silent) {
   
   stopifnot(is(conn, "SQLiteConnection"))
