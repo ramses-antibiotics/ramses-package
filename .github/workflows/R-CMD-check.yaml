@@ -99,7 +99,7 @@ jobs:
         run: print(identical(Sys.getenv("CI"), "true"))
         shell: Rscript {0}
       
-      - names: test
+      - name: test
         run: devtools::test()
         shell: Rscript {0}
         
