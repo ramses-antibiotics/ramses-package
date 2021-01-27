@@ -51,13 +51,11 @@ Suggests:
     curl,
     ggplot2,
     DiagrammeR,
-    odbc,
-    RPostgres,
     timevis,
     pkgdown,
     R.utils,
     comorbidity,
-    RPostgreSQL
+    RPostgres
 Remotes: 
     ramses-antibiotics/snomedizer
 RdMacros: Rdpack    

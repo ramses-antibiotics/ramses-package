@@ -400,11 +400,11 @@ validate_inpatient_episodes <- function(patients,
   
   wards <- merge(
     wards, 
-    distinct(episodes, 
-             patient_id, 
-             spell_id, 
-             admission_date, 
-             discharge_date), 
+    dplyr::distinct(episodes, 
+                    patient_id, 
+                    spell_id, 
+                    admission_date, 
+                    discharge_date), 
     all.x = TRUE)
   
   validate_inpatient_episode_dates(data = wards,
@@ -795,7 +795,7 @@ validate_prescriptions <- function(data) {
   }
   
   if( !all(data$daily_frequency == -999 | 
-           between(data$daily_frequency, 0, 48)) ){
+           dplyr::between(data$daily_frequency, 0, 48)) ){
     stop(
       simpleError(paste(
         "Prescription `daily_frequency` must be between",
@@ -818,7 +818,7 @@ validate_prescriptions <- function(data) {
   
   duplicates <- data %>% 
     dplyr::group_by(patient_id, drug_id, dose, route, prescription_start) %>% 
-    dplyr::summarise(n = n()) %>% 
+    dplyr::summarise(n = dplyr::n()) %>% 
     dplyr::filter(n > 1)
   duplicates <- merge(data, duplicates)
   
@@ -828,7 +828,7 @@ validate_prescriptions <- function(data) {
     )
     warning(simpleWarning(
       .print_and_capture(utils::head(
-        select(dplyr::arrange(duplicates, 
+        dplyr::select(dplyr::arrange(duplicates, 
                               patient_id, drug_id, prescription_start),
                patient_id, prescription_id, 
                prescription_text, prescription_start))
@@ -836,7 +836,6 @@ validate_prescriptions <- function(data) {
   }
   
   NULL
-
 }
 
 
@@ -958,7 +957,7 @@ validate_administrations <- function(data) {
   
   duplicates <- data %>% 
     dplyr::group_by(patient_id, drug_id, dose, route, administration_date) %>% 
-    dplyr::summarise(n = n()) %>% 
+    dplyr::summarise(n = dplyr::n()) %>% 
     dplyr::filter(n > 1)
   duplicates <- merge(data, duplicates)
   
@@ -968,7 +967,7 @@ validate_administrations <- function(data) {
     )
     warning(simpleWarning(
       .print_and_capture(utils::head(
-        select(dplyr::arrange(duplicates, 
+        dplyr::select(dplyr::arrange(duplicates, 
                               patient_id, drug_id, administration_date),
                patient_id, prescription_id, administration_id,
                administration_text, administration_date))

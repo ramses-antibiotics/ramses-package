@@ -78,6 +78,7 @@
 }
 
 global_vars <- c(
+  "n",
   "admission_date",
   "discharge_date",
   "spell_id",
@@ -85,9 +86,12 @@ global_vars <- c(
   "ddd_unit",
   "valid_ab",
   "icd_code",
+  "icd_description",
   "code",
   "alt_code",
   "description",
+  "icd_text",
+  "prim_diag",
   "type",
   "from_id", 
   "to_id",
@@ -113,8 +117,6 @@ global_vars <- c(
   "reference_specimen_type",
   "conceptId",
   "pt_term",
-  "icd_text",
-  "prim_diag",
   "start_time",
   "end_time",
   "category_description",

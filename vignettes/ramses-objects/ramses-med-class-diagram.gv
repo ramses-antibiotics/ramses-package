@@ -33,6 +33,8 @@ RamsesObject [
   - record: tbl_sql\l|
   
   + class(): character\l
+  + print()\l
+  + summary()\l
   + compute(): RamsesObject\l
   + collect(): tbl_df\l}"
 ]
@@ -80,7 +82,8 @@ TherapyEpisode [
   label = "{TherapyEpisode|
   - therapy_table: tbl_sql\l|
   
-  + TherapyEpisode(conn, id): TherapyEpisode\l}"
+  + TherapyEpisode(conn, id): TherapyEpisode\l
+  + get_medication_requests(): list\l}"
 ]
 
 Patient [

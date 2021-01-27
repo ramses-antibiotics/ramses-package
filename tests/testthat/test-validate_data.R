@@ -5,7 +5,7 @@ date1 <- structure(1585220000, class = c("POSIXct", "POSIXt"))
 # .validate_variable_exist ------------------------------------------------
 
 test_that(".validate_variable_exist", {
-  testdata <- tibble(
+  testdata <- dplyr::tibble(
     bidule = 1,
     truc = 2
   )
@@ -156,13 +156,13 @@ test_that("validate_inpatient_spells()/validate_inpatient_episodes()", {
     main_specialty_code = "100"
   ))
   
-  expect_true(expect_warning(validate_inpatient_episodes(tibble(patient_id = 1),
+  expect_true(expect_warning(validate_inpatient_episodes(dplyr::tibble(patient_id = 1),
                                                          missing_first_episode)))
-  expect_true(expect_warning(validate_inpatient_episodes(tibble(patient_id = 1),
+  expect_true(expect_warning(validate_inpatient_episodes(dplyr::tibble(patient_id = 1),
                                                          missing_intermediate_episode)))
-  expect_true(expect_warning(validate_inpatient_episodes(tibble(patient_id = 1),
+  expect_true(expect_warning(validate_inpatient_episodes(dplyr::tibble(patient_id = 1),
                                                          missing_final_episode)))
-  expect_false(expect_warning(validate_inpatient_episodes(tibble(patient_id = 1),
+  expect_false(expect_warning(validate_inpatient_episodes(dplyr::tibble(patient_id = 1),
                                                           overlap_episode)))
  
 })

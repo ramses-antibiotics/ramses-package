@@ -23,7 +23,7 @@ therapy_timeline <- function(conn, patient_identifier,
   # Retrieve inpatient records
   base <- tbl(conn, "inpatient_episodes") %>%
     dplyr::filter(patient_id == patient_identifier) %>% 
-    .sqlite_date_collect()
+    collect_ramses_tbl()
     
   if (nrow(base) == 0) {
     stop("Patient was not found.")
@@ -36,7 +36,7 @@ therapy_timeline <- function(conn, patient_identifier,
     dplyr::left_join(tbl(conn, "drug_therapy_episodes"), 
                      by = c("patient_id", "therapy_id")) %>%
     dplyr::arrange(patient_id, prescription_start) %>% 
-    .sqlite_date_collect() 
+    collect_ramses_tbl() 
    
   # Calculate the date range the timeline should display by default
   date1 <- lubridate::as_datetime(date1)
@@ -132,7 +132,7 @@ therapy_timeline <- function(conn, patient_identifier,
   timeline_CC <- NULL # timeline_Rx_getCC(input_patient)
   
   timeline_redflags <- NULL # tbl(conn, "APC_Investigations") %>%
-  #   filter(patient_id == input_patient & (
+  #   dplyr::filter(patient_id == input_patient & (
   #     (inv == 'BPSYS' & value_num <= 90 ) |
   #       (inv == 'HR' & value_num > 130) |
   #       (inv == 'RESP' & value_num >= 25) |
@@ -140,8 +140,8 @@ therapy_timeline <- function(conn, patient_identifier,
   #       (inv == 'FLUOTUR' & value_num < 500) |
   #       (inv == 'UVOL' & value_num < 500) |
   #       (inv == 'SEWSSCORE' & value_num >= 4)
-  #   )) %>% collect() %>% 
-  #   transmute(id = NA, 
+  #   )) %>% dplyr::collect() %>% 
+  #   dplyr::transmute(id = NA, 
   #             title = paste0(inv, ": ", value, ", ", start_time),
   #             start = start_time,
   #             type = "point",
@@ -313,11 +313,7 @@ therapy_timeline <- function(conn, patient_identifier,
       )) %>% 
       dplyr::select(-diagnosis_episode_end)
   } else {
-    stop(paste(
-      ".therapy_timeline_get_diagnoses() is not implemented for this type of database.",
-      "Please report this issue on https://github.com/ramses-antibiotics/ramses-package/issues",
-      collapse = "\n"
-      ))
+    .throw_error_DBI_subclass_not_implemented(".therapy_timeline_get_diagnoses()")
   }
   
   diag <- diag %>%

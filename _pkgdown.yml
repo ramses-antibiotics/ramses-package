@@ -28,6 +28,29 @@ home:
     href: https://pass-antibiotics.github.io/
 
 reference:
+- title: Ramses object model
+  desc:  S4 classes and methods handling `Ramses` objects
+  contents:
+  - RamsesObject-class
+  - Patient-class
+  - MedicationRequest-class
+  - TherapyEpisode-class
+  - get_therapy_table
+- title: Load & link data
+  desc:  Load records into the warehouse and create secondary information.
+  contents:
+  - starts_with("load_inpatient")
+  - transitive_closure_control
+  - load_medications
+- title: Simulated sets of electronic health records
+  contents:
+  - patients
+  - inpatient_episodes
+  - inpatient_wards
+  - inpatient_diagnoses
+  - inpatient_investigations
+  - drug_prescriptions
+  - drug_administrations
 - title: Reference datasets
   desc:  Metadata provided with `Ramses`
   contents:
@@ -37,6 +60,14 @@ reference:
   - download_icd10cm
   - import_icd
   - starts_with("reference_")
+- title: Database administration
+  desc:  Functions to set up and manage the `Ramses` database
+  contents:
+  - connect_local_database
+  - create_mock_database
+  - starts_with("bridge_")
+  - create_therapy_episodes
+  - collect_ramses_tbl
 - title: Transform and validate data
   desc:  Functions to enrich and validate data before loading into the warehouse.
   contents:
@@ -47,27 +78,6 @@ reference:
   - validate_administrations
   - validate_investigations
   - validate_microbiology
-- title: Load & link data
-  desc:  Load records into the warehouse and create secondary information.
-  contents:
-  - starts_with("load_inpatient")
-  - transitive_closure_control
-  - load_medications
-- title: Simulated sets of electronic health records
-  contents:
-  - inpatient_episodes
-  - inpatient_wards
-  - inpatient_diagnoses
-  - inpatient_investigations
-  - drug_prescriptions
-  - drug_administrations
-- title: Database administration
-  desc:  Functions to set up and manage the `Ramses` database
-  contents:
-  - connect_local_database
-  - create_mock_database
-  - starts_with("bridge_")
-  - create_therapy_episodes
 - title: Index
   desc:  All functions in alphabetical order
   contents:

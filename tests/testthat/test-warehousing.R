@@ -14,18 +14,18 @@ test_that("Ramses on SQLite 1", {
   conSQLite <- create_mock_database(file = "test1.sqlite", silent = TRUE)
   expect_true(is(conSQLite, "SQLiteConnection"))
   test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
-    filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", 
+    dplyr::filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", 
                                   "89ac870bc1c1e4b2a37cec79d188cb08")) %>% 
-    select(prescription_id, combination_id, therapy_id) %>% 
-    collect()
+    dplyr::select(prescription_id, combination_id, therapy_id) %>% 
+    dplyr::collect()
   expect_equivalent(
     test_output, 
-    tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0",
+    dplyr::tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0",
                                "89ac870bc1c1e4b2a37cec79d188cb08"),
            combination_id = c(NA_character_, "0bf9ea7732dd6e904ab670a407382d95"),
            therapy_id = c("592a738e4c2afcae6f625c01856151e0", 
                           "0bf9ea7732dd6e904ab670a407382d95")))
-  expect_equal(.nrow_sql_table(conSQLite, "ramses_tally"), 20000)
+  expect_equal(.nrow_sql_table(conSQLite, "ramses_tally"), 20001)
   dbDisconnect(conSQLite)
   file.remove("test1.sqlite")
   rm(conSQLite)
@@ -103,13 +103,13 @@ test_that("Ramses on SQLite 2", {
   )
   
   test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
-    filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08")) %>% 
-    select(prescription_id, combination_id, therapy_id) %>% 
-    collect()
+    dplyr::filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08")) %>% 
+    dplyr::select(prescription_id, combination_id, therapy_id) %>% 
+    dplyr::collect()
 
   expect_equivalent(
     test_output, 
-    tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08"),
+    dplyr::tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08"),
            combination_id = c(NA_character_, "0bf9ea7732dd6e904ab670a407382d95"),
            therapy_id = c("592a738e4c2afcae6f625c01856151e0", "0bf9ea7732dd6e904ab670a407382d95")))
   
@@ -148,6 +148,7 @@ test_that("Ramses on SQLite 2", {
       therapy_end = "2016-08-03 11:15:19"
     )
     )
+  
   
   # > other database functions --------------------------------------------
   
@@ -193,12 +194,33 @@ test_that("Ramses on SQLite 2", {
 
   test_sqlite_date <- tbl(conSQLite, "inpatient_episodes") %>% 
     dplyr::filter(patient_id == "99999999999") %>% 
-    Ramses:::.sqlite_date_collect( )
+    Ramses:::collect_ramses_tbl( )
   
   expect_is(test_sqlite_date$spell_id, "character")
   expect_is(test_sqlite_date$admission_date, "POSIXt")
   expect_equal(test_sqlite_date$date_of_birth[1], as.Date("1926-08-02"))
   expect_equal(test_sqlite_date$date_of_death[1], as.Date(NA))
+  
+  # > TherapyEpisode ------------------------------------------------------------
+  
+  test_episode <- TherapyEpisode(conSQLite, "9a2268f40e891b22611c9912c834cb52")
+  test_output <- get_therapy_table(test_episode, collect = T)
+  test_expected <- dplyr::tibble(
+    t = 0:5,
+    patient_id = "1253675584",
+    therapy_id = "9a2268f40e891b22611c9912c834cb52",
+    therapy_start = lubridate::with_tz(as.POSIXct("2015-02-26 20:09:55", tz="Europe/London"), tz = Sys.timezone()),
+    t_start = lubridate::with_tz(as.POSIXct(
+      c("2015-02-26 20:09:55", "2015-02-26 21:09:55", "2015-02-26 22:09:55", "2015-02-26 23:09:55", 
+        "2015-02-27 00:09:55", "2015-02-27 01:09:55"), tz="Europe/London"), tz = Sys.timezone())
+  )
+  
+  expect_equivalent(test_output[0:6, ], test_expected)
+  
+  test_medication_request <- MedicationRequest(conSQLite, "9a2268f40e891b22611c9912c834cb52")
+  expect_is(test_medication_request, "MedicationRequest")
+  expect_is(TherapyEpisode(test_medication_request), "TherapyEpisode")
+  expect_equivalent(collect(get_therapy_table(TherapyEpisode(test_medication_request)))[0:6, ], test_expected)
   
   # > therapy timeline -------------------------------------------------
   
@@ -238,11 +260,11 @@ test_that("Ramses on SQLite 2", {
    # > transitive closure ----------------------------------------------------
 test_that("SQLite does transitive closure", {
   
-  test_edges <- tibble(
+  test_edges <- dplyr::tibble(
     id1 = as.integer(c(1,1,2,5,6,7)),
     id2 = as.integer(c(2,3,4,6,7,8))
   )
-  test_solution <- tibble(
+  test_solution <- dplyr::tibble(
     id =  as.integer(c(1,2,3,4,5,6,7,8)),
     grp = as.integer(c(1,1,1,1,5,5,5,5))
   )
@@ -286,11 +308,11 @@ test_that("Postgres does transitive closure", {
     skip("Test only on Travis")
   }
   
-  test_edges <- tibble(
+  test_edges <- dplyr::tibble(
     id1 = as.integer(c(1,1,2,5,6,7)),
     id2 = as.integer(c(2,3,4,6,7,8))
   )
-  test_solution <- tibble(
+  test_solution <- dplyr::tibble(
     id =  as.integer(c(1,2,3,4,5,6,7,8)),
     grp = as.integer(c(1,1,1,1,5,5,5,5))
   )
@@ -387,13 +409,13 @@ test_that("Ramses on PosgreSQL", {
   )
   
   test_output <- tbl(conPostgreSQL, "drug_prescriptions") %>% 
-    filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08")) %>% 
-    select(prescription_id, combination_id, therapy_id) %>% 
-    collect()
+    dplyr::filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08")) %>% 
+    dplyr::select(prescription_id, combination_id, therapy_id) %>% 
+    dplyr::collect()
   
   expect_equivalent(
     test_output, 
-    tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08"),
+    dplyr::tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08"),
            combination_id = c(NA_character_, "0bf9ea7732dd6e904ab670a407382d95"),
            therapy_id = c("592a738e4c2afcae6f625c01856151e0", "0bf9ea7732dd6e904ab670a407382d95")))
   
@@ -410,6 +432,29 @@ test_that("Ramses on PosgreSQL", {
       therapy_end = lubridate::with_tz(as.POSIXct("2016-08-03 11:15:19", tz="Europe/London"), tz = Sys.timezone())
     )
   )
+  
+
+  # > TherapyEpisode ------------------------------------------------------------
+
+  test_episode <- TherapyEpisode(conPostgreSQL, "9a2268f40e891b22611c9912c834cb52")
+  test_output <- get_therapy_table(test_episode, collect = T)
+  test_expected <- dplyr::tibble(
+    t = 0:5,
+    patient_id = "1253675584",
+    therapy_id = "9a2268f40e891b22611c9912c834cb52",
+    therapy_start = lubridate::with_tz(as.POSIXct("2015-02-26 20:09:55", tz="Europe/London"), tz = Sys.timezone()),
+    t_start = lubridate::with_tz(as.POSIXct(
+      c("2015-02-26 20:09:55", "2015-02-26 21:09:55", "2015-02-26 22:09:55", "2015-02-26 23:09:55", 
+        "2015-02-27 00:09:55", "2015-02-27 01:09:55"), tz="Europe/London"), tz = Sys.timezone())
+  )
+  
+  expect_equivalent(test_output[0:6, ], test_expected)
+  
+  test_medication_request <- MedicationRequest(conPostgreSQL, "9a2268f40e891b22611c9912c834cb52")
+  expect_is(test_medication_request, "MedicationRequest")
+  expect_is(TherapyEpisode(test_medication_request), "TherapyEpisode")
+  expect_equivalent(collect(get_therapy_table(TherapyEpisode(test_medication_request)))[0:6, ], test_expected)
+  
   
   # > recreate therapy episodes and combinations --------------------------------
   

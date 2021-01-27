@@ -1094,7 +1094,7 @@ create_mock_database <- function(file, silent = FALSE) {
   # Build table to use in joins to create therapy tables
   dplyr::copy_to(conn, 
                  name = "ramses_tally",
-                 df = data.frame(t = 1:20000),
+                 df = data.frame(t = 0:20000),
                  temporary = FALSE,
                  overwrite = TRUE)
 }
@@ -1180,7 +1180,7 @@ create_mock_database <- function(file, silent = FALSE) {
 
 .nrow_sql_table <- function(conn, table){
   nrow <- tbl(conn, table) %>% 
-    dplyr::summarise( n = n()) %>% 
+    dplyr::summarise(n = dplyr::n()) %>% 
     dplyr::collect()
   
   nrow$n
@@ -1209,7 +1209,7 @@ create_mock_database <- function(file, silent = FALSE) {
   var_lvl <- 1
   var_ids <- tbl(conn, edge_table) %>% 
     dplyr::arrange(id1, id2) %>% 
-    utils::head(.data, n = 1) %>% 
+    utils::head(n = 1) %>% 
     dplyr::collect() %>% 
     data.frame()
   
@@ -1312,7 +1312,7 @@ create_mock_database <- function(file, silent = FALSE) {
     
     var_ids <- tbl(conn, edge_table) %>% 
       dplyr::arrange(id1, id2) %>% 
-      utils::head(.data, n = 1) %>% 
+      utils::head(n = 1) %>% 
       dplyr::collect() %>% 
       data.frame()
     
@@ -1336,7 +1336,7 @@ create_mock_database <- function(file, silent = FALSE) {
   var_lvl <- 1
   var_ids <- tbl(conn, edge_table) %>% 
     dplyr::arrange(id1, id2) %>% 
-    utils::head(.data, n = 1) %>% 
+    utils::head(n = 1) %>% 
     dplyr::collect() %>% 
     data.frame()
   
@@ -1439,7 +1439,7 @@ create_mock_database <- function(file, silent = FALSE) {
     
     var_ids <- tbl(conn, edge_table) %>% 
       dplyr::arrange(id1, id2) %>% 
-      utils::head(.data, n = 1) %>% 
+      utils::head(n = 1) %>% 
       dplyr::collect() %>% 
       data.frame()
     
@@ -1499,8 +1499,8 @@ create_mock_database <- function(file, silent = FALSE) {
   
   drug_rx <- merge(drug_rx, compound_strength_lookup, all.x = T)
   drug_rx <- drug_rx %>% 
-    dplyr::mutate(strength = if_else(is.na(strength), dose, strength),  
-           basis_of_strength = if_else(is.na(basis_of_strength),
+    dplyr::mutate(strength = dplyr::if_else(is.na(strength), dose, strength),  
+           basis_of_strength = dplyr::if_else(is.na(basis_of_strength),
                                        as.character(ab), basis_of_strength))
   
   drug_rx <- merge(drug_rx, reference_drug_frequency, by = "frequency", all.x = T)
@@ -1516,7 +1516,7 @@ create_mock_database <- function(file, silent = FALSE) {
       duration_days = dplyr::if_else(
         daily_frequency == -1,
         "one-off", 
-        if_else(
+        dplyr::if_else(
           round(difftime(prescription_end, 
                          prescription_start, 
                          units = "days")) == 1,
@@ -1579,8 +1579,8 @@ create_mock_database <- function(file, silent = FALSE) {
   drug_admins <- merge(drug_admins, compound_strength_lookup, all.x = T)
   drug_admins <- drug_admins %>% 
     dplyr::mutate(
-      strength = if_else(is.na(strength), dose, strength),
-      basis_of_strength = if_else(is.na(basis_of_strength),
+      strength = dplyr::if_else(is.na(strength), dose, strength),
+      basis_of_strength = dplyr::if_else(is.na(basis_of_strength),
                                   as.character(ab), basis_of_strength))
   
   drug_admins <- drug_admins %>% 
@@ -1602,7 +1602,7 @@ create_mock_database <- function(file, silent = FALSE) {
         dose,
         units,
         administration_date) %>% 
-      dplyr::mutate(administration_id = cur_group_id()) %>% 
+      dplyr::mutate(administration_id = dplyr::cur_group_id()) %>% 
       dplyr::ungroup()
   } else {
     drug_admins <- drug_admins %>% 
@@ -1613,11 +1613,11 @@ create_mock_database <- function(file, silent = FALSE) {
         dose,
         units,
         administration_date) %>% 
-      dplyr::mutate(administration_id = group_indices()) %>% 
+      dplyr::mutate(administration_id = dplyr::group_indices()) %>% 
       dplyr::ungroup()
   }
   
-  drug_admins <- transmute(drug_admins,
+  drug_admins <- dplyr::transmute(drug_admins,
       patient_id,
       administration_id = as.character(administration_id),
       prescription_id,
@@ -1649,14 +1649,14 @@ create_mock_database <- function(file, silent = FALSE) {
   
   ip_patients <- Ramses::patients
   ip_diagnoses <- Ramses::inpatient_diagnoses
-  ip_diagnoses <- dplyr::filter(ip_diagnoses, !is.na(.data$icd_code))
+  ip_diagnoses <- dplyr::filter(ip_diagnoses, !is.na(icd_code))
   
   ip_episodes <- Ramses::inpatient_episodes
   ip_episodes <- ip_episodes %>% 
     dplyr::filter(!is.na(spell_id)) %>% 
-    dplyr::group_by(.data$spell_id) %>% 
-    dplyr::mutate(last_episode_in_spell_indicator = if_else(
-      episode_number == max(.data$episode_number),
+    dplyr::group_by(spell_id) %>% 
+    dplyr::mutate(last_episode_in_spell_indicator = dplyr::if_else(
+      episode_number == max(episode_number),
       1, 2)) %>% 
     dplyr::ungroup()
   
@@ -1673,7 +1673,7 @@ create_mock_database <- function(file, silent = FALSE) {
     dplyr::mutate(organism_name = AMR::mo_name(organism_code),
                   drug_name = AMR::ab_name(drug_id))
   micro$raw <- micro$raw %>% 
-    dplyr::mutate(specimen_type_code = case_when(
+    dplyr::mutate(specimen_type_code = dplyr::case_when(
       specimen_type_display == "Blood Culture" ~ 
         "446131002", # Blood specimen obtained for blood culture
       specimen_type_display == "Faeces" ~ 
@@ -1741,12 +1741,12 @@ create_mock_database <- function(file, silent = FALSE) {
 #' @description This wrapper function for \link[dplyr]{collect} will convert
 #' relevant character columns to `date` and `datetime` during collection of 
 #' SQLite tables. This is to address the absence of date and time data types
-#' in SQLite.
+#' in SQLite. Tables from other relational database systems will not be affected.
 #' @param tbl a `tbl_sql` object
 #' @return a `tbl_df` object
 #' @seealso \url{https://www.sqlite.org/datatype3.html#date_and_time_datatype}
-#' @noRd
-.sqlite_date_collect <- function(tbl) {
+#' @export
+collect_ramses_tbl <- function(tbl) {
   if(is(tbl, "tbl_SQLiteConnection")) {
     tbl <- dplyr::collect(tbl)
     DATETIME_FIELDS <- c(
@@ -1762,7 +1762,8 @@ create_mock_database <- function(file, silent = FALSE) {
       "episode_start",
       "episode_end",
       "ward_start",
-      "ward_end"
+      "ward_end",
+      "t_start"
     )
     DATETIME_FIELDS <- DATETIME_FIELDS[
       which(DATETIME_FIELDS %in% colnames(tbl))
@@ -1893,11 +1894,7 @@ bridge_episode_prescription_overlap <- function(conn,
          / ( 3600.0 * 24.0 ) * \"DDD\""
       ))
   } else {
-    stop(paste(
-      "bridge_episode_prescription_overlap() is not implemented for this type of database.",
-      "Please report this issue on https://github.com/ramses-antibiotics/ramses-package/issues",
-      collapse = "\n"
-    ))
+    .throw_error_DBI_subclass_not_implemented("bridge_episode_prescription_overlap()")
   }
   
   tblz_bridge_episode_prescriptions_overlap <- dplyr::transmute(
@@ -1970,11 +1967,7 @@ bridge_episode_prescription_initiation <- function(conn,
          / ( 3600.0 * 24.0 ) * \"DDD\"")
     )
   } else {
-    stop(paste(
-      "bridge_episode_prescription_initiation() is not implemented for this type of database.",
-      "Please report this issue on https://github.com/ramses-antibiotics/ramses-package/issues",
-      collapse = "\n"
-    ))
+    .throw_error_DBI_subclass_not_implemented("bridge_episode_prescription_initiation()")
   }
   
   tblz_bridge_episode_prescription_initiation <- dplyr::transmute(
@@ -2039,11 +2032,7 @@ bridge_spell_therapy_overlap <- function(conn,
       )
     )
   } else {
-    stop(paste(
-      "bridge_spell_therapy_overlap() is not implemented for this type of database.",
-      "Please report this issue on https://github.com/ramses-antibiotics/ramses-package/issues",
-      collapse = "\n"
-    ))
+    .throw_error_DBI_subclass_not_implemented("bridge_spell_therapy_overlap()")
   }
   
   tblz_bridge_spell_therapy_overlap <- dplyr::transmute(
