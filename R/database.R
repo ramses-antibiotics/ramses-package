@@ -787,7 +787,7 @@ load_medications.PqConnection <- function(
   DBI::dbExecute(conn, "CREATE INDEX ramses_tc_edges_idx2 ON ramses_tc_edges (id2, id1);")
   
   if(!silent) message("Transitive closure of therapy combinations beginning...")
-  therapy_grps <- .run_transitive_closure.SQLiteConnection(
+  therapy_grps <- .run_transitive_closure(
     conn = conn, 
     edge_table = "ramses_tc_edges",
     silent = silent
