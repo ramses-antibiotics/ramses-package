@@ -279,7 +279,7 @@ test_that("SQLite does transitive closure", {
     temporary = FALSE,
     overwrite = TRUE)
   
-  test_output <- Ramses:::.run_transitive_closure(
+  test_output <- Ramses:::.run_transitive_closure.SQLiteConnection(
     conSQLite,"ramses_test_edges", silent = TRUE) %>% 
     dplyr::select(id, grp) %>% 
     dplyr::arrange(id) %>% 
@@ -340,7 +340,7 @@ test_that("Postgres does transitive closure", {
     test_edges
   )
   
-  test_output <- Ramses:::.run_transitive_closure(
+  test_output <- Ramses:::.run_transitive_closure.PqConnection(
     conPostgreSQL,"ramses_test_edges", silent = TRUE) %>% 
     dplyr::select(id, grp) %>% 
     dplyr::arrange(id) %>% 
