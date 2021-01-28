@@ -209,11 +209,12 @@ test_that("Ramses on SQLite 2", {
     t = 0:5,
     patient_id = "1253675584",
     therapy_id = "9a2268f40e891b22611c9912c834cb52",
-    therapy_start = lubridate::with_tz(as.POSIXct("2015-02-26 20:09:55", tz="Europe/London"), tz = Sys.timezone()),
+    therapy_start = lubridate::with_tz(as.POSIXct("2015-02-26 20:09:55", tz="Europe/London"), tz = "UTC"),
     t_start = lubridate::with_tz(as.POSIXct(
       c("2015-02-26 20:09:55", "2015-02-26 21:09:55", "2015-02-26 22:09:55", "2015-02-26 23:09:55", 
-        "2015-02-27 00:09:55", "2015-02-27 01:09:55"), tz="Europe/London"), tz = Sys.timezone())
+        "2015-02-27 00:09:55", "2015-02-27 01:09:55"), tz="Europe/London"), tz = "UTC")
   )
+  
   expect_equivalent(test_output[0:6, ], test_expected)
   test_medication_request <- MedicationRequest(conSQLite, "9a2268f40e891b22611c9912c834cb52")
   expect_is(test_medication_request, "MedicationRequest")
@@ -321,6 +322,8 @@ test_that("Postgres does transitive closure", {
                                   host = "localhost", 
                                   dbname="RamsesDB")
   
+  Ramses:::.remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
+  
   dplyr::copy_to(
     dest = conPostgreSQL,
     name = "ramses_test_edges",
@@ -353,9 +356,9 @@ test_that("Postgres does transitive closure", {
 
 test_that("Ramses on PosgreSQL", {
   
-  if (!identical(Sys.getenv("CI"), "true")) {
-    skip("Test only on Travis")
-  }
+  # if (!identical(Sys.getenv("CI"), "true")) {
+  #   skip("Test only on Travis")
+  # }
 
   # > database loading functions ------------------------------------------
   
@@ -426,8 +429,8 @@ test_that("Ramses on PosgreSQL", {
     dplyr::tibble(
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
-      therapy_start = lubridate::with_tz(as.POSIXct("2016-08-01 11:15:19", tz="Europe/London"), tz = Sys.timezone()),
-      therapy_end = lubridate::with_tz(as.POSIXct("2016-08-03 11:15:19", tz="Europe/London"), tz = Sys.timezone())
+      therapy_start = lubridate::with_tz(as.POSIXct("2016-08-01 11:15:19", tz="Europe/London"), tz = "UTC"),
+      therapy_end = lubridate::with_tz(as.POSIXct("2016-08-03 11:15:19", tz="Europe/London"), tz = "UTC")
     )
   )
   
@@ -440,18 +443,20 @@ test_that("Ramses on PosgreSQL", {
     t = 0:5,
     patient_id = "1253675584",
     therapy_id = "9a2268f40e891b22611c9912c834cb52",
-    therapy_start = lubridate::with_tz(as.POSIXct("2015-02-26 20:09:55", tz="Europe/London"), tz = Sys.timezone()),
+    therapy_start = lubridate::with_tz(as.POSIXct("2015-02-26 20:09:55", tz="Europe/London"), tzone = "UTC"),
     t_start = lubridate::with_tz(as.POSIXct(
       c("2015-02-26 20:09:55", "2015-02-26 21:09:55", "2015-02-26 22:09:55", "2015-02-26 23:09:55", 
-        "2015-02-27 00:09:55", "2015-02-27 01:09:55"), tz="Europe/London"), tz = Sys.timezone())
+        "2015-02-27 00:09:55", "2015-02-27 01:09:55"), tz="Europe/London"), tzone = "UTC")
   )
   
+  cat(attributes(test_output$t_start)$tzone)
+  cat(attributes(test_expected$t_start)$tzone)
   expect_equivalent(test_output[0:6, ], test_expected)
   
   test_medication_request <- MedicationRequest(conPostgreSQL, "9a2268f40e891b22611c9912c834cb52")
   expect_is(test_medication_request, "MedicationRequest")
   expect_is(TherapyEpisode(test_medication_request), "TherapyEpisode")
-  expect_equivalent(collect(get_therapy_table(TherapyEpisode(test_medication_request)))[0:6, ], test_expected)
+  expect_equivalent(collect_ramses_tbl(get_therapy_table(TherapyEpisode(test_medication_request)))[0:6, ], test_expected)
   
   
   # > recreate therapy episodes and combinations --------------------------------
@@ -465,16 +470,13 @@ test_that("Ramses on PosgreSQL", {
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
     dplyr::collect()
   
-  print(test_output$therapy_start)
-  attributes(print(test_output$therapy_start))
-  
   expect_equivalent(
     test_output, 
     dplyr::tibble(
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
-      therapy_start = lubridate::with_tz(as.POSIXct("2016-08-01 11:15:19", tz="Europe/London"), tz = Sys.timezone()),
-      therapy_end = lubridate::with_tz(as.POSIXct("2016-08-03 11:15:19", tz="Europe/London"), tz = Sys.timezone())
+      therapy_start = lubridate::with_tz(as.POSIXct("2016-08-01 11:15:19", tz="Europe/London"), tz = "UTC"),
+      therapy_end = lubridate::with_tz(as.POSIXct("2016-08-03 11:15:19", tz="Europe/London"), tz = "UTC")
     )
   )
   
@@ -547,9 +549,7 @@ test_that("Ramses on PosgreSQL", {
   
   # > close connection ----------------------------------------------------
   
-  lapply(DBI::dbListTables(conPostgreSQL), 
-         DBI::dbRemoveTable, 
-         conn = conPostgreSQL)
-
+  Ramses:::.remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
+  
   DBI::dbDisconnect(conPostgreSQL)
 })
