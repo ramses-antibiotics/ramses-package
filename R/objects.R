@@ -14,6 +14,7 @@ setGeneric("compute", function(object) standardGeneric("compute"))
 #' @slot conn a database connection
 #' @slot record a \code{tbl_sql} for the corresponding database record
 #' @rdname RamsesObject
+#' @importFrom dplyr collect compute
 #' @export
 #' @importClassesFrom RSQLite SQLiteConnection
 setClass(
@@ -69,7 +70,7 @@ setClass(
 Patient <- function(conn, id) {
   id <- as.character(id)[1]
   record <- tbl(conn, "patients") %>% 
-    dplyr::filter(patient_id == id)
+    dplyr::filter(patient_id == !!id)
   
   new("Patient", 
       id = id,
@@ -101,17 +102,13 @@ setClass(
 #' @export
 MedicationRequest <- function(conn, id) {
   id <- as.character(id)[1]
-  record <- tbl(conn, "drug_prescriptions") %>% 
-    dplyr::filter(prescription_id == id)
-  
+  record <- dplyr::filter(tbl(conn, "drug_prescriptions"),
+                          prescription_id == !!id)
   new("MedicationRequest", 
       id = id,
       conn = conn,
       record = record)
 }
-
-
-
 
 
 # TherapyEpisode ----------------------------------------------------------
@@ -147,7 +144,7 @@ TherapyEpisode <- function(...){
 TherapyEpisode.DBIConnection <- function(conn, id) {
   id <- as.character(id)[1]
   record <- tbl(conn, "drug_therapy_episodes") %>% 
-    dplyr::filter(therapy_id == id)
+    dplyr::filter(therapy_id == !!id)
   therapy_table <- .create_therapy_table(conn = conn, id = id)
   new("TherapyEpisode", 
       id = id,
@@ -165,16 +162,9 @@ TherapyEpisode.RamsesObject <- function(object) {
   }
   conn <- object@conn
   record <- collect(object)
+  id <- unique(na.omit(record$therapy_id)) 
   
-  id <- unique(record$therapy_id) 
-  record <- tbl(conn, "drug_therapy_episodes") %>% 
-    dplyr::filter(therapy_id == id)
-  therapy_table <- .create_therapy_table(conn = conn, id = id)
-  new("TherapyEpisode", 
-      id = id,
-      conn = conn,
-      record = record, 
-      therapy_table = therapy_table)
+  TherapyEpisode.DBIConnection(conn = conn, id = id)
 }
 
 #' @export
@@ -194,7 +184,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
   }
 
   therapy_table <- tbl(conn, "drug_therapy_episodes") %>%
-    dplyr::filter(therapy_id == id) %>%
+    dplyr::filter(therapy_id == !!id) %>%
     dplyr::select(patient_id, therapy_id, therapy_start)
 
   if(is(conn, "SQLiteConnection")) {

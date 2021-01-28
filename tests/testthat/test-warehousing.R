@@ -214,13 +214,11 @@ test_that("Ramses on SQLite 2", {
       c("2015-02-26 20:09:55", "2015-02-26 21:09:55", "2015-02-26 22:09:55", "2015-02-26 23:09:55", 
         "2015-02-27 00:09:55", "2015-02-27 01:09:55"), tz="Europe/London"), tz = Sys.timezone())
   )
-  
   expect_equivalent(test_output[0:6, ], test_expected)
-  
   test_medication_request <- MedicationRequest(conSQLite, "9a2268f40e891b22611c9912c834cb52")
   expect_is(test_medication_request, "MedicationRequest")
   expect_is(TherapyEpisode(test_medication_request), "TherapyEpisode")
-  expect_equivalent(collect(get_therapy_table(TherapyEpisode(test_medication_request)))[0:6, ], test_expected)
+  expect_equivalent(collect_ramses_tbl(get_therapy_table(TherapyEpisode(test_medication_request)))[0:6, ], test_expected)
   
   # > therapy timeline -------------------------------------------------
   
