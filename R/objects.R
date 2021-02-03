@@ -145,7 +145,7 @@ TherapyEpisode.DBIConnection <- function(conn, id) {
   id <- as.character(id)[1]
   record <- tbl(conn, "drug_therapy_episodes") %>% 
     dplyr::filter(therapy_id == !!id)
-  therapy_table <- .create_therapy_table(conn = conn, id = id)
+  therapy_table <- .therapy_table_create(conn = conn, id = id)
   new("TherapyEpisode", 
       id = id,
       conn = conn,
@@ -177,7 +177,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' @param id a therapy episode character identifier (by design, Ramses creates
 #' this as the identifier of the first prescription ordered in an episode)  
 #' @noRd
-.create_therapy_table <- function(conn, id) {
+.therapy_table_create <- function(conn, id) {
 
   if( !DBI::dbExistsTable(conn, "ramses_tally") ){
     .build_tally_table(conn)
@@ -185,16 +185,30 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 
   therapy_table <- tbl(conn, "drug_therapy_episodes") %>%
     dplyr::filter(therapy_id == !!id) %>%
-    dplyr::select(patient_id, therapy_id, therapy_start)
+    dplyr::select(patient_id, therapy_id, therapy_start, therapy_end)
 
   if(is(conn, "SQLiteConnection")) {
     tbl(conn, "ramses_tally") %>%
       dplyr::full_join(therapy_table, by = character()) %>%
-      dplyr::mutate(t_start = dplyr::sql("datetime(therapy_start, (t || ' hours'))"))
+      dplyr::mutate(t_start = dplyr::sql("datetime(therapy_start, (t || ' hours'))")) %>% 
+      dplyr::filter(t_start < therapy_end) %>% 
+      dplyr::mutate(t_end = dplyr::sql("datetime(therapy_start, ((t + 1) || ' hours'))")) %>% 
+      dplyr::mutate(t_end = dplyr::if_else(
+        t == max(t, na.rm = TRUE),
+        therapy_end,
+        t_end
+      ))
   } else if(is(conn, "PqConnection")) {
     tbl(conn, "ramses_tally") %>%
       dplyr::full_join(therapy_table, by = character()) %>%
-      dplyr::mutate(t_start = dplyr::sql("therapy_start + interval '1h' * t"))
+      dplyr::mutate(t_start = dplyr::sql("therapy_start + interval '1h' * t "))%>% 
+      dplyr::filter(t_start < therapy_end) %>% 
+      dplyr::mutate(t_end = dplyr::sql("therapy_start + interval '1h' * (t + 1)")) %>% 
+      dplyr::mutate(t_end = dplyr::if_else(
+        t == max(t, na.rm = TRUE),
+        therapy_end,
+        t_end
+      ))
   } else {
     .throw_error_DBI_subclass_not_implemented(".create_therapy_table()")
   }

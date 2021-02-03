@@ -1735,7 +1735,8 @@ collect_ramses_tbl <- function(tbl) {
       "episode_end",
       "ward_start",
       "ward_end",
-      "t_start"
+      "t_start",
+      "t_end"
     )
     DATETIME_FIELDS <- DATETIME_FIELDS[
       which(DATETIME_FIELDS %in% colnames(tbl))

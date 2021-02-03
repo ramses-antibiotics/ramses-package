@@ -205,22 +205,48 @@ test_that("Ramses on SQLite 2", {
   
   test_episode <- TherapyEpisode(conSQLite, "9a2268f40e891b22611c9912c834cb52")
   test_output <- get_therapy_table(test_episode, collect = T)
-  test_expected <- dplyr::tibble(
+  test_expected_head <- dplyr::tibble(
     t = 0:5,
     patient_id = "1253675584",
     therapy_id = "9a2268f40e891b22611c9912c834cb52",
     therapy_start = lubridate::with_tz(as.POSIXct("2015-02-26 20:09:55", tz="Europe/London"), tz = "UTC"),
+    therapy_end = lubridate::with_tz(as.POSIXct("2015-03-01 20:09:55", tz="Europe/London"), tz = "UTC"),
     t_start = lubridate::with_tz(as.POSIXct(
       c("2015-02-26 20:09:55", "2015-02-26 21:09:55", "2015-02-26 22:09:55", "2015-02-26 23:09:55", 
-        "2015-02-27 00:09:55", "2015-02-27 01:09:55"), tz="Europe/London"), tz = "UTC")
+        "2015-02-27 00:09:55", "2015-02-27 01:09:55"), tz="Europe/London"), tz = "UTC"),
+    t_end = lubridate::with_tz(as.POSIXct(
+      c("2015-02-26 21:09:55", "2015-02-26 22:09:55", "2015-02-26 23:09:55", "2015-02-27 00:09:55", 
+        "2015-02-27 01:09:55", "2015-02-27 02:09:55"), tz="Europe/London"), tz = "UTC")
+  )
+  test_expected_tail <- dplyr::tibble(
+    t = 66:71,
+    patient_id = "1253675584",
+    therapy_id = "9a2268f40e891b22611c9912c834cb52",
+    therapy_start = lubridate::with_tz(as.POSIXct("2015-02-26 20:09:55", tz="Europe/London"), tz = "UTC"),
+    therapy_end = lubridate::with_tz(as.POSIXct("2015-03-01 20:09:55", tz="Europe/London"), tz = "UTC"),
+    t_start = lubridate::with_tz(as.POSIXct(
+      c("2015-03-01 14:09:55", "2015-03-01 15:09:55", "2015-03-01 16:09:55", "2015-03-01 17:09:55", 
+        "2015-03-01 18:09:55", "2015-03-01 19:09:55"), tz="Europe/London"), tz = "UTC"),
+    t_end = lubridate::with_tz(as.POSIXct(
+      c("2015-03-01 15:09:55", "2015-03-01 16:09:55", "2015-03-01 17:09:55", "2015-03-01 18:09:55", 
+        "2015-03-01 19:09:55", "2015-03-01 20:09:55"), tz="Europe/London"), tz = "UTC")
   )
   
-  expect_equivalent(test_output[0:6, ], test_expected)
+  expect_equivalent(head(test_output), test_expected_head)
+  expect_equivalent(tail(test_output), test_expected_tail)
+  expect_equal(
+    sum(difftime(test_output$t_end, test_output$t_start,units =  "days")),
+    structure(3, class = "difftime", units = "days")
+  )
+  
   test_medication_request <- MedicationRequest(conSQLite, "9a2268f40e891b22611c9912c834cb52")
   expect_is(test_medication_request, "MedicationRequest")
   expect_is(TherapyEpisode(test_medication_request), "TherapyEpisode")
-  expect_equivalent(collect_ramses_tbl(get_therapy_table(TherapyEpisode(test_medication_request)))[0:6, ], test_expected)
-  
+  expect_equivalent(head(get_therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+                    test_expected_head)
+  expect_equivalent(tail(get_therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+                    test_expected_tail)
+
   # > therapy timeline -------------------------------------------------
   
   expect_error(
@@ -356,9 +382,9 @@ test_that("Postgres does transitive closure", {
 
 test_that("Ramses on PosgreSQL", {
   
-  # if (!identical(Sys.getenv("CI"), "true")) {
-  #   skip("Test only on Travis")
-  # }
+  if (!identical(Sys.getenv("CI"), "true")) {
+    skip("Test only on Travis")
+  }
 
   # > database loading functions ------------------------------------------
   
@@ -439,25 +465,47 @@ test_that("Ramses on PosgreSQL", {
 
   test_episode <- TherapyEpisode(conPostgreSQL, "9a2268f40e891b22611c9912c834cb52")
   test_output <- get_therapy_table(test_episode, collect = T)
-  test_expected <- dplyr::tibble(
+  test_expected_head <- dplyr::tibble(
     t = 0:5,
     patient_id = "1253675584",
     therapy_id = "9a2268f40e891b22611c9912c834cb52",
-    therapy_start = lubridate::with_tz(as.POSIXct("2015-02-26 20:09:55", tz="Europe/London"), tzone = "UTC"),
+    therapy_start = lubridate::with_tz(as.POSIXct("2015-02-26 20:09:55", tz="Europe/London"), tz = "UTC"),
+    therapy_end = lubridate::with_tz(as.POSIXct("2015-03-01 20:09:55", tz="Europe/London"), tz = "UTC"),
     t_start = lubridate::with_tz(as.POSIXct(
       c("2015-02-26 20:09:55", "2015-02-26 21:09:55", "2015-02-26 22:09:55", "2015-02-26 23:09:55", 
-        "2015-02-27 00:09:55", "2015-02-27 01:09:55"), tz="Europe/London"), tzone = "UTC")
+        "2015-02-27 00:09:55", "2015-02-27 01:09:55"), tz="Europe/London"), tz = "UTC"),
+    t_end = lubridate::with_tz(as.POSIXct(
+      c("2015-02-26 21:09:55", "2015-02-26 22:09:55", "2015-02-26 23:09:55", "2015-02-27 00:09:55", 
+        "2015-02-27 01:09:55", "2015-02-27 02:09:55"), tz="Europe/London"), tz = "UTC")
   )
-  
-  cat(attributes(test_output$t_start)$tzone)
-  cat(attributes(test_expected$t_start)$tzone)
-  expect_equivalent(test_output[0:6, ], test_expected)
+  test_expected_tail <- dplyr::tibble(
+    t = 66:71,
+    patient_id = "1253675584",
+    therapy_id = "9a2268f40e891b22611c9912c834cb52",
+    therapy_start = lubridate::with_tz(as.POSIXct("2015-02-26 20:09:55", tz="Europe/London"), tz = "UTC"),
+    therapy_end = lubridate::with_tz(as.POSIXct("2015-03-01 20:09:55", tz="Europe/London"), tz = "UTC"),
+    t_start = lubridate::with_tz(as.POSIXct(
+      c("2015-03-01 14:09:55", "2015-03-01 15:09:55", "2015-03-01 16:09:55", "2015-03-01 17:09:55", 
+        "2015-03-01 18:09:55", "2015-03-01 19:09:55"), tz="Europe/London"), tz = "UTC"),
+    t_end = lubridate::with_tz(as.POSIXct(
+      c("2015-03-01 15:09:55", "2015-03-01 16:09:55", "2015-03-01 17:09:55", "2015-03-01 18:09:55", 
+        "2015-03-01 19:09:55", "2015-03-01 20:09:55"), tz="Europe/London"), tz = "UTC")
+  )
+
+  expect_equivalent(head(test_output), test_expected_head)
+  expect_equivalent(tail(test_output), test_expected_tail)
+  expect_equal(
+    sum(difftime(test_output$t_end, test_output$t_start,units =  "days")),
+    structure(3, class = "difftime", units = "days")
+  )
   
   test_medication_request <- MedicationRequest(conPostgreSQL, "9a2268f40e891b22611c9912c834cb52")
   expect_is(test_medication_request, "MedicationRequest")
   expect_is(TherapyEpisode(test_medication_request), "TherapyEpisode")
-  expect_equivalent(collect_ramses_tbl(get_therapy_table(TherapyEpisode(test_medication_request)))[0:6, ], test_expected)
-  
+  expect_equivalent(head(get_therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+                    test_expected_head)
+  expect_equivalent(tail(get_therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+                    test_expected_tail)
   
   # > recreate therapy episodes and combinations --------------------------------
   
