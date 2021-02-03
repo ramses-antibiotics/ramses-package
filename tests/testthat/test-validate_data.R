@@ -290,6 +290,32 @@ test_that("validate_prescriptions()", {
       daily_frequency = 4, DDD = 4), stringsAsFactors = F)
   ))
   
+  expect_error(validate_prescriptions(
+    data.frame(list(
+      patient_id = "5593245762", 
+      prescription_id = "6025e96e1cc750dc6ec7fb9aadca0dbd", 
+      prescription_text = "Flucloxacillin IV 2g 3 days", 
+      drug_id = "FLC", drug_name = "Flucloxacillin", 
+      drug_display_name = "Flucloxacillin", 
+      antiinfective_type = c("antibacterial"),
+      ATC_code = "J01CF05",
+      ATC_group = "Beta-lactam antibacterials, penicillins", 
+      ATC_route = "ERROR!!!!!!!",
+      authoring_date = structure(1421048831, 
+                                 class = c("POSIXct", "POSIXt"), 
+                                 tzone = ""), 
+      prescription_start = structure(1421051891, 
+                                     class = c("POSIXct", "POSIXt"), 
+                                     tzone = ""), 
+      prescription_end = structure(1421311091, 
+                                   class = c("POSIXct", "POSIXt"), 
+                                   tzone = ""), 
+      prescription_status = "completed", 
+      prescription_context = "inpatient", 
+      dose = 2, unit = "g", route = "IV", frequency = "6H", 
+      daily_frequency = 4, DDD = 4), stringsAsFactors = F)
+  ))
+  
   expect_null(validate_prescriptions(
     data.frame(list(
       patient_id = "5593245762", 

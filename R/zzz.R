@@ -128,7 +128,9 @@ global_vars <- c(
   "DDD_prescribed",
   "DOT",
   "LOT",
-  "diagnosis_episode_end"
+  "diagnosis_episode_end",
+  "t_start",
+  "t_end"
 )
 
 utils::globalVariables(global_vars)

@@ -816,6 +816,15 @@ validate_prescriptions <- function(data) {
       '"antiviral", or "antiparasitic"'))
   }
   
+  if( any( 
+    !data$ATC_route %in% c("Implant", "Inhal", "Instill", "N", 
+                           "O", "P", "R", "SL", "TD", "V")
+  )) {
+    stop(paste('`ATC_route` must be one of:',
+               '"Implant", "Inhal", "Instill", "N",',
+               '"O", "P", "R", "SL", "TD", "V"'))
+  }
+  
   duplicates <- data %>% 
     dplyr::group_by(patient_id, drug_id, dose, route, prescription_start) %>% 
     dplyr::summarise(n = dplyr::n()) %>% 

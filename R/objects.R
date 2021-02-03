@@ -197,7 +197,8 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
         t == max(t, na.rm = TRUE),
         therapy_end,
         t_end
-      ))
+      )) %>% 
+      .therapy_table_parenteral_indicator(therapy_id = id)
   } else if(is(conn, "PqConnection")) {
     tbl(conn, "ramses_tally") %>%
       dplyr::full_join(therapy_table, by = character()) %>%
@@ -208,10 +209,52 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
         t == max(t, na.rm = TRUE),
         therapy_end,
         t_end
-      ))
+      )) %>% 
+      .therapy_table_parenteral_indicator(therapy_id = id)
   } else {
     .throw_error_DBI_subclass_not_implemented(".create_therapy_table()")
   }
+}
+
+
+
+#' Create parenteral indicator
+#'
+#' @param therapy_table `tbl_sql` for the spine of the therapy table
+#' @return a therapy table with an IV column (1 = 1+ drugs are parenteral,
+#' 0 = all drugs administered via oral route)
+#' @noRd
+.therapy_table_parenteral_indicator <- function(therapy_table, therapy_id){
+  
+  medication_requests <- tbl(therapy_table$src$con,
+                             "drug_prescriptions") %>% 
+    dplyr::filter(therapy_id == !!therapy_id)
+  
+  therapy_table_meds_join <- dplyr::left_join(
+    therapy_table, 
+    medication_requests, 
+    by = c("patient_id", "therapy_id")) %>% 
+    dplyr::filter(
+      dplyr::between(t_start, prescription_start, prescription_end) |
+        dplyr::between(prescription_start, t_start, t_end) | 
+        dplyr::between(prescription_end, t_start, t_end)
+    ) %>% 
+    dplyr::group_by(patient_id, therapy_id, t) %>%
+    dplyr::summarise(parenteral = dplyr::if_else(
+      mean(
+        dplyr::if_else(ATC_route == "P", 1.0, 0.0), 
+        na.rm = T) == 1.0,
+      1L,
+      0L
+    ))
+  
+  therapy_table_parenteral <- dplyr::left_join(
+    therapy_table, 
+    therapy_table_meds_join, 
+    by = c("patient_id", "therapy_id", "t")
+  )
+  
+  return(therapy_table_parenteral)
 }
 
 

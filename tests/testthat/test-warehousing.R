@@ -203,43 +203,45 @@ test_that("Ramses on SQLite 2", {
   
   # > TherapyEpisode ------------------------------------------------------------
   
-  test_episode <- TherapyEpisode(conSQLite, "9a2268f40e891b22611c9912c834cb52")
+  test_episode <- TherapyEpisode(conSQLite, "5528fc41106bb48eb4d48bc412e13e67")
   test_output <- get_therapy_table(test_episode, collect = T)
   test_expected_head <- dplyr::tibble(
     t = 0:5,
-    patient_id = "1253675584",
-    therapy_id = "9a2268f40e891b22611c9912c834cb52",
-    therapy_start = lubridate::with_tz(as.POSIXct("2015-02-26 20:09:55", tz="Europe/London"), tz = "UTC"),
-    therapy_end = lubridate::with_tz(as.POSIXct("2015-03-01 20:09:55", tz="Europe/London"), tz = "UTC"),
+    patient_id = "99999999999",
+    therapy_id = "5528fc41106bb48eb4d48bc412e13e67",
+    therapy_start = lubridate::with_tz(as.POSIXct("2015-08-07 11:27:00", tz="Europe/London"), tz = "UTC"),
+    therapy_end = lubridate::with_tz(as.POSIXct("2015-08-12 13:12:00", tz="Europe/London"), tz = "UTC"),
     t_start = lubridate::with_tz(as.POSIXct(
-      c("2015-02-26 20:09:55", "2015-02-26 21:09:55", "2015-02-26 22:09:55", "2015-02-26 23:09:55", 
-        "2015-02-27 00:09:55", "2015-02-27 01:09:55"), tz="Europe/London"), tz = "UTC"),
+      c("2015-08-07 11:27:00", "2015-08-07 12:27:00", "2015-08-07 13:27:00", 
+        "2015-08-07 14:27:00", "2015-08-07 15:27:00", "2015-08-07 16:27:00"), tz="Europe/London"), tz = "UTC"),
     t_end = lubridate::with_tz(as.POSIXct(
-      c("2015-02-26 21:09:55", "2015-02-26 22:09:55", "2015-02-26 23:09:55", "2015-02-27 00:09:55", 
-        "2015-02-27 01:09:55", "2015-02-27 02:09:55"), tz="Europe/London"), tz = "UTC")
+      c("2015-08-07 12:27:00", "2015-08-07 13:27:00", "2015-08-07 14:27:00", 
+        "2015-08-07 15:27:00", "2015-08-07 16:27:00", "2015-08-07 17:27:00"), tz="Europe/London"), tz = "UTC"),
+    parenteral = 1L
   )
   test_expected_tail <- dplyr::tibble(
-    t = 66:71,
-    patient_id = "1253675584",
-    therapy_id = "9a2268f40e891b22611c9912c834cb52",
-    therapy_start = lubridate::with_tz(as.POSIXct("2015-02-26 20:09:55", tz="Europe/London"), tz = "UTC"),
-    therapy_end = lubridate::with_tz(as.POSIXct("2015-03-01 20:09:55", tz="Europe/London"), tz = "UTC"),
+    t = 116:121,
+    patient_id = "99999999999",
+    therapy_id = "5528fc41106bb48eb4d48bc412e13e67",
+    therapy_start = lubridate::with_tz(as.POSIXct("2015-08-07 11:27:00", tz="Europe/London"), tz = "UTC"),
+    therapy_end = lubridate::with_tz(as.POSIXct("2015-08-12 13:12:00", tz="Europe/London"), tz = "UTC"),
     t_start = lubridate::with_tz(as.POSIXct(
-      c("2015-03-01 14:09:55", "2015-03-01 15:09:55", "2015-03-01 16:09:55", "2015-03-01 17:09:55", 
-        "2015-03-01 18:09:55", "2015-03-01 19:09:55"), tz="Europe/London"), tz = "UTC"),
+      c("2015-08-12 07:27:00", "2015-08-12 08:27:00", "2015-08-12 09:27:00", 
+        "2015-08-12 10:27:00", "2015-08-12 11:27:00", "2015-08-12 12:27:00"), tz="Europe/London"), tz = "UTC"),
     t_end = lubridate::with_tz(as.POSIXct(
-      c("2015-03-01 15:09:55", "2015-03-01 16:09:55", "2015-03-01 17:09:55", "2015-03-01 18:09:55", 
-        "2015-03-01 19:09:55", "2015-03-01 20:09:55"), tz="Europe/London"), tz = "UTC")
+      c("2015-08-12 08:27:00", "2015-08-12 09:27:00", "2015-08-12 10:27:00", 
+        "2015-08-12 11:27:00", "2015-08-12 12:27:00", "2015-08-12 13:12:00"), tz="Europe/London"), tz = "UTC"),
+    parenteral = 0L
   )
   
   expect_equivalent(head(test_output), test_expected_head)
   expect_equivalent(tail(test_output), test_expected_tail)
   expect_equal(
-    sum(difftime(test_output$t_end, test_output$t_start,units =  "days")),
-    structure(3, class = "difftime", units = "days")
+    sum(difftime(test_output$t_end, test_output$t_start,units =  "hours")),
+    structure(121.75, class = "difftime", units = "hours")
   )
   
-  test_medication_request <- MedicationRequest(conSQLite, "9a2268f40e891b22611c9912c834cb52")
+  test_medication_request <- MedicationRequest(conSQLite, "5528fc41106bb48eb4d48bc412e13e67")
   expect_is(test_medication_request, "MedicationRequest")
   expect_is(TherapyEpisode(test_medication_request), "TherapyEpisode")
   expect_equivalent(head(get_therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
@@ -467,16 +469,17 @@ test_that("Ramses on PosgreSQL", {
   test_output <- get_therapy_table(test_episode, collect = T)
   test_expected_head <- dplyr::tibble(
     t = 0:5,
-    patient_id = "1253675584",
-    therapy_id = "9a2268f40e891b22611c9912c834cb52",
-    therapy_start = lubridate::with_tz(as.POSIXct("2015-02-26 20:09:55", tz="Europe/London"), tz = "UTC"),
-    therapy_end = lubridate::with_tz(as.POSIXct("2015-03-01 20:09:55", tz="Europe/London"), tz = "UTC"),
+    patient_id = "99999999999",
+    therapy_id = "5528fc41106bb48eb4d48bc412e13e67",
+    therapy_start = lubridate::with_tz(as.POSIXct("2015-08-07 10:27:00", tz="Europe/London"), tz = "UTC"),
+    therapy_end = lubridate::with_tz(as.POSIXct("2015-08-12 12:12:00", tz="Europe/London"), tz = "UTC"),
     t_start = lubridate::with_tz(as.POSIXct(
-      c("2015-02-26 20:09:55", "2015-02-26 21:09:55", "2015-02-26 22:09:55", "2015-02-26 23:09:55", 
-        "2015-02-27 00:09:55", "2015-02-27 01:09:55"), tz="Europe/London"), tz = "UTC"),
+      c("2015-08-07 10:27:00", "2015-08-07 11:27:00", "2015-08-07 12:27:00", "2015-08-07 13:27:00", 
+        "2015-08-07 14:27:00", "2015-08-07 15:27:00"), tz="Europe/London"), tz = "UTC"),
     t_end = lubridate::with_tz(as.POSIXct(
-      c("2015-02-26 21:09:55", "2015-02-26 22:09:55", "2015-02-26 23:09:55", "2015-02-27 00:09:55", 
-        "2015-02-27 01:09:55", "2015-02-27 02:09:55"), tz="Europe/London"), tz = "UTC")
+      c("2015-08-07 11:27:00", "2015-08-07 12:27:00", "2015-08-07 13:27:00", "2015-08-07 14:27:00", 
+        "2015-08-07 15:27:00", "2015-08-07 16:27:00"), tz="Europe/London"), tz = "UTC"),
+    parenteral = 1L
   )
   test_expected_tail <- dplyr::tibble(
     t = 66:71,
@@ -485,11 +488,12 @@ test_that("Ramses on PosgreSQL", {
     therapy_start = lubridate::with_tz(as.POSIXct("2015-02-26 20:09:55", tz="Europe/London"), tz = "UTC"),
     therapy_end = lubridate::with_tz(as.POSIXct("2015-03-01 20:09:55", tz="Europe/London"), tz = "UTC"),
     t_start = lubridate::with_tz(as.POSIXct(
-      c("2015-03-01 14:09:55", "2015-03-01 15:09:55", "2015-03-01 16:09:55", "2015-03-01 17:09:55", 
-        "2015-03-01 18:09:55", "2015-03-01 19:09:55"), tz="Europe/London"), tz = "UTC"),
+      c("2015-08-12 06:27:00", "2015-08-12 07:27:00", "2015-08-12 08:27:00", "2015-08-12 09:27:00", 
+        "2015-08-12 10:27:00", "2015-08-12 11:27:00"), tz="Europe/London"), tz = "UTC"),
     t_end = lubridate::with_tz(as.POSIXct(
-      c("2015-03-01 15:09:55", "2015-03-01 16:09:55", "2015-03-01 17:09:55", "2015-03-01 18:09:55", 
-        "2015-03-01 19:09:55", "2015-03-01 20:09:55"), tz="Europe/London"), tz = "UTC")
+      c("2015-08-12 07:27:00", "2015-08-12 08:27:00", "2015-08-12 09:27:00", "2015-08-12 10:27:00", 
+        "2015-08-12 11:27:00", "2015-08-12 12:12:00"), tz="Europe/London"), tz = "UTC"),
+    parenteral = 0L
   )
 
   expect_equivalent(head(test_output), test_expected_head)
