@@ -17,12 +17,12 @@
 #' @importFrom lubridate as_datetime
 #' @export
 therapy_timeline <- function(conn, patient_identifier, 
-                             date1 = NA, date2 = NA,
+                             date1 = NULL, date2 = NULL,
                              load_timevis_dependencies = FALSE){
   
   requireNamespace("timevis", quietly = TRUE)
-  stopifnot( is(date1, "Date") | is(date1, "POSIXct") )
-  stopifnot( is(date2, "Date") | is(date2, "POSIXct") )
+  stopifnot( is.null(date1) | is(date1, "Date") | is(date1, "POSIXct") )
+  stopifnot( is.null(date2) | is(date2, "Date") | is(date2, "POSIXct") )
   
   # Retrieve inpatient records
   base <- tbl(conn, "inpatient_episodes") %>%
@@ -43,10 +43,10 @@ therapy_timeline <- function(conn, patient_identifier,
     collect_ramses_tbl() 
    
   # Calculate the date range the timeline should display by default
-  date1 <- as.POSIXct(date1)
-  date2 <- as.POSIXct(date2)
-  
-  if( !is.na(date1) && !is.na(date2) ) {
+
+  if( !is.null(date1) && !is.null(date2) ) {
+    date1 <- as.POSIXct(date1)
+    date2 <- as.POSIXct(date2)
     date_window <- dplyr::filter(
       nodes, 
       dplyr::between(therapy_start, date1, date2) |
@@ -54,13 +54,15 @@ therapy_timeline <- function(conn, patient_identifier,
         (therapy_start <= date1 & date1 <= therapy_end)) %>%
       dplyr::summarise(left_date = min(therapy_start, na.rm = T), 
                        right_date = max(therapy_end, na.rm = T))
-  } else if( !is.na(date2) ) {
+  } else if( !is.null(date2) ) {
+    date2 <- as.POSIXct(date2)
     date_window <- dplyr::filter(
       nodes, 
       therapy_start <= date2 ) %>%
       dplyr::summarise(left_date = min(therapy_start, na.rm = T), 
                        right_date = max(therapy_end, na.rm = T)) 
-  } else if( !is.na(date1) ) {
+  } else if( !is.null(date1) ) {
+    date1 <- as.POSIXct(date1)
     date_window <- dplyr::filter(
       nodes, 
       therapy_end >= date1 ) %>%

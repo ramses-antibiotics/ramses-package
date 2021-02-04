@@ -605,18 +605,18 @@ test_that("Ramses on PosgreSQL", {
   expect_is(
     therapy_timeline(conn = conPostgreSQL, 
                      patient_identifier =  "99999999999",
-                     date1 = "2017-01-01",
-                     date2 = "2017-03-01"), 
+                     date1 = as.Date("2017-01-01"),
+                     date2 = as.Date("2017-03-01")), 
     "timevis")
   expect_is(
     therapy_timeline(conn = conPostgreSQL, 
                      patient_identifier =  "99999999999",
-                     date1 = "2017-01-01"),
+                     date1 = as.Date("2017-01-01")),
     "timevis")
   expect_is(
     therapy_timeline(conn = conPostgreSQL, 
                      patient_identifier =  "99999999999",
-                     date2 = "2017-03-01"), 
+                     date2 = as.Date("2017-03-01")), 
     "timevis")
   
   # > close connection ----------------------------------------------------
