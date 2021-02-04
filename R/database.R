@@ -60,12 +60,8 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
       "diagnosis_position"
     ))
   
-  if ( is(conn, "SQLiteConnection" )) {
-    for(i in which(vapply(diagnoses_data, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
-      diagnoses_data[[i]] <- as.character(diagnoses_data[[i]])
-    }
-  }
-  
+  diagnoses_data <- .format_str_time_sqlite(conn, diagnoses_data)
+
   load_errors <- try({
     dplyr::copy_to(
       dest = conn, name = "inpatient_diagnoses", 
@@ -135,11 +131,7 @@ load_inpatient_episodes <- function(conn,
     episodes_data, 
     first_column_names = first_column_names_episodes) 
   
-  if ( is(conn, "SQLiteConnection" )) {
-    for(i in which(vapply(episodes_data, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
-      episodes_data[[i]] <- as.character(episodes_data[[i]])
-    }
-  }
+  episodes_data <- .format_str_time_sqlite(conn, episodes_data)
   
   dplyr::copy_to(
     dest = conn, 
@@ -180,12 +172,8 @@ load_inpatient_episodes <- function(conn,
       wards_data, 
       first_column_names = first_column_names_wards)   
     
-    if ( is(conn, "SQLiteConnection" )) {
-      for(i in which(vapply(wards_data, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
-        wards_data[[i]] <- as.character(wards_data[[i]])
-      }
-    }
-    
+    wards_data <- .format_str_time_sqlite(conn, wards_data)
+
     load_errors <- try({
       dplyr::copy_to(
         dest = conn, 
@@ -228,11 +216,7 @@ load_inpatient_investigations <- function(conn, investigations_data, overwrite =
     data = investigations_data,
     first_column_names = first_variables)
   
-  if ( is(conn, "SQLiteConnection" )) {
-    for(i in which(vapply(investigations_data, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
-      investigations_data[[i]] <- as.character(investigations_data[[i]])
-    }
-  }
+  investigations_data <- .format_str_time_sqlite(conn, investigations_data)
   
   load_errors <- try({
     dplyr::copy_to(
@@ -296,17 +280,9 @@ load_inpatient_microbiology <- function(conn,
     data = susceptibilities,
     first_column_names = first_variables$susceptibilities)
   
-  if ( is(conn, "SQLiteConnection" )) {
-    for(i in which(vapply(specimens, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
-      specimens[[i]] <- as.character(specimens[[i]])
-    }
-    for(i in which(vapply(isolates, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
-      isolates[[i]] <- as.character(isolates[[i]])
-    }
-    for(i in which(vapply(susceptibilities, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
-      susceptibilities[[i]] <- as.character(susceptibilities[[i]])
-    }
-  }
+  specimens <- .format_str_time_sqlite(conn, specimens)
+  isolates <- .format_str_time_sqlite(conn, isolates)
+  susceptibilities <- .format_str_time_sqlite(conn, susceptibilities)
   
   load_errors <- try({
     dplyr::copy_to(
@@ -456,7 +432,7 @@ load_medications.SQLiteConnection <- function(
       transitive_closure_controls,
       silent = silent)
   if(!is.null(administrations)) {
-    .load_administrations.SQLiteConnection(
+    .load_administrations(
       conn = conn, 
       administrations = administrations, 
       overwrite = overwrite)
@@ -484,7 +460,7 @@ load_medications.PqConnection <- function(
       transitive_closure_controls,
       silent = silent)
     if(!is.null(administrations)) {
-      .load_administrations.SQLiteConnection(
+      .load_administrations(
         conn = conn, 
         administrations = administrations, 
         overwrite = overwrite)
@@ -505,9 +481,7 @@ load_medications.PqConnection <- function(
   
   prescriptions <- dplyr::arrange(prescriptions, patient_id, prescription_start)
   prescriptions$id <- seq_len(nrow(prescriptions))
-  prescriptions$authoring_date <- as.character(prescriptions$authoring_date)
-  prescriptions$prescription_start <- as.character(prescriptions$prescription_start)
-  prescriptions$prescription_end <- as.character(prescriptions$prescription_end)
+  prescriptions <- .format_str_time_sqlite(conn, prescriptions)
   prescriptions$therapy_rank <- NA_integer_
   
   if(create_combination_id) prescriptions$combination_id <- NA_character_
@@ -817,7 +791,7 @@ load_medications.PqConnection <- function(
 }
 
 
-.load_administrations.SQLiteConnection <- function(
+.load_administrations <- function(
   conn, 
   administrations, 
   overwrite
@@ -836,6 +810,7 @@ load_medications.PqConnection <- function(
     administrations, 
     first_column_names = first_column_names
     ) 
+  administrations <- .format_str_time_sqlite(conn, administrations)
   
   load_output <- try({
     dplyr::copy_to(
@@ -1708,6 +1683,31 @@ UseMethod(".run_transitive_closure")
 }
 
 
+#' Format datetime and time fields as character according to SQLite specification
+#'
+#' @description SQLite requires a specific format for datetime strings. This 
+#' function transforms all POSIXct fields of a data frame into the correct
+#' character format.
+#' @param conn a database connection
+#' @param data_frame a data frame to format
+#' @return a formatted data frame
+#' @noRd
+#' @seealso https://www.sqlite.org/lang_datefunc.html#time_values
+.format_str_time_sqlite <- function(conn, data_frame) {
+  if ( is(conn, "SQLiteConnection" )) {
+    for(i in which(vapply(data_frame, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
+      data_frame[[i]] <- paste0(
+        as.character(data_frame[[i]], format = "%Y-%m-%d %H:%M:%S"),
+        substr(as.character(data_frame[[i]], format = "%z"), 0, 3),
+        ":",
+        substr(as.character(data_frame[[i]], format = "%z"), 4, 5)
+      )
+    }
+  }
+  
+  data_frame
+}
+
 #' Collect SQL tibble
 #' 
 #' @description This wrapper function for \link[dplyr]{collect} will convert
@@ -1742,7 +1742,8 @@ collect_ramses_tbl <- function(tbl) {
       which(DATETIME_FIELDS %in% colnames(tbl))
       ]
     for(var in DATETIME_FIELDS){
-      tbl[[var]] <- lubridate::as_datetime(tbl[[var]])
+      tbl[[var]] <- gsub("[:]([0-9]{2})$", "\\1", tbl[[var]])
+      tbl[[var]] <- as.POSIXct(tbl[[var]], format = "%Y-%m-%d %H:%M:%S%z")
     }
     
     DATE_FIELDS <- c(
@@ -1753,7 +1754,7 @@ collect_ramses_tbl <- function(tbl) {
       which(DATE_FIELDS %in% colnames(tbl))
       ]
     for(var in DATE_FIELDS){
-      tbl[[var]] <- lubridate::as_date(tbl[[var]])
+      tbl[[var]] <- as.Date(tbl[[var]])
     }
     
     return(tbl)

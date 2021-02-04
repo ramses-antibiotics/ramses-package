@@ -17,9 +17,11 @@ therapy_timeline(
 
 \item{patient_identifier}{a length-one character vector for a patient ID}
 
-\item{date1}{(optional) a date window minimum to focus the timeline on by default}
+\item{date1}{(optional) a \code{Date} or \code{POSIXct} window minimum to 
+focus the timeline on by default}
 
-\item{date2}{(optional) a date window maximum to focus the timeline on by default}
+\item{date2}{(optional) a \code{Date} or \code{POSIXct} window maximum to 
+focus the timeline on by default}
 
 \item{load_timevis_dependencies}{a boolean indicating whether jQuery 
 and Bootstrap should be loaded (default is \code{FALSE}). See \link[timevis]{timevis}

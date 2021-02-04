@@ -4,8 +4,10 @@
 #'
 #' @param conn a database connection
 #' @param patient_identifier a length-one character vector for a patient ID
-#' @param date1 (optional) a date window minimum to focus the timeline on by default
-#' @param date2 (optional) a date window maximum to focus the timeline on by default
+#' @param date1 (optional) a \code{Date} or \code{POSIXct} window minimum to 
+#' focus the timeline on by default
+#' @param date2 (optional) a \code{Date} or \code{POSIXct} window maximum to 
+#' focus the timeline on by default
 #' @param load_timevis_dependencies a boolean indicating whether jQuery 
 #' and Bootstrap should be loaded (default is \code{FALSE}). See \link[timevis]{timevis}
 #' for detail
@@ -19,6 +21,8 @@ therapy_timeline <- function(conn, patient_identifier,
                              load_timevis_dependencies = FALSE){
   
   requireNamespace("timevis", quietly = TRUE)
+  stopifnot( is(date1, "Date") | is(date1, "POSIXct") )
+  stopifnot( is(date2, "Date") | is(date2, "POSIXct") )
   
   # Retrieve inpatient records
   base <- tbl(conn, "inpatient_episodes") %>%
@@ -39,8 +43,8 @@ therapy_timeline <- function(conn, patient_identifier,
     collect_ramses_tbl() 
    
   # Calculate the date range the timeline should display by default
-  date1 <- lubridate::as_datetime(date1)
-  date2 <- lubridate::as_datetime(date2)
+  date1 <- as.POSIXct(date1)
+  date2 <- as.POSIXct(date2)
   
   if( !is.na(date1) && !is.na(date2) ) {
     date_window <- dplyr::filter(
