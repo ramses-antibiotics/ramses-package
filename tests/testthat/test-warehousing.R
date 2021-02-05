@@ -37,7 +37,7 @@ test_that("Ramses on SQLite 2", {
   if (!identical(Sys.getenv("CI"), "true")) {
     skip("Test only on Travis")
   }
-  
+
   # > validate functions --------------------------------------------------
   
   drug_data <- Ramses:::.prepare_example_drug_records()
@@ -209,28 +209,28 @@ test_that("Ramses on SQLite 2", {
     t = 0:5,
     patient_id = "99999999999",
     therapy_id = "5528fc41106bb48eb4d48bc412e13e67",
-    therapy_start = as.POSIXct("2015-08-07 10:27:00 BST", "%Y-%m-%d %H:%M:%S %Z"),
-    therapy_end = as.POSIXct("2015-08-12 12:12:00 BST", "%Y-%m-%d %H:%M:%S %Z"),
+    therapy_start = as.POSIXct("2015-08-07 10:27:00", tz = "Europe/London"),
+    therapy_end = as.POSIXct("2015-08-12 12:12:00", tz = "Europe/London"),
     t_start = as.POSIXct(
-      c("2015-08-07 10:27:00 BST", "2015-08-07 11:27:00 BST", "2015-08-07 12:27:00 BST",
-        "2015-08-07 13:27:00 BST", "2015-08-07 14:27:00 BST", "2015-08-07 15:27:00 BST"), "%Y-%m-%d %H:%M:%S %Z"),
+      c("2015-08-07 10:27:00", "2015-08-07 11:27:00", "2015-08-07 12:27:00",
+        "2015-08-07 13:27:00", "2015-08-07 14:27:00", "2015-08-07 15:27:00"), tz = "Europe/London"),
     t_end = as.POSIXct(
-      c("2015-08-07 11:27:00 BST", "2015-08-07 12:27:00 BST", "2015-08-07 13:27:00 BST", 
-        "2015-08-07 14:27:00 BST", "2015-08-07 15:27:00 BST", "2015-08-07 16:27:00 BST"), "%Y-%m-%d %H:%M:%S %Z"),
+      c("2015-08-07 11:27:00", "2015-08-07 12:27:00", "2015-08-07 13:27:00", 
+        "2015-08-07 14:27:00", "2015-08-07 15:27:00", "2015-08-07 16:27:00"), tz = "Europe/London"),
     parenteral = 1L
   )
   test_expected_tail <- dplyr::tibble(
     t = 116:121,
     patient_id = "99999999999",
     therapy_id = "5528fc41106bb48eb4d48bc412e13e67",
-    therapy_start = as.POSIXct("2015-08-07 10:27:00 BST", "%Y-%m-%d %H:%M:%S %Z"),
-    therapy_end = as.POSIXct("2015-08-12 12:12:00 BST", "%Y-%m-%d %H:%M:%S %Z"),
+    therapy_start = as.POSIXct("2015-08-07 10:27:00", tz = "Europe/London"),
+    therapy_end = as.POSIXct("2015-08-12 12:12:00", tz = "Europe/London"),
     t_start = as.POSIXct(
-      c("2015-08-12 06:27:00 BST", "2015-08-12 07:27:00 BST", "2015-08-12 08:27:00 BST", 
-        "2015-08-12 09:27:00 BST", "2015-08-12 10:27:00 BST", "2015-08-12 11:27:00 BST"), "%Y-%m-%d %H:%M:%S %Z"),
+      c("2015-08-12 06:27:00", "2015-08-12 07:27:00", "2015-08-12 08:27:00", 
+        "2015-08-12 09:27:00", "2015-08-12 10:27:00", "2015-08-12 11:27:00"), tz = "Europe/London"),
     t_end = as.POSIXct(
-      c("2015-08-12 07:27:00 BST", "2015-08-12 08:27:00 BST", "2015-08-12 09:27:00 BST", "2015-08-12 10:27:00 BST", 
-        "2015-08-12 11:27:00 BST", "2015-08-12 12:12:00 BST"), "%Y-%m-%d %H:%M:%S %Z"),
+      c("2015-08-12 07:27:00", "2015-08-12 08:27:00", "2015-08-12 09:27:00", "2015-08-12 10:27:00", 
+        "2015-08-12 11:27:00", "2015-08-12 12:12:00"), tz = "Europe/London"),
     parenteral = 0L
   )
   
@@ -259,21 +259,27 @@ test_that("Ramses on SQLite 2", {
     therapy_timeline(conn = conSQLite, 
                      patient_identifier =  "99999999999"),
     "timevis")
-  expect_is(
+  expect_error(
     therapy_timeline(conn = conSQLite, 
                      patient_identifier =  "99999999999",
                      date1 = "2017-01-01",
-                     date2 = "2017-03-01"), 
+                     date2 = "2017-03-01")
+  )
+  expect_is(
+    therapy_timeline(conn = conSQLite, 
+                     patient_identifier =  "99999999999",
+                     date1 = as.Date("2017-01-01"),
+                     date2 = as.Date("2017-03-01")), 
     "timevis")
   expect_is(
     therapy_timeline(conn = conSQLite, 
                      patient_identifier =  "99999999999",
-                     date1 = "2017-01-01"),
+                     date1 = as.Date("2017-01-01")),
     "timevis")
   expect_is(
     therapy_timeline(conn = conSQLite, 
                      patient_identifier =  "99999999999",
-                     date2 = "2017-03-01"), 
+                     date2 = as.Date("2017-03-01")), 
     "timevis")
   
 
@@ -336,7 +342,7 @@ test_that(".format_str_time_sqlite", {
                  overwrite = TRUE)
   expect_equal(
     collect_ramses_tbl(tbl(conSQLite, "test_posixct")),
-    dplyr::tibble(t_start = as.POSIXct("2017-07-02 01:15:46 BST"))
+    dplyr::tibble(t_start = as.POSIXct("2017-07-02 01:15:46", tz = "Europe/London"))
   )
   
   DBI::dbDisconnect(conSQLite)
@@ -477,8 +483,8 @@ test_that("Ramses on PosgreSQL", {
     dplyr::tibble(
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
-      therapy_start = lubridate::with_tz(as.POSIXct("2016-08-01 11:15:19", tz="Europe/London"), tz = "UTC"),
-      therapy_end = lubridate::with_tz(as.POSIXct("2016-08-03 11:15:19", tz="Europe/London"), tz = "UTC")
+      therapy_start = as.POSIXct("2016-08-01 11:15:19", tz = "Europe/London"),
+      therapy_end = as.POSIXct("2016-08-03 11:15:19", tz = "Europe/London")
     )
   )
   
@@ -491,28 +497,28 @@ test_that("Ramses on PosgreSQL", {
     t = 0:5,
     patient_id = "99999999999",
     therapy_id = "5528fc41106bb48eb4d48bc412e13e67",
-    therapy_start = lubridate::with_tz(as.POSIXct("2015-08-07 10:27:00", tz="Europe/London"), tz = "UTC"),
-    therapy_end = lubridate::with_tz(as.POSIXct("2015-08-12 12:12:00", tz="Europe/London"), tz = "UTC"),
-    t_start = lubridate::with_tz(as.POSIXct(
+    therapy_start = as.POSIXct("2015-08-07 10:27:00", tz = "Europe/London"),
+    therapy_end = as.POSIXct("2015-08-12 12:12:00", tz = "Europe/London"),
+    t_start = as.POSIXct(
       c("2015-08-07 10:27:00", "2015-08-07 11:27:00", "2015-08-07 12:27:00",
-        "2015-08-07 13:27:00", "2015-08-07 14:27:00", "2015-08-07 15:27:00"), tz="Europe/London"), tz = "UTC"),
-    t_end = lubridate::with_tz(as.POSIXct(
+        "2015-08-07 13:27:00", "2015-08-07 14:27:00", "2015-08-07 15:27:00"), tz = "Europe/London"),
+    t_end = as.POSIXct(
       c("2015-08-07 11:27:00", "2015-08-07 12:27:00", "2015-08-07 13:27:00", 
-        "2015-08-07 14:27:00", "2015-08-07 15:27:00", "2015-08-07 16:27:00"), tz="Europe/London"), tz = "UTC"),
+        "2015-08-07 14:27:00", "2015-08-07 15:27:00", "2015-08-07 16:27:00"), tz = "Europe/London"),
     parenteral = 1L
   )
   test_expected_tail <- dplyr::tibble(
     t = 116:121,
     patient_id = "99999999999",
     therapy_id = "5528fc41106bb48eb4d48bc412e13e67",
-    therapy_start = lubridate::with_tz(as.POSIXct("2015-08-07 10:27:00", tz="Europe/London"), tz = "UTC"),
-    therapy_end = lubridate::with_tz(as.POSIXct("2015-08-12 12:12:00", tz="Europe/London"), tz = "UTC"),
-    t_start = lubridate::with_tz(as.POSIXct(
+    therapy_start = as.POSIXct("2015-08-07 10:27:00", tz = "Europe/London"),
+    therapy_end = as.POSIXct("2015-08-12 12:12:00", tz = "Europe/London"),
+    t_start = as.POSIXct(
       c("2015-08-12 06:27:00", "2015-08-12 07:27:00", "2015-08-12 08:27:00", 
-        "2015-08-12 09:27:00", "2015-08-12 10:27:00", "2015-08-12 11:27:00"), tz="Europe/London"), tz = "UTC"),
-    t_end = lubridate::with_tz(as.POSIXct(
+        "2015-08-12 09:27:00", "2015-08-12 10:27:00", "2015-08-12 11:27:00"), tz = "Europe/London"),
+    t_end = as.POSIXct(
       c("2015-08-12 07:27:00", "2015-08-12 08:27:00", "2015-08-12 09:27:00", "2015-08-12 10:27:00", 
-        "2015-08-12 11:27:00", "2015-08-12 12:12:00"), tz="Europe/London"), tz = "UTC"),
+        "2015-08-12 11:27:00", "2015-08-12 12:12:00"), tz = "Europe/London"),
     parenteral = 0L
   )
 
@@ -547,8 +553,8 @@ test_that("Ramses on PosgreSQL", {
     dplyr::tibble(
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
-      therapy_start = lubridate::with_tz(as.POSIXct("2016-08-01 11:15:19", tz="Europe/London"), tz = "UTC"),
-      therapy_end = lubridate::with_tz(as.POSIXct("2016-08-03 11:15:19", tz="Europe/London"), tz = "UTC")
+      therapy_start = as.POSIXct("2016-08-01 11:15:19", tz = "Europe/London"),
+      therapy_end = as.POSIXct("2016-08-03 11:15:19", tz = "Europe/London")
     )
   )
   
@@ -602,6 +608,12 @@ test_that("Ramses on PosgreSQL", {
     therapy_timeline(conn = conPostgreSQL, 
                      patient_identifier =  "99999999999"),
     "timevis")
+  expect_error(
+    therapy_timeline(conn = conSQLite, 
+                     patient_identifier =  "99999999999",
+                     date1 = "2017-01-01",
+                     date2 = "2017-03-01")
+  )
   expect_is(
     therapy_timeline(conn = conPostgreSQL, 
                      patient_identifier =  "99999999999",

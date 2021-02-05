@@ -14,7 +14,6 @@
 #' @return a timevis object
 #' @importFrom dplyr tbl
 #' @importFrom magrittr %>%
-#' @importFrom lubridate as_datetime
 #' @export
 therapy_timeline <- function(conn, patient_identifier, 
                              date1 = NULL, date2 = NULL,
@@ -40,7 +39,7 @@ therapy_timeline <- function(conn, patient_identifier,
     dplyr::left_join(tbl(conn, "drug_therapy_episodes"), 
                      by = c("patient_id", "therapy_id")) %>%
     dplyr::arrange(patient_id, prescription_start) %>% 
-    collect_ramses_tbl() 
+    collect_ramses_tbl()
    
   # Calculate the date range the timeline should display by default
 
@@ -120,17 +119,22 @@ therapy_timeline <- function(conn, patient_identifier,
     dplyr::filter(!is.na(discharge_date)) %>%
     dplyr::select(admission_method, admission_date, discharge_date) %>%
     na.omit() %>% unique() %>% 
-    dplyr::transmute(id = NA, content =  dplyr::case_when(
-      admission_method == 2 ~ "Emergency admission",
-      admission_method == 1 ~ "Elective admission",
-      TRUE ~ "Other/Transfer"),
-      start = admission_date, end = discharge_date,
+    dplyr::transmute(
+      id = NA_character_, 
+      content =  dplyr::case_when(
+        admission_method == 2 ~ "Emergency admission",
+        admission_method == 1 ~ "Elective admission",
+        TRUE ~ "Other/Transfer"),
+      start = admission_date, 
+      end = discharge_date,
       # group =  2,
       # subgroup = 1,
       type = 'background',
-      className = ifelse(admission_method == 2,
-                         'admission-emergency', 
-                         'admission-elective')) %>%
+      className = dplyr::if_else(
+        admission_method == 2,
+        'admission-emergency', 
+        'admission-elective')
+      ) %>%
     as.data.frame()
   
   timeline_death <- NULL # timeline_Rx_getdeath(input_patient)
@@ -203,7 +207,7 @@ therapy_timeline <- function(conn, patient_identifier,
       tbl(conn, "microbiology_isolates"),
       by = c("patient_id", "specimen_id")
     ) %>% 
-    dplyr::collect()
+    collect_ramses_tbl()
   
   
   if(nrow(micro) == 0){
@@ -218,14 +222,13 @@ therapy_timeline <- function(conn, patient_identifier,
         id = paste0("Specimen ID:",
                     paste(unique(specimen_id), sep = "-"), 
                     ":report"),
-        start = min(lubridate::as_datetime(isolation_datetime), na.rm = T),
+        start = min(isolation_datetime, na.rm = T),
         title = paste0(
           paste(unique(specimen_type_display), collapse = ", "), "\n",
           "Organisms: ", 
           paste(unique(organism_display_name), collapse = ", "), "\n",
-          "Sample received: ", unique(lubridate::as_date(
-            lubridate::as_datetime(specimen_datetime))
-          )),
+          "Sample received: ", unique(as.Date(specimen_datetime))
+          ),
         type = "point",
         group = 1,
         subgroup = "micro"
@@ -236,7 +239,7 @@ therapy_timeline <- function(conn, patient_identifier,
     #   dplyr::group_by(specimen_id) %>%
     #   dplyr::summarise(
     #     id = unique(paste0("Specimen ID:", specimen_id, ":request")),
-    #     start = mean(lubridate::as_datetime(specimen_datetime), na.rm = T),
+    #     start = mean(specimen_datetime, na.rm = T),
     #     type = "point",
     #     group = 1,
     #     subgroup = "micro",
@@ -319,7 +322,7 @@ therapy_timeline <- function(conn, patient_identifier,
       )) %>% 
       dplyr::select(-diagnosis_episode_end)
   } else {
-    .throw_error_DBI_subclass_not_implemented(".therapy_timeline_get_diagnoses()")
+    .throw_error_method_not_implemented(".therapy_timeline_get_diagnoses()", class(diag))
   }
   
   diag <- diag %>%
@@ -334,7 +337,8 @@ therapy_timeline <- function(conn, patient_identifier,
   
   diag <- diag %>%
     dplyr::left_join(icd_lu, by = c('icd_code')) %>% 
-    dplyr::collect() %>% data.table() %>% unique() %>%
+    collect_ramses_tbl() %>% 
+    data.table() %>% unique() %>%
     dplyr::mutate(icd_text = paste0(
       dplyr::if_else(prim_diag == 1, "<strong>", ""), 
       icd_display, " &ndash; ", icd_description,
@@ -345,8 +349,8 @@ therapy_timeline <- function(conn, patient_identifier,
     id = NA, 
     content = icd_text, 
     title = paste0(icd_description, ifelse(prim_diag == 1, " (PRIMARY DIAGNOSIS)", "")),
-    start = lubridate::as_datetime(start_time),  
-    end = lubridate::as_datetime(end_time),
+    start = start_time,  
+    end = end_time,
     group =  2,
     subgroup = infection_group1_code,
     type = 'range',

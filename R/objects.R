@@ -190,9 +190,9 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
   if(is(conn, "SQLiteConnection")) {
     tbl(conn, "ramses_tally") %>%
       dplyr::full_join(therapy_table, by = character()) %>%
-      dplyr::mutate(t_start = dplyr::sql("datetime(therapy_start, (t || ' hours'))")) %>% 
-      dplyr::filter(t_start < therapy_end) %>% 
-      dplyr::mutate(t_end = dplyr::sql("datetime(therapy_start, ((t + 1) || ' hours'))")) %>% 
+      dplyr::mutate(t_start = dplyr::sql("datetime(therapy_start, (t || ' hours')) || '+00:00'")) %>% 
+      dplyr::filter( dplyr::sql("DATETIME(t_start) < DATETIME(therapy_end)")) %>% 
+      dplyr::mutate(t_end = dplyr::sql("datetime(therapy_start, ((t + 1) || ' hours')) || '+00:00'")) %>% 
       dplyr::mutate(t_end = dplyr::if_else(
         t == max(t, na.rm = TRUE),
         therapy_end,
@@ -212,7 +212,8 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
       )) %>% 
       .therapy_table_parenteral_indicator(therapy_id = id)
   } else {
-    .throw_error_DBI_subclass_not_implemented(".create_therapy_table()")
+    .throw_error_method_not_implemented(".create_therapy_table()",
+                                        class(conn))
   }
 }
 
@@ -230,23 +231,48 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
                              "drug_prescriptions") %>% 
     dplyr::filter(therapy_id == !!therapy_id)
   
-  therapy_table_meds_join <- dplyr::left_join(
-    therapy_table, 
-    medication_requests, 
-    by = c("patient_id", "therapy_id")) %>% 
-    dplyr::filter(
-      dplyr::between(t_start, prescription_start, prescription_end) |
-        dplyr::between(prescription_start, t_start, t_end) | 
-        dplyr::between(prescription_end, t_start, t_end)
-    ) %>% 
-    dplyr::group_by(patient_id, therapy_id, t) %>%
-    dplyr::summarise(parenteral = dplyr::if_else(
-      mean(
-        dplyr::if_else(ATC_route == "P", 1.0, 0.0), 
-        na.rm = T) == 1.0,
-      1L,
-      0L
-    ))
+  if (is(therapy_table$src$con, "SQLiteConnection")) {
+    therapy_table_meds_join <- dplyr::left_join(
+      therapy_table, 
+      medication_requests, 
+      by = c("patient_id", "therapy_id")) %>% 
+      dplyr::filter(
+        dplyr::sql(
+          "DATETIME(t_start) BETWEEN DATETIME(prescription_start) AND DATETIME(prescription_end) OR
+          DATETIME(prescription_start) BETWEEN DATETIME(t_start) AND DATETIME(t_end) OR
+          DATETIME(prescription_end) BETWEEN DATETIME(t_start) AND DATETIME(t_end)"
+          )
+      ) %>% 
+      dplyr::group_by(patient_id, therapy_id, t) %>%
+      dplyr::summarise(parenteral = dplyr::if_else(
+        mean(
+          dplyr::if_else(ATC_route == "P", 1.0, 0.0), 
+          na.rm = T) == 1.0,
+        1L,
+        0L
+      ))
+  } else if (is(therapy_table$src$con, "PqConnection")) {
+    therapy_table_meds_join <- dplyr::left_join(
+      therapy_table, 
+      medication_requests, 
+      by = c("patient_id", "therapy_id")) %>% 
+      dplyr::filter(
+        dplyr::between(t_start, prescription_start, prescription_end) |
+          dplyr::between(prescription_start, t_start, t_end) | 
+          dplyr::between(prescription_end, t_start, t_end)
+      ) %>% 
+      dplyr::group_by(patient_id, therapy_id, t) %>%
+      dplyr::summarise(parenteral = dplyr::if_else(
+        mean(
+          dplyr::if_else(ATC_route == "P", 1.0, 0.0), 
+          na.rm = T) == 1.0,
+        1L,
+        0L
+      ))
+  } else {
+    .throw_error_method_not_implemented(".therapy_table_parenteral_indicator()",
+                                        class(therapy_table$src$con))
+  }
   
   therapy_table_parenteral <- dplyr::left_join(
     therapy_table, 

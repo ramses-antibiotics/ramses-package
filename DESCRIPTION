@@ -38,7 +38,6 @@ Imports:
     readr,
     units (>= 0.6-1),
     methods,
-    lubridate,
     progress
 Suggests: 
     testthat (>= 2.1.0),
@@ -49,6 +48,7 @@ Suggests:
     rvest,
     xml2,
     curl,
+    lubridate,
     ggplot2,
     DiagrammeR,
     timevis,

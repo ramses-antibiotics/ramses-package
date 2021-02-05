@@ -7,8 +7,8 @@
 therapy_timeline(
   conn,
   patient_identifier,
-  date1 = NA,
-  date2 = NA,
+  date1 = NULL,
+  date2 = NULL,
   load_timevis_dependencies = FALSE
 )
 }

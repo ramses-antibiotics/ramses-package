@@ -884,9 +884,9 @@ create_therapy_episodes <- function(
       conn = conn, 
       transitive_closure_controls = transitive_closure_controls
     )
-  } # else {
-    # .throw_error_DBI_subclass_not_implemented("create_therapy_episodes()")
-  # }
+  } else {
+    .throw_error_method_not_implemented("create_therapy_episodes()", class(conn))
+  }
   .create_therapy_id(conn = conn, silent = silent)
   .create_combination_id(conn = conn, silent = silent)
 }
@@ -1703,6 +1703,9 @@ UseMethod(".run_transitive_closure")
         substr(as.character(data_frame[[i]], format = "%z"), 4, 5)
       )
     }
+    for(i in which(vapply(data_frame, is, class2 = "Date", FUN.VALUE = logical(1)))) {
+      data_frame[[i]] <- as.character(data_frame[[i]])
+    }
   }
   
   data_frame
@@ -1736,7 +1739,11 @@ collect_ramses_tbl <- function(tbl) {
       "ward_start",
       "ward_end",
       "t_start",
-      "t_end"
+      "t_end",
+      "isolation_datetime", 
+      "specimen_datetime",
+      "start_time",
+      "end_time"
     )
     DATETIME_FIELDS <- DATETIME_FIELDS[
       which(DATETIME_FIELDS %in% colnames(tbl))
@@ -1868,7 +1875,8 @@ bridge_episode_prescription_overlap <- function(conn,
          / ( 3600.0 * 24.0 ) * \"DDD\""
       ))
   } else {
-    .throw_error_DBI_subclass_not_implemented("bridge_episode_prescription_overlap()")
+    .throw_error_method_not_implemented("bridge_episode_prescription_overlap()",
+                                        class(conn))
   }
   
   tblz_bridge_episode_prescriptions_overlap <- dplyr::transmute(
@@ -1941,7 +1949,8 @@ bridge_episode_prescription_initiation <- function(conn,
          / ( 3600.0 * 24.0 ) * \"DDD\"")
     )
   } else {
-    .throw_error_DBI_subclass_not_implemented("bridge_episode_prescription_initiation()")
+    .throw_error_method_not_implemented("bridge_episode_prescription_initiation()",
+                                        class(conn))
   }
   
   tblz_bridge_episode_prescription_initiation <- dplyr::transmute(
@@ -2006,7 +2015,8 @@ bridge_spell_therapy_overlap <- function(conn,
       )
     )
   } else {
-    .throw_error_DBI_subclass_not_implemented("bridge_spell_therapy_overlap()")
+    .throw_error_method_not_implemented("bridge_spell_therapy_overlap()",
+                                        class(conn))
   }
   
   tblz_bridge_spell_therapy_overlap <- dplyr::transmute(
