@@ -103,9 +103,9 @@ import_icd <- function(archive, version) {
   temp <- tempfile()
   source_files <- utils::unzip(archive, exdir = temp)
   
-  icd_source <- readr::read_delim(
-    grep("CodesAndTitlesAndMetadata_", source_files, value = T),
-    delim = "\t", guess_max = 10000)
+  icd_source <- utils::read.delim(
+    file = grep("CodesAndTitlesAndMetadata_", source_files, value = T),
+    stringsAsFactors = FALSE)
   rm(temp)
   
   colnames(icd_source) <- tolower(colnames(icd_source))

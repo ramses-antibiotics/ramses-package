@@ -34,7 +34,6 @@ Imports:
     magrittr,
     Rdpack (>= 0.7),
     data.table,
-    readr,
     units (>= 0.6-1),
     methods,
     progress
