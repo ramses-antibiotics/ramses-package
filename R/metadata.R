@@ -27,7 +27,7 @@ download_icd10cm <- function(silent = FALSE) {
   )[,-1]
   icd_source$icd_code <- trimws(icd_source$icd_code)
   icd_source$icd_description <- trimws(icd_source$icd_description)
-  icd_source$level <- stringr::str_length(icd_source$icd_code)
+  icd_source$level <- nchar(icd_source$icd_code)
   
   icd3 <- dplyr::filter(icd_source, level == 3) %>% 
     dplyr::transmute(category_code = icd_code,
@@ -110,7 +110,7 @@ import_icd <- function(archive, version) {
   
   colnames(icd_source) <- tolower(colnames(icd_source))
   
-  icd_source$level <- stringr::str_length(icd_source[["alt_code"]])
+  icd_source$level <- nchar(icd_source[["alt_code"]])
   
   icd3 <- dplyr::filter(icd_source, level == 3) %>% 
     dplyr::transmute(category_code = alt_code,
@@ -256,7 +256,7 @@ map_infections_abx_indications <- function(df, icd_column) {
   join_output <- list()
   
   antibiotic_icd_indications <- Ramses::antibiotic_icd_indications
-  width_ICD_codes <- stringr::str_length(antibiotic_icd_indications$icd_root)
+  width_ICD_codes <- nchar(antibiotic_icd_indications$icd_root)
   width_ICD_codes <- range(width_ICD_codes)
   
   for(i in width_ICD_codes){
