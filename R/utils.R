@@ -6,7 +6,7 @@
   stopifnot(is.character(function_name) & length(function_name) == 1)
   stopifnot(is.character(class_name) & length(class_name) == 1)
   stop(paste(
-    function_mame,
+    function_name,
     "is not implemented for",
     class_name,
     "objects.",
