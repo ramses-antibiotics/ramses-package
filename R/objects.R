@@ -283,6 +283,76 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
   return(therapy_table_parenteral)
 }
 
+#' Title
+#'
+#' @param therapy_episode a \code{TherapyEpisode} object
+#' @param tolerance_hours integer for the maximum number of hours during which 
+#' an absence of prescription or the administration of some oral drugs 
+#' will be ignored. The default is 12.
+#' @details This function analyses the \code{parenteral} field in a
+#' therapy table. It returns positions of sequences of at least twelve "1" (= parenteral 
+#' drug administration) followed by a "0" (= oral administration) or a 
+#' terminating sequence composed exclusively of "0".
+#' Short periods without therapy lasting up to twelve hours (e.g. between two prescriptions)
+#' are ignored by default (see \code{tolerance_hours} parameter).
+#' Short periods of oral administration lasting up to twelve hours are also ignored by default.
+#' This ensures that very short oral prescriptions (including when parenteral 
+#' therapy continues uninterrupted) do not distort the analysis of therapy 
+#' changes.
+#' @return a list containing positions of matches. These are vectors of 
+#' length 2, containing the sequence starting and finishing positions
+#' @export
+parenteral_changes_get <- function(therapy_episode, tolerance_hours = 12) {
+  stopifnot(is.integer(tolerance_hours))
+  TT <- get_therapy_table(therapy_episode, collect = T)
+  .parenteral_vector_process(TT[["parenteral"]])
+}
+
+.parenteral_vector_process <- function(x, tolerance_hours) {
+  
+  iosequence <- gsub("NA", "#", paste(x, collapse = ""))
+  match_indices <- list()
+  i = 1
+  position = 0
+  
+  while ( nchar(iosequence) > 0 ) {
+    
+    # match_index <- regexpr("1{4,}((10{1,5}1)|1)*(0{6}|1$|(0{1,6})$){1}", iosequence)
+    # match_index <- regexpr("1{8,}((10{1,8}1)|1|#{1,9})*(1{9,}|1$|#{9,}){1}", iosequence) # MMMMMM MUST BE TESTED AGAIN!
+   
+    # eg, if tolerance set to 9 hours, regex is:
+    # "1{8,}((10{1,8}1)|1|#{1,9})*(1{9,}|1$|#{9,}){1}"
+    # "1{8,}((10{1,9}1)|1|(1#{1,9}1))*(0{10,}|1$|#{10,}){1}"
+     match_index <- regexpr(
+      paste0(
+        # START OF SEQUENCE
+        "1{5,}", 
+        # TOLERATED IN-SEQUENCE BLIPS
+        "((10{1,", tolerance_hours, "}1)|",
+        "1|",
+        "1#{1,", tolerance_hours, "}1)",
+        # END OF SEQUENCE
+        "*(0{", tolerance_hours, ",}|1$|#{", tolerance_hours, ",}){1}"
+      ), 
+      iosequence
+    )
+    if (match_index == -1) {
+      break
+    }
+    
+    match_indices[[i]] <- c(as.integer(match_index) + position, 
+                            as.integer(match_index) + attr(match_index, "match.length") + position - 1)
+    # reduce sequence to what is left beyond the match
+    position = as.integer(match_index) + attr(match_index, "match.length") + position - 1
+    iosequence <- substr(iosequence, 
+                         as.integer(match_index) + attr(match_index, "match.length"), 
+                         nchar(iosequence))
+    i <- i + 1
+    next
+  }
+  
+  match_indices
+}
 
 # get_therapy_table -------------------------------------------------------
 
