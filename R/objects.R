@@ -302,10 +302,11 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' @return a list containing positions of matches. These are vectors of 
 #' length 2, containing the sequence starting and finishing positions
 #' @export
-parenteral_changes_get <- function(therapy_episode, tolerance_hours = 12) {
-  stopifnot(is.integer(tolerance_hours))
+parenteral_changes_get <- function(therapy_episode, tolerance_hours = 12L) {
+  stopifnot(is.numeric(tolerance_hours) | length(tolerance_hours) != 1)
+  tolerance_hours <- as.integer(tolerance_hours)
   TT <- get_therapy_table(therapy_episode, collect = T)
-  .parenteral_vector_process(TT[["parenteral"]])
+  .parenteral_vector_process(TT[["parenteral"]], tolerance_hours)
 }
 
 .parenteral_vector_process <- function(x, tolerance_hours) {

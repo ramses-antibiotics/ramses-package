@@ -203,6 +203,9 @@ test_that("Ramses on SQLite 2", {
   
   # > TherapyEpisode ------------------------------------------------------------
   
+  
+  # Single IVPO change pt 99999999999
+  
   test_episode <- TherapyEpisode(conSQLite, "5528fc41106bb48eb4d48bc412e13e67")
   test_output <- get_therapy_table(test_episode, collect = T)
   test_expected_head <- dplyr::tibble(
@@ -248,6 +251,24 @@ test_that("Ramses on SQLite 2", {
                     test_expected_head)
   expect_equivalent(tail(get_therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_tail)
+  
+  
+  expect_equal(parenteral_changes_get(TherapyEpisode(test_medication_request)), 
+               list(c(1, 122)))
+  
+  # Three IVPO changes pt 5726385525
+  
+  single_therapy <- dplyr::collect(dplyr::filter(tbl(conSQLite, "drug_prescriptions"), 
+                                                 patient_id == "5726385525"))
+  expect_true(all(single_therapy$therapy_id == "06bb1a8e680036089f889ec2cf2dc6ee"))
+  expect_equal(
+    parenteral_changes_get(TherapyEpisode(conSQLite, "06bb1a8e680036089f889ec2cf2dc6ee")),
+    list(
+      c(1, 145),
+      c(147, 317),
+      c(319, 391)
+    )
+  )
 
   # > therapy timeline -------------------------------------------------
   
@@ -491,6 +512,8 @@ test_that("Ramses on PosgreSQL", {
 
   # > TherapyEpisode ------------------------------------------------------------
 
+  # Single IVPO change pt 99999999999
+  
   test_episode <- TherapyEpisode(conPostgreSQL, "5528fc41106bb48eb4d48bc412e13e67")
   test_output <- get_therapy_table(test_episode, collect = T)
   test_expected_head <- dplyr::tibble(
@@ -536,6 +559,20 @@ test_that("Ramses on PosgreSQL", {
                     test_expected_head)
   expect_equivalent(tail(get_therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_tail)
+  
+  # Three IVPO changes pt 5726385525
+  
+  single_therapy <- dplyr::collect(dplyr::filter(tbl(conSQLite, "drug_prescriptions"), 
+                                                 patient_id == "5726385525"))
+  expect_true(all(single_therapy$therapy_id == "06bb1a8e680036089f889ec2cf2dc6ee"))
+  expect_equal(
+    parenteral_changes_get(TherapyEpisode(conSQLite, "06bb1a8e680036089f889ec2cf2dc6ee")),
+    list(
+      c(1, 145),
+      c(147, 317),
+      c(319, 391)
+    )
+  )
   
   # > recreate therapy episodes and combinations --------------------------------
   
