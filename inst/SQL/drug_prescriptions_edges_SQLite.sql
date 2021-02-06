@@ -70,7 +70,7 @@ FROM (SELECT *,
                          OR
                          ([relation_type] IN ('1', '2', '3', '7')
                              AND
-                          ABS(STRFTIME('%s', [to_start]) - STRFTIME('%s', [from_start])) / 3600 < @max_continuation_gap)
+                          ABS(STRFTIME('%s', [to_start]) - STRFTIME('%s', [from_end])) / 3600 < @max_continuation_gap)
                      THEN 'continuation'
                  ELSE NULL
                  END AS [edge_type]

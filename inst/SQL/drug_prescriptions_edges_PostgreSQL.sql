@@ -70,7 +70,7 @@ FROM (SELECT *,
                          OR
                          (relation_type IN ('1', '2', '3', '7')
                              AND
-                          ABS(EXTRACT(EPOCH FROM ( to_start::TIMESTAMP - from_start::TIMESTAMP ))) / 3600 < @max_continuation_gap)
+                          ABS(EXTRACT(EPOCH FROM ( to_start::TIMESTAMP - from_end::TIMESTAMP ))) / 3600 < @max_continuation_gap)
                      THEN 'continuation'
                  ELSE NULL
                  END AS edge_type
