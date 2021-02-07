@@ -1,4 +1,10 @@
 
+# Ramses 0.2.1
+
+## Bug 
+
+* Corrected incorrect transitive closure specification
+
 # Ramses 0.2.0
 
 * Support PostgreSQL
