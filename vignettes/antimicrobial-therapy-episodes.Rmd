@@ -44,13 +44,13 @@ Table: Prescription overlap pattern classification rules and default parameters
 
  Category | Pattern	| Conditions for <br> combination therapy |	Conditions for <br> continuation of therapy* |
  :-: | :-----: | --------- | --------- | 
- **1** | ![Overlap pattern 1](antimicrobial_therapy_episodes/cat-1.svg) | Ordered a max of 6h apart AND administrations separated by at the most 24h | First administrations separated by at the most 36h  |
- **2** | ![Overlap pattern 2](antimicrobial_therapy_episodes/cat-2.svg) | Ordered a max of 6h apart AND drug is identical AND first administrations separated by at the most 24h | First administrations separated by at the most 36h AND drug are NOT identical  |
- **3** | ![Overlap pattern 3](antimicrobial_therapy_episodes/cat-3.svg) | Never | First administrations separated by at the most 36h |
+ **1** | ![Overlap pattern 1](antimicrobial_therapy_episodes/cat-1.svg) | Ordered a max of 6h apart AND administrations separated by at the most 24h | Separated by at the most 36h  |
+ **2** | ![Overlap pattern 2](antimicrobial_therapy_episodes/cat-2.svg) | Ordered a max of 6h apart AND drug is identical AND first administrations separated by at the most 24h | Separated by at the most 36h  |
+ **3** | ![Overlap pattern 3](antimicrobial_therapy_episodes/cat-3.svg) | Never | Separated by at the most 36h |
  **4** | ![Overlap pattern 4](antimicrobial_therapy_episodes/cat-4.svg) | Never | Always |
  **5** | ![Overlap pattern 5](antimicrobial_therapy_episodes/cat-5.svg) | Ordered a max of 6h apart AND first administrations separated by at the most 24h | Always, unless combinations |
- **6** | ![Overlap pattern 6](antimicrobial_therapy_episodes/cat-6.svg) | Never | First administrations separated by at the most 36h |
- **7** | ![Overlap pattern 7](antimicrobial_therapy_episodes/cat-7.svg) | Never | First administrations separated by at the most 36h |
+ **6** | ![Overlap pattern 6](antimicrobial_therapy_episodes/cat-6.svg) | Ordered a max of 6h apart AND first administrations separated by at the most 24h | Always, unless combinations |
+ **7** | ![Overlap pattern 7](antimicrobial_therapy_episodes/cat-7.svg) | Never | Separated by at the most 36h |
 
 *Notes:* 
 
