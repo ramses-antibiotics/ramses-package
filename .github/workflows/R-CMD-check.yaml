@@ -83,9 +83,9 @@ jobs:
           remotes::install_cran("rcmdcheck")
         shell: Rscript {0}
         
-      - name: Unit tests
-        run: devtools::test()
-        shell: Rscript {0}
+      # - name: Unit tests
+      #   run: devtools::test()
+      #   shell: Rscript {0}
 
       - name: Check
         env:
