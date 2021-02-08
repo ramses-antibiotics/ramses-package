@@ -303,7 +303,8 @@ test_that("SQLite drug_prescriptions_edges", {
   load_medications(emptydatabase, records_rx, overwrite = T)
   
   output <- dplyr::distinct(tbl(emptydatabase, "drug_prescriptions_edges"), 
-                          patient_id, edge_type, relation_type) %>% 
+                          patient_id, edge_type, relation_type) %>%
+    dplyr::arrange(patient_id) %>% 
     dplyr::collect()
   
   records_edges <- read.csv(system.file("test_cases", "prescription_linkage_edges_classes.csv", 
@@ -344,6 +345,10 @@ test_that("Postgres does transitive closure", {
                                   host = "localhost", 
                                   dbname="RamsesDB")
   
+  lapply(DBI::dbListTables(conPostgreSQL), 
+         DBI::dbRemoveTable, 
+         conn = conPostgreSQL)
+  
   dplyr::copy_to(
     dest = conPostgreSQL,
     name = "ramses_test_edges",
@@ -369,7 +374,9 @@ test_that("Postgres does transitive closure", {
   
   expect_equal(test_output,
                test_solution)
-  DBI::dbRemoveTable(conPostgreSQL, "ramses_tc_group")
+  lapply(DBI::dbListTables(conPostgreSQL), 
+         DBI::dbRemoveTable, 
+         conn = conPostgreSQL)
   DBI::dbDisconnect(conPostgreSQL)
 })
 
@@ -387,6 +394,10 @@ test_that("Ramses on PosgreSQL", {
                                   password = "password",
                                   host = "localhost", 
                                   dbname="RamsesDB")
+  
+  lapply(DBI::dbListTables(conPostgreSQL), 
+         DBI::dbRemoveTable, 
+         conn = conPostgreSQL)
 
   drug_data <- Ramses:::.prepare_example_drug_records()
   inpatient_data <- Ramses:::.prepare_example_inpatient_records()
@@ -429,7 +440,7 @@ test_that("Ramses on PosgreSQL", {
     )
   )
   
-  test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
+  test_output <- tbl(conPostgreSQL, "drug_prescriptions") %>% 
     filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", 
                                   "89ac870bc1c1e4b2a37cec79d188cb08",
                                   "0bf9ea7732dd6e904ab670a407382d95")) %>% 
@@ -556,7 +567,7 @@ test_that("Ramses on PosgreSQL", {
   # > other consistency checks ----------------------------------------------------
   
   # check that therapy id is the one of the first prescription
-  invalid_therapy_ids <- tbl(conSQLite, "drug_prescriptions") %>% 
+  invalid_therapy_ids <- tbl(conPostgreSQL, "drug_prescriptions") %>% 
     dplyr::filter(therapy_rank == 1 & therapy_id != prescription_id) %>% 
     dplyr::collect()
   expect_true(nrow(invalid_therapy_ids) == 0)
@@ -597,6 +608,7 @@ test_that("Postgres drug_prescriptions_edges", {
   
   output <- dplyr::distinct(tbl(conPostgreSQL, "drug_prescriptions_edges"), 
                             patient_id, edge_type, relation_type) %>% 
+    dplyr::arrange(patient_id) %>% 
     dplyr::collect()
   
   records_edges <- read.csv(system.file("test_cases", "prescription_linkage_edges_classes.csv", 
