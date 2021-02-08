@@ -15,16 +15,22 @@ test_that("Ramses on SQLite 1", {
   expect_true(is(conSQLite, "SQLiteConnection"))
   test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
     filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", 
-                                  "89ac870bc1c1e4b2a37cec79d188cb08")) %>% 
+                                  "89ac870bc1c1e4b2a37cec79d188cb08",
+                                  "0bf9ea7732dd6e904ab670a407382d95")) %>% 
     select(prescription_id, combination_id, therapy_id) %>% 
+    arrange(therapy_id, prescription_id) %>% 
     collect()
   expect_equivalent(
     test_output, 
     tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0",
+                               "0bf9ea7732dd6e904ab670a407382d95",
                                "89ac870bc1c1e4b2a37cec79d188cb08"),
-           combination_id = c(NA_character_, "0bf9ea7732dd6e904ab670a407382d95"),
+           combination_id = c(NA_character_, 
+                              "0bf9ea7732dd6e904ab670a407382d95", 
+                              "0bf9ea7732dd6e904ab670a407382d95"),
            therapy_id = c("592a738e4c2afcae6f625c01856151e0", 
-                          "0bf9ea7732dd6e904ab670a407382d95")))
+                          "89ac870bc1c1e4b2a37cec79d188cb08", 
+                          "89ac870bc1c1e4b2a37cec79d188cb08")))
   expect_equal(.nrow_sql_table(conSQLite, "ramses_tally"), 20000)
   dbDisconnect(conSQLite)
   file.remove("test1.sqlite")
@@ -101,17 +107,24 @@ test_that("Ramses on SQLite 2", {
       overwrite = TRUE
     )
   )
-  
   test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
-    filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08")) %>% 
+    filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", 
+                                  "89ac870bc1c1e4b2a37cec79d188cb08",
+                                  "0bf9ea7732dd6e904ab670a407382d95")) %>% 
     select(prescription_id, combination_id, therapy_id) %>% 
+    arrange(therapy_id, prescription_id) %>% 
     collect()
-
   expect_equivalent(
     test_output, 
-    tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08"),
-           combination_id = c(NA_character_, "0bf9ea7732dd6e904ab670a407382d95"),
-           therapy_id = c("592a738e4c2afcae6f625c01856151e0", "0bf9ea7732dd6e904ab670a407382d95")))
+    tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0",
+                               "0bf9ea7732dd6e904ab670a407382d95",
+                               "89ac870bc1c1e4b2a37cec79d188cb08"),
+           combination_id = c(NA_character_, 
+                              "0bf9ea7732dd6e904ab670a407382d95", 
+                              "0bf9ea7732dd6e904ab670a407382d95"),
+           therapy_id = c("592a738e4c2afcae6f625c01856151e0", 
+                          "89ac870bc1c1e4b2a37cec79d188cb08", 
+                          "89ac870bc1c1e4b2a37cec79d188cb08")))
   
   test_output <- tbl(conSQLite, "drug_therapy_episodes") %>% 
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
@@ -185,7 +198,7 @@ test_that("Ramses on SQLite 2", {
     dplyr::filter(patient_id == "99999999999" &
                     therapy_id == "4d611fc8886c23ab047ad5f74e5080d7") %>% 
     dplyr::collect()
-  expect_equal(round(sum(test_bridge_th_overlap$LOT), 1), 2.3)
+  expect_equal(round(sum(test_bridge_th_overlap$LOT), 1), 7.4)
   
   expect_true(bridge_tables(conn = conSQLite, overwrite = TRUE))
   
@@ -227,6 +240,13 @@ test_that("Ramses on SQLite 2", {
                      date2 = "2017-03-01"), 
     "timevis")
   
+  # > other consistency checks ----------------------------------------------------
+  
+  # check that therapy id is the one of the first prescription
+  invalid_therapy_ids <- tbl(conSQLite, "drug_prescriptions") %>% 
+    dplyr::filter(therapy_rank == 1 & therapy_id != prescription_id) %>% 
+    dplyr::collect()
+  expect_true(nrow(invalid_therapy_ids) == 0)
 
   # > close connection ----------------------------------------------------
   DBI::dbDisconnect(conSQLite)
@@ -270,9 +290,32 @@ test_that("SQLite does transitive closure", {
 })
 
 
+# > edge classification  --------------------------------------------------
 
+test_that("SQLite drug_prescriptions_edges", {
+  
+  emptydatabase <- dbConnect(RSQLite::SQLite(), ":memory:")
+  records_rx <- read.csv(system.file("test_cases", "prescription_linkage_prescriptions.csv", 
+                                     package = "Ramses"),
+                         colClasses = c("character", "character", "numeric", 
+                                        "POSIXct", "POSIXct", "POSIXct", "character", "character", 
+                                        "character", "character", "character", "character", "character"))
+  load_medications(emptydatabase, records_rx, overwrite = T)
+  
+  output <- dplyr::distinct(tbl(emptydatabase, "drug_prescriptions_edges"), 
+                          patient_id, edge_type, relation_type) %>% 
+    dplyr::collect()
+  
+  records_edges <- read.csv(system.file("test_cases", "prescription_linkage_edges_classes.csv", 
+                                        package = "Ramses"),
+                            colClasses = c("character", "character")) %>% 
+    dplyr::filter(edge_type != "not an edge") %>% 
+    dplyr::mutate(relation_type = substr(patient_id, 0, 1)) %>% 
+    dplyr::tibble()
 
-
+  expect_equal(output,  records_edges)
+  dbDisconnect(emptydatabase)
+})
 
 
 # PostgreSQL --------------------------------------------------------------
@@ -386,16 +429,24 @@ test_that("Ramses on PosgreSQL", {
     )
   )
   
-  test_output <- tbl(conPostgreSQL, "drug_prescriptions") %>% 
-    filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08")) %>% 
+  test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
+    filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", 
+                                  "89ac870bc1c1e4b2a37cec79d188cb08",
+                                  "0bf9ea7732dd6e904ab670a407382d95")) %>% 
     select(prescription_id, combination_id, therapy_id) %>% 
+    arrange(therapy_id, prescription_id) %>% 
     collect()
-  
   expect_equivalent(
     test_output, 
-    tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0", "89ac870bc1c1e4b2a37cec79d188cb08"),
-           combination_id = c(NA_character_, "0bf9ea7732dd6e904ab670a407382d95"),
-           therapy_id = c("592a738e4c2afcae6f625c01856151e0", "0bf9ea7732dd6e904ab670a407382d95")))
+    tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0",
+                               "0bf9ea7732dd6e904ab670a407382d95",
+                               "89ac870bc1c1e4b2a37cec79d188cb08"),
+           combination_id = c(NA_character_, 
+                              "0bf9ea7732dd6e904ab670a407382d95", 
+                              "0bf9ea7732dd6e904ab670a407382d95"),
+           therapy_id = c("592a738e4c2afcae6f625c01856151e0", 
+                          "89ac870bc1c1e4b2a37cec79d188cb08", 
+                          "89ac870bc1c1e4b2a37cec79d188cb08")))
   
   test_output <- tbl(conPostgreSQL, "drug_therapy_episodes") %>% 
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
@@ -471,7 +522,7 @@ test_that("Ramses on PosgreSQL", {
     dplyr::filter(patient_id == "99999999999" &
                     therapy_id == "4d611fc8886c23ab047ad5f74e5080d7") %>% 
     dplyr::collect()
-  expect_equal(round(sum(test_bridge_th_overlap$LOT), 1), 2.3)
+  expect_equal(round(sum(test_bridge_th_overlap$LOT), 1), 7.4)
   
   expect_true(bridge_tables(conn = conPostgreSQL, overwrite = TRUE))
   
@@ -502,11 +553,64 @@ test_that("Ramses on PosgreSQL", {
                      date2 = "2017-03-01"), 
     "timevis")
   
+  # > other consistency checks ----------------------------------------------------
+  
+  # check that therapy id is the one of the first prescription
+  invalid_therapy_ids <- tbl(conSQLite, "drug_prescriptions") %>% 
+    dplyr::filter(therapy_rank == 1 & therapy_id != prescription_id) %>% 
+    dplyr::collect()
+  expect_true(nrow(invalid_therapy_ids) == 0)
+  
   # > close connection ----------------------------------------------------
   
   lapply(DBI::dbListTables(conPostgreSQL), 
          DBI::dbRemoveTable, 
          conn = conPostgreSQL)
 
+  DBI::dbDisconnect(conPostgreSQL)
+})
+
+# > edge classification  --------------------------------------------------
+
+test_that("Postgres drug_prescriptions_edges", {
+  
+  if (!identical(Sys.getenv("CI"), "true")) {
+    skip("Test only on Travis")
+  }
+  
+  conPostgreSQL <- DBI::dbConnect(RPostgres::Postgres(),
+                                  user = "user", 
+                                  password = "password",
+                                  host = "localhost", 
+                                  dbname="RamsesDB")
+  
+  lapply(DBI::dbListTables(conPostgreSQL), 
+         DBI::dbRemoveTable, 
+         conn = conPostgreSQL)
+  
+  records_rx <- read.csv(system.file("test_cases", "prescription_linkage_prescriptions.csv", 
+                                     package = "Ramses"),
+                         colClasses = c("character", "character", "numeric", 
+                                        "POSIXct", "POSIXct", "POSIXct", "character", "character", 
+                                        "character", "character", "character", "character", "character"))
+  load_medications(conPostgreSQL, records_rx, overwrite = T)
+  
+  output <- dplyr::distinct(tbl(conPostgreSQL, "drug_prescriptions_edges"), 
+                            patient_id, edge_type, relation_type) %>% 
+    dplyr::collect()
+  
+  records_edges <- read.csv(system.file("test_cases", "prescription_linkage_edges_classes.csv", 
+                                        package = "Ramses"),
+                            colClasses = c("character", "character")) %>% 
+    dplyr::filter(edge_type != "not an edge") %>% 
+    dplyr::mutate(relation_type = substr(patient_id, 0, 1)) %>% 
+    dplyr::tibble()
+  
+  expect_equal(output,  records_edges)
+  
+  lapply(DBI::dbListTables(conPostgreSQL), 
+         DBI::dbRemoveTable, 
+         conn = conPostgreSQL)
+  
   DBI::dbDisconnect(conPostgreSQL)
 })

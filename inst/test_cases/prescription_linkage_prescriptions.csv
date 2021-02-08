@@ -22,7 +22,7 @@ patient_id,prescription_id,daily_frequency,authoring_date,prescription_start,pre
 301,A,2,2016-12-01 08:00:00 GMT,2016-12-01 09:00:00 GMT,2016-12-02 09:00:00 GMT,Amoxicillin,AMX,completed,antibacterial,O,X,inpatient
 301,B,-1,2016-12-02 08:00:00 GMT,2016-12-02 10:00:00 GMT,2016-12-02 10:00:00 GMT,Gentamicin,GEN,completed,antibacterial,O,X,inpatient
 302,A,2,2016-12-01 08:00:00 GMT,2016-12-01 09:00:00 GMT,2016-12-02 09:00:00 GMT,Amoxicillin,AMX,completed,antibacterial,O,X,inpatient
-302,B,-1,2016-12-04 08:00:00 GMT,2016-12-04 10:00:00 GMT,2016-12-05 10:00:00 GMT,Gentamicin,GEN,completed,antibacterial,O,X,inpatient
+302,B,-1,2016-12-04 08:00:00 GMT,2016-12-04 10:00:00 GMT,2016-12-04 10:00:00 GMT,Gentamicin,GEN,completed,antibacterial,O,X,inpatient
 401,A,2,2016-12-01 08:00:00 GMT,2016-12-01 09:00:00 GMT,2016-12-02 09:00:00 GMT,Amoxicillin,AMX,completed,antibacterial,O,X,inpatient
 401,B,-1,2016-12-01 08:00:00 GMT,2016-12-01 12:00:00 GMT,2016-12-01 12:00:00 GMT,Gentamicin,GEN,completed,antibacterial,O,X,inpatient
 402,A,2,2016-12-01 08:00:00 GMT,2016-12-01 09:00:00 GMT,2016-12-02 09:00:00 GMT,Amoxicillin,AMX,completed,antibacterial,O,X,inpatient
@@ -35,8 +35,8 @@ patient_id,prescription_id,daily_frequency,authoring_date,prescription_start,pre
 503,B,2,2016-12-01 18:00:00 GMT,2016-12-01 20:00:00 GMT,2016-12-04 20:00:00 GMT,Clarithromycin,CLR,completed,antibacterial,O,X,inpatient
 504,A,2,2016-12-01 08:00:00 GMT,2016-12-01 09:00:00 GMT,2016-12-05 09:00:00 GMT,Amoxicillin,AMX,completed,antibacterial,O,X,inpatient
 504,B,2,2016-12-02 08:00:00 GMT,2016-12-02 12:00:00 GMT,2016-12-04 12:00:00 GMT,Clarithromycin,CLR,completed,antibacterial,O,X,inpatient
-504,A,2,2016-12-01 08:00:00 GMT,2016-12-01 09:00:00 GMT,2016-12-05 09:00:00 GMT,Amoxicillin,AMX,completed,antibacterial,O,X,inpatient
-504,B,2,2016-12-03 08:00:00 GMT,2016-12-03 09:00:00 GMT,2016-12-04 09:00:00 GMT,Clarithromycin,CLR,completed,antibacterial,O,X,inpatient
+505,A,2,2016-12-01 08:00:00 GMT,2016-12-01 09:00:00 GMT,2016-12-05 09:00:00 GMT,Amoxicillin,AMX,completed,antibacterial,O,X,inpatient
+505,B,2,2016-12-03 08:00:00 GMT,2016-12-03 09:00:00 GMT,2016-12-04 09:00:00 GMT,Clarithromycin,CLR,completed,antibacterial,O,X,inpatient
 601,A,2,2016-12-01 08:00:00 GMT,2016-12-01 09:00:00 GMT,2016-12-05 09:00:00 GMT,Amoxicillin,AMX,completed,antibacterial,O,X,inpatient
 601,B,2,2016-12-01 09:00:00 GMT,2016-12-01 12:00:00 GMT,2016-12-06 12:00:00 GMT,Clarithromycin,CLR,completed,antibacterial,O,X,inpatient
 602,A,2,2016-12-01 08:00:00 GMT,2016-12-01 09:00:00 GMT,2016-12-05 09:00:00 GMT,Amoxicillin,AMX,completed,antibacterial,O,X,inpatient
@@ -46,8 +46,8 @@ patient_id,prescription_id,daily_frequency,authoring_date,prescription_start,pre
 604,A,2,2016-12-01 08:00:00 GMT,2016-12-01 09:00:00 GMT,2016-12-05 09:00:00 GMT,Amoxicillin,AMX,completed,antibacterial,O,X,inpatient
 604,B,2,2016-12-01 15:00:00 GMT,2016-12-02 10:00:00 GMT,2016-12-08 10:00:00 GMT,Clarithromycin,CLR,completed,antibacterial,O,X,inpatient
 701,A,2,2016-12-01 08:00:00 GMT,2016-12-01 09:00:00 GMT,2016-12-02 09:00:00 GMT,Amoxicillin,AMX,completed,antibacterial,O,X,inpatient
-701,B,2,2016-12-02 08:00:00 GMT,2016-12-02 09:00:00 GMT,2016-12-03 09:00:00 GMT,Clarithromycin,CLR,completed,antibacterial,O,X,inpatient
+701,B,2,2016-12-02 08:00:00 GMT,2016-12-02 09:30:00 GMT,2016-12-03 09:30:00 GMT,Clarithromycin,CLR,completed,antibacterial,O,X,inpatient
 702,A,2,2016-12-01 08:00:00 GMT,2016-12-01 09:00:00 GMT,2016-12-02 09:00:00 GMT,Amoxicillin,AMX,completed,antibacterial,O,X,inpatient
 702,B,2,2016-12-02 10:00:00 GMT,2016-12-02 11:00:00 GMT,2016-12-03 11:00:00 GMT,Clarithromycin,CLR,completed,antibacterial,O,X,inpatient
 703,A,2,2016-12-01 08:00:00 GMT,2016-12-01 09:00:00 GMT,2016-12-02 09:00:00 GMT,Amoxicillin,AMX,completed,antibacterial,O,X,inpatient
-703,B,2,2016-12-03 08:00:00 GMT,2016-12-03 09:00:00 GMT,2016-12-04 09:00:00 GMT,Clarithromycin,CLR,completed,antibacterial,O,X,inpatient
+703,B,2,2016-12-04 08:00:00 GMT,2016-12-04 09:00:00 GMT,2016-12-05 09:00:00 GMT,Clarithromycin,CLR,completed,antibacterial,O,X,inpatient
