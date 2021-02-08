@@ -384,7 +384,7 @@ transitive_closure_control <- function(max_continuation_gap = 36,
     stop(simpleError("Parameters must be >= 0"))
   }
   
-  list(max_combination_authoring_gap = as.integer(max_continuation_gap),
+  list(max_combination_authoring_gap = as.integer(max_combination_authoring_gap),
        max_combination_start_gap = as.integer(max_combination_start_gap),
        max_continuation_gap = as.integer(max_continuation_gap))
 }
@@ -698,13 +698,25 @@ load_medications.PqConnection <- function(
   therapy_grps <- tbl(conn, "ramses_tc_group") %>% 
     dplyr::left_join(
       dplyr::select(tbl(conn, "drug_prescriptions"), 
-                    id, prescription_id), 
+                    id, prescription_id, prescription_start, drug_name), 
       by = c("id" = "id")
     ) %>% 
     dplyr::group_by(grp) %>% 
-    dplyr::mutate(therapy_id = min(prescription_id, na.rm = TRUE)) %>% 
+    dplyr::mutate(therapy_rank = dplyr::dense_rank(paste0(prescription_start, drug_name))) %>% 
     dplyr::ungroup() %>% 
-    dplyr::distinct(prescription_id, therapy_id) %>% 
+    dplyr::compute()
+  
+  th_ids <- therapy_grps %>% 
+    dplyr::filter(therapy_rank == 1) %>% 
+    dplyr::mutate(therapy_id = prescription_id) %>% 
+    dplyr::select(grp, therapy_id) %>% 
+    dplyr::compute()
+  
+  therapy_grps <- dplyr::left_join(
+    therapy_grps,
+    th_ids,  
+    by = c("grp" = "grp")) %>% 
+    dplyr::distinct(prescription_id, therapy_id, therapy_rank) %>% 
     dplyr::compute(name = "ramses_tc_therapy")
   
   update_therapy_id <- .read_sql_syntax("update_drug_prescriptions_therapy_id_SQLite.sql")

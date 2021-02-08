@@ -20,7 +20,6 @@ WITH rx_edges AS (
                WHEN (a.[daily_frequency] <> -1) and (b.[daily_frequency] = -1) and
                     (DATETIME(a.[prescription_end]) >= DATETIME(b.[prescription_start])) THEN '4'
                WHEN (a.[daily_frequency] <> -1) and (b.[daily_frequency] <> -1) and
-                    (DATETIME(a.[prescription_start]) <= DATETIME(b.[prescription_start])) and
                     (DATETIME(a.[prescription_end]) >= DATETIME(b.[prescription_end])) THEN '5'
                WHEN (a.[daily_frequency] <> -1) and (b.[daily_frequency] <> -1) and
                     (DATETIME(a.[prescription_end]) >= DATETIME(b.[prescription_start])) and
@@ -36,8 +35,9 @@ WITH rx_edges AS (
          [drug_prescriptions] b
          ON a.[patient_id] = b.[patient_id]
              and a.[prescription_id] <> b.[prescription_id]
-             and a.[prescription_context] = b.[prescription_context]
              and a.[antiinfective_type] = b.[antiinfective_type]
+             and DATETIME(a.[prescription_start]) <= DATETIME(b.[prescription_start])
+             
 )
 
 INSERT
@@ -70,7 +70,7 @@ FROM (SELECT *,
                          OR
                          ([relation_type] IN ('1', '2', '3', '7')
                              AND
-                          ABS(STRFTIME('%s', [to_start]) - STRFTIME('%s', [from_start])) / 3600 < @max_continuation_gap)
+                          ABS(STRFTIME('%s', [to_start]) - STRFTIME('%s', [from_end])) / 3600 < @max_continuation_gap)
                      THEN 'continuation'
                  ELSE NULL
                  END AS [edge_type]

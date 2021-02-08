@@ -20,7 +20,6 @@ WITH rx_edges AS (
                WHEN (a.daily_frequency <> -1) and (b.daily_frequency = -1) and
                     (a.prescription_end >= b.prescription_start) THEN '4'
                WHEN (a.daily_frequency <> -1) and (b.daily_frequency <> -1) and
-                    (a.prescription_start <= b.prescription_start) and
                     (a.prescription_end >= b.prescription_end) THEN '5'
                WHEN (a.daily_frequency <> -1) and (b.daily_frequency <> -1) and
                     (a.prescription_end >= b.prescription_start) and
@@ -36,8 +35,8 @@ WITH rx_edges AS (
          drug_prescriptions b
          ON a.patient_id = b.patient_id
              and a.prescription_id <> b.prescription_id
-             and a.prescription_context = b.prescription_context
              and a.antiinfective_type = b.antiinfective_type
+             and a.prescription_start <= b.prescription_start 
 )
 
 INSERT
@@ -61,7 +60,7 @@ FROM (SELECT *,
                              AND ABS(EXTRACT(EPOCH FROM ( to_authoring::TIMESTAMP - from_authoring::TIMESTAMP ))) / 3600 <
                                  @max_combination_authoring_gap)
                          OR (relation_type = '2'
-                         AND (EXTRACT(EPOCH FROM ( to_authoring::TIMESTAMP -  from_authoring::TIMESTAMP ))) / 3600 BETWEEN 0 AND @max_combination_start_gap
+                         AND (EXTRACT(EPOCH FROM ( to_start::TIMESTAMP -  from_start::TIMESTAMP ))) / 3600 BETWEEN 0 AND @max_combination_start_gap
                          AND ABS(EXTRACT(EPOCH FROM ( to_authoring::TIMESTAMP -  from_authoring::TIMESTAMP ))) / 3600 < @max_combination_authoring_gap
                          AND from_drug = to_drug)
                      THEN 'combination'
@@ -70,7 +69,7 @@ FROM (SELECT *,
                          OR
                          (relation_type IN ('1', '2', '3', '7')
                              AND
-                          ABS(EXTRACT(EPOCH FROM ( to_start::TIMESTAMP - from_start::TIMESTAMP ))) / 3600 < @max_continuation_gap)
+                          ABS(EXTRACT(EPOCH FROM ( to_start::TIMESTAMP - from_end::TIMESTAMP ))) / 3600 < @max_continuation_gap)
                      THEN 'continuation'
                  ELSE NULL
                  END AS edge_type

@@ -1,0 +1,27 @@
+patient_id,edge_type
+101,combination
+102,continuation
+103,continuation
+104,not an edge
+201,combination
+202,continuation
+203,continuation
+204,continuation
+205,continuation
+206,not an edge
+301,continuation
+302,not an edge
+401,continuation
+402,continuation
+501,combination
+502,continuation
+503,continuation
+504,continuation
+505,continuation
+601,combination
+602,continuation
+603,continuation
+604,continuation
+701,continuation
+702,continuation
+703,not an edge
