@@ -483,10 +483,7 @@ test_that("Ramses on PosgreSQL", {
   test_output <- tbl(conPostgreSQL, "drug_therapy_episodes") %>% 
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
     dplyr::collect()
-  
-  print(test_output$therapy_start)
-  attributes(print(test_output$therapy_start))
-  
+
   expect_equivalent(
     test_output, 
     dplyr::tibble(
