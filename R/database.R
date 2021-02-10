@@ -702,7 +702,8 @@ load_medications.PqConnection <- function(
       by = c("id" = "id")
     ) %>% 
     dplyr::group_by(grp) %>% 
-    dplyr::mutate(therapy_rank = dplyr::dense_rank(paste0(prescription_start, drug_name))) %>% 
+    dplyr::mutate(therapy_rank = dplyr::dense_rank(
+      paste0(prescription_start, drug_name))) %>% 
     dplyr::ungroup() %>% 
     dplyr::compute()
   

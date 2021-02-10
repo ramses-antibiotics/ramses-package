@@ -5,8 +5,7 @@
 
 setOldClass(c("tbl_SQLiteConnection", "tbl_dbi", "tbl_sql", "tbl_lazy", "tbl"))
 setOldClass(c("tbl_PqConnection", "tbl_dbi", "tbl_sql", "tbl_lazy", "tbl"))
-setGeneric("collect", function(object) standardGeneric("collect"))
-setGeneric("compute", function(object) standardGeneric("compute"))
+setGeneric("collect", function(x) standardGeneric("collect"))
 
 #' An S4 virtual class for Ramses objects
 #'
@@ -14,7 +13,8 @@ setGeneric("compute", function(object) standardGeneric("compute"))
 #' @slot conn a database connection
 #' @slot record a \code{tbl_sql} for the corresponding database record
 #' @rdname RamsesObject
-#' @importFrom dplyr collect compute
+#' @importFrom dplyr collect
+#' @importFrom dplyr compute
 #' @export
 #' @importClassesFrom RSQLite SQLiteConnection
 setClass(
@@ -37,13 +37,13 @@ setValidity("RamsesObject", function(object) {
   }
 })
 
-setMethod("collect", "RamsesObject", function(object) {
-  dplyr::collect(object@record)
+setMethod("collect", "RamsesObject", function(x) {
+  dplyr::collect(x@record)
 })
 
-setMethod("compute", "RamsesObject", function(object) {
-  object@record <- dplyr::compute(object@record)
-  object
+setMethod("compute", "RamsesObject", function(x) {
+  x@record <- dplyr::compute(x@record)
+  x
 })
 
 
@@ -171,6 +171,9 @@ TherapyEpisode.RamsesObject <- function(object) {
 #' @noRd  
 setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 
+
+
+
 #' Create the therapy episode longitudinal table
 #'
 #' @param conn a database connection
@@ -283,25 +286,66 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
   return(therapy_table_parenteral)
 }
 
-#' Title
+#' Get 'parenteral' drug administration sequences
 #'
+#' @description Timely switch to oral therapy is a widely recommended
+#' antimicrobial stewardship behaviour. The \code{parenteral_changes_get()}
+#' function extracts 'therapy sequences', which are defined as either:
+#' \itemize{
+#'    \item a period of parenteral antimicrobial therapy subsequently converted
+#'    into oral therapy 
+#'    \item a period of parenteral antimicrobial therapy never converted into 
+#'    oral therapy
+#' }
 #' @param therapy_episode a \code{TherapyEpisode} object
 #' @param tolerance_hours integer for the maximum number of hours during which 
 #' an absence of prescription or the administration of some oral drugs 
 #' will be ignored. The default is 12.
-#' @details This function analyses the \code{parenteral} field in a
-#' therapy table. It returns positions of sequences of at least twelve "1" (= parenteral 
-#' drug administration) followed by a "0" (= oral administration) or a 
-#' terminating sequence composed exclusively of "0".
+#' @details Antimicrobial drugs may be administered via oral or parenteral 
+#' (usually intravenous) route. Oral administration is preferred when patients
+#' can tolerate them and infections are not deep seated. 
+#' 
+#' This function analyses the \code{parenteral} field in a
+#' therapy table. By default, it returns positions of sequences of at least 
+#' twelve "1" (= parenteral drug administration) followed by a 
+#' "0" (= oral administration) or a terminating sequence composed exclusively of "0".
+#' 
 #' Short periods without therapy lasting up to twelve hours (e.g. between two prescriptions)
 #' are ignored by default (see \code{tolerance_hours} parameter).
+#' 
 #' Short periods of oral administration lasting up to twelve hours are also ignored by default.
+#' 
 #' This ensures that very short oral prescriptions (including when parenteral 
 #' therapy continues uninterrupted) do not distort the analysis of therapy 
 #' changes.
-#' @return a list containing positions of matches. These are vectors of 
-#' length 2, containing the sequence starting and finishing positions
+#' @return a list containing one vector per therapy sequence. Each vector consists
+#' of three integers coding for the time \code{t}:
+#' \enumerate{ 
+#'    \item when the sequence is initiated (parenteral administration begins)
+#'    \item when the sequence ends
+#'    \item \emph{if the therapy is converted to oral administration:} time of conversion,
+#'    (otherwise \code{NA_integer_})
+#' }
+#' 
+#' The integers are in direct correspondance with field \code{t} in the 
+#' therapy episode's table (\code{\link{get_therapy_table}()}).
 #' @export
+#' @examples 
+#' library(dplyr)
+#' example_therapy <- TherapyEpisode(conSQLite, "2a2b6da3b67f6f495f4cedafb029f631")
+#' 
+#' # Obtain the parenteral to oral sequence indexes
+#' therapy_sequence <- parenteral_changes_get(example_therapy)
+#' therapy_sequence
+#' 
+#' # Look for the section of the therapy table where 0 ≤ t ≤ 145
+#' filter(get_therapy_table(example_therapy, collect = TRUE),
+#'        between(t,
+#'                therapy_sequence[[1]][1],
+#'                therapy_sequence[[1]][2])) %>% head()
+#' Look for the section of the therapy table near conversion (t = 73)
+#' filter(get_therapy_table(example_therapy, collect = TRUE),
+#'        between(t, 70, 75))
 parenteral_changes_get <- function(therapy_episode, tolerance_hours = 12L) {
   stopifnot(is.numeric(tolerance_hours) | length(tolerance_hours) != 1)
   tolerance_hours <- as.integer(tolerance_hours)
@@ -318,36 +362,52 @@ parenteral_changes_get <- function(therapy_episode, tolerance_hours = 12L) {
   
   while ( nchar(iosequence) > 0 ) {
     
-    # match_index <- regexpr("1{4,}((10{1,5}1)|1)*(0{6}|1$|(0{1,6})$){1}", iosequence)
-    # match_index <- regexpr("1{8,}((10{1,8}1)|1|#{1,9})*(1{9,}|1$|#{9,}){1}", iosequence) # MMMMMM MUST BE TESTED AGAIN!
-   
     # eg, if tolerance set to 9 hours, regex is:
     # "1{8,}((10{1,8}1)|1|#{1,9})*(1{9,}|1$|#{9,}){1}"
     # "1{8,}((10{1,9}1)|1|(1#{1,9}1))*(0{10,}|1$|#{10,}){1}"
-     match_index <- regexpr(
+    match_index <- regexpr(
       paste0(
         # START OF SEQUENCE
         "1{5,}", 
-        # TOLERATED IN-SEQUENCE BLIPS
-        "((10{1,", tolerance_hours, "}1)|",
+        # IN-SEQUENCE BLIPS
+        "(",
+        "(10{1,", tolerance_hours, "})|",
         "1|",
-        "1#{1,", tolerance_hours, "}1)",
+        "(1#{1,", tolerance_hours, "})",
+        ")*",
         # END OF SEQUENCE
-        "*(0{", tolerance_hours, ",}|1$|#{", tolerance_hours, ",}){1}"
+        "(0{", tolerance_hours, ",}|1|$){1}"
       ), 
       iosequence
     )
+    
+    conversion_index <- regexpr(
+      paste0(
+        # END OF SEQUENCE with CONVERSION
+        "0{", tolerance_hours, ",}$"
+      ), 
+      substr(iosequence,
+             as.integer(match_index), 
+             as.integer(match_index) + attr(match_index, "match.length") -1)
+    )
+    # If no conversion, return NA
+    if (conversion_index == -1) {
+      conversion_index <- NA_integer_
+    }
+    
     if (match_index == -1) {
       break
     }
     
-    match_indices[[i]] <- c(as.integer(match_index) + position, 
-                            as.integer(match_index) + attr(match_index, "match.length") + position - 1)
+    match_indices[[i]] <- c(as.integer(match_index) + position - 1, 
+                            as.integer(match_index) + attr(match_index, "match.length") + position - 2,
+                            as.integer(conversion_index) + as.integer(match_index) + position - 2)
     # reduce sequence to what is left beyond the match
-    position = as.integer(match_index) + attr(match_index, "match.length") + position - 1
+    position <- as.integer(match_index) + attr(match_index, "match.length") + position - 1
     iosequence <- substr(iosequence, 
                          as.integer(match_index) + attr(match_index, "match.length"), 
                          nchar(iosequence))
+    rm(match_index, conversion_index)
     i <- i + 1
     next
   }
@@ -378,3 +438,42 @@ setMethod("get_therapy_table", "TherapyEpisode", function(object, collect = FALS
     object@therapy_table
   }
 })
+
+
+
+# show methods ------------------------------------------------------------
+
+setMethod("show", "RamsesObject", function(object) {
+  cat(class(object), object@id, "\n\n")
+  cat("database connection:\n")
+  print(object@conn)
+})
+
+setMethod("show", "TherapyEpisode", function(object) {
+  cat(class(object), object@id, "\n")
+  record <- try({collect_ramses_tbl(object@record)})
+  if( is(record, "try-error") ) {
+    cat("Record not available.\n")
+  } else {
+    prescriptions <- tbl(object@conn, "drug_prescriptions") %>% 
+      dplyr::filter(patient_id == !!record$patient_id & 
+                      therapy_id == !!object@id) %>% 
+      dplyr::arrange(therapy_rank) %>% 
+      dplyr::select(prescription_text) %>% 
+      dplyr::collect()
+    cat("Patient:  ", record$patient_id, "\n")
+    cat("Start:    ", as.character(record$therapy_start, format = "%Y-%m-%d %H:%M:%S %Z"), "\n")
+    cat("End:      ", as.character(record$therapy_end, format = "%Y-%m-%d %H:%M:%S %Z"), "\n\n")
+    cat("Medications:\n ")
+    if(nrow(prescriptions) > 5) {
+      cat(paste0(" > ", prescriptions$prescription_text[1:4], "\n"))
+      cat(paste0("  ... (", nrow(prescriptions) - 4, " additional medication requests)\n"))
+    } else {
+      cat(paste0(" > ", prescriptions$prescription_text, "\n"))
+    }
+  }
+  cat("\nDatabase connection:\n")
+  show(object@conn)
+})
+
+
