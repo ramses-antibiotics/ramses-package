@@ -18,3 +18,9 @@ WHERE EXISTS(SELECT therapy_rank
              FROM @@@ramses_tc_table
              WHERE prescription_id = drug_prescriptions.prescription_id);
 
+UPDATE drug_prescriptions
+SET therapy_rank = 1
+WHERE NOT EXISTS(SELECT therapy_rank
+                 FROM @@@ramses_tc_table
+                 WHERE prescription_id = drug_prescriptions.prescription_id);
+
