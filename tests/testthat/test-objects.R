@@ -1,11 +1,5 @@
 
-# ramses_db <- connect_local_database("vignettes/ramses-db_perm.sqlite")
-# pts <- dplyr::collect(dplyr::distinct(tbl(conSQLite, "drug_prescriptions"), patient_id))
-# onept <- sample(pts$patient_id, 1)
-# therapy_timeline(conSQLite, onept)
-# dplyr::filter(tbl(conSQLite, "drug_therapy_episodes"), patient_id == onept)
-
-test_that("create patient", {
+test_that("Patient..constructor", {
   patients <- dplyr::tibble(patient_id = "99999999999")
   con <- dbConnect(RSQLite::SQLite(), ":memory:")
   dplyr::copy_to(con, patients, temporary = FALSE)
@@ -14,6 +8,11 @@ test_that("create patient", {
   expect_s4_class(patient_object, "Patient")
   expect_s4_class(compute(patient_object), "Patient")
   expect_is(collect(patient_object), "tbl_df")
+})
+
+test_that("Patient..show", {
+  expect_equal(capture.output(Patient(conSQLite, "3422481921"))[1],
+               "Patient 3422481921 ")
 })
 
 test_that(".process_io_parenteral_vector", {
@@ -53,4 +52,7 @@ test_that(".process_io_parenteral_vector", {
                                                                                                  c(11, 19, NA)))
   expect_equal(.parenteral_vector_process(unlist(strsplit("111111#####111111011", "")), 5), list(c(0, 19, NA)))
 })
+
+
+
 

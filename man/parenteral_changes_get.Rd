@@ -69,7 +69,7 @@ filter(get_therapy_table(example_therapy, collect = TRUE),
        between(t,
                therapy_sequence[[1]][1],
                therapy_sequence[[1]][2])) \%>\% head()
-Look for the section of the therapy table near conversion (t = 73)
+# Look for the section of the therapy table near conversion (t = 73)
 filter(get_therapy_table(example_therapy, collect = TRUE),
        between(t, 70, 75))
 }

@@ -141,7 +141,6 @@ test_that("Ramses on SQLite 2", {
   )
 
 # > recreate therapy episodes and combinations --------------------------------
-
   
   DBI::dbRemoveTable(conSQLite, "drug_prescriptions_edges")
   DBI::dbRemoveTable(conSQLite, "drug_therapy_episodes")
@@ -262,25 +261,28 @@ test_that("Ramses on SQLite 2", {
                     test_expected_head)
   expect_equivalent(tail(get_therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_tail)
+  # > IVPO ------------------------------------------------------------------
   
+  expect_equal(parenteral_changes_get(TherapyEpisode(conSQLite, "5528fc41106bb48eb4d48bc412e13e67")), 
+               list(c(0, 241, 6)))
+  expect_equal(parenteral_changes_get(TherapyEpisode(conSQLite, "f770855cf9d424c76fdfbc9786d508ac")), 
+               list(c(0, 122, 74)))
+  expect_equal(parenteral_changes_get(TherapyEpisode(conSQLite, "74e3f378b91c6d7121a0d637bd56c2fa")), 
+               list(c(0, 97, 49)))
   
-  expect_equal(parenteral_changes_get(TherapyEpisode(test_medication_request)), 
-               list(c(1, 242)))
-  
-  # Three IVPO changes pt 5726385525
-  
+  # Three IVPO changes in pt 5726385525 with only one therapy episode
   single_therapy <- dplyr::collect(dplyr::filter(tbl(conSQLite, "drug_prescriptions"), 
                                                  patient_id == "5726385525"))
   expect_true(all(single_therapy$therapy_id == "a028cf950c29ca73c01803b54642d513"))
   expect_equal(
     parenteral_changes_get(TherapyEpisode(conSQLite, "a028cf950c29ca73c01803b54642d513")),
     list(
-      c(1, 145),
-      c(147, 317),
-      c(319, 391)
+      c(0, 144, 97),
+      c(146, 316, 219),
+      c(318, 390,  NA)
     )
   )
-
+  
   # > therapy timeline -------------------------------------------------
   
   expect_error(
@@ -314,7 +316,50 @@ test_that("Ramses on SQLite 2", {
                      date2 = as.Date("2017-03-01")), 
     "timevis")
   
-  # > other consistency checks ----------------------------------------------------
+  # > show methods ----------------------------------------------------------
+  
+  # TherapyEpisode
+  expect_equal(utils::capture.output(TherapyEpisode(conSQLite, "89ac870bc1c1e4b2a37cec79d188cb08"))[1:8],
+                 c("TherapyEpisode 89ac870bc1c1e4b2a37cec79d188cb08 ", "Patient:   1555756339 ", 
+                   "Start:     2017-07-02 01:15:46 BST ", "End:       2017-07-06 01:35:46 BST ", 
+                   "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
+                   "  > Clarithromycin ORAL 500mg 4 days"))
+  expect_equal(utils::capture.output(TherapyEpisode(conSQLite, "fa179f4bcf3efa1e21225ab207ab40c4"))[1:11],
+                 c("TherapyEpisode fa179f4bcf3efa1e21225ab207ab40c4 ", "Patient:   3422481921 ", 
+                   "Start:     2017-11-15 15:33:36 GMT ", "End:       2017-12-01 21:11:36 GMT ", 
+                   "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
+                   "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  > Piperacillin/tazobactam IV 4.5g 4 days", 
+                   "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  ... (2 additional medication requests)"
+                 ))
+  expect_equal(
+    utils::capture.output(TherapyEpisode(conSQLite, "biduletruc"))[1:5],
+    c("TherapyEpisode biduletruc ", "Record is not available.", "Please check object id is valid", 
+      "", "Database connection:")
+  )
+  
+  # MedicationRequest
+  expect_equal(
+    utils::capture.output(MedicationRequest(conSQLite, "5528fc41106bb48eb4d48bc412e13e67"))[1:8],
+    c("MedicationRequest 5528fc41106bb48eb4d48bc412e13e67 ", "Clarithromycin IV 500mg 0 days ", 
+      "Patient:     99999999999 ", "Start:        2015-08-07 10:27:00 BST ", 
+      "End:          2015-08-07 15:59:00 BST ", "Therapy:      5528fc41106bb48eb4d48bc412e13e67 ", 
+      "", "Database connection:") 
+  )
+  expect_equal(
+    utils::capture.output(MedicationRequest(conSQLite, "1ab55e515af6b86dde76abbe0bffbd3f"))[1:9],
+    c("MedicationRequest 1ab55e515af6b86dde76abbe0bffbd3f ", "Clarithromycin ORAL 500mg 4 days ", 
+      "Patient:     3894468747 ", "Start:        2015-10-01 21:38:55 BST ", 
+      "End:          2015-10-05 21:38:55 BST ", "Combination:  1ab55e515af6b86dde76abbe0bffbd3f ", 
+      "Therapy:      1ab55e515af6b86dde76abbe0bffbd3f ", "", "Database connection:"
+    )
+  )
+  expect_equal(
+    utils::capture.output(MedicationRequest(conSQLite, "biduletruc"))[1:5],
+    c("MedicationRequest biduletruc ", "Record is not available.", "Please check object id is valid", 
+      "", "Database connection:")
+  )
+  
+  # > other consistency checks ----------------------------------------------
   
   # check that therapy id is the one of the first prescription
   invalid_therapy_ids <- tbl(conSQLite, "drug_prescriptions") %>% 
@@ -698,6 +743,28 @@ test_that("Ramses on PosgreSQL", {
   
   expect_true(bridge_tables(conn = conPostgreSQL, overwrite = TRUE))
   
+  #> IVPO ------------------------------------------------------------------
+  
+  expect_equal(parenteral_changes_get(TherapyEpisode(conPostgreSQL, "5528fc41106bb48eb4d48bc412e13e67")), 
+               list(c(0, 241, 6)))
+  expect_equal(parenteral_changes_get(TherapyEpisode(conPostgreSQL, "f770855cf9d424c76fdfbc9786d508ac")), 
+               list(c(0, 122, 74)))
+  expect_equal(parenteral_changes_get(TherapyEpisode(conPostgreSQL, "74e3f378b91c6d7121a0d637bd56c2fa")), 
+               list(c(0, 97, 49)))
+  
+  # Three IVPO changes in pt 5726385525 with only one therapy episode
+  single_therapy <- dplyr::collect(dplyr::filter(tbl(conPostgreSQL, "drug_prescriptions"), 
+                                                 patient_id == "5726385525"))
+  expect_true(all(single_therapy$therapy_id == "a028cf950c29ca73c01803b54642d513"))
+  expect_equal(
+    parenteral_changes_get(TherapyEpisode(conPostgreSQL, "a028cf950c29ca73c01803b54642d513")),
+    list(
+      c(0, 144, 97),
+      c(146, 316, 219),
+      c(318, 390,  NA)
+    )
+  )
+  
   # > therapy timeline -------------------------------------------------
   
   expect_error(
@@ -731,6 +798,51 @@ test_that("Ramses on PosgreSQL", {
                      date2 = as.Date("2017-03-01")), 
     "timevis")
   
+  
+  # > show methods ----------------------------------------------------------
+  
+  # TherapyEpisode
+  expect_equal(utils::capture.output(TherapyEpisode(conPostgreSQL, "89ac870bc1c1e4b2a37cec79d188cb08"))[1:8],
+               c("TherapyEpisode 89ac870bc1c1e4b2a37cec79d188cb08 ", "Patient:   1555756339 ", 
+                 "Start:     2017-07-02 01:15:46 BST ", "End:       2017-07-06 01:35:46 BST ", 
+                 "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
+                 "  > Clarithromycin ORAL 500mg 4 days"))
+  expect_equal(utils::capture.output(TherapyEpisode(conPostgreSQL, "fa179f4bcf3efa1e21225ab207ab40c4"))[1:11],
+               c("TherapyEpisode fa179f4bcf3efa1e21225ab207ab40c4 ", "Patient:   3422481921 ", 
+                 "Start:     2017-11-15 15:33:36 GMT ", "End:       2017-12-01 21:11:36 GMT ", 
+                 "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
+                 "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  > Piperacillin/tazobactam IV 4.5g 4 days", 
+                 "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  ... (2 additional medication requests)"
+               ))
+  expect_equal(
+    utils::capture.output(TherapyEpisode(conPostgreSQL, "biduletruc"))[1:5],
+    c("TherapyEpisode biduletruc ", "Record is not available.", "Please check object id is valid", 
+      "", "Database connection:")
+  )
+  
+  # MedicationRequest
+  expect_equal(
+    utils::capture.output(MedicationRequest(conPostgreSQL, "5528fc41106bb48eb4d48bc412e13e67"))[1:8],
+    c("MedicationRequest 5528fc41106bb48eb4d48bc412e13e67 ", "Clarithromycin IV 500mg 0 days ", 
+      "Patient:     99999999999 ", "Start:        2015-08-07 10:27:00 BST ", 
+      "End:          2015-08-07 15:59:00 BST ", "Therapy:      5528fc41106bb48eb4d48bc412e13e67 ", 
+      "", "Database connection:") 
+  )
+  expect_equal(
+    utils::capture.output(MedicationRequest(conPostgreSQL, "1ab55e515af6b86dde76abbe0bffbd3f"))[1:9],
+    c("MedicationRequest 1ab55e515af6b86dde76abbe0bffbd3f ", "Clarithromycin ORAL 500mg 4 days ", 
+      "Patient:     3894468747 ", "Start:        2015-10-01 21:38:55 BST ", 
+      "End:          2015-10-05 21:38:55 BST ", "Combination:  1ab55e515af6b86dde76abbe0bffbd3f ", 
+      "Therapy:      1ab55e515af6b86dde76abbe0bffbd3f ", "", "Database connection:"
+    )
+  )
+  expect_equal(
+    utils::capture.output(MedicationRequest(conPostgreSQL, "biduletruc"))[1:5],
+    c("MedicationRequest biduletruc ", "Record is not available.", "Please check object id is valid", 
+      "", "Database connection:")
+  )
+  
+
   # > other consistency checks ----------------------------------------------------
   
   # check that therapy id is the one of the first prescription

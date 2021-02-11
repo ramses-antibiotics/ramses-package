@@ -250,9 +250,9 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
       dplyr::summarise(parenteral = dplyr::if_else(
         mean(
           dplyr::if_else(ATC_route == "P", 1.0, 0.0), 
-          na.rm = T) == 1.0,
-        1L,
-        0L
+          na.rm = T) == 0.0,
+        0L,
+        1L
       ))
   } else if (is(therapy_table$src$con, "PqConnection")) {
     therapy_table_meds_join <- dplyr::left_join(
@@ -343,7 +343,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #'        between(t,
 #'                therapy_sequence[[1]][1],
 #'                therapy_sequence[[1]][2])) %>% head()
-#' Look for the section of the therapy table near conversion (t = 73)
+#' # Look for the section of the therapy table near conversion (t = 73)
 #' filter(get_therapy_table(example_therapy, collect = TRUE),
 #'        between(t, 70, 75))
 parenteral_changes_get <- function(therapy_episode, tolerance_hours = 12L) {
@@ -444,16 +444,17 @@ setMethod("get_therapy_table", "TherapyEpisode", function(object, collect = FALS
 # show methods ------------------------------------------------------------
 
 setMethod("show", "RamsesObject", function(object) {
-  cat(class(object), object@id, "\n\n")
-  cat("database connection:\n")
+  cat(class(object), object@id, "\n")
+  cat("\nDatabase connection:\n")
   print(object@conn)
 })
 
 setMethod("show", "TherapyEpisode", function(object) {
   cat(class(object), object@id, "\n")
-  record <- try({collect_ramses_tbl(object@record)})
-  if( is(record, "try-error") ) {
-    cat("Record not available.\n")
+  record <- collect_ramses_tbl(object@record)
+  if( nrow(record) == 0 ) {
+    cat("Record is not available.\n")
+    cat("Please check object id is valid\n")
   } else {
     prescriptions <- tbl(object@conn, "drug_prescriptions") %>% 
       dplyr::filter(patient_id == !!record$patient_id & 
@@ -476,4 +477,23 @@ setMethod("show", "TherapyEpisode", function(object) {
   show(object@conn)
 })
 
+setMethod("show", "MedicationRequest", function(object) {
+  cat(class(object), object@id, "\n")
+  record <- collect_ramses_tbl(object@record)
+  if( nrow(record) == 0 ) {
+    cat("Record is not available.\n")
+    cat("Please check object id is valid\n")
+  } else {
+    cat(record$prescription_text, "\n")
+    cat("Patient:    ", record$patient_id, "\n")
+    cat("Start:       ", as.character(record$prescription_start, format = "%Y-%m-%d %H:%M:%S %Z"), "\n")
+    cat("End:         ", as.character(record$prescription_end, format = "%Y-%m-%d %H:%M:%S %Z"), "\n")
+    if( !is.na(record$combination_id) ) {
+      cat("Combination: ", record$combination_id, "\n")
+    }
+    cat("Therapy:     ", record$therapy_id, "\n")
+  }
+  cat("\nDatabase connection:\n")
+  print(object@conn)
+})
 
