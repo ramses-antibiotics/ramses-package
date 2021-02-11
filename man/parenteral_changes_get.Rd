@@ -57,7 +57,9 @@ therapy continues uninterrupted) do not distort the analysis of therapy
 changes.
 }
 \examples{
+\dontrun{
 library(dplyr)
+conSQLite <- create_mock_database("Ramses_mock_database_example.sqlite")
 example_therapy <- TherapyEpisode(conSQLite, "2a2b6da3b67f6f495f4cedafb029f631")
 
 # Obtain the parenteral to oral sequence indexes
@@ -72,4 +74,5 @@ filter(get_therapy_table(example_therapy, collect = TRUE),
 # Look for the section of the therapy table near conversion (t = 73)
 filter(get_therapy_table(example_therapy, collect = TRUE),
        between(t, 70, 75))
+}
 }

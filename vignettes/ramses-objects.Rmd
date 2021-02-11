@@ -1,6 +1,5 @@
 ---
 title: "Objects and classes in Ramses"
-author: "Peter Dutey"
 date: '`r format(Sys.Date(), "%d %B %Y")`'
 output: 
   rmarkdown::html_vignette:
@@ -50,7 +49,7 @@ Unlike `MedicationRequest` objects, `Prescription` objects may not be created di
 
 Both can be used to get to the episode of antimicrobial therapy (class: `TherapyEpisode`).
 
-```{r diagram-objects, fig.cap="Class diagram of the main `Ramses` objects", fig.height=6, fig.width=8, echo=FALSE}
+```{r diagram-objects, fig.cap="Class diagram of the main `Ramses` objects", fig.height=6, fig.width=8}
 grViz("ramses-objects/ramses-med-class-diagram.gv", engine = "twopi")
 ```
 

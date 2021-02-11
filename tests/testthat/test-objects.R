@@ -1,18 +1,23 @@
 
 test_that("Patient..constructor", {
   patients <- dplyr::tibble(patient_id = "99999999999")
-  con <- dbConnect(RSQLite::SQLite(), ":memory:")
-  dplyr::copy_to(con, patients, temporary = FALSE)
-  expect_error(Patient(con, ""))
-  patient_object <- Patient(con, "99999999999")
+  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
+  expect_error(Patient(fake_db_conn, ""))
+  patient_object <- Patient(fake_db_conn, "99999999999")
   expect_s4_class(patient_object, "Patient")
   expect_s4_class(compute(patient_object), "Patient")
   expect_is(collect(patient_object), "tbl_df")
+  DBI::dbDisconnect(fake_db_conn)
 })
 
 test_that("Patient..show", {
-  expect_equal(capture.output(Patient(conSQLite, "3422481921"))[1],
+  patients <- dplyr::tibble(patient_id = "99999999999")
+  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
+  expect_equal(capture.output(Patient(fake_db_conn, "3422481921"))[1],
                "Patient 3422481921 ")
+  DBI::dbDisconnect(fake_db_conn)
 })
 
 test_that(".process_io_parenteral_vector", {

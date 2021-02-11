@@ -331,7 +331,9 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' therapy episode's table (\code{\link{get_therapy_table}()}).
 #' @export
 #' @examples 
+#' \dontrun{
 #' library(dplyr)
+#' conSQLite <- create_mock_database("Ramses_mock_database_example.sqlite")
 #' example_therapy <- TherapyEpisode(conSQLite, "2a2b6da3b67f6f495f4cedafb029f631")
 #' 
 #' # Obtain the parenteral to oral sequence indexes
@@ -346,6 +348,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' # Look for the section of the therapy table near conversion (t = 73)
 #' filter(get_therapy_table(example_therapy, collect = TRUE),
 #'        between(t, 70, 75))
+#' }
 parenteral_changes_get <- function(therapy_episode, tolerance_hours = 12L) {
   stopifnot(is.numeric(tolerance_hours) | length(tolerance_hours) != 1)
   tolerance_hours <- as.integer(tolerance_hours)

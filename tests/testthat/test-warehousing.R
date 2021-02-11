@@ -629,7 +629,7 @@ test_that("Ramses on PosgreSQL", {
     patient_id = "99999999999",
     therapy_id = "5528fc41106bb48eb4d48bc412e13e67",
     therapy_start = as.POSIXct("2015-08-07 10:27:00", tz = "Europe/London"),
-    therapy_end = as.POSIXct("2015-08-12 12:12:00", tz = "Europe/London"),
+    therapy_end = as.POSIXct("2015-08-17 12:20:00", tz = "Europe/London"),
     t_start = as.POSIXct(
       c("2015-08-07 10:27:00", "2015-08-07 11:27:00", "2015-08-07 12:27:00",
         "2015-08-07 13:27:00", "2015-08-07 14:27:00", "2015-08-07 15:27:00"), tz = "Europe/London"),
@@ -639,17 +639,17 @@ test_that("Ramses on PosgreSQL", {
     parenteral = 1L
   )
   test_expected_tail <- dplyr::tibble(
-    t = 116:121,
+    t = 236:241,
     patient_id = "99999999999",
     therapy_id = "5528fc41106bb48eb4d48bc412e13e67",
     therapy_start = as.POSIXct("2015-08-07 10:27:00", tz = "Europe/London"),
-    therapy_end = as.POSIXct("2015-08-12 12:12:00", tz = "Europe/London"),
+    therapy_end = as.POSIXct("2015-08-17 12:20:00", tz = "Europe/London"),
     t_start = as.POSIXct(
-      c("2015-08-12 06:27:00", "2015-08-12 07:27:00", "2015-08-12 08:27:00", 
-        "2015-08-12 09:27:00", "2015-08-12 10:27:00", "2015-08-12 11:27:00"), tz = "Europe/London"),
+      c("2015-08-17 06:27:00", "2015-08-17 07:27:00", "2015-08-17 08:27:00", 
+        "2015-08-17 09:27:00", "2015-08-17 10:27:00", "2015-08-17 11:27:00"), tz = "Europe/London"),
     t_end = as.POSIXct(
-      c("2015-08-12 07:27:00", "2015-08-12 08:27:00", "2015-08-12 09:27:00", "2015-08-12 10:27:00", 
-        "2015-08-12 11:27:00", "2015-08-12 12:12:00"), tz = "Europe/London"),
+      c("2015-08-17 07:27:00", "2015-08-17 08:27:00", "2015-08-17 09:27:00", "2015-08-17 10:27:00", 
+        "2015-08-17 11:27:00", "2015-08-17 12:20:00"), tz = "Europe/London"),
     parenteral = 0L
   )
 
@@ -657,7 +657,7 @@ test_that("Ramses on PosgreSQL", {
   expect_equivalent(tail(test_output), test_expected_tail)
   expect_equal(
     sum(difftime(test_output$t_end, test_output$t_start,units =  "hours")),
-    structure(121.75, class = "difftime", units = "hours")
+    structure(241.883333333333, class = "difftime", units = "hours")
   )
   
   test_medication_request <- MedicationRequest(conPostgreSQL, "5528fc41106bb48eb4d48bc412e13e67")
@@ -668,17 +668,25 @@ test_that("Ramses on PosgreSQL", {
   expect_equivalent(tail(get_therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_tail)
   
-  # Three IVPO changes pt 5726385525
+  #> IVPO ------------------------------------------------------------------
   
-  single_therapy <- dplyr::collect(dplyr::filter(tbl(conSQLite, "drug_prescriptions"), 
+  expect_equal(parenteral_changes_get(TherapyEpisode(conPostgreSQL, "5528fc41106bb48eb4d48bc412e13e67")), 
+               list(c(0, 241, 6)))
+  expect_equal(parenteral_changes_get(TherapyEpisode(conPostgreSQL, "f770855cf9d424c76fdfbc9786d508ac")), 
+               list(c(0, 122, 74)))
+  expect_equal(parenteral_changes_get(TherapyEpisode(conPostgreSQL, "74e3f378b91c6d7121a0d637bd56c2fa")), 
+               list(c(0, 97, 49)))
+  
+  # Three IVPO changes in pt 5726385525 with only one therapy episode
+  single_therapy <- dplyr::collect(dplyr::filter(tbl(conPostgreSQL, "drug_prescriptions"), 
                                                  patient_id == "5726385525"))
-  expect_true(all(single_therapy$therapy_id == "06bb1a8e680036089f889ec2cf2dc6ee"))
+  expect_true(all(single_therapy$therapy_id == "a028cf950c29ca73c01803b54642d513"))
   expect_equal(
-    parenteral_changes_get(TherapyEpisode(conSQLite, "06bb1a8e680036089f889ec2cf2dc6ee")),
+    parenteral_changes_get(TherapyEpisode(conPostgreSQL, "a028cf950c29ca73c01803b54642d513")),
     list(
-      c(1, 145),
-      c(147, 317),
-      c(319, 391)
+      c(0, 144, 97),
+      c(146, 316, 219),
+      c(318, 390,  NA)
     )
   )
   
@@ -743,27 +751,6 @@ test_that("Ramses on PosgreSQL", {
   
   expect_true(bridge_tables(conn = conPostgreSQL, overwrite = TRUE))
   
-  #> IVPO ------------------------------------------------------------------
-  
-  expect_equal(parenteral_changes_get(TherapyEpisode(conPostgreSQL, "5528fc41106bb48eb4d48bc412e13e67")), 
-               list(c(0, 241, 6)))
-  expect_equal(parenteral_changes_get(TherapyEpisode(conPostgreSQL, "f770855cf9d424c76fdfbc9786d508ac")), 
-               list(c(0, 122, 74)))
-  expect_equal(parenteral_changes_get(TherapyEpisode(conPostgreSQL, "74e3f378b91c6d7121a0d637bd56c2fa")), 
-               list(c(0, 97, 49)))
-  
-  # Three IVPO changes in pt 5726385525 with only one therapy episode
-  single_therapy <- dplyr::collect(dplyr::filter(tbl(conPostgreSQL, "drug_prescriptions"), 
-                                                 patient_id == "5726385525"))
-  expect_true(all(single_therapy$therapy_id == "a028cf950c29ca73c01803b54642d513"))
-  expect_equal(
-    parenteral_changes_get(TherapyEpisode(conPostgreSQL, "a028cf950c29ca73c01803b54642d513")),
-    list(
-      c(0, 144, 97),
-      c(146, 316, 219),
-      c(318, 390,  NA)
-    )
-  )
   
   # > therapy timeline -------------------------------------------------
   
@@ -776,7 +763,7 @@ test_that("Ramses on PosgreSQL", {
                      patient_identifier =  "99999999999"),
     "timevis")
   expect_error(
-    therapy_timeline(conn = conSQLite, 
+    therapy_timeline(conn = conPostgreSQL, 
                      patient_identifier =  "99999999999",
                      date1 = "2017-01-01",
                      date2 = "2017-03-01")
@@ -853,7 +840,9 @@ test_that("Ramses on PosgreSQL", {
   
   # > close connection ----------------------------------------------------
   
-  Ramses:::.remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
+  lapply(DBI::dbListTables(conPostgreSQL), 
+         DBI::dbRemoveTable, 
+         conn = conPostgreSQL)
   
   DBI::dbDisconnect(conPostgreSQL)
 })
@@ -870,7 +859,8 @@ test_that("Postgres drug_prescriptions_edges", {
                                   user = "user", 
                                   password = "password",
                                   host = "localhost", 
-                                  dbname="RamsesDB")
+                                  dbname = "RamsesDB",
+                                  timezone = "Europe/London")
   
   lapply(DBI::dbListTables(conPostgreSQL), 
          DBI::dbRemoveTable, 

@@ -33,8 +33,7 @@ RamsesObject [
   - record: tbl_sql\l|
   
   + class(): character\l
-  + print()\l
-  + summary()\l
+  + show(): void\l
   + compute(): RamsesObject\l
   + collect(): tbl_df\l}"
 ]
@@ -43,14 +42,14 @@ Prescription [
   width = 3.2
   label = "{Prescription|
   - prescription_type: \{\"mono\", \"combo\"\}\l
-  - patient_id\l
   - medication_requests\l
   + therapy_id: character\l|
   
+  + Prescription(DBICon., id): Prescription\l
   + Patient(): Patient\l
-  + get_prescription_type(): \{\"mono\", \"combo\"\}\l
-  + get_medication_requests(): list\l
-  + TherapyEpisode(): TherapyEpisode\l}"
+  + TherapyEpisode(): TherapyEpisode\l
+  + prescription_type_get(): \{\"mono\", \"combo\"\}\l
+  + medication_requests_get(): list\l}"
 ]
 
 Prescription_Mono [
@@ -70,7 +69,7 @@ MedicationRequest [
   label = "{MedicationRequest|
   - patient_id\l|
   
-  + MedicationRequest(conn, id)\l
+  + MedicationRequest(DBICon, id)\l
   + Patient(): Patient\l
   + Clinician(): Clinician\l
   + Prescription(): Prescription\l
@@ -78,26 +77,31 @@ MedicationRequest [
 ]
 
 TherapyEpisode [
-  width = 3
+  width = 3.2
   label = "{TherapyEpisode|
   - therapy_table: tbl_sql\l|
   
-  + TherapyEpisode(conn, id): TherapyEpisode\l
-  + get_medication_requests(): list\l}"
+  + TherapyEpisode(DBICon, id): TherapyEpisode\l
+  + Patient(): Patient\l
+  + therapy_table_get(collect = F): tbl\l
+  + parenteral_changes_get(): list\l}"
+#  +???
+#  + therapy_timeline_get()
+#  + medication_request_get(): list\l}"
 ]
 
 Patient [
-  width = 2.1
+  width = 2.2
   label = "{Patient|
   \l|
-  + Patient(conn, id): Patient\l}"
+  + Patient(DBICon, id): Patient\l}"
 ]
 
 Clinician [
-  width = 2.4
+  width = 2.5
   label = "{Clinician|
   \l|
-  + Clinician(conn, id): Clinician\l
+  + Clinician(DBICon, id): Clinician\l
   + get_specialty(): character\l
   + get_lead_clinician: Clinician\l}"
 ]
