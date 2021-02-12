@@ -5,7 +5,7 @@ date1 <- structure(1585220000, class = c("POSIXct", "POSIXt"))
 # .validate_variable_exist ------------------------------------------------
 
 test_that(".validate_variable_exist", {
-  testdata <- tibble(
+  testdata <- dplyr::tibble(
     bidule = 1,
     truc = 2
   )
@@ -156,13 +156,13 @@ test_that("validate_inpatient_spells()/validate_inpatient_episodes()", {
     main_specialty_code = "100"
   ))
   
-  expect_true(expect_warning(validate_inpatient_episodes(tibble(patient_id = 1),
+  expect_true(expect_warning(validate_inpatient_episodes(dplyr::tibble(patient_id = 1),
                                                          missing_first_episode)))
-  expect_true(expect_warning(validate_inpatient_episodes(tibble(patient_id = 1),
+  expect_true(expect_warning(validate_inpatient_episodes(dplyr::tibble(patient_id = 1),
                                                          missing_intermediate_episode)))
-  expect_true(expect_warning(validate_inpatient_episodes(tibble(patient_id = 1),
+  expect_true(expect_warning(validate_inpatient_episodes(dplyr::tibble(patient_id = 1),
                                                          missing_final_episode)))
-  expect_false(expect_warning(validate_inpatient_episodes(tibble(patient_id = 1),
+  expect_false(expect_warning(validate_inpatient_episodes(dplyr::tibble(patient_id = 1),
                                                           overlap_episode)))
  
 })
@@ -290,6 +290,32 @@ test_that("validate_prescriptions()", {
       daily_frequency = 4, DDD = 4), stringsAsFactors = F)
   ))
   
+  expect_error(validate_prescriptions(
+    data.frame(list(
+      patient_id = "5593245762", 
+      prescription_id = "6025e96e1cc750dc6ec7fb9aadca0dbd", 
+      prescription_text = "Flucloxacillin IV 2g 3 days", 
+      drug_id = "FLC", drug_name = "Flucloxacillin", 
+      drug_display_name = "Flucloxacillin", 
+      antiinfective_type = c("antibacterial"),
+      ATC_code = "J01CF05",
+      ATC_group = "Beta-lactam antibacterials, penicillins", 
+      ATC_route = "ERROR!!!!!!!",
+      authoring_date = structure(1421048831, 
+                                 class = c("POSIXct", "POSIXt"), 
+                                 tzone = ""), 
+      prescription_start = structure(1421051891, 
+                                     class = c("POSIXct", "POSIXt"), 
+                                     tzone = ""), 
+      prescription_end = structure(1421311091, 
+                                   class = c("POSIXct", "POSIXt"), 
+                                   tzone = ""), 
+      prescription_status = "completed", 
+      prescription_context = "inpatient", 
+      dose = 2, unit = "g", route = "IV", frequency = "6H", 
+      daily_frequency = 4, DDD = 4), stringsAsFactors = F)
+  ))
+  
   expect_null(validate_prescriptions(
     data.frame(list(
       patient_id = "5593245762", 
@@ -392,7 +418,6 @@ test_that(".validate_UCUM_codes()", {
 # validate_microbiology ---------------------------------------------------
 
 test_that("validate_microbiology", {
- library(lubridate)
   testdata = list(
     specimens = data.frame(list(
       specimen_id = "1",
@@ -411,7 +436,7 @@ test_that("validate_microbiology", {
            organism_name = "Escherichia coli", 
            organism_display_name = "Escherichia coli", 
            multidrug_resistance = "Multi-drug-resistant (MDR)",
-           isolation_datetime = Sys.time() %m+% lubridate::days(3)
+           isolation_datetime = Sys.time() + 259200
     ), stringsAsFactors = FALSE),
     susceptibilities = data.frame(list(
       organism_id = "1", 

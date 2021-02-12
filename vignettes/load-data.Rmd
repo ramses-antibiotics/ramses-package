@@ -1,6 +1,5 @@
 ---
 title: "Validate and load electronic health records"
-author: "Peter Dutey"
 date: '`r format(Sys.Date(), "%d %B %Y")`'
 output: 
   rmarkdown::html_vignette:
@@ -41,7 +40,7 @@ library(magrittr) # for the pipe operator `%>%`
 Second, a relational database server is needed. In this vignette, we will create a small \href{https://www.sqlite.org}{SQLite 3} database on the local hard drive. This database will behave in a similar way as a large Microsoft SQL Server or MySQL relational database. The database connection information is stored in an object entitled `ramses_db` which must be provided to most functions in the Ramses package.
 
 ```{r}
-ramses_db <- connect_local_database("ramses-db.sqlite")
+ramses_db <- connect_local_database("ramses-db.sqlite", timezone = "Europe/London")
 ```
 
 We can now begin preparing records and loading them into the database. This involves three steps:

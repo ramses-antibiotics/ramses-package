@@ -1,0 +1,52 @@
+digraph G {
+  fontsize = 8
+
+  node [
+          fontname = "monospace"
+          fontsize = 8
+          shape = "record"
+
+  ]
+
+  edge [
+          fontname = "sans-serif"
+          fontsize = 8
+  ]
+
+dataframe [
+  label="data.frame"
+]
+
+tbl_SQLiteConnection [
+  width=1.4
+]
+
+tbl_PqConnection [
+  width=1.4
+]
+
+DBIConnection [
+  width=1.2
+]
+
+SQLiteConnection [
+  width=1.2
+]
+
+PqConnection [
+  width=1.2
+]
+
+tbl -> tbl_lazy [dir=back]
+tbl_lazy -> tbl_sql [dir=back]
+tbl_sql -> tbl_dbi [dir=back]
+tbl_dbi -> tbl_SQLiteConnection [dir=back]
+tbl_dbi -> tbl_PqConnection [dir=back]
+tbl -> tbl_df [dir=back]
+dataframe -> tbl_df [dir=back]
+
+DBIObject -> DBIConnection [dir=back]
+DBIConnection -> SQLiteConnection [dir=back]
+DBIConnection -> PqConnection [dir=back]
+
+}

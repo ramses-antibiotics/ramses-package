@@ -60,12 +60,8 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
       "diagnosis_position"
     ))
   
-  if ( is(conn, "SQLiteConnection" )) {
-    for(i in which(vapply(diagnoses_data, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
-      diagnoses_data[[i]] <- as.character(diagnoses_data[[i]])
-    }
-  }
-  
+  diagnoses_data <- .format_str_time_sqlite(conn, diagnoses_data)
+
   load_errors <- try({
     dplyr::copy_to(
       dest = conn, name = "inpatient_diagnoses", 
@@ -135,11 +131,7 @@ load_inpatient_episodes <- function(conn,
     episodes_data, 
     first_column_names = first_column_names_episodes) 
   
-  if ( is(conn, "SQLiteConnection" )) {
-    for(i in which(vapply(episodes_data, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
-      episodes_data[[i]] <- as.character(episodes_data[[i]])
-    }
-  }
+  episodes_data <- .format_str_time_sqlite(conn, episodes_data)
   
   dplyr::copy_to(
     dest = conn, 
@@ -180,12 +172,8 @@ load_inpatient_episodes <- function(conn,
       wards_data, 
       first_column_names = first_column_names_wards)   
     
-    if ( is(conn, "SQLiteConnection" )) {
-      for(i in which(vapply(wards_data, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
-        wards_data[[i]] <- as.character(wards_data[[i]])
-      }
-    }
-    
+    wards_data <- .format_str_time_sqlite(conn, wards_data)
+
     load_errors <- try({
       dplyr::copy_to(
         dest = conn, 
@@ -228,11 +216,7 @@ load_inpatient_investigations <- function(conn, investigations_data, overwrite =
     data = investigations_data,
     first_column_names = first_variables)
   
-  if ( is(conn, "SQLiteConnection" )) {
-    for(i in which(vapply(investigations_data, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
-      investigations_data[[i]] <- as.character(investigations_data[[i]])
-    }
-  }
+  investigations_data <- .format_str_time_sqlite(conn, investigations_data)
   
   load_errors <- try({
     dplyr::copy_to(
@@ -296,17 +280,9 @@ load_inpatient_microbiology <- function(conn,
     data = susceptibilities,
     first_column_names = first_variables$susceptibilities)
   
-  if ( is(conn, "SQLiteConnection" )) {
-    for(i in which(vapply(specimens, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
-      specimens[[i]] <- as.character(specimens[[i]])
-    }
-    for(i in which(vapply(isolates, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
-      isolates[[i]] <- as.character(isolates[[i]])
-    }
-    for(i in which(vapply(susceptibilities, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
-      susceptibilities[[i]] <- as.character(susceptibilities[[i]])
-    }
-  }
+  specimens <- .format_str_time_sqlite(conn, specimens)
+  isolates <- .format_str_time_sqlite(conn, isolates)
+  susceptibilities <- .format_str_time_sqlite(conn, susceptibilities)
   
   load_errors <- try({
     dplyr::copy_to(
@@ -456,7 +432,7 @@ load_medications.SQLiteConnection <- function(
       transitive_closure_controls,
       silent = silent)
   if(!is.null(administrations)) {
-    .load_administrations.SQLiteConnection(
+    .load_administrations(
       conn = conn, 
       administrations = administrations, 
       overwrite = overwrite)
@@ -484,7 +460,7 @@ load_medications.PqConnection <- function(
       transitive_closure_controls,
       silent = silent)
     if(!is.null(administrations)) {
-      .load_administrations.SQLiteConnection(
+      .load_administrations(
         conn = conn, 
         administrations = administrations, 
         overwrite = overwrite)
@@ -505,9 +481,7 @@ load_medications.PqConnection <- function(
   
   prescriptions <- dplyr::arrange(prescriptions, patient_id, prescription_start)
   prescriptions$id <- seq_len(nrow(prescriptions))
-  prescriptions$authoring_date <- as.character(prescriptions$authoring_date)
-  prescriptions$prescription_start <- as.character(prescriptions$prescription_start)
-  prescriptions$prescription_end <- as.character(prescriptions$prescription_end)
+  prescriptions <- .format_str_time_sqlite(conn, prescriptions)
   prescriptions$therapy_rank <- NA_integer_
   
   if(create_combination_id) prescriptions$combination_id <- NA_character_
@@ -728,7 +702,8 @@ load_medications.PqConnection <- function(
       by = c("id" = "id")
     ) %>% 
     dplyr::group_by(grp) %>% 
-    dplyr::mutate(therapy_rank = dplyr::dense_rank(paste0(prescription_start, drug_name))) %>% 
+    dplyr::mutate(therapy_rank = dplyr::dense_rank(
+      paste0(prescription_start, drug_name))) %>% 
     dplyr::ungroup() %>% 
     dplyr::compute()
   
@@ -829,7 +804,7 @@ load_medications.PqConnection <- function(
 }
 
 
-.load_administrations.SQLiteConnection <- function(
+.load_administrations <- function(
   conn, 
   administrations, 
   overwrite
@@ -848,6 +823,7 @@ load_medications.PqConnection <- function(
     administrations, 
     first_column_names = first_column_names
     ) 
+  administrations <- .format_str_time_sqlite(conn, administrations)
   
   load_output <- try({
     dplyr::copy_to(
@@ -921,9 +897,9 @@ create_therapy_episodes <- function(
       conn = conn, 
       transitive_closure_controls = transitive_closure_controls
     )
-  } # else {
-    # .throw_error_DBI_subclass_not_implemented("create_therapy_episodes()")
-  # }
+  } else {
+    .throw_error_method_not_implemented("create_therapy_episodes()", class(conn))
+  }
   .create_therapy_id(conn = conn, silent = silent)
   .create_combination_id(conn = conn, silent = silent)
 }
@@ -946,6 +922,8 @@ create_therapy_episodes <- function(
 #' method with mock data unless you operate within a secure data enclave.
 #'
 #' @param file A file path to an existing or new database file with an .sqlite extension.
+#' @param timezone a string designating the default time zone to be used by the 
+#' database connection. It defaults to the R session time zone \code{\link{Sys.timezone}}()
 #' @return An database connection object of class SQLiteConnection.
 #' @seealso The dbplyr website provides excellent guidance on how to connect to databases: 
 #' \url{https://db.rstudio.com/getting-started/connect-to-database}
@@ -967,14 +945,14 @@ create_therapy_episodes <- function(
 #'     dplyr::tbl(con, "reference_aware")
 #'     DBI::dbDisconnect(con)
 #'     file.remove("ramses-db.sqlite")
-connect_local_database <- function(file) {
+connect_local_database <- function(file, timezone = Sys.timezone()) {
   if(!file.exists(file)){
-    con <- DBI::dbConnect(RSQLite::SQLite(), file)
+    con <- DBI::dbConnect(RSQLite::SQLite(), file, timezone = timezone)
     .build_tally_table(con)
     message(paste0("SQLite database created in \n", con@dbname, 
                    "\nPlease do not use real patient data."))
   } else {
-    con <- DBI::dbConnect(RSQLite::SQLite(), file)
+    con <- DBI::dbConnect(RSQLite::SQLite(), file, timezone = timezone)
     message(paste0("Connected to ", con@dbname, 
                    "\nPlease do not use real patient data."))
   }
@@ -993,6 +971,8 @@ connect_local_database <- function(file) {
 #'
 #' @param file A file path to an existing or new database file with a
 #'  ".sqlite" extension.
+#' @param timezone a string designating the default time zone to be used by the 
+#' database connection. It defaults to the R session time zone \code{\link{Sys.timezone}}()
 #' @param silent if \code{TRUE}, progress bar will be hidden. The default is 
 #' \code{FALSE}.
 #' @return An object of class SQLiteConnection.
@@ -1000,7 +980,9 @@ connect_local_database <- function(file) {
 #' \url{https://db.rstudio.com/getting-started/connect-to-database}
 #' @importFrom DBI dbConnect dbDisconnect
 #' @export
-create_mock_database <- function(file, silent = FALSE) {
+create_mock_database <- function(file, 
+                                 timezone = Sys.timezone(), 
+                                 silent = FALSE) {
   
   stopifnot(is.logical(silent))
   if(!silent) {
@@ -1009,7 +991,7 @@ create_mock_database <- function(file, silent = FALSE) {
       total = 8)
     progress_bar$tick(0)
   }
-  mock_db <- DBI::dbConnect(RSQLite::SQLite(), file)
+  mock_db <- DBI::dbConnect(RSQLite::SQLite(), file, timezone = timezone)
   
   .build_tally_table(mock_db)
   dplyr::copy_to(
@@ -1076,7 +1058,7 @@ create_mock_database <- function(file, silent = FALSE) {
   # Build table to use in joins to create therapy tables
   dplyr::copy_to(conn, 
                  name = "ramses_tally",
-                 df = data.frame(t = 1:20000),
+                 df = data.frame(t = 0:20000),
                  temporary = FALSE,
                  overwrite = TRUE)
 }
@@ -1164,7 +1146,7 @@ create_mock_database <- function(file, silent = FALSE) {
 
 .nrow_sql_table <- function(conn, table){
   nrow <- tbl(conn, table) %>% 
-    dplyr::summarise( n = n()) %>% 
+    dplyr::summarise(n = dplyr::n()) %>% 
     dplyr::collect()
   
   nrow$n
@@ -1193,7 +1175,7 @@ UseMethod(".run_transitive_closure")
   var_lvl <- 1
   var_ids <- tbl(conn, edge_table) %>% 
     dplyr::arrange(id1, id2) %>% 
-    utils::head(.data, n = 1) %>% 
+    utils::head(n = 1) %>% 
     dplyr::collect() %>% 
     data.frame()
   
@@ -1296,7 +1278,7 @@ UseMethod(".run_transitive_closure")
     
     var_ids <- tbl(conn, edge_table) %>% 
       dplyr::arrange(id1, id2) %>% 
-      utils::head(.data, n = 1) %>% 
+      utils::head(n = 1) %>% 
       dplyr::collect() %>% 
       data.frame()
     
@@ -1320,7 +1302,7 @@ UseMethod(".run_transitive_closure")
   var_lvl <- 1
   var_ids <- tbl(conn, edge_table) %>% 
     dplyr::arrange(id1, id2) %>% 
-    utils::head(.data, n = 1) %>% 
+    utils::head(n = 1) %>% 
     dplyr::collect() %>% 
     data.frame()
   
@@ -1423,7 +1405,7 @@ UseMethod(".run_transitive_closure")
     
     var_ids <- tbl(conn, edge_table) %>% 
       dplyr::arrange(id1, id2) %>% 
-      utils::head(.data, n = 1) %>% 
+      utils::head(n = 1) %>% 
       dplyr::collect() %>% 
       data.frame()
     
@@ -1483,8 +1465,8 @@ UseMethod(".run_transitive_closure")
   
   drug_rx <- merge(drug_rx, compound_strength_lookup, all.x = T)
   drug_rx <- drug_rx %>% 
-    dplyr::mutate(strength = if_else(is.na(strength), dose, strength),  
-           basis_of_strength = if_else(is.na(basis_of_strength),
+    dplyr::mutate(strength = dplyr::if_else(is.na(strength), dose, strength),  
+           basis_of_strength = dplyr::if_else(is.na(basis_of_strength),
                                        as.character(ab), basis_of_strength))
   
   drug_rx <- merge(drug_rx, reference_drug_frequency, by = "frequency", all.x = T)
@@ -1500,7 +1482,7 @@ UseMethod(".run_transitive_closure")
       duration_days = dplyr::if_else(
         daily_frequency == -1,
         "one-off", 
-        if_else(
+        dplyr::if_else(
           round(difftime(prescription_end, 
                          prescription_start, 
                          units = "days")) == 1,
@@ -1563,8 +1545,8 @@ UseMethod(".run_transitive_closure")
   drug_admins <- merge(drug_admins, compound_strength_lookup, all.x = T)
   drug_admins <- drug_admins %>% 
     dplyr::mutate(
-      strength = if_else(is.na(strength), dose, strength),
-      basis_of_strength = if_else(is.na(basis_of_strength),
+      strength = dplyr::if_else(is.na(strength), dose, strength),
+      basis_of_strength = dplyr::if_else(is.na(basis_of_strength),
                                   as.character(ab), basis_of_strength))
   
   drug_admins <- drug_admins %>% 
@@ -1586,7 +1568,7 @@ UseMethod(".run_transitive_closure")
         dose,
         units,
         administration_date) %>% 
-      dplyr::mutate(administration_id = cur_group_id()) %>% 
+      dplyr::mutate(administration_id = dplyr::cur_group_id()) %>% 
       dplyr::ungroup()
   } else {
     drug_admins <- drug_admins %>% 
@@ -1597,11 +1579,11 @@ UseMethod(".run_transitive_closure")
         dose,
         units,
         administration_date) %>% 
-      dplyr::mutate(administration_id = group_indices()) %>% 
+      dplyr::mutate(administration_id = dplyr::group_indices()) %>% 
       dplyr::ungroup()
   }
   
-  drug_admins <- transmute(drug_admins,
+  drug_admins <- dplyr::transmute(drug_admins,
       patient_id,
       administration_id = as.character(administration_id),
       prescription_id,
@@ -1633,14 +1615,14 @@ UseMethod(".run_transitive_closure")
   
   ip_patients <- Ramses::patients
   ip_diagnoses <- Ramses::inpatient_diagnoses
-  ip_diagnoses <- dplyr::filter(ip_diagnoses, !is.na(.data$icd_code))
+  ip_diagnoses <- dplyr::filter(ip_diagnoses, !is.na(icd_code))
   
   ip_episodes <- Ramses::inpatient_episodes
   ip_episodes <- ip_episodes %>% 
     dplyr::filter(!is.na(spell_id)) %>% 
-    dplyr::group_by(.data$spell_id) %>% 
-    dplyr::mutate(last_episode_in_spell_indicator = if_else(
-      episode_number == max(.data$episode_number),
+    dplyr::group_by(spell_id) %>% 
+    dplyr::mutate(last_episode_in_spell_indicator = dplyr::if_else(
+      episode_number == max(episode_number),
       1, 2)) %>% 
     dplyr::ungroup()
   
@@ -1657,7 +1639,7 @@ UseMethod(".run_transitive_closure")
     dplyr::mutate(organism_name = AMR::mo_name(organism_code),
                   drug_name = AMR::ab_name(drug_id))
   micro$raw <- micro$raw %>% 
-    dplyr::mutate(specimen_type_code = case_when(
+    dplyr::mutate(specimen_type_code = dplyr::case_when(
       specimen_type_display == "Blood Culture" ~ 
         "446131002", # Blood specimen obtained for blood culture
       specimen_type_display == "Faeces" ~ 
@@ -1720,17 +1702,45 @@ UseMethod(".run_transitive_closure")
 }
 
 
+#' Format datetime and time fields as character according to SQLite specification
+#'
+#' @description SQLite requires a specific format for datetime strings. This 
+#' function transforms all POSIXct fields of a data frame into the correct
+#' character format.
+#' @param conn a database connection
+#' @param data_frame a data frame to format
+#' @return a formatted data frame
+#' @noRd
+#' @seealso https://www.sqlite.org/lang_datefunc.html#time_values
+.format_str_time_sqlite <- function(conn, data_frame) {
+  if ( is(conn, "SQLiteConnection" )) {
+    for(i in which(vapply(data_frame, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
+      data_frame[[i]] <- paste0(
+        as.character(data_frame[[i]], format = "%Y-%m-%d %H:%M:%S"),
+        substr(as.character(data_frame[[i]], format = "%z"), 0, 3),
+        ":",
+        substr(as.character(data_frame[[i]], format = "%z"), 4, 5)
+      )
+    }
+    for(i in which(vapply(data_frame, is, class2 = "Date", FUN.VALUE = logical(1)))) {
+      data_frame[[i]] <- as.character(data_frame[[i]])
+    }
+  }
+  
+  data_frame
+}
+
 #' Collect SQL tibble
 #' 
 #' @description This wrapper function for \link[dplyr]{collect} will convert
 #' relevant character columns to `date` and `datetime` during collection of 
 #' SQLite tables. This is to address the absence of date and time data types
-#' in SQLite.
+#' in SQLite. Tables from other relational database systems will not be affected.
 #' @param tbl a `tbl_sql` object
 #' @return a `tbl_df` object
 #' @seealso \url{https://www.sqlite.org/datatype3.html#date_and_time_datatype}
-#' @noRd
-.sqlite_date_collect <- function(tbl) {
+#' @export
+collect_ramses_tbl <- function(tbl) {
   if(is(tbl, "tbl_SQLiteConnection")) {
     tbl <- dplyr::collect(tbl)
     DATETIME_FIELDS <- c(
@@ -1746,13 +1756,20 @@ UseMethod(".run_transitive_closure")
       "episode_start",
       "episode_end",
       "ward_start",
-      "ward_end"
+      "ward_end",
+      "t_start",
+      "t_end",
+      "isolation_datetime", 
+      "specimen_datetime",
+      "start_time",
+      "end_time"
     )
     DATETIME_FIELDS <- DATETIME_FIELDS[
       which(DATETIME_FIELDS %in% colnames(tbl))
       ]
     for(var in DATETIME_FIELDS){
-      tbl[[var]] <- lubridate::as_datetime(tbl[[var]])
+      tbl[[var]] <- gsub("[:]([0-9]{2})$", "\\1", tbl[[var]])
+      tbl[[var]] <- as.POSIXct(tbl[[var]], format = "%Y-%m-%d %H:%M:%S%z")
     }
     
     DATE_FIELDS <- c(
@@ -1763,7 +1780,7 @@ UseMethod(".run_transitive_closure")
       which(DATE_FIELDS %in% colnames(tbl))
       ]
     for(var in DATE_FIELDS){
-      tbl[[var]] <- lubridate::as_date(tbl[[var]])
+      tbl[[var]] <- as.Date(tbl[[var]])
     }
     
     return(tbl)
@@ -1877,11 +1894,8 @@ bridge_episode_prescription_overlap <- function(conn,
          / ( 3600.0 * 24.0 ) * \"DDD\""
       ))
   } else {
-    stop(paste(
-      "bridge_episode_prescription_overlap() is not implemented for this type of database.",
-      "Please report this issue on https://github.com/ramses-antibiotics/ramses-package/issues",
-      collapse = "\n"
-    ))
+    .throw_error_method_not_implemented("bridge_episode_prescription_overlap()",
+                                        class(conn))
   }
   
   tblz_bridge_episode_prescriptions_overlap <- dplyr::transmute(
@@ -1954,11 +1968,8 @@ bridge_episode_prescription_initiation <- function(conn,
          / ( 3600.0 * 24.0 ) * \"DDD\"")
     )
   } else {
-    stop(paste(
-      "bridge_episode_prescription_initiation() is not implemented for this type of database.",
-      "Please report this issue on https://github.com/ramses-antibiotics/ramses-package/issues",
-      collapse = "\n"
-    ))
+    .throw_error_method_not_implemented("bridge_episode_prescription_initiation()",
+                                        class(conn))
   }
   
   tblz_bridge_episode_prescription_initiation <- dplyr::transmute(
@@ -2023,11 +2034,8 @@ bridge_spell_therapy_overlap <- function(conn,
       )
     )
   } else {
-    stop(paste(
-      "bridge_spell_therapy_overlap() is not implemented for this type of database.",
-      "Please report this issue on https://github.com/ramses-antibiotics/ramses-package/issues",
-      collapse = "\n"
-    ))
+    .throw_error_method_not_implemented("bridge_spell_therapy_overlap()",
+                                        class(conn))
   }
   
   tblz_bridge_spell_therapy_overlap <- dplyr::transmute(

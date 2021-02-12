@@ -1,0 +1,88 @@
+digraph G {
+  fontsize = 8
+
+  node [
+          fontname = "Droid Sans Mono"
+          fontsize = 8
+          shape = "record"
+          width = 1.5
+  ]
+
+  edge [
+          fontname = "Droid Sans Mono"
+          fontsize = 8
+  ]
+
+# arrowheads
+# Association open
+# Inheritance empty
+# Realisation/implementation empty + style=dashed
+# Dependency open + style=dashed
+# Aggregation odiamond
+# Composition diamond
+
+
+# Interface
+RamsesObject [
+  width = 3
+  label = "{«interface»\n
+  RamsesObject|
+  + class: character\l
+  + id: character\l
+  + conn: DBIConnection\l
+  - record: tbl_sql\l|
+  
+  + class(): character\l
+  + compute(): tbl_sql\l
+  + collect(): tbl_df\l}"
+]
+
+Patient [
+  width = 1.7
+  label = "{Patient|
+  \l|
+  + Patient(conn, id): Patient\l}"
+]
+
+Clinician [
+  width = 1.9
+  label = "{Clinician|
+  \l|
+  + Clinician(conn, id): Clinician\l
+  + get_specialty(): character\l
+  + get_lead_clinician: Clinician\l}"
+]
+
+MicrobialCulture [
+  width = 2.2
+  label = "{MicrobialCulture|
+  + specimen_id: character\l
+  + patient_id: character\l
+  + isolates: list\l|
+
+  + ...(): tbl\l}"
+]
+
+Microorganism [
+  width = 2.2
+  label = "{Microorganism|
+  + patient_id: character\l
+  + isolate_id: character\l
+  + susceptibilities: tbl\l|
+  
+  + resistance_predict(): tbl\l}"
+]
+ 
+ 
+
+RamsesObject -> Patient [dir=back]
+RamsesObject -> Clinician [dir=back]
+RamsesObject -> MicrobialCulture [dir=back]
+
+
+MicrobialCulture -> Microorganism [ constraint=false
+  arrowhead=odiamond
+  headlabel = "1..*      "
+  taillabel = "1   "]
+
+}

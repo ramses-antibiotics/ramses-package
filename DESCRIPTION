@@ -32,13 +32,10 @@ Imports:
     dplyr (>= 0.8.3),
     dbplyr (>= 1.4.2),
     magrittr,
-    stringr,
     Rdpack (>= 0.7),
     data.table,
-    readr,
     units (>= 0.6-1),
     methods,
-    lubridate,
     progress
 Suggests: 
     testthat (>= 2.1.0),
@@ -49,15 +46,14 @@ Suggests:
     rvest,
     xml2,
     curl,
+    lubridate,
     ggplot2,
     DiagrammeR,
-    odbc,
-    RPostgres,
     timevis,
     pkgdown,
     R.utils,
     comorbidity,
-    RPostgreSQL
+    RPostgres
 Remotes: 
     ramses-antibiotics/snomedizer
 RdMacros: Rdpack    

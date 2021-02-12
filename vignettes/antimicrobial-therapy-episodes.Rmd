@@ -1,0 +1,67 @@
+---
+title: "Antimicrobial therapy episodes"
+date: '`r format(Sys.Date(), "%d %B %Y")`'
+output: 
+  rmarkdown::html_vignette:
+    toc: true 
+vignette: >
+  %\VignetteIndexEntry{Antimicrobial therapy episodes}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+
+# Introduction
+
+Antimicrobial
+
+
+- gif
+
+
+# Therapy episodes and therapy combinations
+
+The two ways `Ramses` links prescriptions into episodes and combinations are:
+
+- by default, using the `load_medications()` function
+- on request, by calling the `create_therapy_episodes()` function.
+
+Both functions include a `transitive_closure_controls` argument, which controls parameters for linking prescriptions together into episodes and/or combinations, based on patterns of overlap or time elapsed between prescriptions (see defaults in the table below). 
+
+To change the default settings, consult the documentation `?transitive_closure_control`.
+
+
+Table: Prescription overlap pattern classification rules and default parameters
+
+ Category | Pattern	| Conditions for <br> combination therapy |	Conditions for <br> continuation of therapy* |
+ :-: | :-----: | --------- | --------- | 
+ **1** | ![Overlap pattern 1](antimicrobial_therapy_episodes/cat-1.svg) | Ordered a max of 6h apart AND administrations separated by at the most 24h | Separated by at the most 36h  |
+ **2** | ![Overlap pattern 2](antimicrobial_therapy_episodes/cat-2.svg) | Ordered a max of 6h apart AND drug is identical AND first administrations separated by at the most 24h | Separated by at the most 36h  |
+ **3** | ![Overlap pattern 3](antimicrobial_therapy_episodes/cat-3.svg) | Never | Separated by at the most 36h |
+ **4** | ![Overlap pattern 4](antimicrobial_therapy_episodes/cat-4.svg) | Never | Always |
+ **5** | ![Overlap pattern 5](antimicrobial_therapy_episodes/cat-5.svg) | Ordered a max of 6h apart AND first administrations separated by at the most 24h | Always, unless combinations |
+ **6** | ![Overlap pattern 6](antimicrobial_therapy_episodes/cat-6.svg) | Ordered a max of 6h apart AND first administrations separated by at the most 24h | Always, unless combinations |
+ **7** | ![Overlap pattern 7](antimicrobial_therapy_episodes/cat-7.svg) | Never | Separated by at the most 36h |
+
+*Notes:* 
+
+- ○ denote prescriptions for one-off administrations
+- ▭ denote regular prescriptions (including drugs to take home)
+- $*$ for continuation edges, only monotherapy prescriptions and the first prescriptions within combinations (by drug alphabetical order) are used
+- in all categories, the date of first administration of (A) is anterior or equal to the date of first administration of (B).
+
+
+# Therapy table
+
+
+
+
+# References

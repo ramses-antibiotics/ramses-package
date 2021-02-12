@@ -18,21 +18,23 @@ download_icd10cm <- function(silent = FALSE) {
     grep("icd10cm_order_[0-9]{4}.txt$", 
          utils::unzip(icd10cm_file, list = T)$Name, 
          value = T))
-  icd_source <- utils::read.fwf(file = icd10cm_file, 
-                             widths = c(6,8,2,61), header = F,
-                             col.names = c("scrap", "icd_code", 
-                                           "header_indicator", "icd_description"),
-                             stringsAsFactor = FALSE)[,-1]
+  icd_source <- utils::read.fwf(
+    file = icd10cm_file, 
+    widths = c(6,8,2,61), header = F,
+    col.names = c("scrap", "icd_code", 
+                  "header_indicator", "icd_description"),
+    stringsAsFactor = FALSE
+  )[,-1]
   icd_source$icd_code <- trimws(icd_source$icd_code)
   icd_source$icd_description <- trimws(icd_source$icd_description)
-  icd_source$level <- stringr::str_length(icd_source$icd_code)
+  icd_source$level <- nchar(icd_source$icd_code)
   
-  icd3 <- filter(icd_source, .data$level == 3) %>% 
-    transmute(category_code = .data$icd_code,
-              category_description = .data$icd_description)
+  icd3 <- dplyr::filter(icd_source, level == 3) %>% 
+    dplyr::transmute(category_code = icd_code,
+                     category_description = icd_description)
   
-  icd5 <- filter(icd_source, .data$header_indicator == 1) %>% 
-    mutate(category_code = substring(.data$icd_code, 0, 3))
+  icd5 <- dplyr::filter(icd_source, header_indicator == 1) %>% 
+    dplyr::mutate(category_code = substring(icd_code, 0, 3))
   
   icd <- merge(icd5, icd3, by = "category_code", all.x = T)
   
@@ -89,8 +91,7 @@ download_icd10cm <- function(silent = FALSE) {
 #'     \item{category_description}{charactor vector three-character ICD-10 code descriptions}
 #'     \item{edition}{edition label provided in parameter \code{version}}
 #'     \item{\code{...}}{any other variables present in the \code{archive} source}
-#' }
-#' @import dplyr magrittr  
+#' }  
 #' @export
 #'
 #' @examples
@@ -102,21 +103,21 @@ import_icd <- function(archive, version) {
   temp <- tempfile()
   source_files <- utils::unzip(archive, exdir = temp)
   
-  icd_source <- readr::read_delim(
-    grep("CodesAndTitlesAndMetadata_", source_files, value = T),
-    delim = "\t", guess_max = 10000)
+  icd_source <- utils::read.delim(
+    file = grep("CodesAndTitlesAndMetadata_", source_files, value = T),
+    stringsAsFactors = FALSE)
   rm(temp)
   
   colnames(icd_source) <- tolower(colnames(icd_source))
   
-  icd_source$level <- stringr::str_length(icd_source[["alt_code"]])
+  icd_source$level <- nchar(icd_source[["alt_code"]])
   
-  icd3 <- filter(icd_source, .data$level == 3) %>% 
-    transmute(category_code = .data$alt_code,
-              category_description = .data$description)
+  icd3 <- dplyr::filter(icd_source, level == 3) %>% 
+    dplyr::transmute(category_code = alt_code,
+                     category_description = description)
   
-  icd5 <- filter(icd_source, .data$level > 3) %>% 
-    mutate(category_code = substring(.data$alt_code, 0, 3))
+  icd5 <- dplyr::filter(icd_source, level > 3) %>% 
+    dplyr::mutate(category_code = substring(alt_code, 0, 3))
   
   icd <- merge(icd5, icd3, by = "category_code", all.x = T)
   
@@ -255,7 +256,7 @@ map_infections_abx_indications <- function(df, icd_column) {
   join_output <- list()
   
   antibiotic_icd_indications <- Ramses::antibiotic_icd_indications
-  width_ICD_codes <- stringr::str_length(antibiotic_icd_indications$icd_root)
+  width_ICD_codes <- nchar(antibiotic_icd_indications$icd_root)
   width_ICD_codes <- range(width_ICD_codes)
   
   for(i in width_ICD_codes){
@@ -321,18 +322,20 @@ map_ICD10_CCSR <- function(df, icd_column) {
 
 .map_ICD10_CCSX <- function(df, icd_column, ccsx) {
   
+  keep_3chars <- keep_4chars <- icd_code_3chars <- icd_code_4chars <- match_key <- NULL
+  
   df$match_key <- gsub("X$", "", df[[icd_column]])
   
   # Prepare look ups for left joins
   ccsx_allchars <- dplyr::select(ccsx, 
-                                 -.data$keep_3chars, -.data$keep_4chars,
-                                 -.data$icd_code_3chars, -.data$icd_code_4chars)
-  ccsx_3chars <- dplyr::filter(ccsx, .data$keep_3chars) %>% 
-    dplyr::select(-.data$keep_3chars, -.data$keep_4chars, 
-                  -.data$icd_code_4chars, -.data$icd_code)
-  ccsx_4chars <- dplyr::filter(ccsx, .data$keep_4chars) %>% 
-    dplyr::select(-.data$keep_3chars, -.data$keep_4chars, 
-                  -.data$icd_code_3chars, -.data$icd_code)
+                                 -keep_3chars, -keep_4chars,
+                                 -icd_code_3chars, -icd_code_4chars)
+  ccsx_3chars <- dplyr::filter(ccsx, keep_3chars) %>% 
+    dplyr::select(-keep_3chars, -keep_4chars, 
+                  -icd_code_4chars, -icd_code)
+  ccsx_4chars <- dplyr::filter(ccsx, keep_4chars) %>% 
+    dplyr::select(-keep_3chars, -keep_4chars, 
+                  -icd_code_3chars, -icd_code)
   
   # Match on all
   x_matched <- dplyr::inner_join(df, 
@@ -363,8 +366,8 @@ map_ICD10_CCSR <- function(df, icd_column) {
   
   # Match on 3 characters on both datasets
   
-  x_unmatched <- mutate(x_unmatched,
-                        match_key = substr(.data$match_key, 0, 3))
+  x_unmatched <- dplyr::mutate(x_unmatched,
+                        match_key = substr(match_key, 0, 3))
   x_matched <- dplyr::inner_join(x_unmatched,
                                  ccsx_3chars,
                                  by = c("match_key" = "icd_code_3chars")) %>% 
@@ -376,8 +379,8 @@ map_ICD10_CCSR <- function(df, icd_column) {
   
   # Get both matched and unmatched codes
   x_all <- dplyr::bind_rows(x_matched, x_unmatched) %>%
-    dplyr::arrange(!!sym(icd_column)) %>%
-    dplyr::select(-.data$match_key)
+    dplyr::arrange(!!dplyr::sym(icd_column)) %>%
+    dplyr::select(-match_key)
   
   x_all
 }
@@ -470,6 +473,8 @@ compute_DDDs <- function(ATC_code, ATC_administration, dose, unit, silent = FALS
     stop("An internet connection is required for this function to work.")
   }
   
+  name <- note <- NULL
+  
   check_units <- na.omit(unique(as.character(unit)))
   invalid_units <- vapply(check_units, function(X) {
     inherits(
@@ -522,7 +527,7 @@ compute_DDDs <- function(ATC_code, ATC_administration, dose, unit, silent = FALS
       colnames(atc_page) <- gsub("^ddd$", "ddd_value", colnames(atc_page))
       
       atc_page$ATC_code <- search_ATC[i]
-      reference_DDD[[i]] <- dplyr::select(atc_page, -.data$name, -.data$note)
+      reference_DDD[[i]] <- dplyr::select(atc_page, -name, -note)
     }
   }
   

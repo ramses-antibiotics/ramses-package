@@ -1,6 +1,5 @@
 ---
 title: "Ramses: R Package for Antimicrobial Stewardship & Surveillance"
-author: "Peter Dutey"
 date: '`r format(Sys.Date(), "%d %B %Y")`'
 output: 
   rmarkdown::html_vignette:
@@ -33,6 +32,9 @@ knitr::opts_chunk$set(
   text-align: center;
   max-width:60px;
   margin: 1em;
+  font-size: large;
+  padding: 0pt;
+}
 }
 .vcenter {
     display: inline-block;
@@ -83,7 +85,7 @@ synthetic electronic health records.
 library(Ramses)
 library(ggplot2)
 library(dplyr)
-ramses_db <- create_mock_database("ramses-db.sqlite")
+ramses_db <- create_mock_database("ramses-db.sqlite", timezone = "Europe/London")
 ```
 
 ## Visualisation

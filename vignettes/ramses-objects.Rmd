@@ -1,0 +1,72 @@
+---
+title: "Objects and classes in Ramses"
+date: '`r format(Sys.Date(), "%d %B %Y")`'
+output: 
+  rmarkdown::html_vignette:
+    toc: true 
+bibliography: ../inst/REFERENCES.bib
+vignette: >
+  %\VignetteIndexEntry{Objects and classes in Ramses}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(DiagrammeR)
+# library(Ramses)
+```
+
+# Introduction and rationale
+
+This article introduces the way `Ramses` handles the following *objects* and data records associated with them, for instance, patients,  prescriptions or therapy episodes.
+
+Some functions, such as `get_patient_id()` are applicable to multiple object classes. To enable this, `Ramses` employs S4 classes. The [Object-oriented programming](https://adv-r.hadley.nz/oo.html) section by @Hadley2019 provides an introduction to objects and classes handling in `R`.
+
+Computer programmes designed for data analysis often need to overcome an obstacle known as **object-relational impedance mismatch**, which designates difficulties faced when interfacing a relational database management system (RDBMS) with an application such as the present package. The object representations in (a) the database and  (b) the software package have to be made explicit in an object-relational mapper. That is the vocation of the present article.
+
+
+# Objects in `Ramses`
+
+`Ramses` objects are S4 classes. They all conform to the RamsesObject class specification:
+
+- contain an `id` slot corresponding to a primary key in the database backend
+- contain a `conn` slot corresponding to the database backend connection, currently either of `SQLiteConnection` or `PqConnection` class (see [database objects](#database-objects))
+- can be passed to `compute()` in order to compute the corresponding database records (faster to retrieve)
+- can be passed to `collect()` in order to retrieve the corresponding database records (returns a `tbl_df` object)
+
+# Prescribing objects
+
+`Ramses` distinguishes between:
+
+- `MedicationRequest` objects, which represent a single drug-dose order
+- `Prescription` objects, which may represent one or more drug-dose orders, depending on whether the patient is on monotherapy (single drug) or combination therapy (2 or more drugs).
+
+Unlike `MedicationRequest` objects, `Prescription` objects may not be created directly with an `id`. `Prescription` objects must be created from a `MedicationRequest` object.
+
+Both can be used to get to the episode of antimicrobial therapy (class: `TherapyEpisode`).
+
+```{r diagram-objects, fig.cap="Class diagram of the main `Ramses` objects", fig.height=6, fig.width=8}
+grViz("ramses-objects/ramses-med-class-diagram.gv", engine = "twopi")
+```
+
+
+
+# Database objects
+
+Database objects follow `dbplyr`:
+
+- database connections have class `DBIConnection`. Currently, `SQLiteConnection` (package RSQLite) and `PqConnection` (package RPostgres) are supported
+- database table are created using the `tbl()` function and are represented by `tbl_sql` objects which, although they inherit from the `tbl` class, are distinct from the common `tbl_df` tibble class.
+
+```{r diagram-tbl, fig.cap="Class diagram of tbl objects in the `tidyverse`", fig.height=4, fig.width=8, echo=FALSE}
+grViz("ramses-objects/tbl-class-diagram.gv")
+```
+
+ 
+
+# References
+
