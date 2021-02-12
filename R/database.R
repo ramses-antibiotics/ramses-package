@@ -1742,7 +1742,7 @@ UseMethod(".run_transitive_closure")
 #' @export
 collect_ramses_tbl <- function(tbl) {
   if(is(tbl, "tbl_SQLiteConnection")) {
-    tbl <- dplyr::collect(tbl)
+    tbl_df <- dplyr::collect(tbl)
     DATETIME_FIELDS <- c(
       "prescription_start",
       "prescription_end",
@@ -1765,11 +1765,14 @@ collect_ramses_tbl <- function(tbl) {
       "end_time"
     )
     DATETIME_FIELDS <- DATETIME_FIELDS[
-      which(DATETIME_FIELDS %in% colnames(tbl))
+      which(DATETIME_FIELDS %in% colnames(tbl_df))
       ]
     for(var in DATETIME_FIELDS){
-      tbl[[var]] <- gsub("[:]([0-9]{2})$", "\\1", tbl[[var]])
-      tbl[[var]] <- as.POSIXct(tbl[[var]], format = "%Y-%m-%d %H:%M:%S%z")
+      tbl_df[[var]] <- gsub("[:]([0-9]{2})$", "\\1", tbl_df[[var]])
+      tbl_df[[var]] <- as.POSIXct(tbl_df[[var]], format = "%Y-%m-%d %H:%M:%S%z")
+      if ( .hasSlot(tbl$src$con, "timezone") ) {
+        attr(tbl_df[[var]], tzone) <- tbl$src$con@timezone
+      }
     }
     
     DATE_FIELDS <- c(
@@ -1777,13 +1780,13 @@ collect_ramses_tbl <- function(tbl) {
       "date_of_death"
     )
     DATE_FIELDS <- DATE_FIELDS[
-      which(DATE_FIELDS %in% colnames(tbl))
+      which(DATE_FIELDS %in% colnames(tbl_df))
       ]
     for(var in DATE_FIELDS){
-      tbl[[var]] <- as.Date(tbl[[var]])
+      tbl_df[[var]] <- as.Date(tbl_df[[var]])
     }
     
-    return(tbl)
+    return(tbl_df)
   } else {
     dplyr::collect(tbl)
   }
