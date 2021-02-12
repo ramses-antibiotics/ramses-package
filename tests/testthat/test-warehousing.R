@@ -689,9 +689,9 @@ test_that("Ramses on PosgreSQL", {
   expect_equal(
     parenteral_changes_get(TherapyEpisode(conPostgreSQL, "a028cf950c29ca73c01803b54642d513")),
     list(
-      c(0, 144, 96),
-      c(146, 316, 218), #TODO mysterious behaviour from Postgres here cf #40
-      c(318, 390,  NA) #TODO mysterious behaviour from Postgres here cf #40
+      c(0, 144, 97),
+      c(146, 316, 219),
+      c(318, 390,  NA)
     )
   )
   

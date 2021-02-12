@@ -268,9 +268,9 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
       dplyr::summarise(parenteral = dplyr::if_else(
         mean(
           dplyr::if_else(ATC_route == "P", 1.0, 0.0), 
-          na.rm = T) == 1.0,
-        1L,
-        0L
+          na.rm = T) == 0.0,
+        0L,
+        1L
       ))
   } else {
     .throw_error_method_not_implemented(".therapy_table_parenteral_indicator()",
