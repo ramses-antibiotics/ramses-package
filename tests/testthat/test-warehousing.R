@@ -11,8 +11,7 @@ test_that("Ramses on SQLite 1", {
     skip("Test only on Travis")
   }
 
-  conSQLite <- create_mock_database(file = "test1.sqlite", silent = TRUE,
-                                    timezone = "Europe/London")
+  conSQLite <- create_mock_database(file = "test1.sqlite", silent = TRUE)
   expect_true(is(conSQLite, "SQLiteConnection"))
   test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
     dplyr::filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", 
@@ -41,17 +40,16 @@ test_that("Ramses on SQLite 1", {
 
 test_that("Ramses on SQLite 2", {
   
-  if (!identical(Sys.getenv("CI"), "true")) {
-    skip("Test only on Travis")
-  }
+  # if (!identical(Sys.getenv("CI"), "true")) {
+  #   skip("Test only on Travis")
+  # }
 
   # > validate functions --------------------------------------------------
   
   drug_data <- Ramses:::.prepare_example_drug_records()
   inpatient_data <- Ramses:::.prepare_example_inpatient_records()
   icd10cm <- download_icd10cm()
-  conSQLite <- suppressWarnings(connect_local_database("test.sqlite", 
-                                                       timezone = "Europe/London"))
+  conSQLite <- suppressWarnings(connect_local_database("test.sqlite"))
   
   expect_null(validate_prescriptions(drug_data$drug_rx))
   expect_null(validate_administrations(drug_data$drug_admins))
@@ -321,18 +319,29 @@ test_that("Ramses on SQLite 2", {
   # > show methods ----------------------------------------------------------
   
   # TherapyEpisode
-  expect_equal(utils::capture.output(TherapyEpisode(conSQLite, "89ac870bc1c1e4b2a37cec79d188cb08"))[1:8],
-                 c("TherapyEpisode 89ac870bc1c1e4b2a37cec79d188cb08 ", "Patient:   1555756339 ", 
-                   "Start:     2017-07-02 01:15:46 BST ", "End:       2017-07-06 01:35:46 BST ", 
-                   "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
-                   "  > Clarithromycin ORAL 500mg 4 days"))
-  expect_equal(utils::capture.output(TherapyEpisode(conSQLite, "fa179f4bcf3efa1e21225ab207ab40c4"))[1:11],
-                 c("TherapyEpisode fa179f4bcf3efa1e21225ab207ab40c4 ", "Patient:   3422481921 ", 
-                   "Start:     2017-11-15 15:33:36 GMT ", "End:       2017-12-01 21:11:36 GMT ", 
-                   "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
-                   "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  > Piperacillin/tazobactam IV 4.5g 4 days", 
-                   "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  ... (2 additional medication requests)"
-                 ))
+  expect_equal(
+    utils::capture.output(TherapyEpisode(conSQLite, "89ac870bc1c1e4b2a37cec79d188cb08"))[1:8],
+    c("TherapyEpisode 89ac870bc1c1e4b2a37cec79d188cb08 ", "Patient:   1555756339 ", 
+      paste0("Start:     ",
+             as.character(as.POSIXct("2017-07-02 01:15:46", tz = "Europe/London"), tz = Sys.timezone(), format = "%Y-%m-%d %H:%M:%S %Z"),
+             " "), 
+      paste0("End:       ",
+             as.character(as.POSIXct("2017-07-06 01:35:46", tz = "Europe/London"), tz = Sys.timezone(), format = "%Y-%m-%d %H:%M:%S %Z"),
+             " "), 
+      "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
+      "  > Clarithromycin ORAL 500mg 4 days"))
+  expect_equal(
+    utils::capture.output(TherapyEpisode(conSQLite, "fa179f4bcf3efa1e21225ab207ab40c4"))[1:11],
+    c("TherapyEpisode fa179f4bcf3efa1e21225ab207ab40c4 ", "Patient:   3422481921 ", 
+      paste0("Start:     ", 
+             as.character(as.POSIXct("2017-11-15 15:33:36", tz = "Europe/London"), tz = Sys.timezone(), format = "%Y-%m-%d %H:%M:%S %Z"),
+             " "),
+      paste0("End:       ",
+             as.character(as.POSIXct("2017-12-01 21:11:36", tz = "Europe/London"), tz = Sys.timezone(), format = "%Y-%m-%d %H:%M:%S %Z"),
+             " "),
+      "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
+      "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  > Piperacillin/tazobactam IV 4.5g 4 days", 
+      "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  ... (2 additional medication requests)"))
   expect_equal(
     utils::capture.output(TherapyEpisode(conSQLite, "biduletruc"))[1:5],
     c("TherapyEpisode biduletruc ", "Record is not available.", "Please check object id is valid", 
@@ -340,21 +349,32 @@ test_that("Ramses on SQLite 2", {
   )
   
   # MedicationRequest
+  
   expect_equal(
     utils::capture.output(MedicationRequest(conSQLite, "5528fc41106bb48eb4d48bc412e13e67"))[1:8],
     c("MedicationRequest 5528fc41106bb48eb4d48bc412e13e67 ", "Clarithromycin IV 500mg 0 days ", 
-      "Patient:     99999999999 ", "Start:        2015-08-07 10:27:00 BST ", 
-      "End:          2015-08-07 15:59:00 BST ", "Therapy:      5528fc41106bb48eb4d48bc412e13e67 ", 
-      "", "Database connection:") 
-  )
+      "Patient:     99999999999 ", 
+      paste0("Start:        ", 
+             as.character(as.POSIXct("2015-08-07 10:27:00", tz = "Europe/London"), tz = Sys.timezone(), format = "%Y-%m-%d %H:%M:%S %Z"),
+             " "),
+      paste0("End:          ", 
+             as.character(as.POSIXct("2015-08-07 15:59:00", tz = "Europe/London"), tz = Sys.timezone(), format = "%Y-%m-%d %H:%M:%S %Z"),
+             " "),
+      "Therapy:      5528fc41106bb48eb4d48bc412e13e67 ", 
+      "", "Database connection:"))
   expect_equal(
     utils::capture.output(MedicationRequest(conSQLite, "1ab55e515af6b86dde76abbe0bffbd3f"))[1:9],
     c("MedicationRequest 1ab55e515af6b86dde76abbe0bffbd3f ", "Clarithromycin ORAL 500mg 4 days ", 
-      "Patient:     3894468747 ", "Start:        2015-10-01 21:38:55 BST ", 
-      "End:          2015-10-05 21:38:55 BST ", "Combination:  1ab55e515af6b86dde76abbe0bffbd3f ", 
+      "Patient:     3894468747 ", 
+      paste0("Start:        ", 
+             as.character(as.POSIXct("2015-10-01 21:38:55", tz = "Europe/London"), tz = Sys.timezone(), format = "%Y-%m-%d %H:%M:%S %Z"),
+             " "), 
+      paste0("End:          ", 
+             as.character(as.POSIXct("2015-10-05 21:38:55", tz = "Europe/London"), tz = Sys.timezone(), format = "%Y-%m-%d %H:%M:%S %Z"),
+             " "),
+      "Combination:  1ab55e515af6b86dde76abbe0bffbd3f ", 
       "Therapy:      1ab55e515af6b86dde76abbe0bffbd3f ", "", "Database connection:"
-    )
-  )
+    ))
   expect_equal(
     utils::capture.output(MedicationRequest(conSQLite, "biduletruc"))[1:5],
     c("MedicationRequest biduletruc ", "Record is not available.", "Please check object id is valid", 
@@ -415,8 +435,7 @@ test_that("SQLite does transitive closure", {
 
 test_that(".format_str_time_sqlite", {
   
-  conSQLite <- suppressWarnings(connect_local_database("test.sqlite",
-                                                       timezone = "Europe/London"))
+  conSQLite <- suppressWarnings(connect_local_database("test.sqlite"))
   test_posixct <- dplyr::tibble(t_start = as.POSIXct("2017-07-02 01:15:46", 
                                                      tz = "Europe/London"))
   test_posixct <- .format_str_time_sqlite(conSQLite, test_posixct)

@@ -4,14 +4,11 @@
 \alias{create_mock_database}
 \title{Create a mock database for training/demonstration purposes}
 \usage{
-create_mock_database(file, timezone = Sys.timezone(), silent = FALSE)
+create_mock_database(file, silent = FALSE)
 }
 \arguments{
 \item{file}{A file path to an existing or new database file with a
 ".sqlite" extension.}
-
-\item{timezone}{a string designating the default time zone to be used by the 
-database connection. It defaults to the R session time zone \code{\link{Sys.timezone}}()}
 
 \item{silent}{if \code{TRUE}, progress bar will be hidden. The default is 
 \code{FALSE}.}

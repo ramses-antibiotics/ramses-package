@@ -922,8 +922,6 @@ create_therapy_episodes <- function(
 #' method with mock data unless you operate within a secure data enclave.
 #'
 #' @param file A file path to an existing or new database file with an .sqlite extension.
-#' @param timezone a string designating the default time zone to be used by the 
-#' database connection. It defaults to the R session time zone \code{\link{Sys.timezone}}()
 #' @return An database connection object of class SQLiteConnection.
 #' @seealso The dbplyr website provides excellent guidance on how to connect to databases: 
 #' \url{https://db.rstudio.com/getting-started/connect-to-database}
@@ -945,14 +943,14 @@ create_therapy_episodes <- function(
 #'     dplyr::tbl(con, "reference_aware")
 #'     DBI::dbDisconnect(con)
 #'     file.remove("ramses-db.sqlite")
-connect_local_database <- function(file, timezone = Sys.timezone()) {
+connect_local_database <- function(file) {
   if(!file.exists(file)){
-    con <- DBI::dbConnect(RSQLite::SQLite(), file, timezone = timezone)
+    con <- DBI::dbConnect(RSQLite::SQLite(), file)
     .build_tally_table(con)
     message(paste0("SQLite database created in \n", con@dbname, 
                    "\nPlease do not use real patient data."))
   } else {
-    con <- DBI::dbConnect(RSQLite::SQLite(), file, timezone = timezone)
+    con <- DBI::dbConnect(RSQLite::SQLite(), file)
     message(paste0("Connected to ", con@dbname, 
                    "\nPlease do not use real patient data."))
   }
@@ -971,8 +969,6 @@ connect_local_database <- function(file, timezone = Sys.timezone()) {
 #'
 #' @param file A file path to an existing or new database file with a
 #'  ".sqlite" extension.
-#' @param timezone a string designating the default time zone to be used by the 
-#' database connection. It defaults to the R session time zone \code{\link{Sys.timezone}}()
 #' @param silent if \code{TRUE}, progress bar will be hidden. The default is 
 #' \code{FALSE}.
 #' @return An object of class SQLiteConnection.
@@ -981,7 +977,6 @@ connect_local_database <- function(file, timezone = Sys.timezone()) {
 #' @importFrom DBI dbConnect dbDisconnect
 #' @export
 create_mock_database <- function(file, 
-                                 timezone = Sys.timezone(), 
                                  silent = FALSE) {
   
   stopifnot(is.logical(silent))
@@ -991,7 +986,7 @@ create_mock_database <- function(file,
       total = 8)
     progress_bar$tick(0)
   }
-  mock_db <- DBI::dbConnect(RSQLite::SQLite(), file, timezone = timezone)
+  mock_db <- DBI::dbConnect(RSQLite::SQLite(), file)
   
   .build_tally_table(mock_db)
   dplyr::copy_to(
@@ -1770,9 +1765,6 @@ collect_ramses_tbl <- function(tbl) {
     for(var in DATETIME_FIELDS){
       tbl_df[[var]] <- gsub("[:]([0-9]{2})$", "\\1", tbl_df[[var]])
       tbl_df[[var]] <- as.POSIXct(tbl_df[[var]], format = "%Y-%m-%d %H:%M:%S%z")
-      if ( .hasSlot(tbl$src$con, "timezone") ) {
-        attr(tbl_df[[var]], tzone) <- tbl$src$con@timezone
-      }
     }
     
     DATE_FIELDS <- c(

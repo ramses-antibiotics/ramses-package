@@ -4,13 +4,10 @@
 \alias{connect_local_database}
 \title{Create or connect to a local SQLite database}
 \usage{
-connect_local_database(file, timezone = Sys.timezone())
+connect_local_database(file)
 }
 \arguments{
 \item{file}{A file path to an existing or new database file with an .sqlite extension.}
-
-\item{timezone}{a string designating the default time zone to be used by the 
-database connection. It defaults to the R session time zone \code{\link{Sys.timezone}}()}
 }
 \value{
 An database connection object of class SQLiteConnection.
