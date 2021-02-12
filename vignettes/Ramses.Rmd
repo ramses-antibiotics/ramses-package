@@ -85,7 +85,7 @@ synthetic electronic health records.
 library(Ramses)
 library(ggplot2)
 library(dplyr)
-ramses_db <- create_mock_database("ramses-db.sqlite", timezone = "Europe/London")
+ramses_db <- create_mock_database("ramses-db.sqlite")
 ```
 
 ## Visualisation

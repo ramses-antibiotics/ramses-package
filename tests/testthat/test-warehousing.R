@@ -40,9 +40,9 @@ test_that("Ramses on SQLite 1", {
 
 test_that("Ramses on SQLite 2", {
   
-  # if (!identical(Sys.getenv("CI"), "true")) {
-  #   skip("Test only on Travis")
-  # }
+  if (!identical(Sys.getenv("CI"), "true")) {
+    skip("Test only on Travis")
+  }
 
   # > validate functions --------------------------------------------------
   
