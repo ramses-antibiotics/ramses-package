@@ -11,7 +11,8 @@ test_that("Ramses on SQLite 1", {
     skip("Test only on Travis")
   }
 
-  conSQLite <- create_mock_database(file = "test1.sqlite", silent = TRUE)
+  conSQLite <- create_mock_database(file = "test1.sqlite", silent = TRUE,
+                                    timezone = "Europe/London")
   expect_true(is(conSQLite, "SQLiteConnection"))
   test_output <- tbl(conSQLite, "drug_prescriptions") %>% 
     dplyr::filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", 
@@ -49,7 +50,8 @@ test_that("Ramses on SQLite 2", {
   drug_data <- Ramses:::.prepare_example_drug_records()
   inpatient_data <- Ramses:::.prepare_example_inpatient_records()
   icd10cm <- download_icd10cm()
-  conSQLite <- suppressWarnings(connect_local_database("test.sqlite"))
+  conSQLite <- suppressWarnings(connect_local_database("test.sqlite", 
+                                                       timezone = "Europe/London"))
   
   expect_null(validate_prescriptions(drug_data$drug_rx))
   expect_null(validate_administrations(drug_data$drug_admins))
@@ -413,7 +415,8 @@ test_that("SQLite does transitive closure", {
 
 test_that(".format_str_time_sqlite", {
   
-  conSQLite <- suppressWarnings(connect_local_database("test.sqlite"))
+  conSQLite <- suppressWarnings(connect_local_database("test.sqlite",
+                                                       timezone = "Europe/London"))
   test_posixct <- dplyr::tibble(t_start = as.POSIXct("2017-07-02 01:15:46", 
                                                      tz = "Europe/London"))
   test_posixct <- .format_str_time_sqlite(conSQLite, test_posixct)
