@@ -4,7 +4,7 @@
 ## code to prepare `data/inpatient_wards.rda` dataset goes here
 ## code to prepare `data/inpatient_microbiology.rda` dataset goes here
 ## code to prepare `data/inpatient_investigations.rda` dataset goes here
-
+library(dplyr)
 inpatient_episodes <- read.csv(
   file = "data-raw/inpatient_episodes.csv", stringsAsFactors = F,
   colClasses = c("character", "character", "Date", "Date", 
