@@ -347,12 +347,14 @@ load_inpatient_microbiology <- function(conn,
 #' @param max_combination_authoring_gap a positive integer setting the maximum number
 #' of hours tolerated between the time of authoring of two prescriptions 
 #' administered as combination therapy. The default is 6 hours.
-  #' @param max_combination_start_gap a positive integer setting the maximum number of 
+#' @param max_combination_start_gap a positive integer setting the maximum number of 
 #' hours tolerated between the start of administration of two prescriptions
 #' administred as combination therapy. The default is 24 hours.
 #'
 #' @return A list of three positive integer variables.
 #' @export
+#' @seealso For more details please consult 
+#' \code{vignette("therapy-episodes", package = "Ramses")}
 #'
 #' @examples
 #' # default parameters
@@ -876,6 +878,8 @@ load_medications.PqConnection <- function(
 #'    fields in \code{drug_prescriptions} table
 #'    \item recreate the \code{drug_therapy_episodes} table
 #' }
+#' @seealso For more details please consult 
+#' \code{vignette("therapy-episodes", package = "Ramses")}
 #' @rdname create_therapy_episodes
 #' @export
 create_therapy_episodes <- function(

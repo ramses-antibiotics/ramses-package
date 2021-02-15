@@ -55,3 +55,7 @@ transitive_closure_control(
   max_combination_authoring_gap = 6,
   max_combination_start_gap = 24)
 }
+\seealso{
+For more details please consult 
+\code{vignette("therapy-episodes", package = "Ramses")}
+}

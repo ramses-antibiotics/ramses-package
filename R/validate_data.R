@@ -509,7 +509,7 @@ validate_inpatient_episode_dates <- function(data, type = "episodes") {
   if (nrow(bed_day_matching[abs(BD_episode - BD_spell) > 5]) > 0) {
     warning(simpleWarning(paste0(
       "Total bed days calculated from `", type,"` does not",
-      "match admission duration. Bed days may be incorrect.")))
+      "match admission duration.\n Bed days may be incorrect.")))
   }
   
   rm(bed_day_matching)
@@ -524,7 +524,7 @@ validate_inpatient_episode_dates <- function(data, type = "episodes") {
   
   if (nrow(episodes[!is.na(nextepistart) & nextepistart != end]) > 0) {
     warning(simpleWarning(paste0(
-      "Some hospital spells have gaps between `", type,"`.",
+      "Some hospital spells have gaps between `", type,"`.\n",
       "Bed days may be underestimated.")))
   }
 

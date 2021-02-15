@@ -40,3 +40,7 @@ This function performs the following tasks:
    \item recreate the \code{drug_therapy_episodes} table
 }
 }
+\seealso{
+For more details please consult 
+\code{vignette("therapy-episodes", package = "Ramses")}
+}

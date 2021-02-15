@@ -51,83 +51,100 @@ The animation below shows how this concept is used in the context of routinely-c
 
 <ol id="diagram_caption" style="list-style-type:upper-alpha">
 <li>
-  <p>Based on unprocessed medical records alone, it is hard to infer the chain of prescribing events.</p>
-  <p>We know that patient X was prescribed nitrofurantoin (one-off + 3 days) during a first encounter.</p>
-  <p>We know that patient X was subsequently encountered again 24 hours later and treated with amoxicillin (1 day), gentamicin (one-off), and meropenem (5 days).</p>
+  <p>Based on unprocessed medical records alone, it is hard to characterise the chain of events beyond basic statements:</p>
+  <p>Patient X was prescribed nitrofurantoin (one-off + 3 days) during a first encounter.</p>
+  <p>Patient X was subsequently encountered again 24 hours later and treated with amoxicillin (1 day), gentamicin (one-off), and meropenem (5 days).</p>
 </li>
 <li>
-  <p>Ramses links prescriptions together (by transitive closure) to reconstruct the <i>therapy episode</i>.</p>
-  <p>We can now measure that patient X took antibiotics without interruption for 7 days</p>
+  <p>Ramses links prescriptions together (by transitive closure) to reconstruct the <i>therapy episode, allowing more sophisticated observations:</i></p>
+  <p>Patient X took antibiotics without interruption for 7 days</p>
   <p>On first encounter, patient X was given a first dose of nitrofurantoin for a suspected lower urinary tract infection (UTI), then reviewed by a senior doctor and given a regular course of three more days on the same antibiotic. Two of these days would have been taken at home.</p>
   <p>During the following 24h, patient X’s worsening condition led to a second encounter. Patient X was prescribed a <i>combination therapy</i> (amoxicillin and one-off gentamicin). On review, after 24 hours, the lead clinician diagnosed a pyelonephritis and ordered a 5 day course of meropenem.</p>
 </li>
 </ol>
 
 
-In Ramses, the therapy episodes are represented in S4 class objects `TherapyEpisode`.
+## Therapy episodes in Ramses 
 
-Therapy episodes and therapy combinations are created automatically by Ramses when loading data (see [methods section](#methodology)).
+Therapy episodes and therapy combinations are created automatically by Ramses when loading data (see [methods section](#methodology)) and referenced in the `drug_prescriptions` table.
 
 
-
-```{r create_db}
+```{r create_db, message=FALSE, warning=FALSE}
 library(Ramses)
 library(dplyr)
 ramses_db <- create_mock_database("ramses-db.sqlite")
 
-tbl(ramses_db, "drug_therapy_episodes") %>% 
+tbl(ramses_db, "drug_prescriptions") %>% 
   filter(patient_id == "99999999998") %>% 
   collect_ramses_tbl() %>% 
+  select(patient_id, prescription_id, combination_id, 
+         therapy_id, therapy_rank, prescription_text) %>% 
   glimpse()
 ```
 
+Therapy episodes are represented as objects of S4 class `TherapyEpisode`.
 
-
-```{r}
+```{r demo_therapy_episode}
 uti_episode <- TherapyEpisode(ramses_db, "d7c0310a08cf9f0f318276125cd282ed")
 uti_episode
 ```
 
-
+For more information on S4 classes used in Ramses and their associated methods, see the [Objects and classes vignette](ramses-objects.html).
 
 # Therapy table
 
-```{r get_therapy_table}
+Therapy episodes can be studied by creating a longitudinal, hour-by-hour matrix called 'therapy table'.
+
+```{r get_therapy_table_code, eval=FALSE}
 get_therapy_table(uti_episode, 
                   collect = TRUE)
 ```
+```{r get_therapy_table_output, echo=FALSE, paged.print=TRUE}
+get_therapy_table(uti_episode, collect = TRUE) %>% rmarkdown::paged_table() 
+```
 
 
-We can also visual conversion from intravenous to oral therapy. Using the `parenteral_changes_get()` function below, we find there was only one sequence that included intravenous therapy. This sequence was initiated at $t$ = 122, and ended at $t$ = 242, without ever being converted to oral administration (`NA`).
+This table can contain a number of clinical features. In the example above, route of therapy administration is indicated in the `parenteral` field: 
+
+- `1` indicates that all drugs are administered via parenteral route (eg intravenously)
+- `0` indicates that at least one drug is administered via another route (eg orally).
+
+A dedicated function can extract transitions from intravenous to oral therapy. Using the `parenteral_changes_get()` function below, we find there was only one sequence that included intravenous therapy. This sequence was initiated at $t$ = 122, and ended at $t$ = 242, without ever being converted to oral administration (`NA`). 
 
 ```{r parenteral_changes_get}
 parenteral_changes_get(TherapyEpisode(ramses_db, "d7c0310a08cf9f0f318276125cd282ed"))
 ```
 
+This function returns as many vectors as there are sequences of parenteral administration:
 
-
-```{r dbDisconnect}
-DBI::dbDisconnect(ramses_db)
+```{r parenteral_changes_get_multiple}
+parenteral_changes_get(TherapyEpisode(ramses_db, "a028cf950c29ca73c01803b54642d513"))
 ```
 
 
-```{r include=FALSE}
+```{r dbDisconnect, include=FALSE}
+DBI::dbDisconnect(ramses_db)
 file.remove("ramses-db.sqlite")
 ```
 
-```
+
 
 
 # Methodology
 
-## Therapy episodes linkage method
+## Prescription linkage
 
-The two ways `Ramses` links prescriptions into episodes and combinations are:
+Ramses links prescriptions together if:
+
+- prescriptions share the same `antiinfective_type`: antibacterials are linked with antibacterials, antifungals with antifungals, etc.
+- `prescription_status` is *not* `'cancelled'`,  `'draft'`, or `'entered-in-error'`
+
+`Ramses` links prescriptions into episodes and combinations in two instances:
 
 - by default, using the `load_medications()` function
 - on request, by calling the `create_therapy_episodes()` function.
 
-Both functions include a `transitive_closure_controls` argument, which controls parameters for linking prescriptions together into episodes and/or combinations, based on patterns of overlap or time elapsed between prescriptions (see defaults in the table below). 
+Both functions include a `transitive_closure_controls` argument, which controls parameters for linking prescriptions together into episodes and/or combinations, based on patterns of overlap or time elapsed between prescriptions (see defaults in the table below).
 
 To change the default settings, consult the documentation `?transitive_closure_control`.
 
