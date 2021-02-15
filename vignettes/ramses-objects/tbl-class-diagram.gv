@@ -1,40 +1,40 @@
 digraph G {
-  fontsize = 8
+  fontsize = 10
 
   node [
           fontname = "monospace"
-          fontsize = 8
           shape = "record"
+          width = 1.2
 
   ]
 
   edge [
           fontname = "sans-serif"
-          fontsize = 8
   ]
 
 dataframe [
   label="data.frame"
+  width = 1.5
 ]
 
 tbl_SQLiteConnection [
-  width=1.4
+  width=2.5
 ]
 
 tbl_PqConnection [
-  width=1.4
+  width=2.1
 ]
 
 DBIConnection [
-  width=1.2
+  width=2
 ]
 
 SQLiteConnection [
-  width=1.2
+  width=2.1
 ]
 
 PqConnection [
-  width=1.2
+  width=1.7
 ]
 
 tbl -> tbl_lazy [dir=back]

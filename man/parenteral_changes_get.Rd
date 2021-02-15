@@ -24,7 +24,7 @@ of three integers coding for the time \code{t}:
 }
 
 The integers are in direct correspondance with field \code{t} in the 
-therapy episode's table (\code{\link{get_therapy_table}()}).
+therapy episode's table (\code{\link{therapy_table_get}()}).
 }
 \description{
 Timely switch to oral therapy is a widely recommended
@@ -67,12 +67,12 @@ therapy_sequence <- parenteral_changes_get(example_therapy)
 therapy_sequence
 
 # Look for the section of the therapy table where 0 ≤ t ≤ 145
-filter(get_therapy_table(example_therapy, collect = TRUE),
+filter(therapy_table_get(example_therapy, collect = TRUE),
        between(t,
                therapy_sequence[[1]][1],
                therapy_sequence[[1]][2])) \%>\% head()
 # Look for the section of the therapy table near conversion (t = 73)
-filter(get_therapy_table(example_therapy, collect = TRUE),
+filter(therapy_table_get(example_therapy, collect = TRUE),
        between(t, 70, 75))
 }
 }

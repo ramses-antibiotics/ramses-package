@@ -328,7 +328,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' }
 #' 
 #' The integers are in direct correspondance with field \code{t} in the 
-#' therapy episode's table (\code{\link{get_therapy_table}()}).
+#' therapy episode's table (\code{\link{therapy_table_get}()}).
 #' @export
 #' @examples 
 #' \dontrun{
@@ -341,18 +341,18 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' therapy_sequence
 #' 
 #' # Look for the section of the therapy table where 0 ≤ t ≤ 145
-#' filter(get_therapy_table(example_therapy, collect = TRUE),
+#' filter(therapy_table_get(example_therapy, collect = TRUE),
 #'        between(t,
 #'                therapy_sequence[[1]][1],
 #'                therapy_sequence[[1]][2])) %>% head()
 #' # Look for the section of the therapy table near conversion (t = 73)
-#' filter(get_therapy_table(example_therapy, collect = TRUE),
+#' filter(therapy_table_get(example_therapy, collect = TRUE),
 #'        between(t, 70, 75))
 #' }
 parenteral_changes_get <- function(therapy_episode, tolerance_hours = 12L) {
   stopifnot(is.numeric(tolerance_hours) | length(tolerance_hours) != 1)
   tolerance_hours <- as.integer(tolerance_hours)
-  TT <- get_therapy_table(therapy_episode, collect = T)
+  TT <- therapy_table_get(therapy_episode, collect = T)
   .parenteral_vector_process(TT[["parenteral"]], tolerance_hours)
 }
 
@@ -418,7 +418,7 @@ parenteral_changes_get <- function(therapy_episode, tolerance_hours = 12L) {
   match_indices
 }
 
-# get_therapy_table -------------------------------------------------------
+# therapy_table_get -------------------------------------------------------
 
 
 #' Get the therapy table
@@ -427,13 +427,13 @@ parenteral_changes_get <- function(therapy_episode, tolerance_hours = 12L) {
 #' @param collect whether to collect the remote \code{tbl_sql} and return a local 
 #' \code{tbl_df}. The default is \code{FALSE}
 #' @return an object of class \code{tbl}
-#' @rdname get_therapy_table
+#' @rdname therapy_table_get
 #' @export
-setGeneric("get_therapy_table", function(object, collect = FALSE) standardGeneric("get_therapy_table"))
+setGeneric("therapy_table_get", function(object, collect = FALSE) standardGeneric("therapy_table_get"))
 
-#' @rdname get_therapy_table
+#' @rdname therapy_table_get
 #' @export
-setMethod("get_therapy_table", "TherapyEpisode", function(object, collect = FALSE) {
+setMethod("therapy_table_get", "TherapyEpisode", function(object, collect = FALSE) {
   stopifnot(is.logical(collect))
   if( collect ) {
     collect_ramses_tbl(object@therapy_table)
@@ -442,6 +442,17 @@ setMethod("get_therapy_table", "TherapyEpisode", function(object, collect = FALS
   }
 })
 
+#' @rdname therapy_table_get
+#' @export
+setMethod("therapy_table_get", "MedicationRequest", function(object, collect = FALSE) {
+  stopifnot(is.logical(collect))
+  object <- TherapyEpisode(object)
+  if( collect ) {
+    collect_ramses_tbl(object@therapy_table)
+  } else {
+    object@therapy_table
+  }
+})
 
 
 # show methods ------------------------------------------------------------

@@ -49,7 +49,7 @@ Unlike `MedicationRequest` objects, `Prescription` objects may not be created di
 
 Both can be used to get to the episode of antimicrobial therapy (class: `TherapyEpisode`).
 
-```{r diagram-objects, fig.cap="Class diagram of the main `Ramses` objects", fig.height=6, fig.width=8}
+```{r diagram-objects, fig.cap="Class diagram of the main `Ramses` objects", fig.height=6, fig.width=8, echo=FALSE}
 grViz("ramses-objects/ramses-med-class-diagram.gv", engine = "twopi")
 ```
 
@@ -57,12 +57,12 @@ grViz("ramses-objects/ramses-med-class-diagram.gv", engine = "twopi")
 
 # Database objects
 
-Database objects follow `dbplyr`:
+Database objects follow the [`dbplyr`](https://dbplyr.tidyverse.org/articles/dbplyr.html) architecture:
 
 - database connections have class `DBIConnection`. Currently, `SQLiteConnection` (package RSQLite) and `PqConnection` (package RPostgres) are supported
 - database table are created using the `tbl()` function and are represented by `tbl_sql` objects which, although they inherit from the `tbl` class, are distinct from the common `tbl_df` tibble class.
 
-```{r diagram-tbl, fig.cap="Class diagram of tbl objects in the `tidyverse`", fig.height=4, fig.width=8, echo=FALSE}
+```{r diagram-tbl, fig.cap="Class diagram of tbl objects in the `tidyverse`", fig.height=3, fig.width=4, echo=FALSE}
 grViz("ramses-objects/tbl-class-diagram.gv")
 ```
 

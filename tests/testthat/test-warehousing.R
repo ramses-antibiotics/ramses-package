@@ -217,7 +217,7 @@ test_that("Ramses on SQLite 2", {
   
   # Single IVPO change pt 99999999999
   test_episode <- TherapyEpisode(conSQLite, "5528fc41106bb48eb4d48bc412e13e67")
-  test_output <- get_therapy_table(test_episode, collect = T)
+  test_output <- therapy_table_get(test_episode, collect = T)
   test_expected_head <- dplyr::tibble(
     t = 0:5,
     patient_id = "99999999999",
@@ -257,10 +257,15 @@ test_that("Ramses on SQLite 2", {
   test_medication_request <- MedicationRequest(conSQLite, "5528fc41106bb48eb4d48bc412e13e67")
   expect_is(test_medication_request, "MedicationRequest")
   expect_is(TherapyEpisode(test_medication_request), "TherapyEpisode")
-  expect_equivalent(head(get_therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+  expect_equivalent(head(therapy_table_get(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_head)
-  expect_equivalent(tail(get_therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+  expect_equivalent(tail(therapy_table_get(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_tail)
+  expect_equivalent(head(therapy_table_get(test_medication_request, collect = TRUE)), 
+                    test_expected_head)
+  expect_equivalent(tail(therapy_table_get(test_medication_request, collect = TRUE)), 
+                    test_expected_tail)
+  
   # > IVPO ------------------------------------------------------------------
   
   expect_equal(parenteral_changes_get(TherapyEpisode(conSQLite, "5528fc41106bb48eb4d48bc412e13e67")), 
@@ -647,7 +652,7 @@ test_that("Ramses on PosgreSQL", {
   # Single IVPO change pt 99999999999
   
   test_episode <- TherapyEpisode(conPostgreSQL, "5528fc41106bb48eb4d48bc412e13e67")
-  test_output <- get_therapy_table(test_episode, collect = T)
+  test_output <- therapy_table_get(test_episode, collect = T)
   test_expected_head <- dplyr::tibble(
     t = 0:5,
     patient_id = "99999999999",
@@ -687,9 +692,13 @@ test_that("Ramses on PosgreSQL", {
   test_medication_request <- MedicationRequest(conPostgreSQL, "5528fc41106bb48eb4d48bc412e13e67")
   expect_is(test_medication_request, "MedicationRequest")
   expect_is(TherapyEpisode(test_medication_request), "TherapyEpisode")
-  expect_equivalent(head(get_therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+  expect_equivalent(head(therapy_table_get(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_head)
-  expect_equivalent(tail(get_therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+  expect_equivalent(tail(therapy_table_get(TherapyEpisode(test_medication_request), collect = TRUE)), 
+                    test_expected_tail)
+  expect_equivalent(head(therapy_table_get(test_medication_request, collect = TRUE)), 
+                    test_expected_head)
+  expect_equivalent(tail(therapy_table_get(test_medication_request, collect = TRUE)), 
                     test_expected_tail)
   
   #> IVPO ------------------------------------------------------------------

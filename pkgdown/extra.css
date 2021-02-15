@@ -42,7 +42,7 @@ code,
 kbd,
 pre,
 samp {
- font-family:Menlo,Monaco,Consolas,"Roboto Mono", "DejaVu Sans Mono", "Liberation Mono",Courier,monospace
+ font-family:Menlo,Monaco,Consolas,"Roboto Mono", "DejaVu Sans Mono", "Liberation Mono",Courier,monospace;
 }
 
 .contents h1, .contents h2 {
@@ -60,4 +60,9 @@ h1, .h1, h2, .h2, h3, .h3 {
 .developers h2:before {
   content: "Authors";
   visibility: visible;
+}
+
+.pagedtable-wrapper, .sourceCode{
+  margin-top: 30px !important;
+  margin-bottom: 30px !important;
 }

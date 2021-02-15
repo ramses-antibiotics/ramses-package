@@ -4,6 +4,7 @@ date: '`r format(Sys.Date(), "%d %B %Y")`'
 output: 
   rmarkdown::html_vignette:
     toc: true 
+bibliography: ../inst/REFERENCES.bib
 vignette: >
   %\VignetteIndexEntry{Antimicrobial therapy episodes}
   %\VignetteEngine{knitr::rmarkdown}
@@ -56,7 +57,7 @@ The animation below shows how this concept is used in the context of routinely-c
   <p>Patient X was subsequently encountered again 24 hours later and treated with amoxicillin (1 day), gentamicin (one-off), and meropenem (5 days).</p>
 </li>
 <li>
-  <p>Ramses links prescriptions together (by transitive closure) to reconstruct the <i>therapy episode, allowing more sophisticated observations:</i></p>
+  <p>Ramses links prescriptions together (by transitive closure) to reconstruct the <i>therapy episode</i>, allowing more sophisticated observations:</p>
   <p>Patient X took antibiotics without interruption for 7 days</p>
   <p>On first encounter, patient X was given a first dose of nitrofurantoin for a suspected lower urinary tract infection (UTI), then reviewed by a senior doctor and given a regular course of three more days on the same antibiotic. Two of these days would have been taken at home.</p>
   <p>During the following 24h, patient X’s worsening condition led to a second encounter. Patient X was prescribed a <i>combination therapy</i> (amoxicillin and one-off gentamicin). On review, after 24 hours, the lead clinician diagnosed a pyelonephritis and ordered a 5 day course of meropenem.</p>
@@ -64,7 +65,7 @@ The animation below shows how this concept is used in the context of routinely-c
 </ol>
 
 
-## Therapy episodes in Ramses 
+## Therapy episodes objects
 
 Therapy episodes and therapy combinations are created automatically by Ramses when loading data (see [methods section](#methodology)) and referenced in the `drug_prescriptions` table.
 
@@ -91,23 +92,26 @@ uti_episode
 
 For more information on S4 classes used in Ramses and their associated methods, see the [Objects and classes vignette](ramses-objects.html).
 
-# Therapy table
+## Therapy tables
 
 Therapy episodes can be studied by creating a longitudinal, hour-by-hour matrix called 'therapy table'.
 
-```{r get_therapy_table_code, eval=FALSE}
-get_therapy_table(uti_episode, 
+```{r therapy_table_get_code, eval=FALSE}
+therapy_table_get(uti_episode, 
                   collect = TRUE)
 ```
-```{r get_therapy_table_output, echo=FALSE, paged.print=TRUE}
-get_therapy_table(uti_episode, collect = TRUE) %>% rmarkdown::paged_table() 
+```{r therapy_table_get_output, echo=FALSE, paged.print=TRUE}
+therapy_table_get(uti_episode, collect = TRUE) %>% 
+  select(t, therapy_start, therapy_end, t_start, t_end, parenteral) %>% 
+  rmarkdown::paged_table() 
 ```
 
 
 This table can contain a number of clinical features. In the example above, route of therapy administration is indicated in the `parenteral` field: 
 
 - `1` indicates that all drugs are administered via parenteral route (eg intravenously)
-- `0` indicates that at least one drug is administered via another route (eg orally).
+- `0` indicates that at least one drug is administered via another route (eg orally)
+- `NA` indicates time in between prescriptions.
 
 A dedicated function can extract transitions from intravenous to oral therapy. Using the `parenteral_changes_get()` function below, we find there was only one sequence that included intravenous therapy. This sequence was initiated at $t$ = 122, and ended at $t$ = 242, without ever being converted to oral administration (`NA`). 
 
@@ -137,7 +141,7 @@ file.remove("ramses-db.sqlite")
 Ramses links prescriptions together if:
 
 - prescriptions share the same `antiinfective_type`: antibacterials are linked with antibacterials, antifungals with antifungals, etc.
-- `prescription_status` is *not* `'cancelled'`,  `'draft'`, or `'entered-in-error'`
+- `prescription_status` is *not* `'cancelled'`,  `'draft'`, or `'entered-in-error'`.
 
 `Ramses` links prescriptions into episodes and combinations in two instances:
 
@@ -149,7 +153,7 @@ Both functions include a `transitive_closure_controls` argument, which controls 
 To change the default settings, consult the documentation `?transitive_closure_control`.
 
 
-Table: Prescription overlap pattern classification rules and default parameters
+Table: Prescription overlap pattern classification rules and default settings [@DuteyMagni2021]
 
  Category | Pattern	| Conditions for <br> combination therapy |	Conditions for <br> continuation of therapy* |
  :-: | :-----: | --------- | --------- | 
@@ -163,13 +167,10 @@ Table: Prescription overlap pattern classification rules and default parameters
 
 *Notes:* 
 
-- ○ denote prescriptions for one-off administrations
-- ▭ denote regular prescriptions (including drugs to take home)
+- ○ denotes prescriptions for one-off administrations
+- ▭ denotes regular prescriptions (including drugs to take home)
 - $*$ for continuation edges, only monotherapy prescriptions and the first prescriptions within combinations (by drug alphabetical order) are used
 - in all categories, the date of first administration of (A) is anterior or equal to the date of first administration of (B).
-
-
-
 
 
 
