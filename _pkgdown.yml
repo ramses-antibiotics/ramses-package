@@ -39,6 +39,7 @@ reference:
   - TherapyEpisode-class
   - therapy_table
   - parenteral_changes
+  - therapy_timeline
 - title: Load & link data
   desc:  Load records into the warehouse and create secondary information.
   contents:

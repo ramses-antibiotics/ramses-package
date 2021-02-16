@@ -4,7 +4,7 @@
 \alias{therapy_timeline}
 \alias{therapy_timeline,Patient-method}
 \alias{therapy_timeline,TherapyEpisode-method}
-\title{Build an antiinfective timeline visualisation}
+\title{Display the antimicrobial therapy timeline}
 \usage{
 therapy_timeline(x, ...)
 
@@ -34,5 +34,5 @@ for detail}
 a timevis object
 }
 \description{
-Build an antiinfective timeline visualisation
+Display the antimicrobial therapy timeline
 }

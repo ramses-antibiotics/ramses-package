@@ -1,6 +1,6 @@
 
 
-#' Build an antiinfective timeline visualisation
+#' Display the antimicrobial therapy timeline
 #'
 #' @param x an object of class \code{Patient} or \code{TherapyEpisode}
 #' @param date1 (optional, only used for \code{x} of class \code{Patient}) a \code{Date} or \code{POSIXct} window minimum to 
@@ -10,6 +10,7 @@
 #' @param load_timevis_dependencies a boolean indicating whether jQuery 
 #' and Bootstrap should be loaded (default is \code{FALSE}). See \link[timevis]{timevis}
 #' for detail
+#' @param ... other arguments (not in use)
 #' @return a timevis object
 #' @importFrom dplyr tbl
 #' @importFrom magrittr %>%
