@@ -59,3 +59,16 @@ Remotes:
 RdMacros: Rdpack    
 RoxygenNote: 7.1.1
 VignetteBuilder: knitr,rmarkdown
+Collate: 
+    'Ramses-package.R'
+    'antibiotic_icd_indications.R'
+    'objects.R'
+    'clinical_features.R'
+    'database.R'
+    'example_records.R'
+    'metadata.R'
+    'reference.R'
+    'timeline.R'
+    'utils.R'
+    'validate_data.R'
+    'zzz.R'

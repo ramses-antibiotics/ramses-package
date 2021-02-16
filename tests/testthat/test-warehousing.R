@@ -325,6 +325,19 @@ test_that("Ramses on SQLite 2", {
                                     id = "4d611fc8886c23ab047ad5f74e5080d7")), 
     "timevis")
   
+  
+
+  # > clinical features --------------------------------------------------------
+  
+  # > - last -------------------------------------------------------------------
+  
+  # last_temp <- clinical_feature_last(
+  #   TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+  #   investigation_codes = "8310-5",
+  #   hours = 24
+  # )
+  # View(collect_ramses_tbl(last_temp@therapy_table))
+  
   # > show methods ----------------------------------------------------------
   
   # TherapyEpisode
