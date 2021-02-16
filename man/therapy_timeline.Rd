@@ -20,6 +20,8 @@ therapy_timeline(x, ...)
 \arguments{
 \item{x}{an object of class \code{Patient} or \code{TherapyEpisode}}
 
+\item{...}{other arguments (not in use)}
+
 \item{date1}{(optional, only used for \code{x} of class \code{Patient}) a \code{Date} or \code{POSIXct} window minimum to 
 focus the timeline on by default}
 
