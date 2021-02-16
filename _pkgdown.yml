@@ -37,8 +37,8 @@ reference:
   - Patient-class
   - MedicationRequest-class
   - TherapyEpisode-class
-  - therapy_table_get
-  - parenteral_changes_get
+  - therapy_table
+  - parenteral_changes
 - title: Load & link data
   desc:  Load records into the warehouse and create secondary information.
   contents:

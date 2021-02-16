@@ -217,7 +217,7 @@ test_that("Ramses on SQLite 2", {
   
   # Single IVPO change pt 99999999999
   test_episode <- TherapyEpisode(conSQLite, "5528fc41106bb48eb4d48bc412e13e67")
-  test_output <- therapy_table_get(test_episode, collect = T)
+  test_output <- therapy_table(test_episode, collect = T)
   test_expected_head <- dplyr::tibble(
     t = 0:5,
     patient_id = "99999999999",
@@ -257,22 +257,22 @@ test_that("Ramses on SQLite 2", {
   test_medication_request <- MedicationRequest(conSQLite, "5528fc41106bb48eb4d48bc412e13e67")
   expect_is(test_medication_request, "MedicationRequest")
   expect_is(TherapyEpisode(test_medication_request), "TherapyEpisode")
-  expect_equivalent(head(therapy_table_get(TherapyEpisode(test_medication_request), collect = TRUE)), 
+  expect_equivalent(head(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_head)
-  expect_equivalent(tail(therapy_table_get(TherapyEpisode(test_medication_request), collect = TRUE)), 
+  expect_equivalent(tail(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_tail)
-  expect_equivalent(head(therapy_table_get(test_medication_request, collect = TRUE)), 
+  expect_equivalent(head(therapy_table(test_medication_request, collect = TRUE)), 
                     test_expected_head)
-  expect_equivalent(tail(therapy_table_get(test_medication_request, collect = TRUE)), 
+  expect_equivalent(tail(therapy_table(test_medication_request, collect = TRUE)), 
                     test_expected_tail)
   
   # > IVPO ------------------------------------------------------------------
   
-  expect_equal(parenteral_changes_get(TherapyEpisode(conSQLite, "5528fc41106bb48eb4d48bc412e13e67")), 
+  expect_equal(parenteral_changes(TherapyEpisode(conSQLite, "5528fc41106bb48eb4d48bc412e13e67")), 
                list(c(0, 241, 6)))
-  expect_equal(parenteral_changes_get(TherapyEpisode(conSQLite, "f770855cf9d424c76fdfbc9786d508ac")), 
+  expect_equal(parenteral_changes(TherapyEpisode(conSQLite, "f770855cf9d424c76fdfbc9786d508ac")), 
                list(c(0, 122, 74)))
-  expect_equal(parenteral_changes_get(TherapyEpisode(conSQLite, "74e3f378b91c6d7121a0d637bd56c2fa")), 
+  expect_equal(parenteral_changes(TherapyEpisode(conSQLite, "74e3f378b91c6d7121a0d637bd56c2fa")), 
                list(c(0, 97, 49)))
   
   # Three IVPO changes in pt 5726385525 with only one therapy episode
@@ -280,7 +280,7 @@ test_that("Ramses on SQLite 2", {
                                                  patient_id == "5726385525"))
   expect_true(all(single_therapy$therapy_id == "a028cf950c29ca73c01803b54642d513"))
   expect_equal(
-    parenteral_changes_get(TherapyEpisode(conSQLite, "a028cf950c29ca73c01803b54642d513")),
+    parenteral_changes(TherapyEpisode(conSQLite, "a028cf950c29ca73c01803b54642d513")),
     list(
       c(0, 144, 97),
       c(146, 316, 219),
@@ -291,34 +291,38 @@ test_that("Ramses on SQLite 2", {
   # > therapy timeline -------------------------------------------------
   
   expect_error(
-    therapy_timeline(conn = conSQLite, 
-                     patient_identifier =  "I don't exist")
+    therapy_timeline(Patient(conn = conSQLite, 
+                             id =  "I don't exist"))
   )
   expect_is(
-    therapy_timeline(conn = conSQLite, 
-                     patient_identifier =  "99999999999"),
+    therapy_timeline(Patient(conn = conSQLite, 
+                             id =  "99999999999")),
     "timevis")
   expect_error(
-    therapy_timeline(conn = conSQLite, 
-                     patient_identifier =  "99999999999",
+    therapy_timeline(Patient(conn = conSQLite, 
+                             id =  "99999999999"),
                      date1 = "2017-01-01",
                      date2 = "2017-03-01")
   )
   expect_is(
-    therapy_timeline(conn = conSQLite, 
-                     patient_identifier =  "99999999999",
+    therapy_timeline(Patient(conn = conSQLite, 
+                             id =  "99999999999"),
                      date1 = as.Date("2017-01-01"),
                      date2 = as.Date("2017-03-01")), 
     "timevis")
   expect_is(
-    therapy_timeline(conn = conSQLite, 
-                     patient_identifier =  "99999999999",
+    therapy_timeline(Patient(conn = conSQLite, 
+                             id =  "99999999999"),
                      date1 = as.Date("2017-01-01")),
     "timevis")
   expect_is(
-    therapy_timeline(conn = conSQLite, 
-                     patient_identifier =  "99999999999",
+    therapy_timeline(Patient(conn = conSQLite, 
+                             id =  "99999999999"),
                      date2 = as.Date("2017-03-01")), 
+    "timevis")
+  expect_is(
+    therapy_timeline(TherapyEpisode(conn = conSQLite,
+                                    id = "4d611fc8886c23ab047ad5f74e5080d7")), 
     "timevis")
   
   # > show methods ----------------------------------------------------------
@@ -652,7 +656,7 @@ test_that("Ramses on PosgreSQL", {
   # Single IVPO change pt 99999999999
   
   test_episode <- TherapyEpisode(conPostgreSQL, "5528fc41106bb48eb4d48bc412e13e67")
-  test_output <- therapy_table_get(test_episode, collect = T)
+  test_output <- therapy_table(test_episode, collect = T)
   test_expected_head <- dplyr::tibble(
     t = 0:5,
     patient_id = "99999999999",
@@ -692,22 +696,22 @@ test_that("Ramses on PosgreSQL", {
   test_medication_request <- MedicationRequest(conPostgreSQL, "5528fc41106bb48eb4d48bc412e13e67")
   expect_is(test_medication_request, "MedicationRequest")
   expect_is(TherapyEpisode(test_medication_request), "TherapyEpisode")
-  expect_equivalent(head(therapy_table_get(TherapyEpisode(test_medication_request), collect = TRUE)), 
+  expect_equivalent(head(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_head)
-  expect_equivalent(tail(therapy_table_get(TherapyEpisode(test_medication_request), collect = TRUE)), 
+  expect_equivalent(tail(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_tail)
-  expect_equivalent(head(therapy_table_get(test_medication_request, collect = TRUE)), 
+  expect_equivalent(head(therapy_table(test_medication_request, collect = TRUE)), 
                     test_expected_head)
-  expect_equivalent(tail(therapy_table_get(test_medication_request, collect = TRUE)), 
+  expect_equivalent(tail(therapy_table(test_medication_request, collect = TRUE)), 
                     test_expected_tail)
   
   #> IVPO ------------------------------------------------------------------
   
-  expect_equal(parenteral_changes_get(TherapyEpisode(conPostgreSQL, "5528fc41106bb48eb4d48bc412e13e67")), 
+  expect_equal(parenteral_changes(TherapyEpisode(conPostgreSQL, "5528fc41106bb48eb4d48bc412e13e67")), 
                list(c(0, 241, 6)))
-  expect_equal(parenteral_changes_get(TherapyEpisode(conPostgreSQL, "f770855cf9d424c76fdfbc9786d508ac")), 
+  expect_equal(parenteral_changes(TherapyEpisode(conPostgreSQL, "f770855cf9d424c76fdfbc9786d508ac")), 
                list(c(0, 122, 74)))
-  expect_equal(parenteral_changes_get(TherapyEpisode(conPostgreSQL, "74e3f378b91c6d7121a0d637bd56c2fa")), 
+  expect_equal(parenteral_changes(TherapyEpisode(conPostgreSQL, "74e3f378b91c6d7121a0d637bd56c2fa")), 
                list(c(0, 97, 49)))
   
   # Three IVPO changes in pt 5726385525 with only one therapy episode
@@ -715,7 +719,7 @@ test_that("Ramses on PosgreSQL", {
                                                  patient_id == "5726385525"))
   expect_true(all(single_therapy$therapy_id == "a028cf950c29ca73c01803b54642d513"))
   expect_equal(
-    parenteral_changes_get(TherapyEpisode(conPostgreSQL, "a028cf950c29ca73c01803b54642d513")),
+    parenteral_changes(TherapyEpisode(conPostgreSQL, "a028cf950c29ca73c01803b54642d513")),
     list(
       c(0, 144, 97),
       c(146, 316, 219),
@@ -788,34 +792,38 @@ test_that("Ramses on PosgreSQL", {
   # > therapy timeline -------------------------------------------------
   
   expect_error(
-    therapy_timeline(conn = conPostgreSQL, 
-                     patient_identifier =  "I don't exist")
+    therapy_timeline(Patient(conn = conPostgreSQL, 
+                             id =  "I don't exist"))
   )
   expect_is(
-    therapy_timeline(conn = conPostgreSQL, 
-                     patient_identifier =  "99999999999"),
+    therapy_timeline(Patient(conn = conPostgreSQL, 
+                             id =  "99999999999")),
     "timevis")
   expect_error(
-    therapy_timeline(conn = conPostgreSQL, 
-                     patient_identifier =  "99999999999",
+    therapy_timeline(Patient(conn = conPostgreSQL, 
+                             id =  "99999999999"),
                      date1 = "2017-01-01",
                      date2 = "2017-03-01")
   )
   expect_is(
-    therapy_timeline(conn = conPostgreSQL, 
-                     patient_identifier =  "99999999999",
+    therapy_timeline(Patient(conn = conPostgreSQL, 
+                             id =  "99999999999"),
                      date1 = as.Date("2017-01-01"),
                      date2 = as.Date("2017-03-01")), 
     "timevis")
   expect_is(
-    therapy_timeline(conn = conPostgreSQL, 
-                     patient_identifier =  "99999999999",
+    therapy_timeline(Patient(conn = conPostgreSQL, 
+                             id =  "99999999999"),
                      date1 = as.Date("2017-01-01")),
     "timevis")
   expect_is(
-    therapy_timeline(conn = conPostgreSQL, 
-                     patient_identifier =  "99999999999",
+    therapy_timeline(Patient(conn = conPostgreSQL, 
+                             id =  "99999999999"),
                      date2 = as.Date("2017-03-01")), 
+    "timevis")
+  expect_is(
+    therapy_timeline(TherapyEpisode(conn = conPostgreSQL,
+                                    id = "4d611fc8886c23ab047ad5f74e5080d7")), 
     "timevis")
   
   

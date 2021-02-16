@@ -2,25 +2,28 @@
 % Please edit documentation in R/timeline.R
 \name{therapy_timeline}
 \alias{therapy_timeline}
+\alias{therapy_timeline,Patient-method}
+\alias{therapy_timeline,TherapyEpisode-method}
 \title{Build an antiinfective timeline visualisation}
 \usage{
-therapy_timeline(
-  conn,
-  patient_identifier,
+therapy_timeline(x, ...)
+
+\S4method{therapy_timeline}{Patient}(
+  x,
   date1 = NULL,
   date2 = NULL,
   load_timevis_dependencies = FALSE
 )
+
+\S4method{therapy_timeline}{TherapyEpisode}(x, load_timevis_dependencies = FALSE)
 }
 \arguments{
-\item{conn}{a database connection}
+\item{x}{an object of class \code{Patient} or \code{TherapyEpisode}}
 
-\item{patient_identifier}{a length-one character vector for a patient ID}
-
-\item{date1}{(optional) a \code{Date} or \code{POSIXct} window minimum to 
+\item{date1}{(optional, only used for \code{x} of class \code{Patient}) a \code{Date} or \code{POSIXct} window minimum to 
 focus the timeline on by default}
 
-\item{date2}{(optional) a \code{Date} or \code{POSIXct} window maximum to 
+\item{date2}{(optional, only used for \code{x} of class \code{Patient}) a \code{Date} or \code{POSIXct} window maximum to 
 focus the timeline on by default}
 
 \item{load_timevis_dependencies}{a boolean indicating whether jQuery 

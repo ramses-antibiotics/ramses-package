@@ -96,12 +96,12 @@ For more information on S4 classes used in Ramses and their associated methods, 
 
 Therapy episodes can be studied by creating a longitudinal, hour-by-hour matrix called 'therapy table'.
 
-```{r therapy_table_get_code, eval=FALSE}
-therapy_table_get(uti_episode, 
-                  collect = TRUE)
+```{r therapy_table_code, eval=FALSE}
+therapy_table(uti_episode, 
+              collect = TRUE)
 ```
-```{r therapy_table_get_output, echo=FALSE, paged.print=TRUE}
-therapy_table_get(uti_episode, collect = TRUE) %>% 
+```{r therapy_table_output, echo=FALSE, paged.print=TRUE}
+therapy_table(uti_episode, collect = TRUE) %>% 
   select(t, therapy_start, therapy_end, t_start, t_end, parenteral) %>% 
   rmarkdown::paged_table() 
 ```
@@ -113,16 +113,16 @@ This table can contain a number of clinical features. In the example above, rout
 - `0` indicates that at least one drug is administered via another route (eg orally)
 - `NA` indicates time in between prescriptions.
 
-A dedicated function can extract transitions from intravenous to oral therapy. Using the `parenteral_changes_get()` function below, we find there was only one sequence that included intravenous therapy. This sequence was initiated at $t$ = 122, and ended at $t$ = 242, without ever being converted to oral administration (`NA`). 
+A dedicated function can extract transitions from intravenous to oral therapy. Using the `parenteral_changes()` function below, we find there was only one sequence that included intravenous therapy. This sequence was initiated at $t$ = 122, and ended at $t$ = 242, without ever being converted to oral administration (`NA`). 
 
-```{r parenteral_changes_get}
-parenteral_changes_get(TherapyEpisode(ramses_db, "d7c0310a08cf9f0f318276125cd282ed"))
+```{r parenteral_changes}
+parenteral_changes(TherapyEpisode(ramses_db, "d7c0310a08cf9f0f318276125cd282ed"))
 ```
 
 This function returns as many vectors as there are sequences of parenteral administration:
 
-```{r parenteral_changes_get_multiple}
-parenteral_changes_get(TherapyEpisode(ramses_db, "a028cf950c29ca73c01803b54642d513"))
+```{r parenteral_changes_multiple}
+parenteral_changes(TherapyEpisode(ramses_db, "a028cf950c29ca73c01803b54642d513"))
 ```
 
 

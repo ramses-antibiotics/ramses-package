@@ -46,9 +46,9 @@ Prescription [
   + Prescription(DBICon., id): Prescription\l
   + Patient(): Patient\l
   + TherapyEpisode(): TherapyEpisode\l
-  + prescription_type_get(): \{\"mono\", \"combo\"\}\l
-  + medication_requests_get(): list\l
-  + therapy_timeline_get(): htmlwidgets\l}"
+  + prescription_type(): \{\"mono\", \"combo\"\}\l
+  + medication_requests(): list\l
+  + therapy_timeline(): htmlwidgets\l}"
 ]
 
 Prescription_Mono [
@@ -73,7 +73,7 @@ MedicationRequest [
   + Clinician(): Clinician\l
   + Prescription(): Prescription\l
   + TherapyEpisode(): TherapyEpisode\l
-  + therapy_timeline_get(): htmlwidgets\l}"
+  + therapy_timeline(): htmlwidgets\l}"
 ]
 
 TherapyEpisode [
@@ -83,10 +83,10 @@ TherapyEpisode [
   
   + TherapyEpisode(DBICon, id): TherapyEpisode\l
   + Patient(): Patient\l
-  + therapy_table_get(collect = F): tbl\l
-  + therapy_timeline_get(): htmlwidgets\l
-  + parenteral_changes_get(): list\l}"
-#  + medication_request_get(): list\l}"
+  + therapy_table(collect = F): tbl\l
+  + therapy_timeline(): htmlwidgets\l
+  + parenteral_changes(): list\l}"
+#  + medication_request(): list\l}"
 ]
 
 Patient [
@@ -94,7 +94,7 @@ Patient [
   label = "{Patient|
   \l|
   + Patient(DBICon, id): Patient\l
-  + therapy_timeline_get(): htmlwidgets\l}"
+  + therapy_timeline(): htmlwidgets\l}"
 ]
 
 Clinician [

@@ -3,10 +3,8 @@
 
 ## Features
 
-**ADD HYPERLINKS BEFORE SUBMISSION**
-
 * introduce S4 classes `Patient`, `MedicationRequest`, `TherapyEpisode`
-* introduce therapy methods `therapy_table_get()`, `parenteral_changes_get()`
+* introduce therapy methods `therapy_table()`, `parenteral_changes()`
 
 ## Improvements
 

@@ -289,7 +289,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' Get 'parenteral' drug administration sequences
 #'
 #' @description Timely switch to oral therapy is a widely recommended
-#' antimicrobial stewardship behaviour. The \code{parenteral_changes_get()}
+#' antimicrobial stewardship behaviour. The \code{parenteral_changes()}
 #' function extracts 'therapy sequences', which are defined as either:
 #' \itemize{
 #'    \item a period of parenteral antimicrobial therapy subsequently converted
@@ -328,7 +328,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' }
 #' 
 #' The integers are in direct correspondance with field \code{t} in the 
-#' therapy episode's table (\code{\link{therapy_table_get}()}).
+#' therapy episode's table (\code{\link{therapy_table}()}).
 #' @export
 #' @examples 
 #' \dontrun{
@@ -337,22 +337,22 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' example_therapy <- TherapyEpisode(conSQLite, "2a2b6da3b67f6f495f4cedafb029f631")
 #' 
 #' # Obtain the parenteral to oral sequence indexes
-#' therapy_sequence <- parenteral_changes_get(example_therapy)
+#' therapy_sequence <- parenteral_changes(example_therapy)
 #' therapy_sequence
 #' 
 #' # Look for the section of the therapy table where 0 ≤ t ≤ 145
-#' filter(therapy_table_get(example_therapy, collect = TRUE),
+#' filter(therapy_table(example_therapy, collect = TRUE),
 #'        between(t,
 #'                therapy_sequence[[1]][1],
 #'                therapy_sequence[[1]][2])) %>% head()
 #' # Look for the section of the therapy table near conversion (t = 73)
-#' filter(therapy_table_get(example_therapy, collect = TRUE),
+#' filter(therapy_table(example_therapy, collect = TRUE),
 #'        between(t, 70, 75))
 #' }
-parenteral_changes_get <- function(therapy_episode, tolerance_hours = 12L) {
+parenteral_changes <- function(therapy_episode, tolerance_hours = 12L) {
   stopifnot(is.numeric(tolerance_hours) | length(tolerance_hours) != 1)
   tolerance_hours <- as.integer(tolerance_hours)
-  TT <- therapy_table_get(therapy_episode, collect = T)
+  TT <- therapy_table(therapy_episode, collect = T)
   .parenteral_vector_process(TT[["parenteral"]], tolerance_hours)
 }
 
@@ -418,7 +418,7 @@ parenteral_changes_get <- function(therapy_episode, tolerance_hours = 12L) {
   match_indices
 }
 
-# therapy_table_get -------------------------------------------------------
+# therapy_table -------------------------------------------------------
 
 
 #' Get the therapy table
@@ -427,13 +427,13 @@ parenteral_changes_get <- function(therapy_episode, tolerance_hours = 12L) {
 #' @param collect whether to collect the remote \code{tbl_sql} and return a local 
 #' \code{tbl_df}. The default is \code{FALSE}
 #' @return an object of class \code{tbl}
-#' @rdname therapy_table_get
+#' @rdname therapy_table
 #' @export
-setGeneric("therapy_table_get", function(object, collect = FALSE) standardGeneric("therapy_table_get"))
+setGeneric("therapy_table", function(object, collect = FALSE) standardGeneric("therapy_table"))
 
-#' @rdname therapy_table_get
+#' @rdname therapy_table
 #' @export
-setMethod("therapy_table_get", "TherapyEpisode", function(object, collect = FALSE) {
+setMethod("therapy_table", "TherapyEpisode", function(object, collect = FALSE) {
   stopifnot(is.logical(collect))
   if( collect ) {
     collect_ramses_tbl(object@therapy_table)
@@ -442,9 +442,9 @@ setMethod("therapy_table_get", "TherapyEpisode", function(object, collect = FALS
   }
 })
 
-#' @rdname therapy_table_get
+#' @rdname therapy_table
 #' @export
-setMethod("therapy_table_get", "MedicationRequest", function(object, collect = FALSE) {
+setMethod("therapy_table", "MedicationRequest", function(object, collect = FALSE) {
   stopifnot(is.logical(collect))
   object <- TherapyEpisode(object)
   if( collect ) {
