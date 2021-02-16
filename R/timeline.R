@@ -439,8 +439,8 @@ setMethod(
     dplyr::filter(patient_id == !!input_patient@id) %>% 
     collect_ramses_tbl() %>% 
     dplyr::filter(!is.na(discharge_date)) %>%
-    dplyr::select(admission_method, admission_date, discharge_date) %>%
-    na.omit() %>% unique() %>% 
+    dplyr::distinct(admission_method, admission_date, discharge_date) %>%
+    na.omit() %>% 
     dplyr::transmute(
       id = NA_character_, 
       content =  dplyr::case_when(

@@ -1750,7 +1750,6 @@ collect_ramses_tbl <- function(tbl) {
       "therapy_start",
       "therapy_end",
       "admission_date",
-      "admission_date",
       "discharge_date",
       "episode_start",
       "episode_end",
