@@ -1,14 +1,16 @@
 digraph G {
-  fontsize = 10
+  
 
   node [
           fontname = "monospace"
           shape = "record"
-          width = 2.5
+          width = 1.5
+          fontsize = 8
   ]
 
   edge [
           fontname = "monospace"
+          fontsize = 8
   ]
 
 # arrowheads
@@ -22,7 +24,7 @@ digraph G {
 
 # Interface
 RamsesObject [
-  width = 3.2
+  width = 2
   label = "{«interface»\n
   RamsesObject|
   + class: character\l
@@ -37,7 +39,7 @@ RamsesObject [
 ]
 
 Prescription [
-  width = 5.5
+  width = 3
   label = "{Prescription|
   - prescription_type: \{\"mono\", \"combo\"\}\l
   - medication_requests\l
@@ -64,7 +66,7 @@ Prescription_Combo [
 ]
 
 MedicationRequest [
-  width = 4.5
+  width = 2.5
   label = "{MedicationRequest|
   - patient_id\l|
   
@@ -77,7 +79,7 @@ MedicationRequest [
 ]
 
 TherapyEpisode [
-  width = 5.5
+  width = 3.1
   label = "{TherapyEpisode|
   - therapy_table: tbl_sql\l|
   
@@ -90,7 +92,7 @@ TherapyEpisode [
 ]
 
 Patient [
-  width = 4.5
+  width = 2.5
   label = "{Patient|
   \l|
   + Patient(DBICon, id): Patient\l
@@ -98,7 +100,7 @@ Patient [
 ]
 
 Clinician [
-  width = 4.5
+  width = 2.5
   label = "{Clinician|
   \l|
   + Clinician(DBICon, id): Clinician\l
