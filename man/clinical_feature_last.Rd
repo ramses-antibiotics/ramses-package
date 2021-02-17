@@ -5,14 +5,14 @@
 \alias{clinical_feature_last,TherapyEpisode-method}
 \title{Therapy table feature: most recent observation}
 \usage{
-clinical_feature_last(x, investigation_codes, hours)
+clinical_feature_last(x, observation_code, hours)
 
-\S4method{clinical_feature_last}{TherapyEpisode}(x, investigation_codes, hours)
+\S4method{clinical_feature_last}{TherapyEpisode}(x, observation_code, hours)
 }
 \arguments{
-\item{x}{a \link{TherapyEpisode} object}
+\item{x}{a \code{\link{TherapyEpisode}} object}
 
-\item{investigation_codes}{a character vector of clinical investigation codes
+\item{observation_code}{a character vector of clinical investigation codes
 matching the \code{observation_code} field in the \code{inpatient_investigation}
 table (see \code{\link{validate_investigations}()}}
 
@@ -20,7 +20,7 @@ table (see \code{\link{validate_investigations}()}}
 \code{t_start}, the starting time of every row in the therapy table}
 }
 \value{
-
+an object of class \code{\link{TherapyEpisode}}
 }
 \description{
 Add a clinical feature to a therapy episode table indicating 

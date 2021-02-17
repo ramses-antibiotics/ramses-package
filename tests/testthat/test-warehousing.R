@@ -326,17 +326,44 @@ test_that("Ramses on SQLite 2", {
     "timevis")
   
   
-
   # > clinical features --------------------------------------------------------
   
   # > - last -------------------------------------------------------------------
   
-  # last_temp <- clinical_feature_last(
-  #   TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
-  #   investigation_codes = "8310-5",
-  #   hours = 24
-  # )
-  # View(collect_ramses_tbl(last_temp@therapy_table))
+  last_temp <- clinical_feature_last(
+    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_code = "8310-5",
+    hours = 24
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_24h[1:5],
+    c(36.9, 36.9, 36.8, 36.8, 36.8)
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_24h[174:178],
+    c(35.8, 35.8, 36.0, 36.0, 36.0)
+  )
+  last_temp <- clinical_feature_last(
+    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_code = c("8310-5", "2160-0"),
+    hours = 32
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_32h[1:5],
+    c(36.9, 36.9, 36.8, 36.8, 36.8)
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_32h[174:178],
+    c(35.8, 35.8, 36.0, 36.0, 36.0)
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_creatinine_32h[1:5],
+    c(116, 116, 116, 135, 135)
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_creatinine_32h[174:178],
+    c(109, 109, 109, NA, NA)
+  )
   
   # > show methods ----------------------------------------------------------
   
@@ -839,6 +866,44 @@ test_that("Ramses on PosgreSQL", {
                                     id = "4d611fc8886c23ab047ad5f74e5080d7")), 
     "timevis")
   
+  # > clinical features --------------------------------------------------------
+  
+  # > - last -------------------------------------------------------------------
+  
+  last_temp <- clinical_feature_last(
+    TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_code = "8310-5",
+    hours = 24
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_24h[1:5],
+    c(36.9, 36.9, 36.8, 36.8, 36.8)
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_24h[174:178],
+    c(35.8, 35.8, 36.0, 36.0, 36.0)
+  )
+  last_temp <- clinical_feature_last(
+    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_code = c("8310-5", "2160-0"),
+    hours = 32
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_32h[1:5],
+    c(36.9, 36.9, 36.8, 36.8, 36.8)
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_32h[174:178],
+    c(35.8, 35.8, 36.0, 36.0, 36.0)
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_creatinine_32h[1:5],
+    c(116, 116, 116, 135, 135)
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_creatinine_32h[174:178],
+    c(109, 109, 109, NA, NA)
+  )
   
   # > show methods ----------------------------------------------------------
   

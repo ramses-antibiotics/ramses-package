@@ -120,6 +120,8 @@ load_inpatient_episodes <- function(conn,
       colnames(patients_data)[!colnames(patients_data) == "patient_id"]
     )
   ]
+  
+  patients_data <- .format_str_time_sqlite(conn, patients_data)
 
   episodes_data <- dplyr::arrange(episodes_data, 
                                   patient_id, episode_start)

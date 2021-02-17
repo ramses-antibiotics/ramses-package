@@ -130,7 +130,8 @@ global_vars <- c(
   "LOT",
   "diagnosis_episode_end",
   "t_start",
-  "t_end"
+  "t_end",
+  "keep"
 )
 
 utils::globalVariables(global_vars)
@@ -145,3 +146,4 @@ utils::globalVariables(.inpatient_wards_variables()[["variable_name"]])
 utils::globalVariables(.inpatient_microbiology_variables()[["specimens"]][["variable_name"]])
 utils::globalVariables(.inpatient_microbiology_variables()[["isolates"]][["variable_name"]])
 utils::globalVariables(.inpatient_microbiology_variables()[["susceptibilities"]][["variable_name"]])
+utils::globalVariables(.inpatient_investigations_variables()[["variable_name"]])
