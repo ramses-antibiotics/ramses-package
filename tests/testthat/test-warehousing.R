@@ -402,6 +402,15 @@ test_that("Ramses on SQLite 2", {
       0.0216832627491193)
   )
   
+  # > - range ------------------------------------------------------------------
+  
+  # temperature_check <- clinical_feature_range(
+  #   TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+  #   observation_ranges = list("8310-5" = c(36, 38)),
+  #   hours = 24
+  # )
+  # test missing observation_code.
+
   # > show methods ----------------------------------------------------------
   
   # TherapyEpisode
