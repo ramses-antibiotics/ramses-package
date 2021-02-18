@@ -71,7 +71,7 @@
     
   } else if(is(x@conn, "PqConnection")) {
     
-    sql_condition_1 <- paste0("observation_datetime >= TIMESTAMP WITH TIME ZONE (t_start, - interval '", hours, "h')")
+    sql_condition_1 <- paste0("observation_datetime >= (t_start - interval '", hours, "h')")
     observations_linked <- dplyr::inner_join(TT, all_observations, by = "patient_id") %>% 
       dplyr::filter(
         dplyr::sql("observation_datetime <= t_start") &
