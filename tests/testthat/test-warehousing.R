@@ -921,7 +921,7 @@ test_that("Ramses on PosgreSQL", {
     c(35.8, 35.8, 36.0, 36.0, 36.0)
   )
   last_temp <- clinical_feature_last(
-    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+    TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_code = c("8310-5", "2160-0"),
     hours = 32
   )

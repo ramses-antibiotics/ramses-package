@@ -63,8 +63,9 @@ The following variables are required:
    concept, for example: TRUE/FALSE, Yes/No, SNOMED CT qualifier value}
    \item{\code{"observation_value_numeric"}}{observation numeric value}
    \item{\code{"observation_unit"}}{a unit code passing 
-   \code{\link[units]{as_units}()}. See examples. 
-   See also: \code{\link[units]{valid_udunits}}, 
+   \code{\link[units]{as_units}()}. See examples. All observations with the
+   same \code{"observation_code"} must be converted to the same 
+   \code{"observation_unit"}. See also: \code{\link[units]{valid_udunits}}, 
    \code{\link[units]{install_symbolic_unit}}
    \url{https://ucum.org/}}
 }
