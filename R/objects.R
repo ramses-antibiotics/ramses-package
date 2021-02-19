@@ -288,15 +288,15 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' Get 'parenteral' drug administration sequences
 #'
 #' @description Timely switch to oral therapy is a widely recommended
-#' antimicrobial stewardship behaviour. The \code{parenteral_changes()}
-#' function extracts 'therapy sequences', which are defined as either:
+#' antimicrobial stewardship behaviour. \code{parenteral_changes()}
+#' extracts 'therapy sequences', which are defined as either:
 #' \itemize{
 #'    \item a period of parenteral antimicrobial therapy subsequently converted
 #'    into oral therapy 
 #'    \item a period of parenteral antimicrobial therapy never converted into 
 #'    oral therapy
 #' }
-#' @param therapy_episode a \code{TherapyEpisode} object
+#' @param therapy_episode a \code{\link{TherapyEpisode}} object
 #' @param tolerance_hours integer for the maximum number of hours during which 
 #' an absence of prescription or the administration of some oral drugs 
 #' will be ignored. The default is 12.

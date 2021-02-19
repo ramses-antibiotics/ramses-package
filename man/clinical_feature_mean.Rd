@@ -16,15 +16,16 @@ clinical_feature_mean(x, observation_code, hours)
 matching the \code{observation_code} field in the \code{inpatient_investigation}
 table (see \code{\link{validate_investigations}()}}
 
-\item{hours}{the maximum number of hours the observation should date back from
-\code{t_start}, the starting time of every row in the therapy table}
+\item{hours}{the maximum number of hours the observations included in the mean
+should date back from \code{t_start}, the starting time of every row 
+in the therapy table}
 }
 \value{
 an object of class \code{\link{TherapyEpisode}}
 }
 \description{
 Add a clinical feature to a therapy episode table indicating 
-the running mean value of clinical observations made until table time \code{t}
+the arithmetic mean of clinical observations made until table time \code{t}
 }
 \details{
 NOTE: only numeric investigations marked with status \code{"final"}, 
@@ -32,4 +33,14 @@ NOTE: only numeric investigations marked with status \code{"final"},
 
 The returned regression slope coefficient corresponds to the mean change 
 associated with a 1-hour time increment.
+}
+\examples{
+\dontrun{
+temperature_check <- clinical_feature_mean(
+   TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+   observation_code = "8310-5",
+   hours = 24
+   )
+str(therapy_table(temperature_check, collect = TRUE))
+}
 }

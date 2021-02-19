@@ -18,7 +18,8 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.width=6, 
   fig.height=4,
-  fig.align = "center"
+  fig.align = "center",
+  df_print = "tibble"
 )
 ```
 
@@ -131,7 +132,7 @@ The approach to create tables of antimicrobial consumption follows three steps:
 
 Consumption can be attributed to specialty based on the specialty of the episode during which the antibiotic is administered. In this case, the appropriate bridge table is `bridge_episode_prescription_overlap`.
 
-```{r AC1}
+```{r AC1, paged.print=FALSE}
 study_pop <- tbl(ramses_db, "inpatient_episodes") %>% 
   filter(main_specialty_code %in% c("100", "101", "300") &
            discharge_date >= "2016-01-01") %>% 
@@ -141,9 +142,9 @@ study_pop <- tbl(ramses_db, "inpatient_episodes") %>%
 consumption_episodes <- study_pop %>% 
   left_join(tbl(ramses_db, "bridge_episode_prescription_overlap")) %>% 
   group_by(calendar_year, calendar_month, main_specialty_code) %>% 
-  summarise(DOT_prescribed = sum(ifNull(DOT, 0.0)),
-            DDD_prescribed = sum(ifNULL(DDD_prescribed, 0.0)),
-            bed_days = sum(ifNull(ramses_bed_days, 0.0))) %>% 
+  summarise(DOT_prescribed = sum(DOT, na.rm = TRUE),
+            DDD_prescribed = sum(DDD_prescribed, na.rm = TRUE),
+            bed_days = sum(ramses_bed_days, na.rm = TRUE)) %>% 
   collect()  %>% 
   mutate(month_starting = as.Date(paste0(calendar_year, "/", calendar_month, "/01")))
 
@@ -172,8 +173,8 @@ Alternatively, consumption can be attributed to the episode when prescriptions a
 consumption_initiation <- study_pop %>% 
   left_join(tbl(ramses_db, "bridge_episode_prescription_initiation")) %>% 
   group_by(calendar_year, calendar_month, main_specialty_code) %>% 
-  summarise(DOT_prescribed = sum(ifNull(DOT, 0.0)),
-            DDD_prescribed = sum(ifNULL(DDD_prescribed, 0.0)),
+  summarise(DOT_prescribed = sum(DOT, na.rm = TRUE),
+            DDD_prescribed = sum(DDD_prescribed, na.rm = TRUE),
             total_admissions = n_distinct(paste0(patient_id, spell_id))) %>% 
   collect()  %>% 
   mutate(month_starting = as.Date(paste0(calendar_year, "/", calendar_month, "/01")))
@@ -249,12 +250,12 @@ consumption_aware_episodes_num <- tbl(ramses_db, "drug_prescriptions") %>%
   left_join(tbl(ramses_db, "bridge_episode_prescription_overlap")) %>% 
   inner_join(study_pop) %>% 
   group_by(calendar_year, calendar_month, aware_category) %>% 
-  summarise(DOT_prescribed = sum(ifNull(DOT, 0.0))) %>% 
+  summarise(DOT_prescribed = sum(DOT, na.rm = TRUE)) %>% 
   collect()
  
 consumption_aware_episodes_denom <- study_pop %>% 
   group_by(calendar_year, calendar_month) %>% 
-  summarise(bed_days =  sum(ifNull(ramses_bed_days, 0.0))) %>% 
+  summarise(bed_days =  sum(ramses_bed_days, na.rm = TRUE)) %>% 
   collect()
 
 consumption_aware_episodes <- left_join(

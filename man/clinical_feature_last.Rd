@@ -14,7 +14,7 @@ clinical_feature_last(x, observation_code, hours)
 
 \item{observation_code}{a character vector of clinical investigation codes
 matching the \code{observation_code} field in the \code{inpatient_investigation}
-table (see \code{\link{validate_investigations}()}}
+table (see \code{\link{validate_investigations}()})}
 
 \item{hours}{the maximum number of hours the observation should date back from
 \code{t_start}, the starting time of every row in the therapy table}
@@ -29,4 +29,14 @@ the most recent observation by table time \code{t}
 \details{
 NOTE: only numeric investigations marked with status \code{"final"}, 
 \code{"preliminary"}, \code{"corrected"}, or \code{"amended"} will be sourced.
+}
+\examples{
+\dontrun{
+temperature_check <- clinical_feature_last(
+   TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+   observation_code = "8310-5",
+   hours = 24
+   )
+str(therapy_table(temperature_check, collect = TRUE))
+}
 }

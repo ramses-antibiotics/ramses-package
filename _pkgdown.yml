@@ -2,10 +2,16 @@ destination: docs
 template:
   params:
     bootswatch: flatly
+  image:
+    src: man/figures/logo.png
+    alt: "Ramses: R package for Antimicrobial Stewardship & Surveillance"
+  twitter:
+    creator: "@peterdutey"
+    card: summary
 title: RAMSES
 url: https://ramses-antibiotics.github.io
 figures:
-    fig.align: 'center'
+  fig.align: 'center'
 
 authors:
     University College London:
@@ -39,22 +45,24 @@ reference:
   - TherapyEpisode-class
   - therapy_table
   - parenteral_changes
+  - starts_with("clinical_feature_")
   - therapy_timeline
 - title: Load & link data
   desc:  Load records into the warehouse and create secondary information.
   contents:
   - starts_with("load_inpatient")
-  - transitive_closure_control
   - load_medications
+  - transitive_closure_control
 - title: Simulated sets of electronic health records
   contents:
   - patients
   - inpatient_episodes
   - inpatient_wards
   - inpatient_diagnoses
-  - inpatient_investigations
   - drug_prescriptions
   - drug_administrations
+  - inpatient_microbiology  
+  - inpatient_investigations
 - title: Reference datasets
   desc:  Metadata provided with `Ramses`
   contents:

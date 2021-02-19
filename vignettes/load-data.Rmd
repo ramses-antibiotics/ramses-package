@@ -396,7 +396,7 @@ head(icd_infection_lkup)
 ```
 
 
-Data may now be loaded into the database. Diagnoses and their reference look-up are loaded in one step
+Data may now be loaded into the database. Diagnoses and their reference look-up are loaded in one step.
 
 ```{r load_diagnoses}
 load_inpatient_diagnoses(conn = ramses_db, 

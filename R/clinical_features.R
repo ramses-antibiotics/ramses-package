@@ -74,6 +74,40 @@
 }
 
 
+.clinical_feature_observations_fetch <- function(x, TT, therapy_record, observation_code, hours) {
+  
+  all_observations <- tbl(x@conn, "inpatient_investigations") %>%
+    dplyr::filter(patient_id %in% !!therapy_record$patient_id &
+                    observation_code %in% !!observation_code &
+                    status %in% c("final", "preliminary", "corrected", "amended") &
+                    !is.na(observation_value_numeric) &
+                    dplyr::between(observation_datetime,
+                                   !!(therapy_record$therapy_start - 3600 * hours),
+                                   !!therapy_record$therapy_end)) %>%
+    dplyr::select(patient_id, observation_datetime,
+                  observation_code, observation_value_numeric)
+  
+  if(is(x@conn, "SQLiteConnection")) {
+    sql_condition_1 <- paste0(
+      "datetime(observation_datetime) <= datetime(t_start) AND ",
+      "datetime(observation_datetime) >= ", 
+      "datetime(t_start, -", hours," || ' hours')")
+  } else if(is(x@conn, "PqConnection")) {
+    sql_condition_1 <- paste0(
+      "observation_datetime <= t_start AND ",
+      "observation_datetime >= (t_start - interval '", hours, "h')")
+  } else {
+    .throw_error_method_not_implemented(".clinical_feature_threshold()",
+                                        class(x@conn))
+  }
+  
+  observations_linked <- dplyr::inner_join(TT, all_observations, by = "patient_id") %>% 
+    dplyr::filter(dplyr::sql(sql_condition_1))
+  
+  observations_linked
+}
+
+
 #' Therapy table feature: most recent clinical observation
 #'
 #' @description Add a clinical feature to a therapy episode table indicating 
@@ -81,7 +115,7 @@
 #' @param x a \code{\link{TherapyEpisode}} object
 #' @param observation_code a character vector of clinical investigation codes
 #' matching the \code{observation_code} field in the \code{inpatient_investigation}
-#' table (see \code{\link{validate_investigations}()}
+#' table (see \code{\link{validate_investigations}()})
 #' @param hours the maximum number of hours the observation should date back from
 #' \code{t_start}, the starting time of every row in the therapy table
 #' @details NOTE: only numeric investigations marked with status \code{"final"}, 
@@ -90,6 +124,15 @@
 #' @rdname clinical_feature_last
 #' @export
 #' @include objects.R
+#' @examples 
+#' \dontrun{
+#' temperature_check <- clinical_feature_last(
+#'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+#'    observation_code = "8310-5",
+#'    hours = 24
+#'    )
+#' str(therapy_table(temperature_check, collect = TRUE))
+#' }
 setGeneric(
   "clinical_feature_last", 
   function(x, observation_code, hours) standardGeneric("clinical_feature_last"), 
@@ -151,13 +194,14 @@ setMethod(
 #' Therapy table feature: running mean value of clinical observation
 #'
 #' @description Add a clinical feature to a therapy episode table indicating 
-#' the running mean value of clinical observations made until table time \code{t}
+#' the arithmetic mean of clinical observations made until table time \code{t}
 #' @param x a \code{\link{TherapyEpisode}} object
 #' @param observation_code a character vector of clinical investigation codes
 #' matching the \code{observation_code} field in the \code{inpatient_investigation}
 #' table (see \code{\link{validate_investigations}()}
-#' @param hours the maximum number of hours the observation should date back from
-#' \code{t_start}, the starting time of every row in the therapy table
+#' @param hours the maximum number of hours the observations included in the mean
+#' should date back from \code{t_start}, the starting time of every row 
+#' in the therapy table
 #' @details NOTE: only numeric investigations marked with status \code{"final"}, 
 #' \code{"preliminary"}, \code{"corrected"}, or \code{"amended"} will be sourced.
 #' 
@@ -167,6 +211,15 @@ setMethod(
 #' @rdname clinical_feature_mean
 #' @export
 #' @include objects.R
+#' @examples 
+#' \dontrun{
+#' temperature_check <- clinical_feature_mean(
+#'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+#'    observation_code = "8310-5",
+#'    hours = 24
+#'    )
+#' str(therapy_table(temperature_check, collect = TRUE))
+#' }
 setGeneric(
   "clinical_feature_mean", 
   function(x, observation_code, hours) standardGeneric("clinical_feature_mean"), 
@@ -291,6 +344,15 @@ setMethod(
 #' @rdname clinical_feature_ols_trend
 #' @export
 #' @include objects.R
+#' @examples 
+#' \dontrun{
+#' temperature_check <- clinical_feature_ols_trend(
+#'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+#'    observation_code = "8310-5",
+#'    hours = 24
+#'    )
+#' str(therapy_table(temperature_check, collect = TRUE))
+#' }
 setGeneric(
   "clinical_feature_ols_trend", 
   function(x, observation_code, hours) standardGeneric("clinical_feature_ols_trend"), 
@@ -478,35 +540,3 @@ setMethod(
   }
 )
 
-.clinical_feature_observations_fetch <- function(x, TT, therapy_record, observation_code, hours) {
-  
-  all_observations <- tbl(x@conn, "inpatient_investigations") %>%
-    dplyr::filter(patient_id %in% !!therapy_record$patient_id &
-                    observation_code %in% !!observation_code &
-                    status %in% c("final", "preliminary", "corrected", "amended") &
-                    !is.na(observation_value_numeric) &
-                    dplyr::between(observation_datetime,
-                                   !!(therapy_record$therapy_start - 3600 * hours),
-                                   !!therapy_record$therapy_end)) %>%
-    dplyr::select(patient_id, observation_datetime,
-                  observation_code, observation_value_numeric)
-  
-  if(is(x@conn, "SQLiteConnection")) {
-    sql_condition_1 <- paste0(
-      "datetime(observation_datetime) <= datetime(t_start) AND ",
-      "datetime(observation_datetime) >= ", 
-      "datetime(t_start, -", hours," || ' hours')")
-  } else if(is(x@conn, "PqConnection")) {
-    sql_condition_1 <- paste0(
-      "observation_datetime <= t_start AND ",
-      "observation_datetime >= (t_start - interval '", hours, "h')")
-  } else {
-    .throw_error_method_not_implemented(".clinical_feature_threshold()",
-                                        class(x@conn))
-  }
-  
-  observations_linked <- dplyr::inner_join(TT, all_observations, by = "patient_id") %>% 
-    dplyr::filter(dplyr::sql(sql_condition_1))
-  
-  observations_linked
-}

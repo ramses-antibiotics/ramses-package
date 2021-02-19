@@ -31,3 +31,13 @@ observations made until table time \code{t}
 NOTE: only numeric investigations marked with status \code{"final"}, 
 \code{"preliminary"}, \code{"corrected"}, or \code{"amended"} will be sourced.
 }
+\examples{
+\dontrun{
+temperature_check <- clinical_feature_ols_trend(
+   TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+   observation_code = "8310-5",
+   hours = 24
+   )
+str(therapy_table(temperature_check, collect = TRUE))
+}
+}

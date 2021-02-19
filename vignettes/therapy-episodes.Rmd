@@ -2,8 +2,8 @@
 title: "Antimicrobial therapy episodes"
 date: '`r format(Sys.Date(), "%d %B %Y")`'
 output: 
-  rmarkdown::html_vignette:
-    toc: true 
+  rmarkdown::html_document:
+    df_print: paged
 bibliography: ../inst/REFERENCES.bib
 vignette: >
   %\VignetteIndexEntry{Antimicrobial therapy episodes}
@@ -20,10 +20,12 @@ vignette: >
 }
 </style>
 
-```{r setup, include = FALSE}
+```{r setup, include = FALSE }
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  paged.print = TRUE,
+  df_print = "paged"
 )
 ```
 
@@ -103,7 +105,7 @@ therapy_table(uti_episode,
 ```{r therapy_table_output, echo=FALSE, paged.print=TRUE}
 therapy_table(uti_episode, collect = TRUE) %>% 
   select(t, therapy_start, therapy_end, t_start, t_end, parenteral) %>% 
-  rmarkdown::paged_table() 
+  rmarkdown::paged_table()
 ```
 
 
@@ -116,7 +118,7 @@ This table can contain a number of clinical features. In the example above, rout
 A dedicated function can extract transitions from intravenous to oral therapy. Using the `parenteral_changes()` function below, we find there was only one sequence that included intravenous therapy. This sequence was initiated at $t$ = 122, and ended at $t$ = 242, without ever being converted to oral administration (`NA`). 
 
 ```{r parenteral_changes}
-parenteral_changes(TherapyEpisode(ramses_db, "d7c0310a08cf9f0f318276125cd282ed"))
+parenteral_changes(uti_episode)
 ```
 
 This function returns as many vectors as there are sequences of parenteral administration:
@@ -125,13 +127,61 @@ This function returns as many vectors as there are sequences of parenteral admin
 parenteral_changes(TherapyEpisode(ramses_db, "a028cf950c29ca73c01803b54642d513"))
 ```
 
+## Longitudinal clinical features
+
+Several functions are available to enrich the therapy table with fields characterising the clinical
+state and trajectory of the patient. For instance, we may be interested in temperature: 
+
+- `clinical_feature_last()` fetches the most recent temperature value,
+- `clinical_feature_mean()` computes a running arithmetic mean of the temperature time series,
+- `clinical_feature_range()` computes the number of observations falling both within and outside a specified range (eg 36°C--38°C); or lying below/above a specified threshold (eg 38°C); enabling to classify the patient as hypothermic/afebrile/febrile,
+- `clinical_feature_ols_trend()` computes the Ordinary Least Square (OLS) trend; including the slope parameter, enabling to measure whether temperature has been rising/stable/falling.
+
+The example below demonstrates how to classify a patient as hypothermic/afebrile/febrile:
+
+```{r classify_fever, paged.print=TRUE}
+example_sepsis <- TherapyEpisode(ramses_db, "4d611fc8886c23ab047ad5f74e5080d7")
+clinical_feature_range(
+  x = example_sepsis,
+  observation_ranges = list("8310-5" = c(36, 38)),
+  hours = 6
+) %>% therapy_table(collect = TRUE) %>% 
+  mutate(
+    range_temperature_N = range_temperature36_38_6h_strictly_under + 
+      range_temperature36_38_6h_in_range + 
+      range_temperature36_38_6h_strictly_over
+  ) %>% 
+  mutate(
+    febrile = case_when(
+      range_temperature36_38_6h_strictly_over > range_temperature_N * .333 ~ "febrile",
+      range_temperature36_38_6h_in_range > range_temperature_N * .333 ~ "afebrile",
+      range_temperature36_38_6h_strictly_under > range_temperature_N * .333 ~ "hypothermic",
+      TRUE ~ NA_character_
+    )
+  ) %>% 
+  select(t, t_start, febrile, starts_with("range_temperature")) %>% 
+  filter(t >= 13)
+```
+
+The example below demonstrates how to track the blood neutrophil count (an important measure that the patient is improving after treatment is initiated) is going up or down. The `hours` parameter is set 48 hours to capture two recent values and ensure a slope can be computed.
+
+We can see that at the time of therapy initiation, the neutrophil count was increasing by an average 0.09 10<sup>9</sup>/L every hour (neutrophilia). After 80 hours (day 3), we see first evidence of the neutrophil going down at a rate of 0.09 10<sup>9</sup>/L every hour. This suggests the infection is under control.
+
+```{r track_neutrophils, paged.print=TRUE}
+clinical_feature_ols_trend(
+  x = example_sepsis,
+  observation_code = "751-8",
+  hours = 48
+) %>% therapy_table(collect = TRUE) %>% 
+  select(t, t_start, ols_neutrophils_48h_slope, ols_neutrophils_48h_intercept) %>%
+  filter(between(t, 10, 14) | between(t, 80, 84))
+```
+
 
 ```{r dbDisconnect, include=FALSE}
 DBI::dbDisconnect(ramses_db)
 file.remove("ramses-db.sqlite")
 ```
-
-
 
 
 # Methodology
