@@ -57,7 +57,7 @@
       format(therapy_record$therapy_start - 3600 * hours, "%Y-%m-%d %H:%M:%S", tz = "UTC"),
       "' AND '",
       format(therapy_record$therapy_end, "%Y-%m-%d %H:%M:%S", tz = "UTC"),
-      "'s"
+      "'"
     )
     sql_condition_1 <- paste0(
       "observation_datetime <= t_start AND ",
