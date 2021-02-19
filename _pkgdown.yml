@@ -2,6 +2,13 @@ destination: docs
 template:
   params:
     bootswatch: flatly
+  opengraph:
+    image:
+      src: reference/figures/logo.png
+      alt: "Ramses: R package for Antimicrobial Stewardship & Surveillance"
+    twitter:
+      creator: "@peterdutey"
+      card: summary
 title: RAMSES
 url: https://ramses-antibiotics.github.io
 figures:
