@@ -38,6 +38,52 @@
   paste0(operation, "_", parameter_name, "_", as.integer(hours), "h")
 }
 
+.clinical_feature_observations_fetch <- function(x, TT, therapy_record, observation_code, hours) {
+  
+  if(is(x@conn, "SQLiteConnection")) {
+    sql_condition_0 <- paste0(
+      "datetime(observation_datetime) BETWEEN '",
+      .format_str_time_sqlite.POSIXct(therapy_record$therapy_start - 3600 * hours), "' AND '",
+      .format_str_time_sqlite.POSIXct(therapy_record$therapy_end), 
+      "'"
+    )
+    sql_condition_1 <- paste0(
+      "datetime(observation_datetime) <= datetime(t_start) AND ",
+      "datetime(observation_datetime) >= ", 
+      "datetime(t_start, -", hours," || ' hours')")
+  } else if(is(x@conn, "PqConnection")) {
+    sql_condition_0 <- paste0(
+      "observation_datetime BETWEEN '",
+      format(therapy_record$therapy_start - 3600 * hours, "%Y-%m-%d %H:%M:%S", tz = "UTC"),
+      "' AND '",
+      format(therapy_record$therapy_end, "%Y-%m-%d %H:%M:%S", tz = "UTC"),
+      "'s"
+    )
+    sql_condition_1 <- paste0(
+      "observation_datetime <= t_start AND ",
+      "observation_datetime >= (t_start - interval '", hours, "h')")
+  } else {
+    .throw_error_method_not_implemented(".clinical_feature_threshold()",
+                                        class(x@conn))
+  }
+  
+  all_observations <- tbl(x@conn, "inpatient_investigations") %>%
+    dplyr::filter(patient_id %in% !!therapy_record$patient_id &
+                    observation_code %in% !!observation_code &
+                    status %in% c("final", "preliminary", "corrected", "amended") &
+                    !is.na(observation_value_numeric) &
+                    dplyr::sql(sql_condition_0)) %>%
+    dplyr::select(patient_id, observation_datetime,
+                  observation_code, observation_value_numeric)
+  
+  observations_linked <- dplyr::inner_join(TT, 
+                                           all_observations, 
+                                           by = "patient_id") %>% 
+    dplyr::filter(dplyr::sql(sql_condition_1))
+  
+  observations_linked
+}
+
 
 .clinical_feature_last <- function(x, observation_code, hours) {
   
@@ -71,40 +117,6 @@
   )
   
   return(x)
-}
-
-
-.clinical_feature_observations_fetch <- function(x, TT, therapy_record, observation_code, hours) {
-  
-  all_observations <- tbl(x@conn, "inpatient_investigations") %>%
-    dplyr::filter(patient_id %in% !!therapy_record$patient_id &
-                    observation_code %in% !!observation_code &
-                    status %in% c("final", "preliminary", "corrected", "amended") &
-                    !is.na(observation_value_numeric) &
-                    dplyr::between(observation_datetime,
-                                   !!(therapy_record$therapy_start - 3600 * hours),
-                                   !!therapy_record$therapy_end)) %>%
-    dplyr::select(patient_id, observation_datetime,
-                  observation_code, observation_value_numeric)
-  
-  if(is(x@conn, "SQLiteConnection")) {
-    sql_condition_1 <- paste0(
-      "datetime(observation_datetime) <= datetime(t_start) AND ",
-      "datetime(observation_datetime) >= ", 
-      "datetime(t_start, -", hours," || ' hours')")
-  } else if(is(x@conn, "PqConnection")) {
-    sql_condition_1 <- paste0(
-      "observation_datetime <= t_start AND ",
-      "observation_datetime >= (t_start - interval '", hours, "h')")
-  } else {
-    .throw_error_method_not_implemented(".clinical_feature_threshold()",
-                                        class(x@conn))
-  }
-  
-  observations_linked <- dplyr::inner_join(TT, all_observations, by = "patient_id") %>% 
-    dplyr::filter(dplyr::sql(sql_condition_1))
-  
-  observations_linked
 }
 
 

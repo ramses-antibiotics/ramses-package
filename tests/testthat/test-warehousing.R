@@ -404,13 +404,40 @@ test_that("Ramses on SQLite 2", {
   
   # > - range ------------------------------------------------------------------
   
-  # temperature_check <- clinical_feature_range(
-  #   TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
-  #   observation_ranges = list("8310-5" = c(36, 38)),
-  #   hours = 24
-  # )
-  # test missing observation_code.
-
+  temperature_check <- therapy_table(clinical_feature_range(
+    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_ranges = list("8310-5" = c(36, 38)),
+    hours = 24), collect = TRUE)
+  # TODO test missing observation_code.
+  
+  expect_equal(temperature_check$range_temperature36_38_24h_in_range[1:5],
+               c(3, 3, 4, 5, 5))
+  expect_equal(temperature_check$range_temperature36_38_24h_in_range[174:178],
+               c(1, 1, 1, 1, 1))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_under[1:5],
+               c(0, 0, 0, 0, 0))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_under[174:178],
+               c(2, 2, 2, 2, 2))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_over[1:5],
+               c(0, 0, 0, 0, 0))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_over[174:178],
+               c(0, 0, 0, 0, 0))
+  
+  
+  # > - mean ------------------------------------------------------------------
+  
+  temperature_check <- therapy_table(
+    clinical_feature_mean(
+      TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_code = "8310-5",
+      hours = 2),
+    collect = TRUE
+  )
+  expect_equal(temperature_check$mean_temperature_2h[1:4],
+               c(36.9, 36.9, 36.8, 36.8))
+  expect_equal(temperature_check$mean_temperature_2h[174:178],
+               c(NA, NA, 36.0, 36.0, NA))
+  
   # > show methods ----------------------------------------------------------
   
   # TherapyEpisode
@@ -528,12 +555,12 @@ test_that("SQLite does transitive closure", {
 
 # > .format_str_time_sqlite ----------------------------------------------------
 
-test_that(".format_str_time_sqlite", {
+test_that(".format_str_time_sqlite.tbl_df", {
   
   conSQLite <- suppressWarnings(connect_local_database("test.sqlite"))
   test_posixct <- dplyr::tibble(t_start = as.POSIXct("2017-07-02 01:15:46", 
                                                      tz = "Europe/London"))
-  test_posixct <- .format_str_time_sqlite(conSQLite, test_posixct)
+  test_posixct <- .format_str_time_sqlite.tbl_df(conSQLite, test_posixct)
   expect_equal(
     test_posixct,
     dplyr::tibble(t_start = "2017-07-02 01:15:46+01:00")
@@ -987,6 +1014,42 @@ test_that("Ramses on PosgreSQL", {
       -0.0339028659846864, 0.0216832627491193, 0.0216832627491193, 
       0.0216832627491193)
   )
+  
+  # > - range ------------------------------------------------------------------
+  
+  temperature_check <- therapy_table(clinical_feature_range(
+    TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_ranges = list("8310-5" = c(36, 38)),
+    hours = 24), collect = TRUE)
+  # TODO test missing observation_code.
+  
+  expect_equal(temperature_check$range_temperature36_38_24h_in_range[1:5],
+               c(3, 3, 4, 5, 5))
+  expect_equal(temperature_check$range_temperature36_38_24h_in_range[174:178],
+               c(1, 1, 1, 1, 1))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_under[1:5],
+               c(0, 0, 0, 0, 0))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_under[174:178],
+               c(2, 2, 2, 2, 2))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_over[1:5],
+               c(0, 0, 0, 0, 0))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_over[174:178],
+               c(0, 0, 0, 0, 0))
+  
+  
+  # > - mean ------------------------------------------------------------------
+  
+  temperature_check <- therapy_table(
+    clinical_feature_mean(
+      TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_code = "8310-5",
+      hours = 2),
+    collect = TRUE
+  )
+  expect_equal(temperature_check$mean_temperature_2h[1:4],
+               c(36.9, 36.9, 36.8, 36.8))
+  expect_equal(temperature_check$mean_temperature_2h[174:178],
+               c(NA, NA, 36.0, 36.0, NA))
   
   # > show methods ----------------------------------------------------------
   
