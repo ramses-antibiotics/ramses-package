@@ -11,14 +11,6 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-<style type="text/css">
-#diagram_caption li {
-  font-weight:bold;
-}
-#diagram_caption > li > p:nth-child(n+2) {
-  font-weight:normal;
-}
-</style>
 
 ```{r setup, include = FALSE }
 knitr::opts_chunk$set(
@@ -29,47 +21,126 @@ knitr::opts_chunk$set(
 )
 ```
 
+<script>function openVisTab(evt, cityName) {
+  // Declare all variables
+  var i, tabcontent, tablinks;
+
+  // Get all elements with class="tabcontent" and hide them
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+
+  // Get all elements with class="tablinks" and remove the class "active"
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // Show the current tab, and add an "active" class to the button that opened the tab
+  document.getElementById(cityName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+</script>
+<style>
+.diagram_caption > li {
+  font-weight:bold;
+}
+
+.diagram_caption > li > p:nth-child(n+2) {
+  font-weight:normal;
+}
+
+.diagram_caption {
+  margin-top: 40px;
+  margin-bottom: 40px;
+  list-style-type: upper-alpha;
+}
+
+.patternDiagram {
+  max-width: 120px;
+}
+
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+  margin-top: 40px;
+}
+
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+}
+
+.tab button:hover {
+  background-color: #ddd;
+}
+
+.tab button.active {
+  background-color: #ccc;
+}
+
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+} 
+</style>
 
 
 # Introduction
 
-Treating infections commonly involves early initiation of empirical antibiotic therapy, with subsequent changes in the drug, dose, and route of administration of antibiotics, ideally informed by organisms isolated from biological samples such as blood or urine.
+Hospital patients with suspected infection are often treated with empirical antibiotics. Antibiotic treatment is usually reviewed 24--72 hours later. This often results in changes to the choice of drug, its dose, and/or route of administration. Ideally, these decisions are informed by microbial culture results from biological samples such as blood or urine. 
 
-Much of antimicrobial stewardship is interested in:
+Understanding how antibiotics are used in the hospital underpins effective antimicrobial stewardship. This requires knowledge of the sequence of prescribing events and requires information on:
 
-* the antibiotic class used to initiate therapy
-* subsequent changes to narrower/broader spectrum classes
-* use of drug combinations to extend the spectrum of a single antibiotic.
+* the type of antibiotic (antibiotic class) used to initiate therapy
+* subsequent changes to the original prescription, such as switching to a narrower/broader spectrum of antibiotic.
 
-To enable this, Ramses is built around the concept of *antimicrobial therapy episodes*, by linking the set of antimicrobial prescriptions administered consecutively or concurrently in a given patient.
+Ramses reconstructs prescribing events relating to an individual: it creates *antimicrobial therapy episodes*, which link the set of antimicrobial prescriptions administered consecutively or concurrently in a given patient.
 
-
-# Analysing therapy episodes in Ramses
+# Therapy episodes in Ramses
 
 ## Motivating example
 
-The animation below shows how this concept is used in the context of routinely-collect electronic prescription records.
+The diagrams below illustrates how to characterise prescribing events using Ramses.
 
-![Animated illustration of the linkage of raw prescriptions records into therapy episodes](antimicrobial_therapy_episodes/therapy_anim.gif){width=100%}
+<div class="tab">
+  <button class="tablinks" onclick="openVisTab(event, 'Raw records')" id="defaultOpen">A. Raw records</button>
+  <button class="tablinks" onclick="openVisTab(event, 'Linked records')">B. Records linked into a therapy episode</button>
+</div>
+<div id="Raw records" class="tabcontent">
+  <div class="figure"><img src="therapy-episodes/diagram_raw.gif" style="width:100.0%" alt="Diagram A: raw (unprocessed) electronic prescribing records"></div>
+</div>
+<div id="Linked records" class="tabcontent">
+  <div class="figure"><img src="therapy-episodes/diagram_linked.gif" style="width:100.0%" alt="Diagram B: linked (processed) electronic prescribing records"></div>
+</div>
 
-<ol id="diagram_caption" style="list-style-type:upper-alpha">
+<ol class="diagram_caption">
 <li>
-  <p>Based on unprocessed medical records alone, it is hard to characterise the chain of events beyond basic statements:</p>
-  <p>Patient X was prescribed nitrofurantoin (one-off + 3 days) during a first encounter.</p>
-  <p>Patient X was subsequently encountered again 24 hours later and treated with amoxicillin (1 day), gentamicin (one-off), and meropenem (5 days).</p>
+  <p>Based on unprocessed medical records alone, it is hard to characterise the chain of prescribing events.</p>
+  <p>Patient X was prescribed nitrofurantoin (single dose + 3 day course) during a first encounter.</p>
+  <p>Patient X re-presented to hospital 24 hours later and was treated with amoxicillin (1 day), gentamicin (single dose), and meropenem (5 day course).</p>
 </li>
 <li>
   <p>Ramses links prescriptions together (by transitive closure) to reconstruct the <i>therapy episode</i>, allowing more sophisticated observations:</p>
-  <p>Patient X took antibiotics without interruption for 7 days</p>
-  <p>On first encounter, patient X was given a first dose of nitrofurantoin for a suspected lower urinary tract infection (UTI), then reviewed by a senior doctor and given a regular course of three more days on the same antibiotic. Two of these days would have been taken at home.</p>
-  <p>During the following 24h, patient X’s worsening condition led to a second encounter. Patient X was prescribed a <i>combination therapy</i> (amoxicillin and one-off gentamicin). On review, after 24 hours, the lead clinician diagnosed a pyelonephritis and ordered a 5 day course of meropenem.</p>
+  <p>This makes it possible to determine that Patient X took antibiotics without interruption for 7 days.</p>
+  <p>On first encounter, patient X was given a first dose of nitrofurantoin for a suspected lower urinary tract infection (UTI), then reviewed by a senior doctor and prescribed a three day course of the same antibiotic. The patient only spent one day in hospital during this period.</p>
+  <p>During the following 24h, patient X’s worsening condition led them to re-present to hospital. Patient X was prescribed <i>combination therapy</i> (amoxicillin and a single dose of gentamicin). Patient X was prescribed combination therapy (amoxicillin and a single dose of  gentamicin). The patient was reviewed 24 hours later, diagnosed with  pyelonephritis and prescribed a 5-day course of meropenem.</p>
 </li>
 </ol>
 
 
 ## Therapy episodes objects
 
-Therapy episodes and therapy combinations are created automatically by Ramses when loading data (see [methods section](#methodology)) and referenced in the `drug_prescriptions` table.
+*Therapy episodes* and *therapy combinations* are created automatically by Ramses when loading data (see [methods](#methodology)). They are identified in the `drug_prescriptions` table in variables `therapy_id` and `combination_id`.
 
 
 ```{r create_db, message=FALSE, warning=FALSE}
@@ -94,13 +165,14 @@ uti_episode
 
 For more information on S4 classes used in Ramses and their associated methods, see the [Objects and classes vignette](ramses-objects.html).
 
+# Longitudinal analysis
+
 ## Therapy tables
 
 Therapy episodes can be studied by creating a longitudinal, hour-by-hour matrix called 'therapy table'.
 
 ```{r therapy_table_code, eval=FALSE}
-therapy_table(uti_episode, 
-              collect = TRUE)
+therapy_table(uti_episode, collect = TRUE)
 ```
 ```{r therapy_table_output, echo=FALSE, paged.print=TRUE}
 therapy_table(uti_episode, collect = TRUE) %>% 
@@ -109,13 +181,15 @@ therapy_table(uti_episode, collect = TRUE) %>%
 ```
 
 
-This table can contain a number of clinical features. In the example above, route of therapy administration is indicated in the `parenteral` field: 
+This basic table can be enhanced with [clinical features](#adding-clinical-features).
+
+By default, route of therapy administration is indicated in the `parenteral` field: 
 
 - `1` indicates that all drugs are administered via parenteral route (eg intravenously)
 - `0` indicates that at least one drug is administered via another route (eg orally)
-- `NA` indicates time in between prescriptions.
+- `NA` marks short gaps between prescriptions.
 
-A dedicated function can extract transitions from intravenous to oral therapy. Using the `parenteral_changes()` function below, we find there was only one sequence that included intravenous therapy. This sequence was initiated at $t$ = 122, and ended at $t$ = 242, without ever being converted to oral administration (`NA`). 
+The `parenteral_changes()` function extracts transitions from intravenous to oral therapy. The example below shows just one prescribing sequence that included intravenous therapy. This sequence was initiated at $t$ = 122, and ended at $t$ = 242, without ever being converted to oral administration (`NA`).
 
 ```{r parenteral_changes}
 parenteral_changes(uti_episode)
@@ -127,45 +201,40 @@ This function returns as many vectors as there are sequences of parenteral admin
 parenteral_changes(TherapyEpisode(ramses_db, "a028cf950c29ca73c01803b54642d513"))
 ```
 
-## Longitudinal clinical features
+In this example, parenteral therapy was first initiated at $t$ = 0, then converted to oral administration at $t$ = 97, until $t$ = 144. A new sequence of parenteral therapy begins at $t$ = 146, all within the same therapy episode.
 
-Several functions are available to enrich the therapy table with fields characterising the clinical
-state and trajectory of the patient. For instance, we may be interested in temperature: 
+## Adding clinical features
 
-- `clinical_feature_last()` fetches the most recent temperature value,
-- `clinical_feature_mean()` computes a running arithmetic mean of the temperature time series,
-- `clinical_feature_range()` computes the number of observations falling both within and outside a specified range (eg 36°C--38°C); or lying below/above a specified threshold (eg 38°C); enabling to classify the patient as hypothermic/afebrile/febrile,
+Several functions can enhance therapy tables with variables characterising the clinical state and trajectory of the patient. For instance, we may be interested in temperature: 
+
+- `clinical_feature_last()` fetches the most recent temperature value.
+- `clinical_feature_mean()` computes a running arithmetic mean of the temperature time series.
+- `clinical_feature_range()` computes the number of observations falling within and outside a specified range (eg 36°C--38°C) or lying below/above a specified threshold (eg 38°C).
 - `clinical_feature_ols_trend()` computes the Ordinary Least Square (OLS) trend; including the slope parameter, enabling to measure whether temperature has been rising/stable/falling.
 
 The example below demonstrates how to classify a patient as hypothermic/afebrile/febrile:
 
-```{r classify_fever, paged.print=TRUE}
+```{r classify_fever}
 example_sepsis <- TherapyEpisode(ramses_db, "4d611fc8886c23ab047ad5f74e5080d7")
-clinical_feature_range(
+
+clinical_feature_last(
   x = example_sepsis,
-  observation_ranges = list("8310-5" = c(36, 38)),
+  observation_code = "8310-5",
   hours = 6
 ) %>% therapy_table(collect = TRUE) %>% 
   mutate(
-    range_temperature_N = range_temperature36_38_6h_strictly_under + 
-      range_temperature36_38_6h_in_range + 
-      range_temperature36_38_6h_strictly_over
-  ) %>% 
-  mutate(
     febrile = case_when(
-      range_temperature36_38_6h_strictly_over > range_temperature_N * .333 ~ "febrile",
-      range_temperature36_38_6h_in_range > range_temperature_N * .333 ~ "afebrile",
-      range_temperature36_38_6h_strictly_under > range_temperature_N * .333 ~ "hypothermic",
+      last_temperature_6h < 36 ~ "hypothermic",
+      between(last_temperature_6h, 36, 38) ~ "afebrile",
+      last_temperature_6h > 38 ~ "febrile",
       TRUE ~ NA_character_
     )
   ) %>% 
-  select(t, t_start, febrile, starts_with("range_temperature")) %>% 
-  filter(t >= 13)
+  select(t, t_start, t_end, last_temperature_6h, febrile) %>% 
+  filter(t < 50)
 ```
 
-The example below demonstrates how to track the blood neutrophil count (an important measure that the patient is improving after treatment is initiated) is going up or down. The `hours` parameter is set 48 hours to capture two recent values and ensure a slope can be computed.
-
-We can see that at the time of therapy initiation, the neutrophil count was increasing by an average 0.09 10<sup>9</sup>/L every hour (neutrophilia). After 80 hours (day 3), we see first evidence of the neutrophil going down at a rate of 0.09 10<sup>9</sup>/L every hour. This suggests the infection is under control.
+Another example below tracks the blood neutrophil count, an  important measure to determine whether the patient is getting better after treatment is initiated. We want to know whether this parameter is going up, or down. The `hours` parameter is set to 48 hours: the function will look at all neutrophil counts in the last 48 hours. This should ensure we capture two recent values and can compute a slope.
 
 ```{r track_neutrophils, paged.print=TRUE}
 clinical_feature_ols_trend(
@@ -173,9 +242,13 @@ clinical_feature_ols_trend(
   observation_code = "751-8",
   hours = 48
 ) %>% therapy_table(collect = TRUE) %>% 
-  select(t, t_start, ols_neutrophils_48h_slope, ols_neutrophils_48h_intercept) %>%
+  select(t, t_start, ols_neutrophils_48h_slope, ols_neutrophils_48h_intercept, ols_neutrophils_48h_N) %>%
   filter(between(t, 10, 14) | between(t, 80, 84))
 ```
+Note that the intercept is defined for $t$ = `t_start`. In other words, its value corresponds to the linear (straight line) extrapolation of the trend to `t_start`.
+
+We can see that, at the time of therapy initiation, the neutrophil count was increasing by an average 0.09 per nanoliter every hour (neutrophilia). After 80 hours (day 3), we find first evidence of the neutrophil count going down at a rate of 0.09 per nanoliter every hour, returning to a normal range (2--7.5 10<sup>9</sup>/L). Depending on the patient's other vitals, this could indicate the infection is under control.
+
 
 
 ```{r dbDisconnect, include=FALSE}
@@ -206,14 +279,14 @@ To change the default settings, consult the documentation `?transitive_closure_c
 Table: Prescription overlap pattern classification rules and default settings [@DuteyMagni2021]
 
  Category | Pattern	| Conditions for <br> combination therapy |	Conditions for <br> continuation of therapy* |
- :-: | :-----: | --------- | --------- | 
- **1** | ![Overlap pattern 1](antimicrobial_therapy_episodes/cat-1.svg) | Ordered a max of 6h apart AND administrations separated by at the most 24h | Separated by at the most 36h  |
- **2** | ![Overlap pattern 2](antimicrobial_therapy_episodes/cat-2.svg) | Ordered a max of 6h apart AND drug is identical AND first administrations separated by at the most 24h | Separated by at the most 36h  |
- **3** | ![Overlap pattern 3](antimicrobial_therapy_episodes/cat-3.svg) | Never | Separated by at the most 36h |
- **4** | ![Overlap pattern 4](antimicrobial_therapy_episodes/cat-4.svg) | Never | Always |
- **5** | ![Overlap pattern 5](antimicrobial_therapy_episodes/cat-5.svg) | Ordered a max of 6h apart AND first administrations separated by at the most 24h | Always, unless combinations |
- **6** | ![Overlap pattern 6](antimicrobial_therapy_episodes/cat-6.svg) | Ordered a max of 6h apart AND first administrations separated by at the most 24h | Always, unless combinations |
- **7** | ![Overlap pattern 7](antimicrobial_therapy_episodes/cat-7.svg) | Never | Separated by at the most 36h |
+ :-: | :----: | ------------- | -------- | 
+ **1** | ![Overlap pattern 1](therapy-episodes/cat-1.svg){.patternDiagram} | Ordered a max of 6h apart AND administrations separated by at the most 24h | Separated by at the most 36h  |
+ **2** | ![Overlap pattern 2](therapy-episodes/cat-2.svg){.patternDiagram} | Ordered a max of 6h apart AND drug is identical AND first administrations separated by at the most 24h | Separated by at the most 36h  |
+ **3** | ![Overlap pattern 3](therapy-episodes/cat-3.svg){.patternDiagram} | Never | Separated by at the most 36h |
+ **4** | ![Overlap pattern 4](therapy-episodes/cat-4.svg){.patternDiagram} | Never | Always |
+ **5** | ![Overlap pattern 5](therapy-episodes/cat-5.svg){.patternDiagram} | Ordered a max of 6h apart AND first administrations separated by at the most 24h | Always, unless combinations |
+ **6** | ![Overlap pattern 6](therapy-episodes/cat-6.svg){.patternDiagram} | Ordered a max of 6h apart AND first administrations separated by at the most 24h | Always, unless combinations |
+ **7** | ![Overlap pattern 7](therapy-episodes/cat-7.svg){.patternDiagram} | Never | Separated by at the most 36h |
 
 *Notes:* 
 
@@ -224,5 +297,8 @@ Table: Prescription overlap pattern classification rules and default settings [@
 
 
 
+<script>
+document.getElementById("defaultOpen").click();
+</script>
 
 # References

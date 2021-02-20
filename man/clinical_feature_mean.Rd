@@ -30,9 +30,6 @@ the arithmetic mean of clinical observations made until table time \code{t}
 \details{
 NOTE: only numeric investigations marked with status \code{"final"}, 
 \code{"preliminary"}, \code{"corrected"}, or \code{"amended"} will be sourced.
-
-The returned regression slope coefficient corresponds to the mean change 
-associated with a 1-hour time increment.
 }
 \examples{
 \dontrun{

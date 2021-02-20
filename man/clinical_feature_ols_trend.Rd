@@ -30,6 +30,13 @@ observations made until table time \code{t}
 \details{
 NOTE: only numeric investigations marked with status \code{"final"}, 
 \code{"preliminary"}, \code{"corrected"}, or \code{"amended"} will be sourced.
+
+The returned regression slope coefficient corresponds to the mean change 
+associated with a 1-hour time increment.
+
+The returned regression intercept is defined with respect to time equals
+zero at \code{t_start}. It thus corresponds to the linear (straight line) 
+extrapolation of the trend to \code{t_start}.
 }
 \examples{
 \dontrun{

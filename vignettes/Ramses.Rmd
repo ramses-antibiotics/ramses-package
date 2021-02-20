@@ -142,9 +142,9 @@ study_pop <- tbl(ramses_db, "inpatient_episodes") %>%
 consumption_episodes <- study_pop %>% 
   left_join(tbl(ramses_db, "bridge_episode_prescription_overlap")) %>% 
   group_by(calendar_year, calendar_month, main_specialty_code) %>% 
-  summarise(DOT_prescribed = sum(DOT, na.rm = TRUE),
-            DDD_prescribed = sum(DDD_prescribed, na.rm = TRUE),
-            bed_days = sum(ramses_bed_days, na.rm = TRUE)) %>% 
+  summarise(DOT_prescribed = sum(ifNull(DOT, 0.0)),
+            DDD_prescribed = sum(ifNULL(DDD_prescribed, 0.0)),
+            bed_days = sum(ifNull(ramses_bed_days, 0.0))) %>% 
   collect()  %>% 
   mutate(month_starting = as.Date(paste0(calendar_year, "/", calendar_month, "/01")))
 
@@ -173,8 +173,8 @@ Alternatively, consumption can be attributed to the episode when prescriptions a
 consumption_initiation <- study_pop %>% 
   left_join(tbl(ramses_db, "bridge_episode_prescription_initiation")) %>% 
   group_by(calendar_year, calendar_month, main_specialty_code) %>% 
-  summarise(DOT_prescribed = sum(DOT, na.rm = TRUE),
-            DDD_prescribed = sum(DDD_prescribed, na.rm = TRUE),
+  summarise(DOT_prescribed = sum(ifNull(DOT, 0.0)),
+            DDD_prescribed = sum(ifNULL(DDD_prescribed, 0.0)),
             total_admissions = n_distinct(paste0(patient_id, spell_id))) %>% 
   collect()  %>% 
   mutate(month_starting = as.Date(paste0(calendar_year, "/", calendar_month, "/01")))
@@ -250,12 +250,12 @@ consumption_aware_episodes_num <- tbl(ramses_db, "drug_prescriptions") %>%
   left_join(tbl(ramses_db, "bridge_episode_prescription_overlap")) %>% 
   inner_join(study_pop) %>% 
   group_by(calendar_year, calendar_month, aware_category) %>% 
-  summarise(DOT_prescribed = sum(DOT, na.rm = TRUE)) %>% 
+  summarise(DOT_prescribed = sum(ifNull(DOT, 0.0))) %>% 
   collect()
  
 consumption_aware_episodes_denom <- study_pop %>% 
   group_by(calendar_year, calendar_month) %>% 
-  summarise(bed_days =  sum(ramses_bed_days, na.rm = TRUE)) %>% 
+  summarise(bed_days =  sum(ifNull(ramses_bed_days, 0.0))) %>% 
   collect()
 
 consumption_aware_episodes <- left_join(

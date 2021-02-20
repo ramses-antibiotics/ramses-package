@@ -62,7 +62,7 @@ h1, .h1, h2, .h2, h3, .h3 {
   visibility: visible;
 }
 
-.pagedtable-wrapper, .sourceCode{
+.pagedtable-wrapper, .sourceCode {
   margin-top: 30px !important;
   margin-bottom: 30px !important;
 }

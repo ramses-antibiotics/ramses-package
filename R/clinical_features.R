@@ -217,8 +217,6 @@ setMethod(
 #' @details NOTE: only numeric investigations marked with status \code{"final"}, 
 #' \code{"preliminary"}, \code{"corrected"}, or \code{"amended"} will be sourced.
 #' 
-#' The returned regression slope coefficient corresponds to the mean change 
-#' associated with a 1-hour time increment.
 #' @return an object of class \code{\link{TherapyEpisode}}
 #' @rdname clinical_feature_mean
 #' @export
@@ -284,13 +282,15 @@ setMethod(
     observations_linked <- dplyr::mutate(
       observations_linked,
       observation_datetime_int = dplyr::sql(
-        "strftime('%s', observation_datetime)/(3600.0)")
+        "( strftime('%s', observation_datetime) - 
+           strftime('%s', t_start) ) / 3600.0")
       )
   } else if(is(x@conn, "PqConnection")) {
     observations_linked <- dplyr::mutate(
       observations_linked,
       observation_datetime_int = dplyr::sql(
-        "EXTRACT(EPOCH FROM TIMESTAMP WITH TIME ZONE observation_datetime)/3600.0"
+        "( EXTRACT(EPOCH FROM observation_datetime) - 
+           EXTRACT(EPOCH FROM t_start) ) / 3600.0"
         ))
   } else {
     .throw_error_method_not_implemented(".clinical_feature_ols_trend()",
@@ -301,9 +301,7 @@ setMethod(
     dplyr::group_by(patient_id, t) %>%
     dplyr::mutate(
       y_bar = mean(observation_value_numeric, na.rm = TRUE),
-      t_bar = 0.0,
-      observation_datetime_int = observation_datetime_int - 
-        mean(observation_datetime_int, na.rm = T)
+      t_bar = mean(observation_datetime_int, na.rm = TRUE)
     ) %>% 
     dplyr::summarise(
       slope_numerator = sum(
@@ -352,6 +350,13 @@ setMethod(
 #' \code{t_start}, the starting time of every row in the therapy table
 #' @details NOTE: only numeric investigations marked with status \code{"final"}, 
 #' \code{"preliminary"}, \code{"corrected"}, or \code{"amended"} will be sourced.
+#' 
+#' The returned regression slope coefficient corresponds to the mean change 
+#' associated with a 1-hour time increment.
+#' 
+#' The returned regression intercept is defined with respect to time equals
+#' zero at \code{t_start}. It thus corresponds to the linear (straight line) 
+#' extrapolation of the trend to \code{t_start}.
 #' @return an object of class \code{\link{TherapyEpisode}}
 #' @rdname clinical_feature_ols_trend
 #' @export
