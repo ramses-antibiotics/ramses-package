@@ -309,7 +309,8 @@ setMethod(
           (observation_datetime_int - t_bar),
         na.rm = TRUE),
       slope_denominator = sum(
-        dplyr::sql("square(observation_datetime_int - t_bar)"), 
+        (observation_datetime_int - t_bar) *
+          (observation_datetime_int - t_bar),
         na.rm = TRUE),
       regression_N = dplyr::n(),
       y_bar = mean(y_bar, na.rm = TRUE),
