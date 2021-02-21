@@ -5,6 +5,7 @@
 #' @param conn a database connection
 #' @param operation a string, eg `"last"`, `"mean"`, `"range"`, `"trend"`
 #' @param observation_code a string 
+#' @param range_threshold a string, eg "16_18"
 #' @param hours an integer
 #' @return a string
 #' @noRd
