@@ -5,9 +5,19 @@
 \alias{clinical_feature_ols_trend,TherapyEpisode-method}
 \title{Therapy table feature: temporal trend of clinical observations}
 \usage{
-clinical_feature_ols_trend(x, observation_code, hours)
+clinical_feature_ols_trend(
+  x,
+  observation_code,
+  hours,
+  observation_code_system = NULL
+)
 
-\S4method{clinical_feature_ols_trend}{TherapyEpisode}(x, observation_code, hours)
+\S4method{clinical_feature_ols_trend}{TherapyEpisode}(
+  x,
+  observation_code,
+  hours,
+  observation_code_system = NULL
+)
 }
 \arguments{
 \item{x}{a \code{\link{TherapyEpisode}} object}
@@ -18,6 +28,13 @@ table (see \code{\link{validate_investigations}()}}
 
 \item{hours}{the maximum number of hours the observations should date back from
 \code{t_start}, the starting time of every row in the therapy table}
+
+\item{observation_code_system}{(optional) reserved to  instance where 
+\code{observation_code} is ambiguous and does not uniquely identify 
+observations across code systems (vocabularies), specify a single
+code system identifier (eg \code{"http://snomed.info/sct"}) to use.
+The default is \code{NULL} and will only filter observation using
+\code{observation_code}.}
 }
 \value{
 an object of class \code{\link{TherapyEpisode}}

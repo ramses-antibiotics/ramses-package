@@ -1,4 +1,64 @@
 
+#' Verify that the `observation_code` is unique
+#'
+#' @param conn a database connection
+#' @param observation_code a string
+#' @param observation_code_system (optional) reserved to  instance where 
+#' \code{observation_code} is ambiguous and does not uniquely identify 
+#' observations across code systems (vocabularies), specify a single
+#' code system identifier (eg \code{"http://snomed.info/sct"}) to use.
+#' The default is \code{NULL} and will only filter observation using
+#' \code{observation_code}.
+#' @return a string
+#' @noRd
+.clinical_investigation_code_validate <- function(
+  conn, 
+  observation_code,
+  observation_code_system
+) {
+  
+  if ( !is.null(observation_code_system) & length(observation_code_system) != 1) {
+    stop("`observation_code_system` must be a string of length 1.")
+  }
+  if ( !is.null(observation_code_system) ) {
+  db_observation_codes <- dplyr::filter(
+    dplyr::tbl(conn, "inpatient_investigations"), 
+    observation_code %in% !!observation_code & 
+      observation_code_system == !!observation_code_system
+    )
+  } else {
+    db_observation_codes <- dplyr::filter(
+      dplyr::tbl(conn, "inpatient_investigations"),
+      observation_code %in% !!observation_code
+    ) 
+  }
+  
+  db_observation_codes <- dplyr::distinct(db_observation_codes,
+                                          observation_code_system, 
+                                          observation_code) %>% 
+    dplyr::group_by(observation_code) %>% 
+    dplyr::summarise(n = dplyr::n()) %>% 
+    dplyr::collect() 
+
+  if ( any(db_observation_codes[["n"]] > 1) ) {
+    stop(paste0(
+      "Some codes are ambiguous (exist in multiple code systems): '",
+      paste(db_observation_codes[db_observation_codes[["n"]] > 1, 
+                                 "observation_code"], collapse = "', '"), "'\n",
+      "Please use the `observation_code_system` option to avoid ambiguity."
+    ))
+  } 
+  
+  if ( any(!observation_code %in% db_observation_codes[["observation_code"]]) ) {
+    stop(paste0(
+      "Some `observation_code` were not found in the database: '",
+      paste(
+        observation_code[which(!observation_code %in% 
+                                 db_observation_codes[["observation_code"]])],
+        collapse = "', '"), "'"
+    ))
+  }
+}
 
 #' Generate a field name for a new therapy table clinical feature
 #'
@@ -7,29 +67,48 @@
 #' @param observation_code a string 
 #' @param range_threshold a string, eg "16_18"
 #' @param hours an integer
+#' @param observation_code_system (optional) reserved to  instance where 
+#' \code{observation_code} is ambiguous and does not uniquely identify 
+#' observations across code systems (vocabularies), specify a single
+#' code system identifier (eg \code{"http://snomed.info/sct"}) to use.
+#' The default is \code{NULL} and will only filter observation using
+#' \code{observation_code}.
 #' @return a string
 #' @noRd
 .clinical_feature_field_name_generate <- function(conn, 
                                                   operation, 
                                                   observation_code,
                                                   range_threshold = NULL,
-                                                  hours) {
+                                                  hours,
+                                                  observation_code_system) {
   
   stopifnot(all(lapply(list(observation_code,
                             operation,
                             hours), length) == 1))
+  stopifnot(is.null(observation_code_system) | (
+    length(observation_code_system) == 1 & 
+      !is.na(observation_code_system)
+  ))
   stopifnot(is.null(range_threshold) | length(range_threshold) == 1)
   stopifnot(!any(unlist(lapply(list(observation_code,
                                     operation,
                                     hours), is.na))))
-  stopifnot(all(lapply(list(observation_code,
-                            operation,
-                            hours), length) == 1))
   operation <- tolower(operation)
-  parameter_name <- tbl(conn, "inpatient_investigations") %>% 
-    dplyr::filter(observation_code == !!observation_code) %>% 
-    dplyr::distinct(observation_display) %>% 
-    dplyr::collect()
+  if( is.null(observation_code_system) ) {
+    parameter_name <- tbl(conn, "inpatient_investigations") %>% 
+      dplyr::filter(observation_code == !!observation_code) %>% 
+      dplyr::distinct(observation_display) %>% 
+      dplyr::collect()
+  } else {
+    parameter_name <- tbl(conn, "inpatient_investigations") %>% 
+      dplyr::filter(observation_code == !!observation_code &
+                      observation_code_system == !!observation_code_system) %>% 
+      dplyr::distinct(observation_display) %>% 
+      dplyr::collect()
+  }
+  if( nrow(parameter_name) == 0 ) {
+    stop("`observation_code` ", observation_code, " not found in database.")
+  }
   parameter_name <- parameter_name[["observation_display"]]
   parameter_name <- gsub("[[:punct:]]", "", tolower(unique(parameter_name)))
   parameter_name <- gsub(" ", "_", trimws(parameter_name))
@@ -39,7 +118,13 @@
   paste0(operation, "_", parameter_name, "_", as.integer(hours), "h")
 }
 
-.clinical_feature_observations_fetch <- function(x, TT, therapy_record, observation_code, hours) {
+
+.clinical_feature_observations_fetch <- function(x, 
+                                                 TT, 
+                                                 therapy_record, 
+                                                 observation_code, 
+                                                 hours,
+                                                 observation_code_system) {
   
   if(is(x@conn, "SQLiteConnection")) {
     sql_condition_0 <- paste0(
@@ -68,7 +153,14 @@
                                         class(x@conn))
   }
   
-  all_observations <- tbl(x@conn, "inpatient_investigations") %>%
+  if( !is.null(observation_code_system) ) {
+    all_observations <- tbl(x@conn, "inpatient_investigations") %>%
+      dplyr::filter(observation_code_system == !!observation_code_system)
+  } else {
+    all_observations <- tbl(x@conn, "inpatient_investigations")
+  }
+  
+  all_observations <- all_observations %>% 
     dplyr::filter(patient_id %in% !!therapy_record$patient_id &
                     observation_code %in% !!observation_code &
                     status %in% c("final", "preliminary", "corrected", "amended") &
@@ -86,7 +178,7 @@
 }
 
 
-.clinical_feature_last <- function(x, observation_code, hours) {
+.clinical_feature_last <- function(x, observation_code, hours, observation_code_system) {
   
   TT <- .therapy_table_create(x@conn, x@id)
   therapy_record <- collect(x)
@@ -94,14 +186,16 @@
     conn = x@conn, 
     operation = "last", 
     observation_code = observation_code, 
-    hours = hours)
+    hours = hours,
+    observation_code_system = observation_code_system)
   
   observations_linked <- .clinical_feature_observations_fetch(
     x = x, 
     TT = TT,
     therapy_record = therapy_record,
     observation_code = observation_code,
-    hours = hours
+    hours = hours,
+    observation_code_system = observation_code_system
   ) %>% 
     dplyr::group_by(patient_id, t) %>% 
     dplyr::mutate(keep = dplyr::row_number(dplyr::desc(observation_datetime))) %>% 
@@ -131,6 +225,12 @@
 #' table (see \code{\link{validate_investigations}()})
 #' @param hours the maximum number of hours the observation should date back from
 #' \code{t_start}, the starting time of every row in the therapy table
+#' @param observation_code_system (optional) reserved to  instance where 
+#' \code{observation_code} is ambiguous and does not uniquely identify 
+#' observations across code systems (vocabularies), specify a single
+#' code system identifier (eg \code{"http://snomed.info/sct"}) to use.
+#' The default is \code{NULL} and will only filter observation using
+#' \code{observation_code}.
 #' @details NOTE: only numeric investigations marked with status \code{"final"}, 
 #' \code{"preliminary"}, \code{"corrected"}, or \code{"amended"} will be sourced.
 #' @return an object of class \code{\link{TherapyEpisode}}
@@ -148,7 +248,7 @@
 #' }
 setGeneric(
   "clinical_feature_last", 
-  function(x, observation_code, hours) standardGeneric("clinical_feature_last"), 
+  function(x, observation_code, hours, observation_code_system = NULL) standardGeneric("clinical_feature_last"), 
   signature = "x")
 
 
@@ -157,12 +257,18 @@ setGeneric(
 setMethod(
   "clinical_feature_last",
   c(x = "TherapyEpisode"),
-  function(x, observation_code, hours) {
+  function(x, observation_code, hours, observation_code_system = NULL) {
     stopifnot(is.character(observation_code))
     stopifnot(is.numeric(hours) & length(hours) == 1 & hours >= 0)
+    .clinical_investigation_code_validate(conn = x@conn, 
+                                          observation_code = observation_code, 
+                                          observation_code_system = observation_code_system)
     
     for (i in seq_len(length(observation_code))) {
-      x <- .clinical_feature_last(x, observation_code[[i]], hours)
+      x <- .clinical_feature_last(x = x, 
+                                  observation_code = observation_code[[i]], 
+                                  hours = hours, 
+                                  observation_code_system = observation_code_system)
     }
     
     return(x)
@@ -170,7 +276,7 @@ setMethod(
 )
 
 
-.clinical_feature_mean <- function(x, observation_code, hours) {
+.clinical_feature_mean <- function(x, observation_code, hours, observation_code_system) {
   
   TT <- .therapy_table_create(x@conn, x@id)
   therapy_record <- collect(x)
@@ -178,7 +284,8 @@ setMethod(
     conn = x@conn, 
     operation = "mean", 
     observation_code = observation_code, 
-    hours = hours)
+    hours = hours,
+    observation_code_system = observation_code_system)
   field_name_N <- paste0(field_name, "_N")
   
   observations_linked <- .clinical_feature_observations_fetch(
@@ -186,7 +293,8 @@ setMethod(
     TT = TT,
     therapy_record = therapy_record,
     observation_code = observation_code,
-    hours = hours
+    hours = hours,
+    observation_code_system = observation_code_system
   ) %>% 
     dplyr::group_by(patient_id, t) %>% 
     dplyr::summarise(
@@ -215,6 +323,12 @@ setMethod(
 #' @param hours the maximum number of hours the observations included in the mean
 #' should date back from \code{t_start}, the starting time of every row 
 #' in the therapy table
+#' @param observation_code_system (optional) reserved to  instance where 
+#' \code{observation_code} is ambiguous and does not uniquely identify 
+#' observations across code systems (vocabularies), specify a single
+#' code system identifier (eg \code{"http://snomed.info/sct"}) to use.
+#' The default is \code{NULL} and will only filter observation using
+#' \code{observation_code}.
 #' @details NOTE: only numeric investigations marked with status \code{"final"}, 
 #' \code{"preliminary"}, \code{"corrected"}, or \code{"amended"} will be sourced.
 #' 
@@ -233,7 +347,7 @@ setMethod(
 #' }
 setGeneric(
   "clinical_feature_mean", 
-  function(x, observation_code, hours) standardGeneric("clinical_feature_mean"), 
+  function(x, observation_code, hours, observation_code_system = NULL) standardGeneric("clinical_feature_mean"), 
   signature = "x")
 
 
@@ -242,12 +356,15 @@ setGeneric(
 setMethod(
   "clinical_feature_mean",
   c(x = "TherapyEpisode"),
-  function(x, observation_code, hours) {
+  function(x, observation_code, hours, observation_code_system = NULL) {
     stopifnot(is.character(observation_code))
     stopifnot(is.numeric(hours) & length(hours) == 1 & hours >= 0)
+    .clinical_investigation_code_validate(x@conn, 
+                                          observation_code, 
+                                          observation_code_system)
     
     for (i in seq_len(length(observation_code))) {
-      x <- .clinical_feature_mean(x, observation_code[[i]], hours)
+      x <- .clinical_feature_mean(x, observation_code[[i]], hours, observation_code_system)
     }
     
     return(x)
@@ -255,7 +372,7 @@ setMethod(
 )
 
 
-.clinical_feature_ols_trend <- function(x, observation_code, hours) {
+.clinical_feature_ols_trend <- function(x, observation_code, hours, observation_code_system) {
   
   final_slope <- observation_datetime_int <- regression_N <- NULL
   slope_denominator <- slope_numerator <- t_bar <- y_bar <- NULL
@@ -266,7 +383,8 @@ setMethod(
     conn = x@conn, 
     operation = "ols", 
     observation_code = observation_code, 
-    hours = hours)
+    hours = hours,
+    observation_code_system = observation_code_system)
   field_name_slope <- paste0(field_name, "_slope")
   field_name_intercept <- paste0(field_name, "_intercept")
   field_name_N <- paste0(field_name, "_N")
@@ -276,7 +394,8 @@ setMethod(
     TT = TT,
     therapy_record = therapy_record,
     observation_code = observation_code,
-    hours = hours
+    hours = hours,
+    observation_code_system = observation_code_system
   )
   
   if(is(x@conn, "SQLiteConnection")) {
@@ -350,6 +469,12 @@ setMethod(
 #' table (see \code{\link{validate_investigations}()}
 #' @param hours the maximum number of hours the observations should date back from
 #' \code{t_start}, the starting time of every row in the therapy table
+#' @param observation_code_system (optional) reserved to  instance where 
+#' \code{observation_code} is ambiguous and does not uniquely identify 
+#' observations across code systems (vocabularies), specify a single
+#' code system identifier (eg \code{"http://snomed.info/sct"}) to use.
+#' The default is \code{NULL} and will only filter observation using
+#' \code{observation_code}.
 #' @details NOTE: only numeric investigations marked with status \code{"final"}, 
 #' \code{"preliminary"}, \code{"corrected"}, or \code{"amended"} will be sourced.
 #' 
@@ -374,7 +499,7 @@ setMethod(
 #' }
 setGeneric(
   "clinical_feature_ols_trend", 
-  function(x, observation_code, hours) standardGeneric("clinical_feature_ols_trend"), 
+  function(x, observation_code, hours, observation_code_system = NULL) standardGeneric("clinical_feature_ols_trend"), 
   signature = "x")
 
 
@@ -383,12 +508,15 @@ setGeneric(
 setMethod(
   "clinical_feature_ols_trend",
   c(x = "TherapyEpisode"),
-  function(x, observation_code, hours) {
+  function(x, observation_code, hours, observation_code_system = NULL) {
     stopifnot(is.character(observation_code))
     stopifnot(is.numeric(hours) & length(hours) == 1 & hours >= 0)
-
+    .clinical_investigation_code_validate(x@conn, 
+                                          observation_code, 
+                                          observation_code_system)
+    
     for (i in seq_len(length(observation_code))) {
-      x <- .clinical_feature_ols_trend(x, observation_code[[i]], hours)
+      x <- .clinical_feature_ols_trend(x, observation_code[[i]], hours, observation_code_system)
     }
     
     return(x)
@@ -397,14 +525,15 @@ setMethod(
 
 
 
-.clinical_feature_threshold <- function(x, observation_code, threshold, hours) {
+.clinical_feature_threshold <- function(x, observation_code, threshold, hours, observation_code_system) {
   TT <- .therapy_table_create(x@conn, x@id)
   therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
       conn = x@conn, 
       operation = paste0("threshold", threshold),
       observation_code = observation_code, 
-      hours = hours)
+      hours = hours,
+      observation_code_system = observation_code_system)
   field_name_under <- paste0(field_name, "_under")
   field_name_over <- paste0(field_name, "_strictly_over")
   
@@ -416,7 +545,8 @@ setMethod(
     TT = TT,
     therapy_record = therapy_record,
     observation_code = observation_code,
-    hours = hours
+    hours = hours,
+    observation_code_system = observation_code_system
   ) %>% 
     dplyr::group_by(patient_id, t) %>%
     dplyr::summarise(
@@ -436,7 +566,7 @@ setMethod(
   return(x)
 }
 
-.clinical_feature_range <- function(x, observation_code, lower_bound, upper_bound, hours) {
+.clinical_feature_range <- function(x, observation_code, lower_bound, upper_bound, hours, observation_code_system) {
   TT <- .therapy_table_create(x@conn, x@id)
   therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
@@ -444,7 +574,8 @@ setMethod(
     operation = paste0("range"),
     range_threshold = paste0(lower_bound, "_", upper_bound),
     observation_code = observation_code, 
-    hours = hours)
+    hours = hours,
+    observation_code_system = observation_code_system)
   field_name_under <- paste0(field_name, "_strictly_under")
   field_name_in_range <- paste0(field_name, "_in_range")
   field_name_over <- paste0(field_name, "_strictly_over")
@@ -458,7 +589,8 @@ setMethod(
     TT = TT,
     therapy_record = therapy_record,
     observation_code = observation_code,
-    hours = hours
+    hours = hours,
+    observation_code_system = observation_code_system
   ) %>% 
     dplyr::group_by(patient_id, t) %>%
     dplyr::summarise(
@@ -493,6 +625,12 @@ setMethod(
 #' table (see \code{\link{validate_investigations}()}. See example
 #' @param hours the maximum number of hours the observation should date back from
 #' \code{t_start}, the starting time of every row in the therapy table
+#' @param observation_code_system (optional) reserved to  instance where 
+#' \code{observation_code} is ambiguous and does not uniquely identify 
+#' observations across code systems (vocabularies), specify a single
+#' code system identifier (eg \code{"http://snomed.info/sct"}) to use.
+#' The default is \code{NULL} and will only filter observation using
+#' \code{observation_code}.
 #' @details NOTE: only numeric investigations marked with status \code{"final"}, 
 #' \code{"preliminary"}, \code{"corrected"}, or \code{"amended"} will be sourced.
 #' @return an object of class \code{\link{TherapyEpisode}}
@@ -510,7 +648,7 @@ setMethod(
 #' @include objects.R
 setGeneric(
   "clinical_feature_range", 
-  function(x, observation_ranges, hours) standardGeneric("clinical_feature_range"), 
+  function(x, observation_ranges, hours, observation_code_system = NULL) standardGeneric("clinical_feature_range"), 
   signature = "x")
 
 
@@ -519,22 +657,15 @@ setGeneric(
 setMethod(
   "clinical_feature_range",
   c(x = "TherapyEpisode"),
-  function(x, observation_ranges, hours) {
+  function(x, observation_ranges, hours, observation_code_system = NULL) {
     stopifnot(is.list(observation_ranges))
     stopifnot(all(unlist(lapply(observation_ranges, length)) %in% 1:2))
     stopifnot(is.numeric(hours) & length(hours) == 1 & hours >= 0)
     
     input_observation_codes <- names(observation_ranges)
-    all_observations_codes <- tbl(x@conn, "inpatient_investigations") %>%
-      dplyr::distinct(observation_code) %>% 
-      dplyr::collect()
-    observation_codes_not_found <- !input_observation_codes %in% 
-      all_observations_codes$observation_code
-    
-    if(any(observation_codes_not_found)) {
-      stop("`observation_code` not found in database:",
-           paste(input_observation_codes[observation_codes_not_found], collapse = ", "))
-    }
+    .clinical_investigation_code_validate(x@conn, 
+                                          input_observation_codes,
+                                          observation_code_system)
     
     for (i in seq_len(length(observation_ranges))) {
       if(length(observation_ranges[[i]]) == 1) {
@@ -543,7 +674,8 @@ setMethod(
         x <- .clinical_feature_threshold(x = x, 
                                          observation_code = input_observation_codes[[i]], 
                                          threshold = observation_ranges[[i]],
-                                         hours = hours)
+                                         hours = hours, 
+                                         observation_code_system = observation_code_system)
       } else {
         stopifnot(!any(is.na(observation_ranges[[i]])) &
                     !any(is.infinite(observation_ranges[[i]])))
@@ -551,7 +683,8 @@ setMethod(
                                      observation_code = input_observation_codes[[i]], 
                                      lower_bound = sort(observation_ranges[[i]])[1],
                                      upper_bound = sort(observation_ranges[[i]])[2],
-                                     hours = hours)
+                                     hours = hours,
+                                     observation_code_system = observation_code_system)
       }
     }
     

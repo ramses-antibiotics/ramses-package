@@ -5,9 +5,19 @@
 \alias{clinical_feature_range,TherapyEpisode-method}
 \title{Therapy table feature: most recent clinical observation}
 \usage{
-clinical_feature_range(x, observation_ranges, hours)
+clinical_feature_range(
+  x,
+  observation_ranges,
+  hours,
+  observation_code_system = NULL
+)
 
-\S4method{clinical_feature_range}{TherapyEpisode}(x, observation_ranges, hours)
+\S4method{clinical_feature_range}{TherapyEpisode}(
+  x,
+  observation_ranges,
+  hours,
+  observation_code_system = NULL
+)
 }
 \arguments{
 \item{x}{a \code{\link{TherapyEpisode}} object}
@@ -19,6 +29,13 @@ table (see \code{\link{validate_investigations}()}. See example}
 
 \item{hours}{the maximum number of hours the observation should date back from
 \code{t_start}, the starting time of every row in the therapy table}
+
+\item{observation_code_system}{(optional) reserved to  instance where 
+\code{observation_code} is ambiguous and does not uniquely identify 
+observations across code systems (vocabularies), specify a single
+code system identifier (eg \code{"http://snomed.info/sct"}) to use.
+The default is \code{NULL} and will only filter observation using
+\code{observation_code}.}
 }
 \value{
 an object of class \code{\link{TherapyEpisode}}

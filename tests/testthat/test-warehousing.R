@@ -330,6 +330,14 @@ test_that("Ramses on SQLite 2", {
   
   # > - last -------------------------------------------------------------------
   
+  expect_error(
+    clinical_feature_last(
+      TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_code = "8310-5",
+      hours = 24,
+      observation_code_system = "doesnotexist"
+    )
+  )
   last_temp <- clinical_feature_last(
     TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_code = "8310-5",
@@ -370,6 +378,15 @@ test_that("Ramses on SQLite 2", {
   example_therapy <-  TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7")
   example_therapy_record <- collect(example_therapy)
   
+  expect_error(
+    clinical_feature_ols_trend(
+      example_therapy,
+      observation_code = "8310-5",
+      hours = 24, 
+      observation_code_system = "doesnotexist"
+    )
+  )
+  
   ols_temp <- therapy_table(clinical_feature_ols_trend(
     example_therapy,
     observation_code = "8310-5",
@@ -404,11 +421,19 @@ test_that("Ramses on SQLite 2", {
   
   # > - range ------------------------------------------------------------------
   
+  expect_error(
+    clinical_feature_range(
+      TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_ranges = list("8310-5" = c(36, 38)),
+      hours = 24,
+      observation_code_system = "doesnotexist"
+      )
+  )
+  
   temperature_check <- therapy_table(clinical_feature_range(
     TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_ranges = list("8310-5" = c(36, 38)),
     hours = 24), collect = TRUE)
-  # TODO test missing observation_code.
   
   expect_equal(temperature_check$range_temperature36_38_24h_in_range[1:5],
                c(3, 3, 4, 5, 5))
@@ -425,6 +450,14 @@ test_that("Ramses on SQLite 2", {
   
   
   # > - mean ------------------------------------------------------------------
+  
+  expect_error(
+    clinical_feature_mean(
+      TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_code = "8310-5",
+      hours = 2, 
+      observation_code_system = "doesnotexist")
+  )
   
   temperature_check <- therapy_table(
     clinical_feature_mean(
@@ -943,6 +976,14 @@ test_that("Ramses on PosgreSQL", {
   
   # > - last -------------------------------------------------------------------
   
+  expect_error(
+    clinical_feature_last(
+      TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_code = "8310-5",
+      hours = 24,
+      observation_code_system = "doesnotexist"
+    )
+  )
   last_temp <- clinical_feature_last(
     TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_code = "8310-5",
@@ -983,6 +1024,15 @@ test_that("Ramses on PosgreSQL", {
   example_therapy <-  TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7")
   example_therapy_record <- collect(example_therapy)
   
+  expect_error(
+    clinical_feature_ols_trend(
+      example_therapy,
+      observation_code = "8310-5",
+      hours = 24, 
+      observation_code_system = "doesnotexist"
+    )
+  )
+  
   ols_temp <- therapy_table(clinical_feature_ols_trend(
     example_therapy,
     observation_code = "8310-5",
@@ -1017,6 +1067,15 @@ test_that("Ramses on PosgreSQL", {
   
   # > - range ------------------------------------------------------------------
   
+  expect_error(
+    clinical_feature_range(
+      TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_ranges = list("8310-5" = c(36, 38)),
+      hours = 24,
+      observation_code_system = "doesnotexist"
+    )
+  )
+  
   temperature_check <- therapy_table(clinical_feature_range(
     TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_ranges = list("8310-5" = c(36, 38)),
@@ -1038,6 +1097,14 @@ test_that("Ramses on PosgreSQL", {
   
   
   # > - mean ------------------------------------------------------------------
+  
+  expect_error(
+    clinical_feature_mean(
+      TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_code = "8310-5",
+      hours = 2, 
+      observation_code_system = "doesnotexist")
+  )
   
   temperature_check <- therapy_table(
     clinical_feature_mean(
