@@ -1321,8 +1321,8 @@ validate_investigations <- function(investigations,
   units_validate <- .validate_UCUM_codes(unique(investigations$observation_unit))
   
   units_mixed <- investigations %>% 
-    dplyr::distinct(observation_code, observation_unit) %>% 
-    dplyr::group_by(observation_code) %>% 
+    dplyr::distinct(observation_code_system, observation_code, observation_unit) %>% 
+    dplyr::group_by(observation_code_system, observation_code) %>% 
     dplyr::summarise(n = dplyr::n()) %>% 
     dplyr::filter(n > 1)
   units_mixed <- nrow(units_mixed) > 0
