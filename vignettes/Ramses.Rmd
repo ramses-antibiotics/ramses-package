@@ -82,7 +82,7 @@ devtools::install_github("ramses-antibiotics/ramses-package")
 You can use it to create a demonstration SQLite database fully loaded with 
 synthetic electronic health records. 
 
-```{r setup_mock_db}
+```{r setup_mock_db, warning=FALSE, message=FALSE}
 library(Ramses)
 library(ggplot2)
 library(dplyr)

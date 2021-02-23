@@ -22,23 +22,22 @@ library(DiagrammeR)
 
 # Introduction and rationale
 
-This article introduces the way `Ramses` handles the following *objects* and data records associated with them, for instance, patients,  prescriptions or therapy episodes.
+This article introduces the way `Ramses` handles entities such as patients, prescriptions, or therapy episodes. Each of these entities is associated with specific data analysis operations, and is represented in their own type of records in the backend database. 
 
-Some functions, such as `get_patient_id()` are applicable to multiple object classes. To enable this, `Ramses` employs S4 classes. The [Object-oriented programming](https://adv-r.hadley.nz/oo.html) section by @Hadley2019 provides an introduction to objects and classes handling in `R`.
+To ensure users can access the relevant records and perform the desired analytical operations, `Ramses` employs a *object model* that consists of S4 classes representing each of these entities, and giving access to relevant functions or methods.
 
-Computer programmes designed for data analysis often need to overcome an obstacle known as **object-relational impedance mismatch**, which designates difficulties faced when interfacing a relational database management system (RDBMS) with an application such as the present package. The object representations in (a) the database and  (b) the software package have to be made explicit in an object-relational mapper. That is the vocation of the present article.
-
+More information on, objects, classes, and methods in `R` is available from the [Object-oriented programming](https://adv-r.hadley.nz/oo.html) section by @Hadley2019.
 
 # Objects in Ramses
 
-`Ramses` objects are S4 classes. They all conform to the RamsesObject class specification:
+`Ramses` objects are S4 classes. They all conform to the `RamsesObject` virtual class specification:
 
-- contain an `id` slot corresponding to a primary key in the database backend
-- contain a `conn` slot corresponding to the database backend connection, currently either of `SQLiteConnection` or `PqConnection` class (see [database objects](#database-objects))
-- can be passed to `compute()` in order to compute the corresponding database records (faster to retrieve)
-- can be passed to `collect()` in order to retrieve the corresponding database records (returns a `tbl_df` object)
+- they contain an `id` slot corresponding to a primary key in the database backend
+- they contain a `conn` slot corresponding to the database backend connection, currently either of `SQLiteConnection` or `PqConnection` class (see [database objects](#database-objects))
+- they can be passed to `compute()` in order to compute the corresponding database records (faster to retrieve)
+- they can be passed to `collect()` in order to retrieve the corresponding database records (returns a `tbl_df` object)
 
-# Prescribing objects
+## Prescribing objects
 
 `MedicationRequest` objects, which represent a single drug-dose order, which may or may not participate in combination therapy (2 or more drugs). `MedicationRequest` objects are associated with one episode of antimicrobial therapy (represented by `TherapyEpisode` objects).
 
@@ -60,7 +59,7 @@ htmltools::HTML(DiagrammeRsvg::export_svg(grViz("ramses-objects/ramses-med-class
 
 # Database objects
 
-Database objects follow the [`dbplyr`](https://dbplyr.tidyverse.org/articles/dbplyr.html) architecture:
+`Ramses` uses other objects for backend database connections and tables. They follow the [`dbplyr`](https://dbplyr.tidyverse.org/articles/dbplyr.html) architecture:
 
 - database connections have class `DBIConnection`. Currently, `SQLiteConnection` (package RSQLite) and `PqConnection` (package RPostgres) are supported
 - database table are created using the `tbl()` function and are represented by `tbl_sql` objects which, although they inherit from the `tbl` class, are distinct from the common `tbl_df` tibble class.
@@ -69,7 +68,6 @@ Database objects follow the [`dbplyr`](https://dbplyr.tidyverse.org/articles/dbp
 htmltools::HTML(DiagrammeRsvg::export_svg(grViz("ramses-objects/tbl-class-diagram.gv")))
 ```
 
- 
 
 # References
 

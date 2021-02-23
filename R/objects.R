@@ -85,7 +85,7 @@ Patient <- function(conn, id) {
 #' An S4 class to represent a drug-dose medication request
 #'
 #' @description This class represent a clinician's request for a single 
-#' drug-dose order. as monotherapy a combination therapy
+#' drug-dose order, whether it is to be used as monotherapy or combination therapy.
 #' @slot id a prescription identifier
 #' @slot conn a database connection
 #' @slot record a \code{tbl_sql} for the corresponding database record

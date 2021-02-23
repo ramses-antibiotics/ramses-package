@@ -15,7 +15,7 @@ MedicationRequest(conn, id)
 }
 \description{
 This class represent a clinician's request for a single 
-drug-dose order. as monotherapy a combination therapy
+drug-dose order, whether it is to be used as monotherapy or combination therapy.
 }
 \section{Slots}{
 
