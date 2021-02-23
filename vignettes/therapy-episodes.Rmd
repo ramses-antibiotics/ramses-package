@@ -234,7 +234,7 @@ clinical_feature_last(
   filter(t < 50)
 ```
 
-Another example below tracks the blood neutrophil count, an  important measure to determine whether the patient is getting better after treatment is initiated. We want to know whether this parameter is going up, or down. The `hours` parameter is set to 48 hours: the function will look at all neutrophil counts in the last 48 hours. This should ensure we capture two recent values and can compute a slope.
+Another example below tracks the blood neutrophil count, which provides insights into the patient's clinical progression following treatment. We want to know whether this parameter is going up, or down. The `hours` parameter is set to 48 hours: the function will look at all neutrophil counts in the last 48 hours. This should ensure we capture two recent values and can compute a slope.
 
 ```{r track_neutrophils, paged.print=TRUE}
 clinical_feature_ols_trend(
@@ -245,11 +245,10 @@ clinical_feature_ols_trend(
   select(t, t_start, ols_neutrophils_48h_slope, ols_neutrophils_48h_intercept, ols_neutrophils_48h_N) %>%
   filter(between(t, 10, 14) | between(t, 80, 84))
 ```
+
 Note that the intercept is defined for $t$ = `t_start`. In other words, its value corresponds to the linear (straight line) extrapolation of the trend to `t_start`.
 
 We can see that, at the time of therapy initiation, the neutrophil count was increasing by an average 0.09 per nanoliter every hour (neutrophilia). After 80 hours (day 3), we find first evidence of the neutrophil count going down at a rate of 0.09 per nanoliter every hour, returning to a normal range (2--7.5 10<sup>9</sup>/L). Depending on the patient's other vitals, this could indicate the infection is under control.
-
-
 
 ```{r dbDisconnect, include=FALSE}
 DBI::dbDisconnect(ramses_db)

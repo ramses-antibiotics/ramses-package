@@ -38,6 +38,7 @@ RamsesObject [
   + collect(): tbl_df\l}"
 ]
 
+/*
 Prescription [
   width = 3
   label = "{Prescription|
@@ -64,6 +65,7 @@ Prescription_Combo [
   - type: \"combo\"\l
   }"
 ]
+*/
 
 MedicationRequest [
   width = 2.5
@@ -72,22 +74,27 @@ MedicationRequest [
   
   + MedicationRequest(DBICon, id)\l
   + Patient(): Patient\l
-  + Clinician(): Clinician\l
-  + Prescription(): Prescription\l
   + TherapyEpisode(): TherapyEpisode\l
   + therapy_timeline(): htmlwidgets\l}"
+  
+  # + Clinician(): Clinician\l
+  #  + Prescription(): Prescription\l
 ]
 
 TherapyEpisode [
-  width = 3.1
+  width = 3.3
   label = "{TherapyEpisode|
   - therapy_table: tbl_sql\l|
   
   + TherapyEpisode(DBICon, id): TherapyEpisode\l
   + Patient(): Patient\l
-  + therapy_table(collect = F): tbl\l
+  + therapy_table(collect = T/F): tbl\l
   + therapy_timeline(): htmlwidgets\l
-  + parenteral_changes(): list\l}"
+  + parenteral_changes(): list\l
+  + clinical_feature_last(): TherapyEpisode\l
+  + clinical_feature_mean(): TherapyEpisode\l
+  + clinical_feature_ols_trend(): TherapyEpisode\l
+  + clinical_feature_range(): TherapyEpisode\l}"
 #  + medication_request(): list\l}"
 ]
 
@@ -99,6 +106,7 @@ Patient [
   + therapy_timeline(): htmlwidgets\l}"
 ]
 
+/*
 Clinician [
   width = 2.5
   label = "{Clinician|
@@ -106,7 +114,7 @@ Clinician [
   + Clinician(DBICon, id): Clinician\l
   + get_specialty(): character\l
   + get_lead_clinician: Clinician\l}"
-]
+]*/
 
 /*
 TherapyList [
@@ -115,31 +123,31 @@ label = "{TherapyList|\l+ id: list\l+ type: \"therapy-list\"\l- TherapyTable: tb
 */
 
 
-RamsesObject -> Prescription [dir=back]
+/*RamsesObject -> Prescription [dir=back]
 Prescription -> Prescription_Mono [dir=back]
-Prescription -> Prescription_Combo [dir=back]
+Prescription -> Prescription_Combo [dir=back]*/
 RamsesObject -> MedicationRequest [dir=back]
 
 RamsesObject -> Patient [dir=back]
-RamsesObject -> Clinician [dir=back]
+/*RamsesObject -> Clinician [dir=back]*/
 RamsesObject -> TherapyEpisode [dir=back]
 
 TherapyEpisode -> MedicationRequest [ constraint=false
   arrowhead=odiamond
   headlabel = "1..*  "
   taillabel = "1   "]
-Prescription_Mono -> MedicationRequest [ constraint=false
+/*Prescription_Mono -> MedicationRequest [ constraint=false
   arrowhead=odiamond
   headlabel = "1..*       "
   taillabel = "1"]
 Prescription_Combo -> MedicationRequest [
   arrowhead=odiamond
   headlabel = "2..*    "
-  taillabel = "1"]
+  taillabel = "1"]*/
 
 
-Patient -> Clinician [ style = invis ]; 
-TherapyEpisode -> Clinician  [ style = invis ]; 
+/*Patient -> Clinician [ style = invis ]; 
+TherapyEpisode -> Clinician  [ style = invis ]; */
 Patient -> TherapyEpisode  [ style = invis ]; 
 
 

@@ -141,7 +141,7 @@ load_inpatient_episodes <- function(conn,
     df = patients_data,
     temporary = FALSE,
     overwrite = overwrite,
-    indexes = "patient_id"
+    indexes = list("patient_id")
     )
   
   dplyr::copy_to(

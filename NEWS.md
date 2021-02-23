@@ -4,7 +4,7 @@
 ## Features
 
 * introduce S4 classes `Patient`, `MedicationRequest`, `TherapyEpisode`
-* introduce therapy methods `therapy_table()`, `parenteral_changes()`
+* introduce therapy methods `therapy_table()`, `parenteral_changes()`, `clinical_feature_last`, `clinical_feature_ols_trend`, `clinical_feature_range`, `clinical_feature_mean`
 
 ## Improvements
 

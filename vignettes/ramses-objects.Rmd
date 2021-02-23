@@ -40,6 +40,9 @@ Computer programmes designed for data analysis often need to overcome an obstacl
 
 # Prescribing objects
 
+`MedicationRequest` objects, which represent a single drug-dose order, which may or may not participate in combination therapy (2 or more drugs). `MedicationRequest` objects are associated with one episode of antimicrobial therapy (represented by `TherapyEpisode` objects).
+
+<!--
 `Ramses` distinguishes between:
 
 - `MedicationRequest` objects, which represent a single drug-dose order
@@ -48,6 +51,8 @@ Computer programmes designed for data analysis often need to overcome an obstacl
 Unlike `MedicationRequest` objects, `Prescription` objects may not be created directly with an `id`. `Prescription` objects must be created from a `MedicationRequest` object.
 
 Both can be used to get to the episode of antimicrobial therapy (class: `TherapyEpisode`).
+-->
+
 
 ```{r diagram-objects, fig.cap="Class diagram of the main `Ramses` objects", echo=FALSE}
 htmltools::HTML(DiagrammeRsvg::export_svg(grViz("ramses-objects/ramses-med-class-diagram.gv")))
