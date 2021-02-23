@@ -512,7 +512,7 @@ compute_DDDs <- function(ATC_code, ATC_administration, dose, unit, silent = FALS
   for (i in seq_len(length(search_ATC))) {
     if(!silent) progress_bar$tick()
     atc_url <- sub("%s", search_ATC[i], who_url, fixed = TRUE)
-    atc_page <- xml2::read_html(atc_url) 
+    atc_page <- xml2::read_html(url(atc_url)) 
     if( length(rvest::html_nodes(
           atc_page, 
           paste0("table:contains(", search_ATC[i], ")")
