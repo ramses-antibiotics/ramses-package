@@ -339,7 +339,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' therapy_sequence <- parenteral_changes(example_therapy)
 #' therapy_sequence
 #' 
-#' # Look for the section of the therapy table where 0 ≤ t ≤ 145
+#' # Look for the section of the therapy table where 0 <= t <= 145
 #' filter(therapy_table(example_therapy, collect = TRUE),
 #'        between(t,
 #'                therapy_sequence[[1]][1],
