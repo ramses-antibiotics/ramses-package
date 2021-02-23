@@ -29,7 +29,7 @@ Some functions, such as `get_patient_id()` are applicable to multiple object cla
 Computer programmes designed for data analysis often need to overcome an obstacle known as **object-relational impedance mismatch**, which designates difficulties faced when interfacing a relational database management system (RDBMS) with an application such as the present package. The object representations in (a) the database and  (b) the software package have to be made explicit in an object-relational mapper. That is the vocation of the present article.
 
 
-# Objects in `Ramses`
+# Objects in Ramses
 
 `Ramses` objects are S4 classes. They all conform to the RamsesObject class specification:
 
@@ -49,11 +49,9 @@ Unlike `MedicationRequest` objects, `Prescription` objects may not be created di
 
 Both can be used to get to the episode of antimicrobial therapy (class: `TherapyEpisode`).
 
-```{r diagram-objects, fig.cap="Class diagram of the main `Ramses` objects", fig.height=6, fig.width=8, echo=FALSE}
-grViz("ramses-objects/ramses-med-class-diagram.gv", engine = "twopi")
+```{r diagram-objects, fig.cap="Class diagram of the main `Ramses` objects", echo=FALSE}
+htmltools::HTML(DiagrammeRsvg::export_svg(grViz("ramses-objects/ramses-med-class-diagram.gv")))
 ```
-
-
 
 # Database objects
 
@@ -62,8 +60,8 @@ Database objects follow the [`dbplyr`](https://dbplyr.tidyverse.org/articles/dbp
 - database connections have class `DBIConnection`. Currently, `SQLiteConnection` (package RSQLite) and `PqConnection` (package RPostgres) are supported
 - database table are created using the `tbl()` function and are represented by `tbl_sql` objects which, although they inherit from the `tbl` class, are distinct from the common `tbl_df` tibble class.
 
-```{r diagram-tbl, fig.cap="Class diagram of tbl objects in the `tidyverse`", fig.height=3, fig.width=4, echo=FALSE}
-grViz("ramses-objects/tbl-class-diagram.gv")
+```{r diagram-tbl, fig.cap="Class diagram of tbl objects in the `tidyverse`", echo=FALSE}
+htmltools::HTML(DiagrammeRsvg::export_svg(grViz("ramses-objects/tbl-class-diagram.gv")))
 ```
 
  

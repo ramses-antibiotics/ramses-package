@@ -13,8 +13,25 @@ override_build_authors <- function (pkg = ".") {
   data <- list(pagetitle = "Authors", authors = data_authors(pkg)$all)
   render_page(pkg, "authors", data, "authors.html")
 }
+override_rmarkdown_format <- function(pkg = ".",
+                                      name,
+                                      depth = 1L,
+                                      data = list(),
+                                      toc = TRUE) {
+  template <- pkgdown:::rmarkdown_template(pkg, name, depth = depth, data = data)
+  rmarkdown::html_document(
+    toc = toc,
+    toc_depth = 2,
+    self_contained = FALSE,
+    theme = NULL,
+    template = template$path,
+    df_print = "paged"
+  )
+}
 
 envpkgd <- getNamespace("pkgdown")
 R.utils::reassignInPackage("data_authors", "pkgdown", override_data_authors, keepOld=F)
 # R.utils::reassignInPackage("build_authors", "pkgdown", override_build_authors, keepOld=F)
+R.utils::reassignInPackage("build_rmarkdown_format", "pkgdown", override_rmarkdown_format, keepOld=F)
 build_site(new_process = FALSE)
+

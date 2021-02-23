@@ -60,7 +60,7 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
       "diagnosis_position"
     ))
   
-  diagnoses_data <- .format_str_time_sqlite(conn, diagnoses_data)
+  diagnoses_data <- .format_str_time_sqlite.tbl_df(conn, diagnoses_data)
 
   load_errors <- try({
     dplyr::copy_to(
@@ -120,7 +120,8 @@ load_inpatient_episodes <- function(conn,
       colnames(patients_data)[!colnames(patients_data) == "patient_id"]
     )
   ]
-  patients_data <- .format_str_time_sqlite(conn, patients_data)
+
+  patients_data <- .format_str_time_sqlite.tbl_df(conn, patients_data)
 
   episodes_data <- dplyr::arrange(episodes_data, 
                                   patient_id, episode_start)
@@ -132,7 +133,7 @@ load_inpatient_episodes <- function(conn,
     episodes_data, 
     first_column_names = first_column_names_episodes) 
   
-  episodes_data <- .format_str_time_sqlite(conn, episodes_data)
+  episodes_data <- .format_str_time_sqlite.tbl_df(conn, episodes_data)
   
   dplyr::copy_to(
     dest = conn, 
@@ -173,7 +174,7 @@ load_inpatient_episodes <- function(conn,
       wards_data, 
       first_column_names = first_column_names_wards)   
     
-    wards_data <- .format_str_time_sqlite(conn, wards_data)
+    wards_data <- .format_str_time_sqlite.tbl_df(conn, wards_data)
 
     load_errors <- try({
       dplyr::copy_to(
@@ -217,7 +218,7 @@ load_inpatient_investigations <- function(conn, investigations_data, overwrite =
     data = investigations_data,
     first_column_names = first_variables)
   
-  investigations_data <- .format_str_time_sqlite(conn, investigations_data)
+  investigations_data <- .format_str_time_sqlite.tbl_df(conn, investigations_data)
   
   load_errors <- try({
     dplyr::copy_to(
@@ -281,9 +282,9 @@ load_inpatient_microbiology <- function(conn,
     data = susceptibilities,
     first_column_names = first_variables$susceptibilities)
   
-  specimens <- .format_str_time_sqlite(conn, specimens)
-  isolates <- .format_str_time_sqlite(conn, isolates)
-  susceptibilities <- .format_str_time_sqlite(conn, susceptibilities)
+  specimens <- .format_str_time_sqlite.tbl_df(conn, specimens)
+  isolates <- .format_str_time_sqlite.tbl_df(conn, isolates)
+  susceptibilities <- .format_str_time_sqlite.tbl_df(conn, susceptibilities)
   
   load_errors <- try({
     dplyr::copy_to(
@@ -484,7 +485,7 @@ load_medications.PqConnection <- function(
   
   prescriptions <- dplyr::arrange(prescriptions, patient_id, prescription_start)
   prescriptions$id <- seq_len(nrow(prescriptions))
-  prescriptions <- .format_str_time_sqlite(conn, prescriptions)
+  prescriptions <- .format_str_time_sqlite.tbl_df(conn, prescriptions)
   prescriptions$therapy_rank <- NA_integer_
   
   if(create_combination_id) prescriptions$combination_id <- NA_character_
@@ -826,7 +827,7 @@ load_medications.PqConnection <- function(
     administrations, 
     first_column_names = first_column_names
     ) 
-  administrations <- .format_str_time_sqlite(conn, administrations)
+  administrations <- .format_str_time_sqlite.tbl_df(conn, administrations)
   
   load_output <- try({
     dplyr::copy_to(
@@ -1712,15 +1713,10 @@ UseMethod(".run_transitive_closure")
 #' @return a formatted data frame
 #' @noRd
 #' @seealso https://www.sqlite.org/lang_datefunc.html#time_values
-.format_str_time_sqlite <- function(conn, data_frame) {
+.format_str_time_sqlite.tbl_df <- function(conn, data_frame) {
   if ( is(conn, "SQLiteConnection" )) {
     for(i in which(vapply(data_frame, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
-      data_frame[[i]] <- paste0(
-        as.character(data_frame[[i]], format = "%Y-%m-%d %H:%M:%S"),
-        substr(as.character(data_frame[[i]], format = "%z"), 0, 3),
-        ":",
-        substr(as.character(data_frame[[i]], format = "%z"), 4, 5)
-      )
+      data_frame[[i]] <- .format_str_time_sqlite.POSIXct(data_frame[[i]])
     }
     for(i in which(vapply(data_frame, is, class2 = "Date", FUN.VALUE = logical(1)))) {
       data_frame[[i]] <- as.character(data_frame[[i]])
@@ -1729,6 +1725,15 @@ UseMethod(".run_transitive_closure")
   
   data_frame
 }
+
+.format_str_time_sqlite.POSIXct <- function(x) {
+  paste0(
+    as.character(x, format = "%Y-%m-%d %H:%M:%S"),
+    substr(as.character(x, format = "%z"), 0, 3),
+    ":",
+    substr(as.character(x, format = "%z"), 4, 5)
+  )
+} 
 
 #' Collect SQL tibble
 #' 

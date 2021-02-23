@@ -18,7 +18,8 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.width=6, 
   fig.height=4,
-  fig.align = "center"
+  fig.align = "center",
+  df_print = "tibble"
 )
 ```
 
@@ -131,7 +132,7 @@ The approach to create tables of antimicrobial consumption follows three steps:
 
 Consumption can be attributed to specialty based on the specialty of the episode during which the antibiotic is administered. In this case, the appropriate bridge table is `bridge_episode_prescription_overlap`.
 
-```{r AC1}
+```{r AC1, paged.print=FALSE}
 study_pop <- tbl(ramses_db, "inpatient_episodes") %>% 
   filter(main_specialty_code %in% c("100", "101", "300") &
            discharge_date >= "2016-01-01") %>% 

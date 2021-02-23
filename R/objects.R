@@ -38,7 +38,7 @@ setValidity("RamsesObject", function(object) {
 })
 
 setMethod("collect", "RamsesObject", function(x) {
-  dplyr::collect(x@record)
+  collect_ramses_tbl(x@record)
 })
 
 setMethod("compute", "RamsesObject", function(x) {
@@ -146,6 +146,7 @@ TherapyEpisode.DBIConnection <- function(conn, id) {
   record <- tbl(conn, "drug_therapy_episodes") %>% 
     dplyr::filter(therapy_id == !!id)
   therapy_table <- .therapy_table_create(conn = conn, id = id)
+  therapy_table <- .therapy_table_parenteral_indicator(therapy_table, therapy_id = id)
   new("TherapyEpisode", 
       id = id,
       conn = conn,
@@ -200,8 +201,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
         t == max(t, na.rm = TRUE),
         therapy_end,
         t_end
-      )) %>% 
-      .therapy_table_parenteral_indicator(therapy_id = id)
+      ))
   } else if(is(conn, "PqConnection")) {
     tbl(conn, "ramses_tally") %>%
       dplyr::full_join(therapy_table, by = character()) %>%
@@ -212,8 +212,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
         t == max(t, na.rm = TRUE),
         therapy_end,
         t_end
-      )) %>% 
-      .therapy_table_parenteral_indicator(therapy_id = id)
+      ))
   } else {
     .throw_error_method_not_implemented(".create_therapy_table()",
                                         class(conn))
@@ -289,15 +288,15 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' Get 'parenteral' drug administration sequences
 #'
 #' @description Timely switch to oral therapy is a widely recommended
-#' antimicrobial stewardship behaviour. The \code{parenteral_changes()}
-#' function extracts 'therapy sequences', which are defined as either:
+#' antimicrobial stewardship behaviour. \code{parenteral_changes()}
+#' extracts 'therapy sequences', which are defined as either:
 #' \itemize{
 #'    \item a period of parenteral antimicrobial therapy subsequently converted
 #'    into oral therapy 
 #'    \item a period of parenteral antimicrobial therapy never converted into 
 #'    oral therapy
 #' }
-#' @param therapy_episode a \code{TherapyEpisode} object
+#' @param therapy_episode a \code{\link{TherapyEpisode}} object
 #' @param tolerance_hours integer for the maximum number of hours during which 
 #' an absence of prescription or the administration of some oral drugs 
 #' will be ignored. The default is 12.

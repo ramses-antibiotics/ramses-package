@@ -1248,8 +1248,9 @@ validate_microbiology <- function(specimens, isolates, susceptibilities) {
 #'    concept, for example: TRUE/FALSE, Yes/No, SNOMED CT qualifier value}
 #'    \item{\code{"observation_value_numeric"}}{observation numeric value}
 #'    \item{\code{"observation_unit"}}{a unit code passing 
-#'    \code{\link[units]{as_units}()}. See examples. 
-#'    See also: \code{\link[units]{valid_udunits}}, 
+#'    \code{\link[units]{as_units}()}. See examples. All observations with the
+#'    same \code{"observation_code"} must be converted to the same 
+#'    \code{"observation_unit"}. See also: \code{\link[units]{valid_udunits}}, 
 #'    \code{\link[units]{install_symbolic_unit}}
 #'    \url{https://ucum.org/}}
 #' }
@@ -1318,6 +1319,18 @@ validate_investigations <- function(investigations,
   }
   
   units_validate <- .validate_UCUM_codes(unique(investigations$observation_unit))
+  
+  units_mixed <- investigations %>% 
+    dplyr::distinct(observation_code_system, observation_code, observation_unit) %>% 
+    dplyr::group_by(observation_code_system, observation_code) %>% 
+    dplyr::summarise(n = dplyr::n()) %>% 
+    dplyr::filter(n > 1)
+  units_mixed <- nrow(units_mixed) > 0
+  
+  if( units_mixed ) {
+    stop("Every `observation_code` must adopt a unique `observation_unit`.\n",
+         "Please convert observations to a single unit.")
+  }
   
   all(!not_exist, !missing_data, must_be_unique, units_validate)
 }

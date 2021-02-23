@@ -524,7 +524,24 @@ test_that("validate_microbiology", {
   
 })
   
-  
-  
-  
-    
+
+# validate_investigations -------------------------------------------------
+
+test_that("validate_investigations", {
+  example_data <- dplyr::tibble(
+    observation_id = c("1", "2"), 
+    patient_id = "99999999999", 
+    spell_id = "9278078393", status = "final", 
+    request_datetime = as.POSIXct("2016-03-30 13:51:13"), 
+    observation_datetime = as.POSIXct("2016-03-30 13:51:45"), 
+    observation_value_text = "", 
+    observation_value_numeric = c(35.7, 100.4), 
+    observation_name = "Body temperature", 
+    observation_display = "Temperature", 
+    observation_code_system = "http://loinc.org", 
+    observation_code = "8310-5", 
+    observation_unit = c("degree_Celsius", "degree_F")
+  )
+  expect_true(validate_investigations(example_data[1,]))
+  expect_error(validate_investigations(example_data))
+})

@@ -7,7 +7,7 @@
 parenteral_changes(therapy_episode, tolerance_hours = 12L)
 }
 \arguments{
-\item{therapy_episode}{a \code{TherapyEpisode} object}
+\item{therapy_episode}{a \code{\link{TherapyEpisode}} object}
 
 \item{tolerance_hours}{integer for the maximum number of hours during which 
 an absence of prescription or the administration of some oral drugs 
@@ -28,8 +28,8 @@ therapy episode's table (\code{\link{therapy_table}()}).
 }
 \description{
 Timely switch to oral therapy is a widely recommended
-antimicrobial stewardship behaviour. The \code{parenteral_changes()}
-function extracts 'therapy sequences', which are defined as either:
+antimicrobial stewardship behaviour. \code{parenteral_changes()}
+extracts 'therapy sequences', which are defined as either:
 \itemize{
    \item a period of parenteral antimicrobial therapy subsequently converted
    into oral therapy 

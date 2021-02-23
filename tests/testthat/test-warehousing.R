@@ -325,6 +325,152 @@ test_that("Ramses on SQLite 2", {
                                     id = "4d611fc8886c23ab047ad5f74e5080d7")), 
     "timevis")
   
+  
+  # > clinical features --------------------------------------------------------
+  
+  # > - last -------------------------------------------------------------------
+  
+  expect_error(
+    clinical_feature_last(
+      TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_code = "8310-5",
+      hours = 24,
+      observation_code_system = "doesnotexist"
+    )
+  )
+  last_temp <- clinical_feature_last(
+    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_code = "8310-5",
+    hours = 24
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_24h[1:5],
+    c(36.9, 36.9, 36.8, 36.8, 36.8)
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_24h[174:178],
+    c(35.8, 35.8, 36.0, 36.0, 36.0)
+  )
+  last_temp <- clinical_feature_last(
+    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_code = c("8310-5", "2160-0"),
+    hours = 32
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_32h[1:5],
+    c(36.9, 36.9, 36.8, 36.8, 36.8)
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_32h[174:178],
+    c(35.8, 35.8, 36.0, 36.0, 36.0)
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_creatinine_32h[1:5],
+    c(116, 116, 116, 135, 135)
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_creatinine_32h[174:178],
+    c(109, 109, 109, NA, NA)
+  )
+  
+  # > - OLS -------------------------------------------------------------------
+
+  example_therapy <-  TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7")
+  example_therapy_record <- collect(example_therapy)
+  
+  expect_error(
+    clinical_feature_ols_trend(
+      example_therapy,
+      observation_code = "8310-5",
+      hours = 24, 
+      observation_code_system = "doesnotexist"
+    )
+  )
+  
+  ols_temp <- therapy_table(clinical_feature_ols_trend(
+    example_therapy,
+    observation_code = "8310-5",
+    hours = 24
+  ), collect = T)
+  
+  expect_equal(
+    ols_temp$ols_temperature_24h_intercept[1:10],
+    c(37.0910412742301, 37.5548549668735, 37.2275037202613, 37.0472923111899, 
+      37.1741173337574, 37.075394573336, 36.9776345962514, 37.0335604592393, 
+      36.6369479184972, 36.6346852329661)
+  )
+  expect_equal(
+    ols_temp$ols_temperature_24h_intercept[169:178],
+    c(35.9561283858803, 35.2034714186531, 35.6407220017662, 35.6068191357815, 
+      35.5729162697968, 35.5390134038121, 35.5051105378274, 35.9753406349546, 
+      35.9970238977037, 36.0187071604529)
+  )
+  expect_equal(
+    ols_temp$ols_temperature_24h_slope[1:10],
+    c(0.463813692637874, 0.463813692637874, 0.229966638232132, 0.126825022566752, 
+      0.126825022566752, 0.0859028479069017, 0.0559258629877923, 0.0559258629877923, 
+      -0.00226268553081795, -0.00226268553081795)
+  )
+  expect_equal(
+    ols_temp$ols_temperature_24h_slope[169:178],
+    c(0.00775828995026235, -0.0647998148577262, -0.0339028659846864, 
+      -0.0339028659846864, -0.0339028659846864, -0.0339028659846864, 
+      -0.0339028659846864, 0.0216832627491193, 0.0216832627491193, 
+      0.0216832627491193)
+  )
+  
+  # > - range ------------------------------------------------------------------
+  
+  expect_error(
+    clinical_feature_range(
+      TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_ranges = list("8310-5" = c(36, 38)),
+      hours = 24,
+      observation_code_system = "doesnotexist"
+      )
+  )
+  
+  temperature_check <- therapy_table(clinical_feature_range(
+    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_ranges = list("8310-5" = c(36, 38)),
+    hours = 24), collect = TRUE)
+  
+  expect_equal(temperature_check$range_temperature36_38_24h_in_range[1:5],
+               c(3, 3, 4, 5, 5))
+  expect_equal(temperature_check$range_temperature36_38_24h_in_range[174:178],
+               c(1, 1, 1, 1, 1))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_under[1:5],
+               c(0, 0, 0, 0, 0))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_under[174:178],
+               c(2, 2, 2, 2, 2))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_over[1:5],
+               c(0, 0, 0, 0, 0))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_over[174:178],
+               c(0, 0, 0, 0, 0))
+  
+  
+  # > - mean ------------------------------------------------------------------
+  
+  expect_error(
+    clinical_feature_mean(
+      TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_code = "8310-5",
+      hours = 2, 
+      observation_code_system = "doesnotexist")
+  )
+  
+  temperature_check <- therapy_table(
+    clinical_feature_mean(
+      TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_code = "8310-5",
+      hours = 2),
+    collect = TRUE
+  )
+  expect_equal(temperature_check$mean_temperature_2h[1:4],
+               c(36.9, 36.9, 36.8, 36.8))
+  expect_equal(temperature_check$mean_temperature_2h[174:178],
+               c(NA, NA, 36.0, 36.0, NA))
+  
   # > show methods ----------------------------------------------------------
   
   # TherapyEpisode
@@ -442,12 +588,12 @@ test_that("SQLite does transitive closure", {
 
 # > .format_str_time_sqlite ----------------------------------------------------
 
-test_that(".format_str_time_sqlite", {
+test_that(".format_str_time_sqlite.tbl_df", {
   
   conSQLite <- suppressWarnings(connect_local_database("test.sqlite"))
   test_posixct <- dplyr::tibble(t_start = as.POSIXct("2017-07-02 01:15:46", 
                                                      tz = "Europe/London"))
-  test_posixct <- .format_str_time_sqlite(conSQLite, test_posixct)
+  test_posixct <- .format_str_time_sqlite.tbl_df(conSQLite, test_posixct)
   expect_equal(
     test_posixct,
     dplyr::tibble(t_start = "2017-07-02 01:15:46+01:00")
@@ -826,6 +972,151 @@ test_that("Ramses on PosgreSQL", {
                                     id = "4d611fc8886c23ab047ad5f74e5080d7")), 
     "timevis")
   
+  # > clinical features --------------------------------------------------------
+  
+  # > - last -------------------------------------------------------------------
+  
+  expect_error(
+    clinical_feature_last(
+      TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_code = "8310-5",
+      hours = 24,
+      observation_code_system = "doesnotexist"
+    )
+  )
+  last_temp <- clinical_feature_last(
+    TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_code = "8310-5",
+    hours = 24
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_24h[1:5],
+    c(36.9, 36.9, 36.8, 36.8, 36.8)
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_24h[174:178],
+    c(35.8, 35.8, 36.0, 36.0, 36.0)
+  )
+  last_temp <- clinical_feature_last(
+    TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_code = c("8310-5", "2160-0"),
+    hours = 32
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_32h[1:5],
+    c(36.9, 36.9, 36.8, 36.8, 36.8)
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_32h[174:178],
+    c(35.8, 35.8, 36.0, 36.0, 36.0)
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_creatinine_32h[1:5],
+    c(116, 116, 116, 135, 135)
+  )
+  expect_equal(
+    collect_ramses_tbl(last_temp@therapy_table)$last_creatinine_32h[174:178],
+    c(109, 109, 109, NA, NA)
+  )
+  
+  # > - OLS -------------------------------------------------------------------
+  
+  example_therapy <-  TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7")
+  example_therapy_record <- collect(example_therapy)
+  
+  expect_error(
+    clinical_feature_ols_trend(
+      example_therapy,
+      observation_code = "8310-5",
+      hours = 24, 
+      observation_code_system = "doesnotexist"
+    )
+  )
+  
+  ols_temp <- therapy_table(clinical_feature_ols_trend(
+    example_therapy,
+    observation_code = "8310-5",
+    hours = 24
+  ), collect = T)
+  
+  expect_equal(
+    ols_temp$ols_temperature_24h_intercept[1:10],
+    c(37.0910412742301, 37.5548549668735, 37.2275037202613, 37.0472923111899, 
+      37.1741173337574, 37.075394573336, 36.9776345962514, 37.0335604592393, 
+      36.6369479184972, 36.6346852329661)
+  )
+  expect_equal(
+    ols_temp$ols_temperature_24h_intercept[169:178],
+    c(35.9561283858803, 35.2034714186531, 35.6407220017662, 35.6068191357815, 
+      35.5729162697968, 35.5390134038121, 35.5051105378274, 35.9753406349546, 
+      35.9970238977037, 36.0187071604529)
+  )
+  expect_equal(
+    ols_temp$ols_temperature_24h_slope[1:10],
+    c(0.463813692637874, 0.463813692637874, 0.229966638232132, 0.126825022566752, 
+      0.126825022566752, 0.0859028479069017, 0.0559258629877923, 0.0559258629877923, 
+      -0.00226268553081795, -0.00226268553081795)
+  )
+  expect_equal(
+    ols_temp$ols_temperature_24h_slope[169:178],
+    c(0.00775828995026235, -0.0647998148577262, -0.0339028659846864, 
+      -0.0339028659846864, -0.0339028659846864, -0.0339028659846864, 
+      -0.0339028659846864, 0.0216832627491193, 0.0216832627491193, 
+      0.0216832627491193)
+  )
+  
+  # > - range ------------------------------------------------------------------
+  
+  expect_error(
+    clinical_feature_range(
+      TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_ranges = list("8310-5" = c(36, 38)),
+      hours = 24,
+      observation_code_system = "doesnotexist"
+    )
+  )
+  
+  temperature_check <- therapy_table(clinical_feature_range(
+    TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_ranges = list("8310-5" = c(36, 38)),
+    hours = 24), collect = TRUE)
+  # TODO test missing observation_code.
+  
+  expect_equal(temperature_check$range_temperature36_38_24h_in_range[1:5],
+               c(3, 3, 4, 5, 5))
+  expect_equal(temperature_check$range_temperature36_38_24h_in_range[174:178],
+               c(1, 1, 1, 1, 1))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_under[1:5],
+               c(0, 0, 0, 0, 0))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_under[174:178],
+               c(2, 2, 2, 2, 2))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_over[1:5],
+               c(0, 0, 0, 0, 0))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_over[174:178],
+               c(0, 0, 0, 0, 0))
+  
+  
+  # > - mean ------------------------------------------------------------------
+  
+  expect_error(
+    clinical_feature_mean(
+      TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_code = "8310-5",
+      hours = 2, 
+      observation_code_system = "doesnotexist")
+  )
+  
+  temperature_check <- therapy_table(
+    clinical_feature_mean(
+      TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_code = "8310-5",
+      hours = 2),
+    collect = TRUE
+  )
+  expect_equal(temperature_check$mean_temperature_2h[1:4],
+               c(36.9, 36.9, 36.8, 36.8))
+  expect_equal(temperature_check$mean_temperature_2h[174:178],
+               c(NA, NA, 36.0, 36.0, NA))
   
   # > show methods ----------------------------------------------------------
   

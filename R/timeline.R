@@ -14,6 +14,7 @@
 #' @return a timevis object
 #' @importFrom dplyr tbl
 #' @importFrom magrittr %>%
+#' @include objects.R
 #' @rdname therapy_timeline
 #' @export
 setGeneric("therapy_timeline", 

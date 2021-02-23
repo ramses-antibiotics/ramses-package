@@ -396,7 +396,7 @@ head(icd_infection_lkup)
 ```
 
 
-Data may now be loaded into the database. Diagnoses and their reference look-up are loaded in one step
+Data may now be loaded into the database. Diagnoses and their reference look-up are loaded in one step.
 
 ```{r load_diagnoses}
 load_inpatient_diagnoses(conn = ramses_db, 
@@ -571,7 +571,12 @@ data(inpatient_investigations)
 str(inpatient_investigations)
 ```
 
-One particular set of validation constraints is that units conform to the [Unified Code for Units of Measure (UCUM)](https://ucum.org/). Units are implemented using the `units` package in R. Yet, many important units in medicine are not listed in the UCUM. For instance: 
+One particular set of validation constraints apply:
+
+* units must conform to the [Unified Code for Units of Measure (UCUM)](https://ucum.org/). Units are implemented using the `units` package in R. 
+* an `observation_code` must have one and only one `observation_unit` to pass validation. If observation records come in a variety of units, they must first be converted to a common unit.
+
+Many important units in medicine are not listed in the UCUM. For instance: 
 
 - respiration rate (breaths/min)
 - heart rate (beats/min)
