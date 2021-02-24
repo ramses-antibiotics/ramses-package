@@ -3,7 +3,7 @@
 \docType{data}
 \name{reference_specimen_type}
 \alias{reference_specimen_type}
-\title{Laboratory specimen type reference table (SNOMED CT concepts )}
+\title{Laboratory specimen type reference table (SNOMED CT concepts)}
 \format{
 A data frame.
 }

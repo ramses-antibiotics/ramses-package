@@ -3,7 +3,7 @@
 \docType{data}
 \name{reference_loinc}
 \alias{reference_loinc}
-\title{Clinical investigations and observations LOINC codes look-up table}
+\title{LOINC codes for clinical investigations and observations}
 \format{
 A data frame.
 }
@@ -14,7 +14,7 @@ LOINC Table File Version 2.68. Released 2020-06-17. \url{http://loinc.org}
 reference_loinc
 }
 \description{
-This look-up table provides a subset of useful clinical investigation
+Look-up table providing a subset of useful clinical investigation
 codes from the LOINC terminology. It can be used to map clinical investigations
 and observations that are relevant to modelling antibiotic prescribing decisions.
 }

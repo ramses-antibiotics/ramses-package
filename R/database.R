@@ -6,7 +6,7 @@
 
 #' Load inpatient diagnosis records into the warehouse
 #' 
-#' @description Validate, then load inpatient diagnosis records into the 
+#' @description Validate, then load records of clinical diagnoses into the 
 #' warehouse. This function automatically generates derived ICD-10 look up 
 #' tables for comorbidities, infection indications, and the \code{\link{ccs}}.
 #' @param conn a database connection
@@ -102,7 +102,7 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
 #' @param episodes_data a data frame validated with 
 #' \code{\link{validate_inpatient_episodes}()}
 #' @param wards_data a data frame validated with  
-#' \code{\link{validate_inpatient_episodes}()}#'
+#' \code{\link{validate_inpatient_episodes}()}
 #' @param overwrite if \code{TRUE} (the default), will overwrite any existing
 #' \code{inpatient_episodes} database table
 #' @export
@@ -239,7 +239,7 @@ load_inpatient_investigations <- function(conn, investigations_data, overwrite =
 }
 
 
-#' Load microbiology cultures and sensitivities into the warehouse
+#' Load microbiology cultures and susceptibilities into the warehouse
 #' 
 #' @param conn a database connection
 #' @param specimens a data frame with one row per specimen sent
@@ -326,23 +326,7 @@ load_inpatient_microbiology <- function(conn,
 #' therapy episode identifiers
 #'
 #' @description Set parameters controlling how prescriptions are 
-#' linked into combinations and therapy episodes
-#' @details Electronic prescribing and administration systems do not usually 
-#' define:
-#' \itemize{
-#'   \item combination therapy: prescribing two or more antimicrobials  
-#'   concurrently for the same indication
-#'   \item therapy episodes: the set of antimicrobial prescriptions  
-#'   administered consecutively or concurrently and corresponding to 
-#'   a single indication and intent. 
-#' }
-#' 
-#' Because of this, \code{\link{load_medications}}() first examines all 
-#' prescriptions authored in a given hospital admission to ascertain such 
-#' links between prescriptions. This involves looking at patterns of 
-#' overlap and succession of prescriptions, and using a graph theory method 
-#' known as 'transitive closure'.
-#' 
+#' linked into combinations and therapy episodes 
 #' @param max_continuation_gap a positive integer setting the maximum number of hours
 #' tolerated between the end of a prescription and the start of a subsequent 
 #' prescription in the same therapy episode. The default is 36 hours. 
@@ -355,7 +339,7 @@ load_inpatient_microbiology <- function(conn,
 #'
 #' @return A list of three positive integer variables.
 #' @export
-#' @seealso For more details please consult 
+#' @seealso \code{\link[Ramses]{create_therapy_episodes}()}. For more details please consult 
 #' \code{vignette("therapy-episodes", package = "Ramses")}
 #'
 #' @examples
@@ -408,14 +392,15 @@ transitive_closure_control <- function(max_continuation_gap = 36,
 #' medication tables
 #' @param transitive_closure_controls parameters controlling (see 
 #' \code{\link{transitive_closure_control}()})
-#' @param silent a boolean indicating whether the function should be
-#' executed without progress bar. Default is \code{TRUE}.
+#' @param silent if \code{TRUE}, the progress bar will be hidden. The default is 
+#' \code{FALSE}.
 #' @rdname load_medications
+#' @seealso \code{\link[Ramses]{create_therapy_episodes}()}
 #' @export
 load_medications <- function(
   conn, prescriptions, administrations = NULL, overwrite = FALSE,
   transitive_closure_controls = transitive_closure_control(),
-  silent = TRUE) {
+  silent = FALSE) {
   UseMethod("load_medications")
 }
 
@@ -677,8 +662,7 @@ load_medications.PqConnection <- function(
 #'
 #' @param conn a data source with a table `drug_prescriptions_edges`
 #' already populated
-#' @param silent a boolean indicating whether the function should be
-#' executed without progress message
+#' @param silent if \code{TRUE}, the progress bar will be hidden
 #' @noRd
 .create_therapy_id <- function(conn, silent) {
   
@@ -762,8 +746,7 @@ load_medications.PqConnection <- function(
 #'
 #' @param conn a data source with a table `drug_prescriptions_edges`
 #' already populated
-#' @param silent a boolean indicating whether the function should be
-#' executed without progress message
+#' @param silent if \code{TRUE}, the progress bar will be hidden
 #' @noRd
 .create_combination_id <- function(conn, silent) {
   
@@ -858,25 +841,43 @@ load_medications.PqConnection <- function(
 #'
 #' @description This function should be used to recreate therapy episodes
 #' and therapy combinations, for example in order to try new 
-#' \code{transitive_closure_controls} parameters. Note that 
-#' \code{\link[Ramses]{load_medications}()} creates 
-#' episodes and combinations by default.
+#' \code{transitive_closure_controls} parameters.
 #' 
 #' @param conn a connection to a database containing a
 #' \code{drug_prescriptions} table previously created with 
 #' \code{\link{load_medications}()})
 #' @param transitive_closure_controls parameters controlling (see 
 #' \code{\link{transitive_closure_control}()})
-#' @param silent a boolean indicating whether the function should be
-#' executed without progress bar. Default is \code{TRUE}.
+#' @param silent if \code{TRUE}, the progress bar will be hidden. The default is 
+#' \code{FALSE}.
 #' 
-#' @details This function performs the following tasks:
+#' @section Overview:
+#' 
+#' Electronic prescribing and administration systems do not usually 
+#' define:
+#' \itemize{
+#'   \item combination therapy: prescribing two or more antimicrobials  
+#'   concurrently for the same indication
+#'   \item therapy episodes: the set of antimicrobial prescriptions  
+#'   administered consecutively or concurrently and corresponding to 
+#'   a single indication and intent. 
+#' }
+#' 
+#' Because of this, \code{\link{load_medications}}() first examines all 
+#' prescriptions authored in a given hospital admission to ascertain such 
+#' links between prescriptions. This involves looking at patterns of 
+#' overlap and succession of prescriptions, and using a graph theory method 
+#' known as 'transitive closure'.
+#' 
+#' @section Operations:
+#' 
+#' This function performs the following operations:
 #' \enumerate{
 #'    \item verify that a valid \code{drug_prescriptions} table exists
 #'    \item delete any existing \code{drug_prescription_edges} and
 #'    \code{drug_therapy_episodes} table
 #'    \item recreate the \code{drug_prescription_edges} table
-#'    \item repopulate the \code{therapy_id} and \code{combination_id}
+#'    \item overwrite \code{therapy_id} and \code{combination_id}
 #'    fields in \code{drug_prescriptions} table
 #'    \item recreate the \code{drug_therapy_episodes} table
 #' }
@@ -887,7 +888,7 @@ load_medications.PqConnection <- function(
 create_therapy_episodes <- function(
   conn,
   transitive_closure_controls = transitive_closure_control(),
-  silent = TRUE
+  silent = FALSE
 ) {
   if( !DBI::dbExistsTable(conn, "drug_prescriptions") ){
     stop("No `drug_prescriptions` table found on `conn`")
@@ -921,14 +922,14 @@ create_therapy_episodes <- function(
 #' This is the ideal method to experiment on a small scale or for testing purposes.
 #'
 #' @details This function creates a database on disk at the desired path. The database and
-#' its content will persist on disconnection.
+#' its content will persist after it is disconnected.
 #'     
 #' @section Warning:     
 #' This method does not provide any encryption or password protection. You should only use this
 #' method with mock data unless you operate within a secure data enclave.
 #'
-#' @param file A file path to an existing or new database file with an .sqlite extension.
-#' @return An database connection object of class SQLiteConnection.
+#' @param file A file path to an existing or new database file with a \code{.sqlite} extension.
+#' @return A database connection object of class \code{SQLiteConnection}.
 #' @seealso The dbplyr website provides excellent guidance on how to connect to databases: 
 #' \url{https://db.rstudio.com/getting-started/connect-to-database}
 #' @importFrom DBI dbConnect dbDisconnect
@@ -971,13 +972,13 @@ connect_local_database <- function(file) {
 #' @description Create a local database on disk using 
 #' \code{\link[RSQLite]{SQLite}()} and load synthetic data ready for analysis.
 #' @details This function creates a database on disk at the desired path. 
-#' The database and its content will persist on disconnection.
+#' The database and its content will persist after it is disconnected.
 #'
 #' @param file A file path to an existing or new database file with a
 #'  ".sqlite" extension.
-#' @param silent if \code{TRUE}, progress bar will be hidden. The default is 
+#' @param silent if \code{TRUE}, the progress bar will be hidden. The default is 
 #' \code{FALSE}.
-#' @return An object of class SQLiteConnection.
+#' @return An object of class \code{SQLiteConnection}.
 #' @seealso The dbplyr website provides excellent guidance on how to connect to databases: 
 #' \url{https://db.rstudio.com/getting-started/connect-to-database}
 #' @importFrom DBI dbConnect dbDisconnect
@@ -1735,12 +1736,12 @@ UseMethod(".run_transitive_closure")
   )
 } 
 
-#' Collect SQL tibble
+#' Collect SQL tibble with correct date-time specifications
 #' 
 #' @description This wrapper function for \link[dplyr]{collect} will convert
-#' relevant character columns to `date` and `datetime` during collection of 
-#' SQLite tables. This is to address the absence of date and time data types
-#' in SQLite. Tables from other relational database systems will not be affected.
+#' relevant character columns to \code{Date} and \code{POSIXct} type when collecting 
+#' SQLite tables. This addresses the absence of date and time data types
+#' in SQLite. Tables from other relational database systems are note affected.
 #' @param tbl a `tbl_sql` object
 #' @return a `tbl_df` object
 #' @seealso \url{https://www.sqlite.org/datatype3.html#date_and_time_datatype}
@@ -1802,33 +1803,33 @@ collect_ramses_tbl <- function(tbl) {
 #' @param conn a database connection
 #' @param overwrite if \code{TRUE}, will overwrite any existing
 #' database table. The default is \code{FALSE}
-#' @param silent a boolean indicating whether the function should be
-#' executed without progress bar. Default is \code{FALSE}.
+#' @param silent if \code{TRUE}, the progress bar will be hidden. The default is 
+#' \code{FALSE}.
 #' @details 
 #' \describe{
-#'    \item{\code{bridge_tables()}}{Generate all tables below.}
+#'    \item{\code{bridge_tables()}}{Generates all bridge tables.}
 #'    \item{\code{bridge_episode_prescription_overlap()}}{Links prescriptions
-#'    to inpatient episodes during which they were administered. The resulting 
+#'    with inpatient episodes when they were administered. The resulting 
 #'    table is the natural join of \code{inpatient_episodes} and 
-#'    \code{drug_prescriptions} based on a match on the patient identifier 
+#'    \code{drug_prescriptions} based on matching patient identifiers 
 #'    and a time overlap between prescriptions and inpatient episodes.}
 #'    \item{\code{bridge_episode_prescription_initiation()}}{Links prescriptions
-#'    with the inpatient episode when they were authored. The resulting table 
-#'    differs from {\code{bridge_spell_therapy_overlap}}: it links prescriptions 
+#'    with inpatient episodes when they were authored. The resulting table 
+#'    differs from {\code{bridge_episode_prescription_overlap}}: it links prescriptions 
 #'    to the episode referencing the clinical team who prescribed them, rather
 #'    that episodes during which the prescription was administered. The resulting
 #'    table is the natural join of \code{inpatient_episodes} and 
-#'    \code{drug_prescriptions} based on a match on the patient identifier
-#'    and the prescription authoring date being comprised before the episode 
+#'    \code{drug_prescriptions} based on matching patient identifiers 
+#'    and the prescription authoring date being comprised between the episode 
 #'    start and end dates.}
 #'    \item{\code{bridge_spell_therapy_overlap()}}{Links therapy episodes
-#'    to inpatient spells during which they were administered. The resulting 
+#'    with inpatient spells during which they were administered. The resulting 
 #'    table is the natural join of \code{inpatient_episodes} and 
-#'    \code{drug_prescriptions} based on a match on the patient identifier 
-#'    and a time overlap between prescriptions and dates of admission and discharge.}
+#'    \code{drug_therapy_episodes} based on matching patient identifiers 
+#'    and a time overlap between therapy episodes and hospital stays.}
 #' } 
 #' \code{inpatient_episodes}
-#' @return TRUE tables were successfully created
+#' @return \code{TRUE} if tables were successfully created
 #' @name bridge_tables
 #' @export
 bridge_tables <- function(conn,

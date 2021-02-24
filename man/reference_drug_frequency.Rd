@@ -3,7 +3,7 @@
 \docType{data}
 \name{reference_drug_frequency}
 \alias{reference_drug_frequency}
-\title{Prescription frequency abbreviation look-up table}
+\title{Prescription frequency abbreviations}
 \format{
 A data frame with 64 abbreviations and their corresponding daily frequency value.
 }
@@ -11,11 +11,11 @@ A data frame with 64 abbreviations and their corresponding daily frequency value
 reference_drug_frequency
 }
 \description{
-This look-up table provides the number of times a drug should 
+Look-up table providing the number of times a drug should 
 be administered per day based on the prescription frequency abbreviation 
 (including latin abbreviations).
 
 Example: BD stands for \emph{bis die}, meaning twice a day. The 
-corresponding `daily_frequency`` value is 2.
+corresponding \code{daily_frequency} value is 2.
 }
 \keyword{datasets}

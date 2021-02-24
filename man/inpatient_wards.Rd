@@ -14,9 +14,8 @@ Simulated data
 inpatient_wards
 }
 \description{
-This simulated activity data consists of records of ward 
-movements during hospitalisation spells recorded in 
-\code{\link[Ramses]{inpatient_episodes}}.
+Set of simulated records of ward movements during 
+hospitalisation spells included in \code{\link[Ramses]{inpatient_episodes}}.
 
 This data was simulated to reproduce relevant characteristics of English 
 NHS Admitted Patient Care datasets. More information can be found on the 

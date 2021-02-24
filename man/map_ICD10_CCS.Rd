@@ -20,11 +20,9 @@ The input data frame with additional CCS/CCSR classifications.
 CCS categories are mutually exclusive. CCSR categories are not.
 }
 \description{
-Map ICD-10 codes to clinically meaning full 
-categories within the Clinical Classifications Software
-and the Clinical Classifications Software Refined (CCSR), 
-further described in \code{\link{ccs}} and 
-\code{\link{ccsr}}.
+Map ICD-10 codes to clinically meaningful 
+categories within the Clinical Classifications Software (\code{\link{ccs}})
+and the Clinical Classifications Software Refined (\code{\link{ccsr}}).
 }
 \details{
 This function is designed to be compatible with 

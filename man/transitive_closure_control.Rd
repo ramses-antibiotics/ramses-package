@@ -31,23 +31,6 @@ A list of three positive integer variables.
 Set parameters controlling how prescriptions are 
 linked into combinations and therapy episodes
 }
-\details{
-Electronic prescribing and administration systems do not usually 
-define:
-\itemize{
-  \item combination therapy: prescribing two or more antimicrobials  
-  concurrently for the same indication
-  \item therapy episodes: the set of antimicrobial prescriptions  
-  administered consecutively or concurrently and corresponding to 
-  a single indication and intent. 
-}
-
-Because of this, \code{\link{load_medications}}() first examines all 
-prescriptions authored in a given hospital admission to ascertain such 
-links between prescriptions. This involves looking at patterns of 
-overlap and succession of prescriptions, and using a graph theory method 
-known as 'transitive closure'.
-}
 \examples{
 # default parameters
 transitive_closure_control(
@@ -56,6 +39,6 @@ transitive_closure_control(
   max_combination_start_gap = 24)
 }
 \seealso{
-For more details please consult 
+\code{\link[Ramses]{create_therapy_episodes}()}. For more details please consult 
 \code{vignette("therapy-episodes", package = "Ramses")}
 }

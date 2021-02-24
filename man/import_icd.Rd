@@ -2,12 +2,12 @@
 % Please edit documentation in R/metadata.R
 \name{import_icd}
 \alias{import_icd}
-\title{International Classification of Diseases}
+\title{Import the International Classification of Diseases from an archive}
 \usage{
 import_icd(archive, version)
 }
 \arguments{
-\item{archive}{path to the ZIP archive of the ICD-10 release 
+\item{archive}{path to the ZIP archive containing an ICD-10 release 
 (5th Edition is recommended)}
 
 \item{version}{a character string labelling the edition 
@@ -29,7 +29,7 @@ following variables:
 }
 }
 \description{
-The World Health Organisation (WHO) International 
+The World Health Organisation's (WHO) International 
 Statistical Classification of Diseases and Related Health 
 Problems Tenth Revision is available under restrictive licence terms.
 

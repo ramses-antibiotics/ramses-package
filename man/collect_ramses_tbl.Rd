@@ -2,7 +2,7 @@
 % Please edit documentation in R/database.R
 \name{collect_ramses_tbl}
 \alias{collect_ramses_tbl}
-\title{Collect SQL tibble}
+\title{Collect SQL tibble with correct date-time specifications}
 \usage{
 collect_ramses_tbl(tbl)
 }
@@ -14,9 +14,9 @@ a `tbl_df` object
 }
 \description{
 This wrapper function for \link[dplyr]{collect} will convert
-relevant character columns to `date` and `datetime` during collection of 
-SQLite tables. This is to address the absence of date and time data types
-in SQLite. Tables from other relational database systems will not be affected.
+relevant character columns to \code{Date} and \code{POSIXct} type when collecting 
+SQLite tables. This addresses the absence of date and time data types
+in SQLite. Tables from other relational database systems are note affected.
 }
 \seealso{
 \url{https://www.sqlite.org/datatype3.html#date_and_time_datatype}

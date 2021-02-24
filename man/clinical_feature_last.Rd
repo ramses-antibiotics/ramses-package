@@ -3,7 +3,7 @@
 \name{clinical_feature_last}
 \alias{clinical_feature_last}
 \alias{clinical_feature_last,TherapyEpisode-method}
-\title{Therapy table feature: most recent clinical observation}
+\title{Therapy table feature: latest clinical observation value}
 \usage{
 clinical_feature_last(
   x,
@@ -29,26 +29,28 @@ table (see \code{\link{validate_investigations}()})}
 \item{hours}{the maximum number of hours the observation should date back from
 \code{t_start}, the starting time of every row in the therapy table}
 
-\item{observation_code_system}{(optional) reserved to  instance where 
-\code{observation_code} is ambiguous and does not uniquely identify 
-observations across code systems (vocabularies), specify a single
-code system identifier (eg \code{"http://snomed.info/sct"}) to use.
-The default is \code{NULL} and will only filter observation using
-\code{observation_code}.}
+\item{observation_code_system}{(optional, reserved to situations where 
+\code{observation_code} is ambiguous across code systems/vocabularies) a single 
+character string specifying the code system identifier (example:
+ \code{"http://snomed.info/sct"}) of \code{observation_code}.
+
+The default (\code{NULL}) filters observations using the \code{observation_code} only.}
 }
 \value{
 an object of class \code{\link{TherapyEpisode}}
 }
 \description{
-Add a clinical feature to a therapy episode table indicating 
-the most recent observation by table time \code{t}
+Add a clinical feature (variable) to a therapy episode table 
+containing the latest value of clinical observations of interest
 }
 \details{
-NOTE: only numeric investigations marked with status \code{"final"}, 
-\code{"preliminary"}, \code{"corrected"}, or \code{"amended"} will be sourced.
+The feature will be computed exclusively on numeric investigations 
+marked with status \code{"final"}, \code{"preliminary"}, \code{"corrected"}, 
+or \code{"amended"}.
 }
 \examples{
 \dontrun{
+conSQLite <- create_mock_database("example.sqlite")
 temperature_check <- clinical_feature_last(
    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
    observation_code = "8310-5",

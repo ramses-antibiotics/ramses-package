@@ -14,9 +14,8 @@ Simulated data
 inpatient_diagnoses
 }
 \description{
-Dataset of simulated infection clinical diagnoses by 
-finished consultant episodes listed in 
-\code{\link[Ramses]{inpatient_episodes}},
+Set of simulated clinical diagnoses of infection for every
+row in \code{\link[Ramses]{inpatient_episodes}},
 detailing all episode start and end times, episode number, and up to
 5 clinical diagnoses coded according to the International 
 Classification of Diseases, Tenth Revision (ICD-10). 
@@ -24,6 +23,10 @@ Classification of Diseases, Tenth Revision (ICD-10).
 This data was simulated to reproduce a set of combinations of infection 
 diagnoses in an English NHS hospital. For each episode, a maximum of 5
 diagnoses are simulated. Non-infection diagnoses are not simulated, an
-NA value is recorded instead.
+NA value is recorded instead. 
+ 
+This data was simulated to reproduce relevant characteristics of English 
+NHS Admitted Patient Care datasets. More information can be found on the 
+\href{https://datadictionary.nhs.uk/data_sets/cds_v6-2/cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds.html#dataset_cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds}{NHS data dictionary website}.
 }
 \keyword{datasets}

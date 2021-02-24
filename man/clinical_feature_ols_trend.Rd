@@ -29,34 +29,36 @@ table (see \code{\link{validate_investigations}()}}
 \item{hours}{the maximum number of hours the observations should date back from
 \code{t_start}, the starting time of every row in the therapy table}
 
-\item{observation_code_system}{(optional) reserved to  instance where 
-\code{observation_code} is ambiguous and does not uniquely identify 
-observations across code systems (vocabularies), specify a single
-code system identifier (eg \code{"http://snomed.info/sct"}) to use.
-The default is \code{NULL} and will only filter observation using
-\code{observation_code}.}
+\item{observation_code_system}{(optional, reserved to situations where 
+\code{observation_code} is ambiguous across code systems/vocabularies) a single 
+character string specifying the code system identifier (example:
+ \code{"http://snomed.info/sct"}) of \code{observation_code}.
+
+The default (\code{NULL}) filters observations using the \code{observation_code} only.}
 }
 \value{
 an object of class \code{\link{TherapyEpisode}}
 }
 \description{
-Add a clinical feature to a therapy episode table corresponding
-to the Ordinary Least Squares (OLS) intercept and slope of clinical
-observations made until table time \code{t}
+Add clinical feature (variables) to a therapy episode table 
+containing the Ordinary Least Squares (OLS) intercept and slope of clinical
+observations of interest
 }
 \details{
-NOTE: only numeric investigations marked with status \code{"final"}, 
-\code{"preliminary"}, \code{"corrected"}, or \code{"amended"} will be sourced.
+The feature will be computed exclusively on numeric investigations 
+marked with status \code{"final"}, \code{"preliminary"}, \code{"corrected"}, 
+or \code{"amended"}.
 
 The returned regression slope coefficient corresponds to the mean change 
 associated with a 1-hour time increment.
 
 The returned regression intercept is defined with respect to time equals
-zero at \code{t_start}. It thus corresponds to the linear (straight line) 
-extrapolation of the trend to \code{t_start}.
+zero at \code{t_start}. It thus corresponds to the value of the linear 
+(straight line) extrapolation of the trend to \code{t_start}.
 }
 \examples{
 \dontrun{
+conSQLite <- create_mock_database("example.sqlite")
 temperature_check <- clinical_feature_ols_trend(
    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
    observation_code = "8310-5",

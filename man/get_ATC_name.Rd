@@ -2,7 +2,7 @@
 % Please edit documentation in R/metadata.R
 \name{get_ATC_name}
 \alias{get_ATC_name}
-\title{Look up ATC name on the WHO website}
+\title{Look up ATC code name on the WHO website}
 \usage{
 get_ATC_name(x, silent = FALSE)
 }
@@ -16,7 +16,7 @@ The default is \code{FALSE}.}
 a character vector of ATC names (lowercase).
 }
 \description{
-Look up drug name from an ATC code using the WHO DDD website.
+Look up the drug name from an ATC code using the WHO DDD website.
 Requires an internet connection.
 }
 \examples{

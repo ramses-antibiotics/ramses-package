@@ -2,8 +2,8 @@
 
 #' Simulated patients
 #' 
-#' @description This simulated dataset contains records of 200 patients 
-#' corresponding to hospitalisation records in \link{inpatient_episodes}.
+#' @description Set of simulated demographics records of 202 patients 
+#' included in \code{\link[Ramses]{inpatient_episodes}}.
 #' @format A data frame of patient demographics.
 #' @docType data
 #' @name patients
@@ -12,10 +12,9 @@
 
 #' Simulated episodes of inpatient care
 #' 
-#' @description This simulated activity data consists of records of finished 
-#' consultant episodes for 200 patients, detailing all dates and times of 
-#' admission, discharge, activity dates, and ICD-10 clinical diagnoses codes 
-#' (for infections only).
+#' @description Set of simulated records of finished consultant episodes for
+#' 202 patients, detailing all dates and times of admission, discharge, 
+#' episode start and end, clinician, and clinical specialty.
 #' 
 #' This data was simulated to reproduce relevant characteristics of English 
 #' NHS Admitted Patient Care datasets. More information can be found on the 
@@ -28,9 +27,8 @@
 
 #' Simulated hospital ward movements
 #' 
-#' @description This simulated activity data consists of records of ward 
-#' movements during hospitalisation spells recorded in 
-#' \code{\link[Ramses]{inpatient_episodes}}.
+#' @description Set of simulated records of ward movements during 
+#' hospitalisation spells included in \code{\link[Ramses]{inpatient_episodes}}.
 #' 
 #' This data was simulated to reproduce relevant characteristics of English 
 #' NHS Admitted Patient Care datasets. More information can be found on the 
@@ -43,9 +41,8 @@
 
 #' Simulated inpatient clinical diagnoses
 #' 
-#' @description Dataset of simulated infection clinical diagnoses by 
-#' finished consultant episodes listed in 
-#' \code{\link[Ramses]{inpatient_episodes}},
+#' @description Set of simulated clinical diagnoses of infection for every
+#' row in \code{\link[Ramses]{inpatient_episodes}},
 #' detailing all episode start and end times, episode number, and up to
 #' 5 clinical diagnoses coded according to the International 
 #' Classification of Diseases, Tenth Revision (ICD-10). 
@@ -55,17 +52,20 @@
 #' diagnoses are simulated. Non-infection diagnoses are not simulated, an
 #' NA value is recorded instead. 
 #'  
+#' This data was simulated to reproduce relevant characteristics of English 
+#' NHS Admitted Patient Care datasets. More information can be found on the 
+#' \href{https://datadictionary.nhs.uk/data_sets/cds_v6-2/cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds.html#dataset_cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds}{NHS data dictionary website}.
 #' @format A data frame of records of clinical diagnoses.
 #' @docType data
 #' @name inpatient_diagnoses
 #' @source Simulated data
 "inpatient_diagnoses"
 
-#' Simulated antimicrobial prescriptions
+#' Simulated antimicrobial drug prescriptions
 #' 
-#' @description A set of drug prescriptions records simulated 
+#' @description A set of simulated antibiotic prescriptions records simulated 
 #' based on commonly prescribed drugs for clinical diagnoses 
-#' recorded in inpatient care episode records. 
+#' recorded in \code{\link[Ramses]{inpatient_episodes}}. 
 #'   
 #' @format A data frame of records of drug prescriptions.
 #' @docType data
@@ -75,7 +75,7 @@
 
 #' Simulated antimicrobial drug administrations
 #' 
-#' @description A set of records of antimicrobials administered
+#' @description A set of simulated records of administrations of antibiotics 
 #' during inpatient care episodes, simulated based on drugs commonly 
 #' prescribed in hospitals. 
 #'   
@@ -88,9 +88,9 @@
 
 #' Simulated clinical investigation results
 #' 
-#' @description A set of records of observations (for example: respiration rate,
-#' blood pressure) and investigations (for example: blood cell counts)
-#' performed during inpatient care episodes.
+#' @description A set of simulated records of observations (for example: respiration rate,
+#' blood pressure) and investigations (for example: blood cell counts) for 
+#' two patients included in \code{\link[Ramses]{inpatient_episodes}}.
 #'   
 #' @format A data frame of records of observations and investigations 
 #' passing \code{\link[Ramses]{validate_investigations}()}.
@@ -102,13 +102,10 @@
 
 #' Simulated microbial culture and susceptibility results
 #' 
-#' @description This simulated activity data consists of records of microbial 
-#' samples sent for culture and susceptibility testing for a single inpatient.
+#' @description A set of simulated records of microbial samples sent 
+#' for culture and susceptibility testing for one patient included
+#' in \code{\link[Ramses]{inpatient_episodes}}.
 #' 
-#' This data was simulated to reproduce relevant characteristics of English 
-#' NHS Admitted Patient Care datasets. More information can be found on the 
-#' \href{https://datadictionary.nhs.uk/data_sets/cds_v6-2/cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds.html#dataset_cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds}{NHS data dictionary website}.
-
 #' @format A data frame
 #' @seealso \link[Ramses]{validate_microbiology}()
 #' @docType data

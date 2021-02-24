@@ -7,7 +7,7 @@
 create_therapy_episodes(
   conn,
   transitive_closure_controls = transitive_closure_control(),
-  silent = TRUE
+  silent = FALSE
 )
 }
 \arguments{
@@ -18,28 +18,49 @@ create_therapy_episodes(
 \item{transitive_closure_controls}{parameters controlling (see 
 \code{\link{transitive_closure_control}()})}
 
-\item{silent}{a boolean indicating whether the function should be
-executed without progress bar. Default is \code{TRUE}.}
+\item{silent}{if \code{TRUE}, the progress bar will be hidden. The default is 
+\code{FALSE}.}
 }
 \description{
 This function should be used to recreate therapy episodes
 and therapy combinations, for example in order to try new 
-\code{transitive_closure_controls} parameters. Note that 
-\code{\link[Ramses]{load_medications}()} creates 
-episodes and combinations by default.
+\code{transitive_closure_controls} parameters.
 }
-\details{
-This function performs the following tasks:
+\section{Overview}{
+
+
+Electronic prescribing and administration systems do not usually 
+define:
+\itemize{
+  \item combination therapy: prescribing two or more antimicrobials  
+  concurrently for the same indication
+  \item therapy episodes: the set of antimicrobial prescriptions  
+  administered consecutively or concurrently and corresponding to 
+  a single indication and intent. 
+}
+
+Because of this, \code{\link{load_medications}}() first examines all 
+prescriptions authored in a given hospital admission to ascertain such 
+links between prescriptions. This involves looking at patterns of 
+overlap and succession of prescriptions, and using a graph theory method 
+known as 'transitive closure'.
+}
+
+\section{Operations}{
+
+
+This function performs the following operations:
 \enumerate{
    \item verify that a valid \code{drug_prescriptions} table exists
    \item delete any existing \code{drug_prescription_edges} and
    \code{drug_therapy_episodes} table
    \item recreate the \code{drug_prescription_edges} table
-   \item repopulate the \code{therapy_id} and \code{combination_id}
+   \item overwrite \code{therapy_id} and \code{combination_id}
    fields in \code{drug_prescriptions} table
    \item recreate the \code{drug_therapy_episodes} table
 }
 }
+
 \seealso{
 For more details please consult 
 \code{vignette("therapy-episodes", package = "Ramses")}

@@ -10,7 +10,7 @@ validate_inpatient_episode_dates(data, type = "episodes")
 \item{data}{a data frame object}
 
 \item{type}{a string indicating the type of dates to validate:
-either `"wards"` for ward stays or `"episodes"` for inpatient episodes.}
+either \code{"wards"} for ward stays or \code{"episodes"} for inpatient episodes.}
 }
 \value{
 A logical value indicating success

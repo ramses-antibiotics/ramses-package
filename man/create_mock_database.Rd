@@ -10,11 +10,11 @@ create_mock_database(file, silent = FALSE)
 \item{file}{A file path to an existing or new database file with a
 ".sqlite" extension.}
 
-\item{silent}{if \code{TRUE}, progress bar will be hidden. The default is 
+\item{silent}{if \code{TRUE}, the progress bar will be hidden. The default is 
 \code{FALSE}.}
 }
 \value{
-An object of class SQLiteConnection.
+An object of class \code{SQLiteConnection}.
 }
 \description{
 Create a local database on disk using 
@@ -22,7 +22,7 @@ Create a local database on disk using
 }
 \details{
 This function creates a database on disk at the desired path. 
-The database and its content will persist on disconnection.
+The database and its content will persist after it is disconnected.
 }
 \seealso{
 The dbplyr website provides excellent guidance on how to connect to databases: 

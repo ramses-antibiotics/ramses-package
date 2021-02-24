@@ -94,7 +94,7 @@ TherapyEpisode [
   + clinical_feature_last(): TherapyEpisode\l
   + clinical_feature_mean(): TherapyEpisode\l
   + clinical_feature_ols_trend(): TherapyEpisode\l
-  + clinical_feature_range(): TherapyEpisode\l}"
+  + clinical_feature_interval(): TherapyEpisode\l}"
 #  + medication_request(): list\l}"
 ]
 

@@ -15,8 +15,8 @@ Simulated data
 inpatient_investigations
 }
 \description{
-A set of records of observations (for example: respiration rate,
-blood pressure) and investigations (for example: blood cell counts)
-performed during inpatient care episodes.
+A set of simulated records of observations (for example: respiration rate,
+blood pressure) and investigations (for example: blood cell counts) for 
+two patients included in \code{\link[Ramses]{inpatient_episodes}}.
 }
 \keyword{datasets}

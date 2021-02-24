@@ -14,7 +14,7 @@ Simulated data
 drug_administrations
 }
 \description{
-A set of records of antimicrobials administered
+A set of simulated records of administrations of antibiotics 
 during inpatient care episodes, simulated based on drugs commonly 
 prescribed in hospitals.
 }

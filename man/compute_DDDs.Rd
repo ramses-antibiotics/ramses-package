@@ -7,15 +7,15 @@
 compute_DDDs(ATC_code, ATC_administration, dose, unit, silent = FALSE)
 }
 \arguments{
-\item{ATC_code}{a character vector of ATC codes (can be easily obtained from)
-\code{\link[AMR]{ab_atc}() in the AMR package}}
+\item{ATC_code}{a character vector of ATC codes (can be easily obtained from
+the \code{\link[AMR]{ab_atc}()} function)}
 
 \item{ATC_administration}{a character vector indicating the ATC route of 
 administration (see Details)}
 
-\item{dose}{a numeric vector indicating the total dose for the basis 
-of strength of the ATC DDD: in the case of prescriptions, this should
-be the total dose given in one day}
+\item{dose}{a numeric vector indicating the total dose for the drug serving
+as the ATC DDD basis of strength. For prescriptions, provide the total dose
+to be given in one day, rather than per administration.}
 
 \item{unit}{a character vector coercible to a \code{units} object with 
 \code{\link[units]{as_units}()}.}

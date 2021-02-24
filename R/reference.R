@@ -19,12 +19,10 @@
 #' classification.
 #'
 #' @format A data frame with 208 antimicrobial agents, referenced 
-#' against the Anatomical Therapeutic Chemical (ATC) 
-#' classification \insertCite{WHO-ATC2020}{Ramses}, the World Health Organisation's
-#' and Public Health England's respective AWaRe Indices, 
-#' and the SNOMED CT medical product concept codes and names 
-#' (from Virtual Therapeutic Moieties codes of the SNOMED CT UK Drug Extension 
-#' \insertCite{SNOMEDDrugUK2020}{Ramses}).
+#' against the World Health Organisation's Anatomical Therapeutic Chemical (ATC) 
+#' classification \insertCite{WHO-ATC2020}{Ramses}, 
+#' Public Health England's AWaRe Indices, 
+#' and the SNOMED CT medical product concept codes and names.
 #' It contains 6 columns:
 #' \describe{
 #' \item{\code{ATC_code}}{ATC code of the antibiotic}
@@ -36,9 +34,9 @@
 #' \item{\code{version}}{AWaRe Index version (eg. "WHO", "England")}
 #' \item{\code{year}}{AWaRe Index version year}
 #' \item{\code{VTM_code}}{SNOMED CT medicinal product code/Virtual Therapeutic Moiety 
-#' code in the SNOMED CT UK Drug Extension (see \insertCite{SNOMEDDrugUK2020}{Ramses})}
+#' code in the SNOMED CT UK Drug Extension \insertCite{SNOMEDDrugUK2020}{Ramses}}
 #' \item{\code{VTM_name}}{SNOMED CT medicinal product code/Virtual Therapeutic Moiety 
-#' name in the SNOMED CT UK Drug Extension (see \insertCite{SNOMEDDrugUK2020}{Ramses})}
+#' name in the SNOMED CT UK Drug Extension \insertCite{SNOMEDDrugUK2020}{Ramses}}
 #' }
 #' @docType data
 #' @name reference_aware
@@ -48,14 +46,14 @@
 #' @references{\insertAllCited{}}
 "reference_aware"
 
-#' Clinical Classifications Software (CCS): map to 4-character ICD code
+#' Clinical Classifications Software (CCS): map to 4-character ICD codes
 #' 
-#' @description A map of 283 clinical concepts to 4-character ICD code adapted from the 
+#' @description A map of 283 clinical concepts to 4-character ICD codes adapted from the 
 #'   Clinical Classifications Software (CCS) \insertCite{HCUP-CCS}{Ramses}.
 #' 
 #' @details The Clinical Classifications Software (CCS) is a database developed as part 
 #'   of the Healthcare Cost and Utilization Project (HCUP) which maps ICD-10-CM codes into 283 
-#'   hierarchical and mutually-exclusive CCS categories. The level-1 categories correspond to the
+#'   hierarchical and mutually-exclusive CCS categories. Level-1 categories correspond to the
 #'   ICD-10's 17 chapters plus two supplementary classifications:
 #'   
 #'   \enumerate{
@@ -94,9 +92,9 @@
 "ccs"
 
 
-#' Clinical Classifications Software \emph{Refined} (CCSR): map to 4-character ICD code
+#' Clinical Classifications Software \emph{Refined} (CCSR): map to 4-character ICD codes
 #' 
-#' @description A map of 538 clinical concepts to 4-character ICD code 
+#' @description A map of 538 clinical concepts to 4-character ICD codes 
 #' adapted from the Clinical Classifications Software Refined (CCSR) 
 #' \insertCite{HCUP-CCSR}{Ramses}.
 #' 
@@ -106,9 +104,8 @@
 #' categories. Unlike the pre-existing \code{\link{ccs}}:
 #' \itemize{
 #'     \item CCSR categories are not mutually exclusive.
-#'     \item CCSR thus contains new categories that did not 
-#'     exist in \code{\link{ccs}}
-#'     \item CCSR categories are organized into 21 body systems
+#'     \item CCSR contain categories not found in \code{\link{ccs}}
+#'     \item CCSR categories are organised into 21 body systems
 #' }
 #' 
 #' @format A data frame with 72,715 ICD-10-CM codes mapped to 
@@ -123,21 +120,22 @@
 #'   \insertAllCited{}
 "ccsr"
 
-#' Prescription frequency abbreviation look-up table
-#' @description This look-up table provides the number of times a drug should 
+#' Prescription frequency abbreviations
+#' @description Look-up table providing the number of times a drug should 
 #' be administered per day based on the prescription frequency abbreviation 
 #' (including latin abbreviations).
 #' 
 #' Example: BD stands for \emph{bis die}, meaning twice a day. The 
-#' corresponding `daily_frequency`` value is 2.
+#' corresponding \code{daily_frequency} value is 2.
 #' 
 #' @format A data frame with 64 abbreviations and their corresponding daily frequency value.
 #' @docType data
 #' @name reference_drug_frequency
 "reference_drug_frequency"
 
-#' Clinical investigations and observations LOINC codes look-up table
-#' @description This look-up table provides a subset of useful clinical investigation
+#' LOINC codes for clinical investigations and observations
+#'  
+#' @description Look-up table providing a subset of useful clinical investigation
 #' codes from the LOINC terminology. It can be used to map clinical investigations
 #' and observations that are relevant to modelling antibiotic prescribing decisions.
 #' @details This material contains content from LOINC (\url{http://loinc.org}). 
@@ -152,7 +150,8 @@
 "reference_loinc"
 
 
-#' Laboratory specimen type reference table (SNOMED CT concepts )
+#' Laboratory specimen type reference table (SNOMED CT concepts)
+#' 
 #' @description This reference table contains the list of admissible specimen
 #' types in microbiology records (see \code{\link[Ramses]{validate_microbiology}()}).
 #' These concepts are from the 

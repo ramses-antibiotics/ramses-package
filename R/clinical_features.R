@@ -119,6 +119,7 @@
 }
 
 
+#' @importFrom dbplyr sql
 .clinical_feature_observations_fetch <- function(x, 
                                                  TT, 
                                                  therapy_record, 
@@ -215,30 +216,32 @@
 }
 
 
-#' Therapy table feature: most recent clinical observation
+#' Therapy table feature: latest clinical observation value
 #'
-#' @description Add a clinical feature to a therapy episode table indicating 
-#' the most recent observation by table time \code{t}
+#' @description Add a clinical feature (variable) to a therapy episode table 
+#' containing the latest value of clinical observations of interest
 #' @param x a \code{\link{TherapyEpisode}} object
 #' @param observation_code a character vector of clinical investigation codes
 #' matching the \code{observation_code} field in the \code{inpatient_investigation}
 #' table (see \code{\link{validate_investigations}()})
 #' @param hours the maximum number of hours the observation should date back from
 #' \code{t_start}, the starting time of every row in the therapy table
-#' @param observation_code_system (optional) reserved to  instance where 
-#' \code{observation_code} is ambiguous and does not uniquely identify 
-#' observations across code systems (vocabularies), specify a single
-#' code system identifier (eg \code{"http://snomed.info/sct"}) to use.
-#' The default is \code{NULL} and will only filter observation using
-#' \code{observation_code}.
-#' @details NOTE: only numeric investigations marked with status \code{"final"}, 
-#' \code{"preliminary"}, \code{"corrected"}, or \code{"amended"} will be sourced.
+#' @param observation_code_system (optional, reserved to situations where 
+#' \code{observation_code} is ambiguous across code systems/vocabularies) a single 
+#' character string specifying the code system identifier (example:
+#'  \code{"http://snomed.info/sct"}) of \code{observation_code}.
+#' 
+#' The default (\code{NULL}) filters observations using the \code{observation_code} only.
+#' @details The feature will be computed exclusively on numeric investigations 
+#' marked with status \code{"final"}, \code{"preliminary"}, \code{"corrected"}, 
+#' or \code{"amended"}.
 #' @return an object of class \code{\link{TherapyEpisode}}
 #' @rdname clinical_feature_last
 #' @export
 #' @include objects.R
 #' @examples 
 #' \dontrun{
+#' conSQLite <- create_mock_database("example.sqlite")
 #' temperature_check <- clinical_feature_last(
 #'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
 #'    observation_code = "8310-5",
@@ -312,10 +315,10 @@ setMethod(
 }
 
 
-#' Therapy table feature: running mean value of clinical observation
+#' Therapy table feature: running mean value of a clinical observation
 #'
-#' @description Add a clinical feature to a therapy episode table indicating 
-#' the arithmetic mean of clinical observations made until table time \code{t}
+#' @description Add a clinical feature (variable) to a therapy episode table 
+#' containing the arithmetic mean of clinical observations of interest
 #' @param x a \code{\link{TherapyEpisode}} object
 #' @param observation_code a character vector of clinical investigation codes
 #' matching the \code{observation_code} field in the \code{inpatient_investigation}
@@ -323,14 +326,15 @@ setMethod(
 #' @param hours the maximum number of hours the observations included in the mean
 #' should date back from \code{t_start}, the starting time of every row 
 #' in the therapy table
-#' @param observation_code_system (optional) reserved to  instance where 
-#' \code{observation_code} is ambiguous and does not uniquely identify 
-#' observations across code systems (vocabularies), specify a single
-#' code system identifier (eg \code{"http://snomed.info/sct"}) to use.
-#' The default is \code{NULL} and will only filter observation using
-#' \code{observation_code}.
-#' @details NOTE: only numeric investigations marked with status \code{"final"}, 
-#' \code{"preliminary"}, \code{"corrected"}, or \code{"amended"} will be sourced.
+#' @param observation_code_system (optional, reserved to situations where 
+#' \code{observation_code} is ambiguous across code systems/vocabularies) a single 
+#' character string specifying the code system identifier (example:
+#'  \code{"http://snomed.info/sct"}) of \code{observation_code}.
+#' 
+#' The default (\code{NULL}) filters observations using the \code{observation_code} only.
+#' @details The feature will be computed exclusively on numeric investigations 
+#' marked with status \code{"final"}, \code{"preliminary"}, \code{"corrected"}, 
+#' or \code{"amended"}.
 #' 
 #' @return an object of class \code{\link{TherapyEpisode}}
 #' @rdname clinical_feature_mean
@@ -338,6 +342,7 @@ setMethod(
 #' @include objects.R
 #' @examples 
 #' \dontrun{
+#' conSQLite <- create_mock_database("example.sqlite")
 #' temperature_check <- clinical_feature_mean(
 #'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
 #'    observation_code = "8310-5",
@@ -460,36 +465,38 @@ setMethod(
 
 #' Therapy table feature: temporal trend of clinical observations
 #'
-#' @description Add a clinical feature to a therapy episode table corresponding
-#' to the Ordinary Least Squares (OLS) intercept and slope of clinical
-#' observations made until table time \code{t}
+#' @description Add clinical feature (variables) to a therapy episode table 
+#' containing the Ordinary Least Squares (OLS) intercept and slope of clinical
+#' observations of interest
 #' @param x a \code{\link{TherapyEpisode}} object
 #' @param observation_code a character vector of clinical investigation codes
 #' matching the \code{observation_code} field in the \code{inpatient_investigation}
 #' table (see \code{\link{validate_investigations}()}
 #' @param hours the maximum number of hours the observations should date back from
 #' \code{t_start}, the starting time of every row in the therapy table
-#' @param observation_code_system (optional) reserved to  instance where 
-#' \code{observation_code} is ambiguous and does not uniquely identify 
-#' observations across code systems (vocabularies), specify a single
-#' code system identifier (eg \code{"http://snomed.info/sct"}) to use.
-#' The default is \code{NULL} and will only filter observation using
-#' \code{observation_code}.
-#' @details NOTE: only numeric investigations marked with status \code{"final"}, 
-#' \code{"preliminary"}, \code{"corrected"}, or \code{"amended"} will be sourced.
+#' @param observation_code_system (optional, reserved to situations where 
+#' \code{observation_code} is ambiguous across code systems/vocabularies) a single 
+#' character string specifying the code system identifier (example:
+#'  \code{"http://snomed.info/sct"}) of \code{observation_code}.
+#' 
+#' The default (\code{NULL}) filters observations using the \code{observation_code} only.
+#' @details The feature will be computed exclusively on numeric investigations 
+#' marked with status \code{"final"}, \code{"preliminary"}, \code{"corrected"}, 
+#' or \code{"amended"}.
 #' 
 #' The returned regression slope coefficient corresponds to the mean change 
 #' associated with a 1-hour time increment.
 #' 
 #' The returned regression intercept is defined with respect to time equals
-#' zero at \code{t_start}. It thus corresponds to the linear (straight line) 
-#' extrapolation of the trend to \code{t_start}.
+#' zero at \code{t_start}. It thus corresponds to the value of the linear 
+#' (straight line) extrapolation of the trend to \code{t_start}.
 #' @return an object of class \code{\link{TherapyEpisode}}
 #' @rdname clinical_feature_ols_trend
 #' @export
 #' @include objects.R
 #' @examples 
 #' \dontrun{
+#' conSQLite <- create_mock_database("example.sqlite")
 #' temperature_check <- clinical_feature_ols_trend(
 #'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
 #'    observation_code = "8310-5",
@@ -566,7 +573,7 @@ setMethod(
   return(x)
 }
 
-.clinical_feature_range <- function(x, observation_code, lower_bound, upper_bound, hours, observation_code_system) {
+.clinical_feature_interval <- function(x, observation_code, lower_bound, upper_bound, hours, observation_code_system) {
   TT <- .therapy_table_create(x@conn, x@id)
   therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
@@ -614,77 +621,79 @@ setMethod(
 }
 
 
-#' Therapy table feature: most recent clinical observation
-#'
-#' @description Add a clinical feature to a therapy episode table indicating 
-#' the most recent observation by table time \code{t}
+#' Therapy table feature: number of clinical observations falling in an interval
+#' 
+#' @description Add clinical features (variables) to a therapy episode table 
+#' containing the number of observations falling (a) above/below a given threshold
+#' or (b) inside/outside a given interval.
 #' @param x a \code{\link{TherapyEpisode}} object
-#' @param observation_ranges a named list of numeric vectors of length 1 
-#' (for a threshold) or 2 (for a range). Names of vectors must match the
+#' @param observation_intervals a named list of numeric vectors of length 1 
+#' (for a threshold) or 2 (for an interval). Names of vectors must match the
 #'  \code{observation_code} field in the \code{inpatient_investigation}
 #' table (see \code{\link{validate_investigations}()}. See example
 #' @param hours the maximum number of hours the observation should date back from
 #' \code{t_start}, the starting time of every row in the therapy table
-#' @param observation_code_system (optional) reserved to  instance where 
-#' \code{observation_code} is ambiguous and does not uniquely identify 
-#' observations across code systems (vocabularies), specify a single
-#' code system identifier (eg \code{"http://snomed.info/sct"}) to use.
-#' The default is \code{NULL} and will only filter observation using
-#' \code{observation_code}.
-#' @details NOTE: only numeric investigations marked with status \code{"final"}, 
-#' \code{"preliminary"}, \code{"corrected"}, or \code{"amended"} will be sourced.
+#' @param observation_code_system (optional, reserved to situations where 
+#' \code{observation_code} is ambiguous across code systems/vocabularies) a single 
+#' character string specifying the code system identifier (example:
+#'  \code{"http://snomed.info/sct"}) of \code{observation_code}.
+#' 
+#' The default (\code{NULL}) filters observations using the \code{observation_code} only.
+#' @details The feature will be computed exclusively on numeric investigations 
+#' marked with status \code{"final"}, \code{"preliminary"}, \code{"corrected"}, 
+#' or \code{"amended"}.
 #' @return an object of class \code{\link{TherapyEpisode}}
-#' @rdname clinical_feature_range
+#' @rdname clinical_feature_interval
 #' @export
 #' @examples 
 #' \dontrun{
-#' temperature_check <- clinical_feature_range(
+#' temperature_check <- clinical_feature_interval(
 #'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
-#'    observation_ranges = list("8310-5" = c(36, 38)),
+#'    observation_intervals = list("8310-5" = c(36, 38)),
 #'    hours = 24
 #'    )
 #' str(therapy_table(temperature_check, collect = TRUE))
 #' }
 #' @include objects.R
 setGeneric(
-  "clinical_feature_range", 
-  function(x, observation_ranges, hours, observation_code_system = NULL) standardGeneric("clinical_feature_range"), 
+  "clinical_feature_interval", 
+  function(x, observation_intervals, hours, observation_code_system = NULL) standardGeneric("clinical_feature_interval"), 
   signature = "x")
 
 
-#' @rdname clinical_feature_range
+#' @rdname clinical_feature_interval
 #' @export
 setMethod(
-  "clinical_feature_range",
+  "clinical_feature_interval",
   c(x = "TherapyEpisode"),
-  function(x, observation_ranges, hours, observation_code_system = NULL) {
-    stopifnot(is.list(observation_ranges))
-    stopifnot(all(unlist(lapply(observation_ranges, length)) %in% 1:2))
+  function(x, observation_intervals, hours, observation_code_system = NULL) {
+    stopifnot(is.list(observation_intervals))
+    stopifnot(all(unlist(lapply(observation_intervals, length)) %in% 1:2))
     stopifnot(is.numeric(hours) & length(hours) == 1 & hours >= 0)
     
-    input_observation_codes <- names(observation_ranges)
+    input_observation_codes <- names(observation_intervals)
     .clinical_investigation_code_validate(x@conn, 
                                           input_observation_codes,
                                           observation_code_system)
     
-    for (i in seq_len(length(observation_ranges))) {
-      if(length(observation_ranges[[i]]) == 1) {
-        stopifnot(!is.na(observation_ranges[[i]]) &
-                    !is.infinite(observation_ranges[[i]]))
+    for (i in seq_len(length(observation_intervals))) {
+      if(length(observation_intervals[[i]]) == 1) {
+        stopifnot(!is.na(observation_intervals[[i]]) &
+                    !is.infinite(observation_intervals[[i]]))
         x <- .clinical_feature_threshold(x = x, 
                                          observation_code = input_observation_codes[[i]], 
-                                         threshold = observation_ranges[[i]],
+                                         threshold = observation_intervals[[i]],
                                          hours = hours, 
                                          observation_code_system = observation_code_system)
       } else {
-        stopifnot(!any(is.na(observation_ranges[[i]])) &
-                    !any(is.infinite(observation_ranges[[i]])))
-        x <- .clinical_feature_range(x = x, 
-                                     observation_code = input_observation_codes[[i]], 
-                                     lower_bound = sort(observation_ranges[[i]])[1],
-                                     upper_bound = sort(observation_ranges[[i]])[2],
-                                     hours = hours,
-                                     observation_code_system = observation_code_system)
+        stopifnot(!any(is.na(observation_intervals[[i]])) &
+                    !any(is.infinite(observation_intervals[[i]])))
+        x <- .clinical_feature_interval(x = x, 
+                                        observation_code = input_observation_codes[[i]], 
+                                        lower_bound = sort(observation_intervals[[i]])[1],
+                                        upper_bound = sort(observation_intervals[[i]])[2],
+                                        hours = hours,
+                                        observation_code_system = observation_code_system)
       }
     }
     

@@ -465,7 +465,7 @@ validate_inpatient_spells <- function(data) {
 #'
 #' @param data a data frame object
 #' @param type a string indicating the type of dates to validate:
-#' either `"wards"` for ward stays or `"episodes"` for inpatient episodes.
+#' either \code{"wards"} for ward stays or \code{"episodes"} for inpatient episodes.
 #' @importFrom data.table data.table := 
 #' @return A logical value indicating success
 validate_inpatient_episode_dates <- function(data, type = "episodes") {
@@ -570,8 +570,8 @@ validate_inpatient_episode_dates <- function(data, type = "episodes") {
 #' at minimum, variables \code{patient_id}, \code{spell_id}, 
 #' \code{episode_number}, \code{icd_code}, \code{diagnosis_position}
 #' @param diagnoses_lookup a data frame containing an ICD-10 reference look up 
-#' table with, at minimum, variables `icd_description`, `icd_display`, 
-#' `category_code`, `category_description`
+#' table with, at minimum, variables \code{icd_description}, \code{icd_display}, 
+#' \code{category_code}, \code{category_description}
 #'
 #' @return A logical value indicating success
 #' @export
@@ -666,18 +666,18 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'      \item{\code{patient_id}}{a patient identifier with no missing value}
 #'      \item{\code{prescription_id}}{a prescription identifier with no missing value}
 #'      \item{\code{prescription_text}}{a character string summarising the prescription 
-#'      (to be displayed in user interfaces, eg: \code{'Amoxicillin Oral 500mg BDS'})}
+#'      (to be displayed in user interfaces, eg: \code{'Amoxicillin oral 500mg BDS'})}
 #'      \item{\code{drug_id}}{identifier of the drug (from a dictionary such as SNOMED CT or
-#'       from \code{\link{AMR}{as.ab}()})}
+#'       from \code{\link[AMR]{as.ab}()})}
 #'      \item{\code{drug_name}}{preferred name of the drug in the drug dictionary}
 #'      \item{\code{drug_display_name}}{drug name to display in reports and user interfaces
 #'      (can be the same as \code{drug_name})}
 #'      \item{\code{antiinfective_type}}{type of antiinfective ("antibacterial", "antifungal",
 #'      "antiviral", or "antiparasitic")}
-#'      \item{\code{ATC_code}}{the ATC code, see \code{\link{AMR}{ab_atc}()}}
-#'      \item{\code{ATC_group}}{the ATC group, see \code{\link{AMR}{ab_atc_group1}()}}
-#'      \item{\code{ATC_route}}{route of administration as defined in the ATC ("O" = oral; 
-#'      "P" = parenteral; "R" = rectal; "V" = vaginal)}
+#'      \item{\code{ATC_code}}{the ATC code, see \code{\link[AMR]{ab_atc}()}}
+#'      \item{\code{ATC_group}}{the ATC group, see \code{\link[AMR]{ab_atc_group}()}}
+#'      \item{\code{ATC_route}}{route of administration as defined in the ATC 
+#'      (\code{"O"} = oral; \code{"P"} = parenteral; \code{"R"} = rectal; \code{"V"} = vaginal)}
 #'      \item{\code{authoring_date}}{timestamp for when the prescription was issued}
 #'      \item{\code{prescription_start}}{timestamp for the prescription start}
 #'      \item{\code{prescription_end}}{timestamp for the prescription end (mandated except
@@ -688,29 +688,29 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'      \href{https://hl7.org/fhir/R4/valueset-medicationrequest-status.html}{FHIR R4}
 #'      reference set:
 #'      \itemize{ 
-#'         \item \code{`active`} the prescription is 'actionable', but not all actions 
+#'         \item \code{"active"} the prescription is 'actionable', but not all actions 
 #'         that are implied by it have occurred yet.
-#'         \item \code{`on-hold`} actions implied by the prescription are to be 
+#'         \item \code{"on-hold"} actions implied by the prescription are to be 
 #'         temporarily halted, but are expected to continue later. 
-#'         \item \code{`cancelled`} the prescription has been withdrawn before any 
+#'         \item \code{"cancelled"} the prescription has been withdrawn before any 
 #'         administrations have occurred.
-#'         \item \code{`completed`} all actions that are implied by the prescription 
+#'         \item \code{"completed"} all actions that are implied by the prescription 
 #'         have occurred.
-#'         \item \code{`entered-in-error`} some of the actions that are implied by the 
+#'         \item \code{"entered-in-error"} some of the actions that are implied by the 
 #'         medication request may have occurred. For example, the medication may have 
 #'         been dispensed and the patient may have taken some of the medication. 
 #'         Clinical decision support systems should take this status into account.
-#'         \item \code{`stopped`} actions implied by the prescription are to be 
+#'         \item \code{"stopped"} actions implied by the prescription are to be 
 #'         permanently halted, before all of the administrations occurred. This should 
 #'         not be used if the original order was entered in error.
-#'         \item \code{`draft`} the prescription is not yet 'actionable', e.g. it is a 
+#'         \item \code{"draft"} the prescription is not yet 'actionable', e.g. it is a 
 #'         work in progress, requires sign-off, verification or needs to be run through 
 #'         decision support process.
-#'         \item \code{`unknown`} the authoring/source system does not know which of the 
+#'         \item \code{"unknown"} the authoring/source system does not know which of the 
 #'         status values currently applies for this observation. \emph{Note:} This 
 #'         concept is not to be used for 'other' - one of the listed statuses is presumed 
 #'         to apply, but the authoring/source system does not know which.         
-#'      }.
+#'      }
 #'      \emph{Note that prescriptions marked as \code{"on-hold"}, \code{"cancelled"}, 
 #'      \code{"draft"}, \code{"entered-in-error"}, or \code{"unknown"} will not 
 #'      count towards antibiotic consumption estimates.}}
@@ -735,8 +735,9 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'        see \code{\link{compute_DDDs}()}}
 #'   \item{\code{...}}{any other field, as desired, can be loaded into the database}
 #' }
-#' @return NULL if the `data` passes the validation. The function will trigger errors
-#' for mandatory requirements and warnings for optional requirements.
+#' @return NULL if the \code{data} passes the validation. The function will trigger 
+#' errors when \emph{mandatory requirements} are not met and warnings when
+#' \emph{optional requirements} are not met.
 #' @export
 validate_prescriptions <- function(data) {
   
@@ -855,24 +856,25 @@ validate_prescriptions <- function(data) {
 #' optional requirements on drug administrations data.
 #' @param data a data frame containing one row per drug administration
 #' @section Mandatory fields:
-#' The following fields are required in order to pass the validation:
+#' \strong{The following fields are required in order to pass the validation:}
 #' \describe{
 #'      \item{\code{patient_id}}{a patient identifier with no missing value}
 #'      \item{\code{prescription_id}}{a prescription identifier with no missing value}
 #'      \item{\code{administration_id}}{an administration identifier with no missing value}
 #'      \item{\code{administration_text}}{a character string summarising the drug to administer 
-#'      (to be displayed in user interfaces, eg: \code{'Amoxicillin Oral 500mg'})}
+#'      (to be displayed in user interfaces, eg: \code{'Amoxicillin oral 500mg'})}
 #'      \item{\code{drug_id}}{identifier of the drug (from a dictionary such as SNOMED CT or
-#'       from \code{\link{AMR}{as.ab}()})}
+#'       from \code{\link[AMR]{as.ab}()})}
 #'      \item{\code{drug_name}}{preferred name of the drug in the drug dictionary}
 #'      \item{\code{drug_display_name}}{drug name to display in reports and user interfaces
 #'      (can be the same as \code{drug_name})}
 #'      \item{\code{antiinfective_type}}{type of antiinfective ("antibacterial", "antifungal",
 #'      "antiviral", or "antiparasitic")}
-#'      \item{\code{ATC_code}}{the ATC code, see \code{\link{AMR}{ab_atc}()}}
-#'      \item{\code{ATC_group}}{the ATC group, see \code{\link{AMR}{ab_group1}()}}
-#'      \item{\code{ATC_route}}{route of administration as defined in the ATC ("O" = oral; 
-#'      "P" = parenteral; "R" = rectal; "V" = vaginal)}
+#'      \item{\code{ATC_code}}{the ATC code, see \code{\link[AMR]{ab_atc}()}}
+#'      \item{\code{ATC_group}}{the ATC group, see \code{\link[AMR]{ab_group}()}}
+#'      \item{\code{ATC_route}}{route of administration as defined in the ATC (
+#'      \code{"O"} = oral; \code{"P"} = parenteral; \code{"R"} = rectal; 
+#'      \code{"V"} = vaginal)}
 #'      \item{\code{dose}}{a numeric vector of dosage quantities}
 #'      \item{\code{unit}}{a character vector of dosage units}
 #'      \item{\code{route}}{the route of administration value natively assigned by system}
@@ -881,18 +883,18 @@ validate_prescriptions <- function(data) {
 #'      \href{https://hl7.org/fhir/R4/valueset-medicationrequest-status.html}{FHIR R4}
 #'      reference set:
 #'      \itemize{ 
-#'         \item \code{`in-progess`} the administration has started but has not yet completed.
-#'         \item \code{`not-done`} the administration was terminated prior to any impact on 
+#'         \item \code{"in-progess"} the administration has started but has not yet completed.
+#'         \item \code{"not-done"} the administration was terminated prior to any impact on 
 #'         the subject (though preparatory actions may have been taken). 
-#'         \item \code{`on-hold`} actions implied by the administration have been 
+#'         \item \code{"on-hold"} actions implied by the administration have been 
 #'         temporarily halted, but are expected to continue later.
-#'         \item \code{`completed`} all actions that are implied by the administration 
+#'         \item \code{"completed"} all actions that are implied by the administration 
 #'         have occurred.
-#'         \item \code{`entered-in-error`} the administration was entered in error and 
+#'         \item \code{"entered-in-error"} the administration was entered in error and 
 #'         therefore nullified. 
-#'         \item \code{`stopped`} actions implied by the administration have been permanently 
+#'         \item \code{"stopped"} actions implied by the administration have been permanently 
 #'         halted, before all of them occurred.
-#'         \item \code{`unknown`} the authoring/source system does not know which of the 
+#'         \item \code{"unknown"} the authoring/source system does not know which of the 
 #'         status values currently applies for this request. \emph{Note:} This concept 
 #'         is not to be used for 'other' - one of the listed statuses is presumed 
 #'         to apply, but the authoring/source system does not know which.         
@@ -902,8 +904,9 @@ validate_prescriptions <- function(data) {
 #'      \item{\code{DDD}}{the number of defined daily doses (as administered),
 #'       see \code{\link{compute_DDDs}()}}
 #'      \item{\code{...}}{any other field, as desired, can be loaded into the database.}}
-#' @return NULL if the `data` passes the validation. The function will trigger errors
-#' for mandatory requirements and warnings for optional requirements.
+#' @return NULL if the \code{data} passes the validation. The function will trigger 
+#' errors when \emph{mandatory requirements} are not met and warnings when
+#' \emph{optional requirements} are not met.
 #' @export
 validate_administrations <- function(data) {
   
@@ -995,8 +998,8 @@ validate_administrations <- function(data) {
 #' @param susceptibilities a data frame with one row per susceptibility
 #' (see details)
 #' 
-#' @section \code{specimens} data frame:
-#' \emph{The following fields are mandatory:}
+#' @section Specimens data frame:
+#' \strong{The following fields are mandatory:}
 #' \describe{
 #'    \item{\code{specimen_id}}{a unique specimen identifier with no missing value}
 #'    \item{\code{patient_id}}{a patient identifier with no missing value}
@@ -1023,7 +1026,7 @@ validate_administrations <- function(data) {
 #'    types for display in user interfaces}
 #' }
 #' 
-#' \emph{The following fields are optional:}
+#' \strong{The following fields are optional:}
 #' \describe{
 #'    \item{\code{spell_id}}{a hospital spell identifier (if the specimen was 
 #'    sampled during admission)}
@@ -1037,9 +1040,9 @@ validate_administrations <- function(data) {
 #'    custom columns.}
 #' }
 #'    
-#' @section \code{isolates} data frame:
+#' @section Isolates data frame:
 #' 
-#' \emph{The following fields are mandatory:}
+#' \strong{The following fields are mandatory:}
 #' \describe{
 #'    \item{\code{organism_id}}{a unique isolated organism identifier with no missing value}
 #'    \item{\code{specimen_id}}{a specimen identifier with no missing value}
@@ -1058,20 +1061,20 @@ validate_administrations <- function(data) {
 #'    (or reported) by the laboratory}
 #'  }
 #' 
-#' \emph{The following field is optional:}
+#' \strong{The following field is optional:}
 #' \describe{
 #'    \item{\code{mdr_classification}}{character vector of classifications produced by 
-#'    \code{\link[AMR]{mdro}}. Admissible values are: \itemize{
+#'    \code{\link[AMR]{mdro}()}. Admissible values are: \itemize{
 #'       \item \code{NA_character_} when susceptibilities are not available/conclusive
 #'       \item \code{"Negative"} for isolate presenting no wide resistance phenotype
 #'       \item other character codes dependent on the \code{guideline} parameter 
-#'       provided to \code{\link[AMR]{mdro}}
+#'       provided to \code{\link[AMR]{mdro}()}
 #'    }}
 #' }  
 #'  
-#' @section \code{susceptibilities} data frame:
+#' @section Susceptibilities data frame:
 #' 
-#' \emph{The following fields are mandatory:}
+#' \strong{The following fields are mandatory:}
 #' \describe{
 #'   \item{\code{organism_id}}{an isolated organism identifier with no missing value}
 #'   \item{\code{specimen_id}}{a specimen identifier with no missing value}

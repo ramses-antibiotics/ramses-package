@@ -12,7 +12,7 @@ load_medications(
   administrations = NULL,
   overwrite = FALSE,
   transitive_closure_controls = transitive_closure_control(),
-  silent = TRUE
+  silent = FALSE
 )
 
 \method{load_medications}{SQLiteConnection}(
@@ -50,9 +50,12 @@ medication tables}
 \item{transitive_closure_controls}{parameters controlling (see 
 \code{\link{transitive_closure_control}()})}
 
-\item{silent}{a boolean indicating whether the function should be
-executed without progress bar. Default is \code{TRUE}.}
+\item{silent}{if \code{TRUE}, the progress bar will be hidden. The default is 
+\code{FALSE}.}
 }
 \description{
 Load drug prescription records into the warehouse
+}
+\seealso{
+\code{\link[Ramses]{create_therapy_episodes}()}
 }

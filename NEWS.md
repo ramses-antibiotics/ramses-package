@@ -4,7 +4,7 @@
 ## Features
 
 * introduce S4 classes `Patient`, `MedicationRequest`, `TherapyEpisode`
-* introduce therapy methods `therapy_table()`, `parenteral_changes()`, `clinical_feature_last`, `clinical_feature_ols_trend`, `clinical_feature_range`, `clinical_feature_mean`
+* introduce therapy methods `therapy_table()`, `parenteral_changes()`, `clinical_feature_last`, `clinical_feature_ols_trend`, `clinical_feature_interval`, `clinical_feature_mean`
 
 ## Improvements
 
@@ -22,10 +22,10 @@
 * Corrected incorrect transitive closure settings
 * Corrected prescription edge classification
 
-## Improvement
+## Improvements
 
 * Complete verification of prescription edge classification
-* therapy_id now always set to the id of the first prescription in the episode
+* `therapy_id` now always set to the id of the first prescription in the episode
 
 # Ramses 0.2.0
 

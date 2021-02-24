@@ -3,7 +3,7 @@
 \docType{data}
 \name{ccs}
 \alias{ccs}
-\title{Clinical Classifications Software (CCS): map to 4-character ICD code}
+\title{Clinical Classifications Software (CCS): map to 4-character ICD codes}
 \format{
 A data frame with 72,446 ICD-10-CM codes mapped to CCS multilevel categories.
 }
@@ -14,13 +14,13 @@ Adapted from \insertCite{HCUP-CCS}{Ramses} for 4-character ICD-10 codes.
 ccs
 }
 \description{
-A map of 283 clinical concepts to 4-character ICD code adapted from the 
+A map of 283 clinical concepts to 4-character ICD codes adapted from the 
   Clinical Classifications Software (CCS) \insertCite{HCUP-CCS}{Ramses}.
 }
 \details{
 The Clinical Classifications Software (CCS) is a database developed as part 
   of the Healthcare Cost and Utilization Project (HCUP) which maps ICD-10-CM codes into 283 
-  hierarchical and mutually-exclusive CCS categories. The level-1 categories correspond to the
+  hierarchical and mutually-exclusive CCS categories. Level-1 categories correspond to the
   ICD-10's 17 chapters plus two supplementary classifications:
   
   \enumerate{

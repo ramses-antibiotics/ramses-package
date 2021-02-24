@@ -15,8 +15,8 @@ therapy_table(object, collect = FALSE)
 \arguments{
 \item{object}{an object of class \code{TherapyEpisode}}
 
-\item{collect}{whether to collect the remote \code{tbl_sql} and return a local 
-\code{tbl_df}. The default is \code{FALSE}}
+\item{collect}{if \code{TRUE}, collect the remote \code{tbl_sql} and return a local 
+\code{tbl_df}. The default is \code{FALSE}, and simply returns the remote \code{tbl_sql}}
 }
 \value{
 an object of class \code{tbl}

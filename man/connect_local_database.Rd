@@ -7,10 +7,10 @@
 connect_local_database(file)
 }
 \arguments{
-\item{file}{A file path to an existing or new database file with an .sqlite extension.}
+\item{file}{A file path to an existing or new database file with a \code{.sqlite} extension.}
 }
 \value{
-An database connection object of class SQLiteConnection.
+A database connection object of class \code{SQLiteConnection}.
 }
 \description{
 Create a local database in memory or on disk using \code{\link[RSQLite]{SQLite}()}. 
@@ -18,7 +18,7 @@ This is the ideal method to experiment on a small scale or for testing purposes.
 }
 \details{
 This function creates a database on disk at the desired path. The database and
-its content will persist on disconnection.
+its content will persist after it is disconnected.
 }
 \section{Warning}{
      

@@ -22,9 +22,9 @@ TRUE if the validation is passed
 \description{
 Validate microbial isolates & susceptibility records
 }
-\section{\code{specimens} data frame}{
+\section{Specimens data frame}{
 
-\emph{The following fields are mandatory:}
+\strong{The following fields are mandatory:}
 \describe{
    \item{\code{specimen_id}}{a unique specimen identifier with no missing value}
    \item{\code{patient_id}}{a patient identifier with no missing value}
@@ -51,7 +51,7 @@ Validate microbial isolates & susceptibility records
    types for display in user interfaces}
 }
 
-\emph{The following fields are optional:}
+\strong{The following fields are optional:}
 \describe{
    \item{\code{spell_id}}{a hospital spell identifier (if the specimen was 
    sampled during admission)}
@@ -66,10 +66,10 @@ Validate microbial isolates & susceptibility records
 }
 }
 
-\section{\code{isolates} data frame}{
+\section{Isolates data frame}{
 
 
-\emph{The following fields are mandatory:}
+\strong{The following fields are mandatory:}
 \describe{
    \item{\code{organism_id}}{a unique isolated organism identifier with no missing value}
    \item{\code{specimen_id}}{a specimen identifier with no missing value}
@@ -88,22 +88,22 @@ Validate microbial isolates & susceptibility records
    (or reported) by the laboratory}
  }
 
-\emph{The following field is optional:}
+\strong{The following field is optional:}
 \describe{
    \item{\code{mdr_classification}}{character vector of classifications produced by 
-   \code{\link[AMR]{mdro}}. Admissible values are: \itemize{
+   \code{\link[AMR]{mdro}()}. Admissible values are: \itemize{
       \item \code{NA_character_} when susceptibilities are not available/conclusive
       \item \code{"Negative"} for isolate presenting no wide resistance phenotype
       \item other character codes dependent on the \code{guideline} parameter 
-      provided to \code{\link[AMR]{mdro}}
+      provided to \code{\link[AMR]{mdro}()}
    }}
 }
 }
 
-\section{\code{susceptibilities} data frame}{
+\section{Susceptibilities data frame}{
 
 
-\emph{The following fields are mandatory:}
+\strong{The following fields are mandatory:}
 \describe{
   \item{\code{organism_id}}{an isolated organism identifier with no missing value}
   \item{\code{specimen_id}}{a specimen identifier with no missing value}

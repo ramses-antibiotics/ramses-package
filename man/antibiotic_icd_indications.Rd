@@ -5,11 +5,7 @@
 \alias{antibiotic_icd_indications}
 \title{Common infections and indications for antimicrobial therapy}
 \format{
-\code{antibiotic_icd_indications} is data frame of 276 rows 
-defining 74 infections classified into 17 groups, with references 
-to ICD-10 codes.
-
-It contains 6 columns:
+Data frame of 276 rows describing ICD-10 codes with 6 columns:
 \describe{
 \item{\code{icd_root}}{character vector of 3- to 4-character ICD-10 codes}
 \item{\code{infection_group1_label}}{character vector referencing 17 infection groups}

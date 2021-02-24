@@ -285,7 +285,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
   return(therapy_table_parenteral)
 }
 
-#' Get 'parenteral' drug administration sequences
+#' Get parenteral antimicrobial therapy sequences
 #'
 #' @description Timely switch to oral therapy is a widely recommended
 #' antimicrobial stewardship behaviour. \code{parenteral_changes()}
@@ -327,7 +327,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' }
 #' 
 #' The integers are in direct correspondance with field \code{t} in the 
-#' therapy episode's table (\code{\link{therapy_table}()}).
+#' therapy episode table (\code{\link{therapy_table}()}).
 #' @export
 #' @examples 
 #' \dontrun{
@@ -423,8 +423,8 @@ parenteral_changes <- function(therapy_episode, tolerance_hours = 12L) {
 #' Get the therapy table
 #'
 #' @param object an object of class \code{TherapyEpisode}
-#' @param collect whether to collect the remote \code{tbl_sql} and return a local 
-#' \code{tbl_df}. The default is \code{FALSE}
+#' @param collect if \code{TRUE}, collect the remote \code{tbl_sql} and return a local 
+#' \code{tbl_df}. The default is \code{FALSE}, and simply returns the remote \code{tbl_sql}
 #' @return an object of class \code{tbl}
 #' @rdname therapy_table
 #' @export

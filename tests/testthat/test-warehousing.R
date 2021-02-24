@@ -422,17 +422,17 @@ test_that("Ramses on SQLite 2", {
   # > - range ------------------------------------------------------------------
   
   expect_error(
-    clinical_feature_range(
+    clinical_feature_interval(
       TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
-      observation_ranges = list("8310-5" = c(36, 38)),
+      observation_intervals = list("8310-5" = c(36, 38)),
       hours = 24,
       observation_code_system = "doesnotexist"
       )
   )
   
-  temperature_check <- therapy_table(clinical_feature_range(
+  temperature_check <- therapy_table(clinical_feature_interval(
     TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
-    observation_ranges = list("8310-5" = c(36, 38)),
+    observation_intervals = list("8310-5" = c(36, 38)),
     hours = 24), collect = TRUE)
   
   expect_equal(temperature_check$range_temperature36_38_24h_in_range[1:5],
@@ -601,7 +601,7 @@ test_that(".format_str_time_sqlite.tbl_df", {
   dplyr::copy_to(conSQLite, 
                  test_posixct,
                  overwrite = TRUE)
-  expect_equal(
+  expect_equivalent(
     collect_ramses_tbl(tbl(conSQLite, "test_posixct")),
     dplyr::tibble(t_start = as.POSIXct("2017-07-02 01:15:46", tz = "Europe/London"))
   )
@@ -1068,17 +1068,17 @@ test_that("Ramses on PosgreSQL", {
   # > - range ------------------------------------------------------------------
   
   expect_error(
-    clinical_feature_range(
+    clinical_feature_interval(
       TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
-      observation_ranges = list("8310-5" = c(36, 38)),
+      observation_intervals = list("8310-5" = c(36, 38)),
       hours = 24,
       observation_code_system = "doesnotexist"
     )
   )
   
-  temperature_check <- therapy_table(clinical_feature_range(
+  temperature_check <- therapy_table(clinical_feature_interval(
     TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
-    observation_ranges = list("8310-5" = c(36, 38)),
+    observation_intervals = list("8310-5" = c(36, 38)),
     hours = 24), collect = TRUE)
   # TODO test missing observation_code.
   

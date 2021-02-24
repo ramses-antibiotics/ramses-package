@@ -2,7 +2,7 @@
 % Please edit documentation in R/objects.R
 \name{parenteral_changes}
 \alias{parenteral_changes}
-\title{Get 'parenteral' drug administration sequences}
+\title{Get parenteral antimicrobial therapy sequences}
 \usage{
 parenteral_changes(therapy_episode, tolerance_hours = 12L)
 }
@@ -24,7 +24,7 @@ of three integers coding for the time \code{t}:
 }
 
 The integers are in direct correspondance with field \code{t} in the 
-therapy episode's table (\code{\link{therapy_table}()}).
+therapy episode table (\code{\link{therapy_table}()}).
 }
 \description{
 Timely switch to oral therapy is a widely recommended

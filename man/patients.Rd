@@ -14,7 +14,7 @@ Simulated data
 patients
 }
 \description{
-This simulated dataset contains records of 200 patients 
-corresponding to hospitalisation records in \link{inpatient_episodes}.
+Set of simulated demographics records of 202 patients 
+included in \code{\link[Ramses]{inpatient_episodes}}.
 }
 \keyword{datasets}

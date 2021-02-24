@@ -12,8 +12,8 @@ at minimum, variables \code{patient_id}, \code{spell_id},
 \code{episode_number}, \code{icd_code}, \code{diagnosis_position}}
 
 \item{diagnoses_lookup}{a data frame containing an ICD-10 reference look up 
-table with, at minimum, variables `icd_description`, `icd_display`, 
-`category_code`, `category_description`}
+table with, at minimum, variables \code{icd_description}, \code{icd_display}, 
+\code{category_code}, \code{category_description}}
 }
 \value{
 A logical value indicating success

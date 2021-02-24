@@ -10,7 +10,7 @@
 
 A one-stop shop for antimicrobial stewardship data warehousing for hospitals. 
     Ramses supports the modelling and analysis of hospital electronic health records 
-    (episode of care, prescriptions, administration, pathology and investigations) to help
+    (episodes of care, drug prescriptions and administrations, microbiology and investigations results) to help
     keep antibiotics working for years to come.
 }
 \details{

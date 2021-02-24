@@ -4,7 +4,7 @@
 \alias{therapy_timeline}
 \alias{therapy_timeline,Patient-method}
 \alias{therapy_timeline,TherapyEpisode-method}
-\title{Display the antimicrobial therapy timeline}
+\title{Display an HTML antimicrobial therapy timeline}
 \usage{
 therapy_timeline(x, ...)
 
@@ -28,13 +28,12 @@ focus the timeline on by default}
 \item{date2}{(optional, only used for \code{x} of class \code{Patient}) a \code{Date} or \code{POSIXct} window maximum to 
 focus the timeline on by default}
 
-\item{load_timevis_dependencies}{a boolean indicating whether jQuery 
-and Bootstrap should be loaded (default is \code{FALSE}). See \link[timevis]{timevis}
-for detail}
+\item{load_timevis_dependencies}{if \code{TRUE}, jQuery and Bootstrap will
+be loaded (default is \code{FALSE}). See \link[timevis]{timevis} for detail.}
 }
 \value{
 a timevis object
 }
 \description{
-Display the antimicrobial therapy timeline
+Display an HTML antimicrobial therapy timeline
 }

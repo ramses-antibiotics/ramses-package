@@ -10,8 +10,9 @@ validate_administrations(data)
 \item{data}{a data frame containing one row per drug administration}
 }
 \value{
-NULL if the `data` passes the validation. The function will trigger errors
-for mandatory requirements and warnings for optional requirements.
+NULL if the \code{data} passes the validation. The function will trigger 
+errors when \emph{mandatory requirements} are not met and warnings when
+\emph{optional requirements} are not met.
 }
 \description{
 This function performs a series of checks for mandatory and
@@ -19,24 +20,25 @@ optional requirements on drug administrations data.
 }
 \section{Mandatory fields}{
 
-The following fields are required in order to pass the validation:
+\strong{The following fields are required in order to pass the validation:}
 \describe{
      \item{\code{patient_id}}{a patient identifier with no missing value}
      \item{\code{prescription_id}}{a prescription identifier with no missing value}
      \item{\code{administration_id}}{an administration identifier with no missing value}
      \item{\code{administration_text}}{a character string summarising the drug to administer 
-     (to be displayed in user interfaces, eg: \code{'Amoxicillin Oral 500mg'})}
+     (to be displayed in user interfaces, eg: \code{'Amoxicillin oral 500mg'})}
      \item{\code{drug_id}}{identifier of the drug (from a dictionary such as SNOMED CT or
-      from \code{\link{AMR}{as.ab}()})}
+      from \code{\link[AMR]{as.ab}()})}
      \item{\code{drug_name}}{preferred name of the drug in the drug dictionary}
      \item{\code{drug_display_name}}{drug name to display in reports and user interfaces
      (can be the same as \code{drug_name})}
      \item{\code{antiinfective_type}}{type of antiinfective ("antibacterial", "antifungal",
      "antiviral", or "antiparasitic")}
-     \item{\code{ATC_code}}{the ATC code, see \code{\link{AMR}{ab_atc}()}}
-     \item{\code{ATC_group}}{the ATC group, see \code{\link{AMR}{ab_group1}()}}
-     \item{\code{ATC_route}}{route of administration as defined in the ATC ("O" = oral; 
-     "P" = parenteral; "R" = rectal; "V" = vaginal)}
+     \item{\code{ATC_code}}{the ATC code, see \code{\link[AMR]{ab_atc}()}}
+     \item{\code{ATC_group}}{the ATC group, see \code{\link[AMR]{ab_group}()}}
+     \item{\code{ATC_route}}{route of administration as defined in the ATC (
+     \code{"O"} = oral; \code{"P"} = parenteral; \code{"R"} = rectal; 
+     \code{"V"} = vaginal)}
      \item{\code{dose}}{a numeric vector of dosage quantities}
      \item{\code{unit}}{a character vector of dosage units}
      \item{\code{route}}{the route of administration value natively assigned by system}
@@ -45,18 +47,18 @@ The following fields are required in order to pass the validation:
      \href{https://hl7.org/fhir/R4/valueset-medicationrequest-status.html}{FHIR R4}
      reference set:
      \itemize{ 
-        \item \code{`in-progess`} the administration has started but has not yet completed.
-        \item \code{`not-done`} the administration was terminated prior to any impact on 
+        \item \code{"in-progess"} the administration has started but has not yet completed.
+        \item \code{"not-done"} the administration was terminated prior to any impact on 
         the subject (though preparatory actions may have been taken). 
-        \item \code{`on-hold`} actions implied by the administration have been 
+        \item \code{"on-hold"} actions implied by the administration have been 
         temporarily halted, but are expected to continue later.
-        \item \code{`completed`} all actions that are implied by the administration 
+        \item \code{"completed"} all actions that are implied by the administration 
         have occurred.
-        \item \code{`entered-in-error`} the administration was entered in error and 
+        \item \code{"entered-in-error"} the administration was entered in error and 
         therefore nullified. 
-        \item \code{`stopped`} actions implied by the administration have been permanently 
+        \item \code{"stopped"} actions implied by the administration have been permanently 
         halted, before all of them occurred.
-        \item \code{`unknown`} the authoring/source system does not know which of the 
+        \item \code{"unknown"} the authoring/source system does not know which of the 
         status values currently applies for this request. \emph{Note:} This concept 
         is not to be used for 'other' - one of the listed statuses is presumed 
         to apply, but the authoring/source system does not know which.         

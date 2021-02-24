@@ -14,12 +14,9 @@ Simulated data
 inpatient_microbiology
 }
 \description{
-This simulated activity data consists of records of microbial 
-samples sent for culture and susceptibility testing for a single inpatient.
-
-This data was simulated to reproduce relevant characteristics of English 
-NHS Admitted Patient Care datasets. More information can be found on the 
-\href{https://datadictionary.nhs.uk/data_sets/cds_v6-2/cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds.html#dataset_cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds}{NHS data dictionary website}.
+A set of simulated records of microbial samples sent 
+for culture and susceptibility testing for one patient included
+in \code{\link[Ramses]{inpatient_episodes}}.
 }
 \seealso{
 \link[Ramses]{validate_microbiology}()

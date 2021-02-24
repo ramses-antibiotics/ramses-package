@@ -22,7 +22,7 @@ load_inpatient_episodes(
 \code{\link{validate_inpatient_episodes}()}}
 
 \item{wards_data}{a data frame validated with
-\code{\link{validate_inpatient_episodes}()}#'}
+\code{\link{validate_inpatient_episodes}()}}
 
 \item{overwrite}{if \code{TRUE} (the default), will overwrite any existing
 \code{inpatient_episodes} database table}

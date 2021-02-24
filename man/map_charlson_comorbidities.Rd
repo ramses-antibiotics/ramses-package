@@ -28,14 +28,14 @@ variables:
     (for diabetes, liver disease, cancer). This is to avoid 
     double counting comorbidities.
     \item \code{charlson_weights} an integer vector of weights 
-    from \insertCite{Quan2005}{Ramses} used to compute the 
+    from \insertCite{Quan2005;textual}{Ramses} used to compute the 
     weighted Charlson comorbidity score
   }
 }
 \description{
 Map ICD-10 or ICD-10-CM codes to a list of chronic
 comorbidities, comorbidity groups, and Charlson Comorbidity Index 
-weights from \insertCite{Quan2005}{Ramses}.
+weights from \insertCite{Quan2005;textual}{Ramses}.
 }
 \examples{
 mock_icd_data <- data.frame(

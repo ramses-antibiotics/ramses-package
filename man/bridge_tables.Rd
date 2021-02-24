@@ -21,11 +21,11 @@ bridge_spell_therapy_overlap(conn, overwrite = FALSE)
 \item{overwrite}{if \code{TRUE}, will overwrite any existing
 database table. The default is \code{FALSE}}
 
-\item{silent}{a boolean indicating whether the function should be
-executed without progress bar. Default is \code{FALSE}.}
+\item{silent}{if \code{TRUE}, the progress bar will be hidden. The default is 
+\code{FALSE}.}
 }
 \value{
-TRUE tables were successfully created
+\code{TRUE} if tables were successfully created
 }
 \description{
 Create or re-create bridge tables to facilitate linking prescribing
@@ -34,26 +34,26 @@ rates of prescribing per admission or per 1,000 bed-days.
 }
 \details{
 \describe{
-   \item{\code{bridge_tables()}}{Generate all tables below.}
+   \item{\code{bridge_tables()}}{Generates all bridge tables.}
    \item{\code{bridge_episode_prescription_overlap()}}{Links prescriptions
-   to inpatient episodes during which they were administered. The resulting 
+   with inpatient episodes when they were administered. The resulting 
    table is the natural join of \code{inpatient_episodes} and 
-   \code{drug_prescriptions} based on a match on the patient identifier 
+   \code{drug_prescriptions} based on matching patient identifiers 
    and a time overlap between prescriptions and inpatient episodes.}
    \item{\code{bridge_episode_prescription_initiation()}}{Links prescriptions
-   with the inpatient episode when they were authored. The resulting table 
-   differs from {\code{bridge_spell_therapy_overlap}}: it links prescriptions 
+   with inpatient episodes when they were authored. The resulting table 
+   differs from {\code{bridge_episode_prescription_overlap}}: it links prescriptions 
    to the episode referencing the clinical team who prescribed them, rather
    that episodes during which the prescription was administered. The resulting
    table is the natural join of \code{inpatient_episodes} and 
-   \code{drug_prescriptions} based on a match on the patient identifier
-   and the prescription authoring date being comprised before the episode 
+   \code{drug_prescriptions} based on matching patient identifiers 
+   and the prescription authoring date being comprised between the episode 
    start and end dates.}
    \item{\code{bridge_spell_therapy_overlap()}}{Links therapy episodes
-   to inpatient spells during which they were administered. The resulting 
+   with inpatient spells during which they were administered. The resulting 
    table is the natural join of \code{inpatient_episodes} and 
-   \code{drug_prescriptions} based on a match on the patient identifier 
-   and a time overlap between prescriptions and dates of admission and discharge.}
+   \code{drug_therapy_episodes} based on matching patient identifiers 
+   and a time overlap between therapy episodes and hospital stays.}
 } 
 \code{inpatient_episodes}
 }

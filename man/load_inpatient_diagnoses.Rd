@@ -24,7 +24,7 @@ lookup table}
 \code{inpatient_diagnoses} database table}
 }
 \description{
-Validate, then load inpatient diagnosis records into the 
+Validate, then load records of clinical diagnoses into the 
 warehouse. This function automatically generates derived ICD-10 look up 
 tables for comorbidities, infection indications, and the \code{\link{ccs}}.
 }

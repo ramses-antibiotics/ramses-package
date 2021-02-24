@@ -3,7 +3,7 @@
 \docType{data}
 \name{drug_prescriptions}
 \alias{drug_prescriptions}
-\title{Simulated antimicrobial prescriptions}
+\title{Simulated antimicrobial drug prescriptions}
 \format{
 A data frame of records of drug prescriptions.
 }
@@ -14,8 +14,8 @@ Simulated data
 drug_prescriptions
 }
 \description{
-A set of drug prescriptions records simulated 
+A set of simulated antibiotic prescriptions records simulated 
 based on commonly prescribed drugs for clinical diagnoses 
-recorded in inpatient care episode records.
+recorded in \code{\link[Ramses]{inpatient_episodes}}.
 }
 \keyword{datasets}

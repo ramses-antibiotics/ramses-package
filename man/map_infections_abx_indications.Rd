@@ -19,7 +19,7 @@ describing infection type and whether antibiotics are indicated.
 \description{
 Map ICD-10 or ICD-10-CM codes by infection types 
 and whether antibiotics are commonly indicated based on definitions
-set by \insertCite{Hashimoto2020}{Ramses}.
+set by \insertCite{Hashimoto2020;textual}{Ramses}.
 }
 \details{
 For more detail on infection categories and indications

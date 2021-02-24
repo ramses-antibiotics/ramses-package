@@ -10,8 +10,9 @@ validate_prescriptions(data)
 \item{data}{a data frame containing one row per prescription}
 }
 \value{
-NULL if the `data` passes the validation. The function will trigger errors
-for mandatory requirements and warnings for optional requirements.
+NULL if the \code{data} passes the validation. The function will trigger 
+errors when \emph{mandatory requirements} are not met and warnings when
+\emph{optional requirements} are not met.
 }
 \description{
 This function performs a series of checks for mandatory and
@@ -24,18 +25,18 @@ These fields are required in order to pass the validation:
      \item{\code{patient_id}}{a patient identifier with no missing value}
      \item{\code{prescription_id}}{a prescription identifier with no missing value}
      \item{\code{prescription_text}}{a character string summarising the prescription 
-     (to be displayed in user interfaces, eg: \code{'Amoxicillin Oral 500mg BDS'})}
+     (to be displayed in user interfaces, eg: \code{'Amoxicillin oral 500mg BDS'})}
      \item{\code{drug_id}}{identifier of the drug (from a dictionary such as SNOMED CT or
-      from \code{\link{AMR}{as.ab}()})}
+      from \code{\link[AMR]{as.ab}()})}
      \item{\code{drug_name}}{preferred name of the drug in the drug dictionary}
      \item{\code{drug_display_name}}{drug name to display in reports and user interfaces
      (can be the same as \code{drug_name})}
      \item{\code{antiinfective_type}}{type of antiinfective ("antibacterial", "antifungal",
      "antiviral", or "antiparasitic")}
-     \item{\code{ATC_code}}{the ATC code, see \code{\link{AMR}{ab_atc}()}}
-     \item{\code{ATC_group}}{the ATC group, see \code{\link{AMR}{ab_atc_group1}()}}
-     \item{\code{ATC_route}}{route of administration as defined in the ATC ("O" = oral; 
-     "P" = parenteral; "R" = rectal; "V" = vaginal)}
+     \item{\code{ATC_code}}{the ATC code, see \code{\link[AMR]{ab_atc}()}}
+     \item{\code{ATC_group}}{the ATC group, see \code{\link[AMR]{ab_atc_group}()}}
+     \item{\code{ATC_route}}{route of administration as defined in the ATC 
+     (\code{"O"} = oral; \code{"P"} = parenteral; \code{"R"} = rectal; \code{"V"} = vaginal)}
      \item{\code{authoring_date}}{timestamp for when the prescription was issued}
      \item{\code{prescription_start}}{timestamp for the prescription start}
      \item{\code{prescription_end}}{timestamp for the prescription end (mandated except
@@ -46,29 +47,29 @@ These fields are required in order to pass the validation:
      \href{https://hl7.org/fhir/R4/valueset-medicationrequest-status.html}{FHIR R4}
      reference set:
      \itemize{ 
-        \item \code{`active`} the prescription is 'actionable', but not all actions 
+        \item \code{"active"} the prescription is 'actionable', but not all actions 
         that are implied by it have occurred yet.
-        \item \code{`on-hold`} actions implied by the prescription are to be 
+        \item \code{"on-hold"} actions implied by the prescription are to be 
         temporarily halted, but are expected to continue later. 
-        \item \code{`cancelled`} the prescription has been withdrawn before any 
+        \item \code{"cancelled"} the prescription has been withdrawn before any 
         administrations have occurred.
-        \item \code{`completed`} all actions that are implied by the prescription 
+        \item \code{"completed"} all actions that are implied by the prescription 
         have occurred.
-        \item \code{`entered-in-error`} some of the actions that are implied by the 
+        \item \code{"entered-in-error"} some of the actions that are implied by the 
         medication request may have occurred. For example, the medication may have 
         been dispensed and the patient may have taken some of the medication. 
         Clinical decision support systems should take this status into account.
-        \item \code{`stopped`} actions implied by the prescription are to be 
+        \item \code{"stopped"} actions implied by the prescription are to be 
         permanently halted, before all of the administrations occurred. This should 
         not be used if the original order was entered in error.
-        \item \code{`draft`} the prescription is not yet 'actionable', e.g. it is a 
+        \item \code{"draft"} the prescription is not yet 'actionable', e.g. it is a 
         work in progress, requires sign-off, verification or needs to be run through 
         decision support process.
-        \item \code{`unknown`} the authoring/source system does not know which of the 
+        \item \code{"unknown"} the authoring/source system does not know which of the 
         status values currently applies for this observation. \emph{Note:} This 
         concept is not to be used for 'other' - one of the listed statuses is presumed 
         to apply, but the authoring/source system does not know which.         
-     }.
+     }
      \emph{Note that prescriptions marked as \code{"on-hold"}, \code{"cancelled"}, 
      \code{"draft"}, \code{"entered-in-error"}, or \code{"unknown"} will not 
      count towards antibiotic consumption estimates.}}

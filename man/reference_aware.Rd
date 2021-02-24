@@ -6,12 +6,10 @@
 \title{English Adaptation of the WHO AWaRe Index}
 \format{
 A data frame with 208 antimicrobial agents, referenced 
-against the Anatomical Therapeutic Chemical (ATC) 
-classification \insertCite{WHO-ATC2020}{Ramses}, the World Health Organisation's
-and Public Health England's respective AWaRe Indices, 
-and the SNOMED CT medical product concept codes and names 
-(from Virtual Therapeutic Moieties codes of the SNOMED CT UK Drug Extension 
-\insertCite{SNOMEDDrugUK2020}{Ramses}).
+against the World Health Organisation's Anatomical Therapeutic Chemical (ATC) 
+classification \insertCite{WHO-ATC2020}{Ramses}, 
+Public Health England's AWaRe Indices, 
+and the SNOMED CT medical product concept codes and names.
 It contains 6 columns:
 \describe{
 \item{\code{ATC_code}}{ATC code of the antibiotic}
@@ -23,9 +21,9 @@ the ATC ("O" = oral; "P" = parenteral; "R" = rectal;
 \item{\code{version}}{AWaRe Index version (eg. "WHO", "England")}
 \item{\code{year}}{AWaRe Index version year}
 \item{\code{VTM_code}}{SNOMED CT medicinal product code/Virtual Therapeutic Moiety 
-code in the SNOMED CT UK Drug Extension (see \insertCite{SNOMEDDrugUK2020}{Ramses})}
+code in the SNOMED CT UK Drug Extension \insertCite{SNOMEDDrugUK2020}{Ramses}}
 \item{\code{VTM_name}}{SNOMED CT medicinal product code/Virtual Therapeutic Moiety 
-name in the SNOMED CT UK Drug Extension (see \insertCite{SNOMEDDrugUK2020}{Ramses})}
+name in the SNOMED CT UK Drug Extension \insertCite{SNOMEDDrugUK2020}{Ramses}}
 }
 }
 \source{

@@ -61,9 +61,9 @@ download_icd10cm <- function(silent = FALSE) {
 }
 
 
-#' International Classification of Diseases
+#' Import the International Classification of Diseases from an archive
 #' 
-#' @description The World Health Organisation (WHO) International 
+#' @description The World Health Organisation's (WHO) International 
 #' Statistical Classification of Diseases and Related Health 
 #' Problems Tenth Revision is available under restrictive licence terms.
 #' 
@@ -74,7 +74,7 @@ download_icd10cm <- function(silent = FALSE) {
 #' The US implementation of ICD-10-CM is available from 
 #' \url{https://www.cdc.gov/nchs/icd/icd10cm.htm}
 #'
-#' @param archive path to the ZIP archive of the ICD-10 release 
+#' @param archive path to the ZIP archive containing an ICD-10 release 
 #' (5th Edition is recommended)
 #' @param version a character string labelling the edition 
 #' (e.g. "GB 5th Edition")
@@ -148,7 +148,7 @@ import_icd <- function(archive, version) {
 #'
 #' @description Map ICD-10 or ICD-10-CM codes to a list of chronic
 #' comorbidities, comorbidity groups, and Charlson Comorbidity Index 
-#' weights from \insertCite{Quan2005}{Ramses}.
+#' weights from \insertCite{Quan2005;textual}{Ramses}.
 #' @param df a data frame containing ICD-10 look up data
 #' @param icd_column  a variable name or column number in \code{df} 
 #' containing ICD-10 codes.
@@ -164,7 +164,7 @@ import_icd <- function(archive, version) {
 #'     (for diabetes, liver disease, cancer). This is to avoid 
 #'     double counting comorbidities.
 #'     \item \code{charlson_weights} an integer vector of weights 
-#'     from \insertCite{Quan2005}{Ramses} used to compute the 
+#'     from \insertCite{Quan2005;textual}{Ramses} used to compute the 
 #'     weighted Charlson comorbidity score
 #'   }
 #' @export
@@ -220,7 +220,7 @@ map_charlson_comorbidities <- function(df, icd_column){
 #' 
 #' @description Map ICD-10 or ICD-10-CM codes by infection types 
 #' and whether antibiotics are commonly indicated based on definitions
-#' set by \insertCite{Hashimoto2020}{Ramses}.
+#' set by \insertCite{Hashimoto2020;textual}{Ramses}.
 #' @param df a data frame containing ICD-10 codes
 #' @param icd_column a variable name or column number in \code{df} 
 #' containing ICD-10 codes.
@@ -285,11 +285,9 @@ map_infections_abx_indications <- function(df, icd_column) {
 
 #' Map ICD-10 codes to the Clinical Classifications Software (CCS)
 #' 
-#' @description Map ICD-10 codes to clinically meaning full 
-#' categories within the Clinical Classifications Software
-#' and the Clinical Classifications Software Refined (CCSR), 
-#' further described in \code{\link{ccs}} and 
-#' \code{\link{ccsr}}.
+#' @description Map ICD-10 codes to clinically meaningful 
+#' categories within the Clinical Classifications Software (\code{\link{ccs}})
+#' and the Clinical Classifications Software Refined (\code{\link{ccsr}}).
 #' @param df a data frame containing ICD-10 codes
 #' @param icd_column a variable name or column number in \code{df} 
 #' containing ICD-10 codes.
@@ -394,13 +392,13 @@ map_ICD10_CCSR <- function(df, icd_column) {
 #' Therapeutic Chemical (ATC) classification \insertCite{WHO-ATC2020}{Ramses}.
 #' This function includes modified source code by \code{
 #' \link[AMR]{atc_online_property}()}.
-#' @param ATC_code a character vector of ATC codes (can be easily obtained from)
-#' \code{\link[AMR]{ab_atc}() in the AMR package} 
+#' @param ATC_code a character vector of ATC codes (can be easily obtained from
+#' the \code{\link[AMR]{ab_atc}()} function) 
 #' @param ATC_administration a character vector indicating the ATC route of 
 #' administration (see Details)
-#' @param dose a numeric vector indicating the total dose for the basis 
-#' of strength of the ATC DDD: in the case of prescriptions, this should
-#' be the total dose given in one day
+#' @param dose a numeric vector indicating the total dose for the drug serving
+#' as the ATC DDD basis of strength. For prescriptions, provide the total dose
+#' to be given in one day, rather than per administration.
 #' @param unit a character vector coercible to a \code{units} object with 
 #' \code{\link[units]{as_units}()}. 
 #' @param silent if \code{TRUE}, the progress bar will be hidden. 
@@ -553,9 +551,9 @@ compute_DDDs <- function(ATC_code, ATC_administration, dose, unit, silent = FALS
 
 
 
-#' Look up ATC name on the WHO website
+#' Look up ATC code name on the WHO website
 #' 
-#' @description Look up drug name from an ATC code using the WHO DDD website.
+#' @description Look up the drug name from an ATC code using the WHO DDD website.
 #' Requires an internet connection.
 #' @param x a character vector of ATC codes
 #' @param silent if \code{TRUE}, the progress bar will be hidden. 

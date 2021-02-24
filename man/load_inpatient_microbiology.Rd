@@ -2,7 +2,7 @@
 % Please edit documentation in R/database.R
 \name{load_inpatient_microbiology}
 \alias{load_inpatient_microbiology}
-\title{Load microbiology cultures and sensitivities into the warehouse}
+\title{Load microbiology cultures and susceptibilities into the warehouse}
 \usage{
 load_inpatient_microbiology(
   conn,
@@ -30,7 +30,7 @@ validated with \code{\link{validate_microbiology}()}}
 microbiology database table}
 }
 \description{
-Load microbiology cultures and sensitivities into the warehouse
+Load microbiology cultures and susceptibilities into the warehouse
 }
 \seealso{
 \code{\link{validate_investigations}()}

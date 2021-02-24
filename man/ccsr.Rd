@@ -3,7 +3,7 @@
 \docType{data}
 \name{ccsr}
 \alias{ccsr}
-\title{Clinical Classifications Software \emph{Refined} (CCSR): map to 4-character ICD code}
+\title{Clinical Classifications Software \emph{Refined} (CCSR): map to 4-character ICD codes}
 \format{
 A data frame with 72,715 ICD-10-CM codes mapped to 
 CCSR categories.
@@ -16,7 +16,7 @@ Adapted from \insertCite{HCUP-CCSR}{Ramses} for
 ccsr
 }
 \description{
-A map of 538 clinical concepts to 4-character ICD code 
+A map of 538 clinical concepts to 4-character ICD codes 
 adapted from the Clinical Classifications Software Refined (CCSR) 
 \insertCite{HCUP-CCSR}{Ramses}.
 }
@@ -27,9 +27,8 @@ Project (HCUP) which maps ICD-10-CM codes into 538 CCSR
 categories. Unlike the pre-existing \code{\link{ccs}}:
 \itemize{
     \item CCSR categories are not mutually exclusive.
-    \item CCSR thus contains new categories that did not 
-    exist in \code{\link{ccs}}
-    \item CCSR categories are organized into 21 body systems
+    \item CCSR contain categories not found in \code{\link{ccs}}
+    \item CCSR categories are organised into 21 body systems
 }
 }
 \references{

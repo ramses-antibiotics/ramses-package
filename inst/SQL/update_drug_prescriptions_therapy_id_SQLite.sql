@@ -1,4 +1,7 @@
 UPDATE drug_prescriptions
+SET therapy_id = NULL;
+
+UPDATE drug_prescriptions
 SET therapy_id = (SELECT therapy_id
                     FROM @@@ramses_tc_table
                     WHERE prescription_id = drug_prescriptions.prescription_id)

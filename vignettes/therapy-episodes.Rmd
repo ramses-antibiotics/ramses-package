@@ -209,7 +209,7 @@ Several functions can enhance therapy tables with variables characterising the c
 
 - `clinical_feature_last()` fetches the most recent temperature value.
 - `clinical_feature_mean()` computes a running arithmetic mean of the temperature time series.
-- `clinical_feature_range()` computes the number of observations falling within and outside a specified range (eg 36°C--38°C) or lying below/above a specified threshold (eg 38°C).
+- `clinical_feature_interval()` computes the number of observations falling within and outside a specified interval (eg 36°C--38°C) or lying below/above a specified threshold (eg 38°C).
 - `clinical_feature_ols_trend()` computes the Ordinary Least Square (OLS) trend; including the slope parameter, enabling to measure whether temperature has been rising/stable/falling.
 
 The example below demonstrates how to classify a patient as hypothermic/afebrile/febrile:
