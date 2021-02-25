@@ -145,7 +145,7 @@ test_that("Ramses on SQLite 2", {
   DBI::dbRemoveTable(conSQLite, "drug_prescriptions_edges")
   DBI::dbRemoveTable(conSQLite, "drug_therapy_episodes")
   
-  expect_silent(create_therapy_episodes(conSQLite))
+  expect_silent(create_therapy_episodes(conSQLite, silent = TRUE))
   
   test_output <- tbl(conSQLite, "drug_therapy_episodes") %>% 
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
@@ -878,7 +878,7 @@ test_that("Ramses on PosgreSQL", {
   DBI::dbRemoveTable(conPostgreSQL, "drug_prescriptions_edges")
   DBI::dbRemoveTable(conPostgreSQL, "drug_therapy_episodes")
   
-  expect_silent(create_therapy_episodes(conPostgreSQL))
+  expect_silent(create_therapy_episodes(conPostgreSQL, silent = TRUE))
   
   test_output <- tbl(conPostgreSQL, "drug_therapy_episodes") %>% 
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 

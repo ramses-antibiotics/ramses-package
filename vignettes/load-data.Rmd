@@ -37,11 +37,32 @@ library(dplyr)    # to facilitate data manipulations
 library(magrittr) # for the pipe operator `%>%`
 ```
 
-Second, a relational database server is needed. In this vignette, we will create a small \href{https://www.sqlite.org}{SQLite 3} database on the local hard drive. This database will behave in a similar way as a large Microsoft SQL Server or MySQL relational database. The database connection information is stored in an object entitled `ramses_db` which must be provided to most functions in the Ramses package.
+Second, a relational database server is needed. 
 
-```{r}
+For the purposes of this vignette, one may use on a small \href{https://www.sqlite.org}{SQLite 3} database on the local hard drive. This database will behave in a similar way as a dedicated relational database server. This method should only be used for training with simulated data as it is not a secure method of handling actual patient data.
+
+```{r SQLite_init}
 ramses_db <- connect_local_database("ramses-db.sqlite")
 ```
+
+Alternatively, one may use a dedicated PostgreSQL server (other SQL database are not currently supported). In this case, we use the DBI and RPostgres packages to initiate the connection:
+
+```{r Postgres_init, eval=FALSE}
+ramses_db <- DBI::dbConnect(
+  RPostgres::Postgres(), 
+  host = 'example_server_name' ,
+  dbname = 'example_database_name',
+  user = 'username', 
+  password = 'password', 
+  port = 5432, 
+  # Do not forget to specify a time zone to correctly collect datetime records
+  timezone = "Europe/London")
+
+# Specify the name of an schema Ramses should use on the database
+DBI::dbExecute(ramses_db, "SET search_path = ramses_schema, public;")
+```
+
+Whatever method is used, the database connection information is stored in an object (here `ramses_db`) which must be provided to most functions in the Ramses package.
 
 We can now begin preparing records and loading them into the database. This involves three steps:
 

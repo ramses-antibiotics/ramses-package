@@ -35,7 +35,7 @@ optional requirements on drug administrations data.
      \item{\code{antiinfective_type}}{type of antiinfective ("antibacterial", "antifungal",
      "antiviral", or "antiparasitic")}
      \item{\code{ATC_code}}{the ATC code, see \code{\link[AMR]{ab_atc}()}}
-     \item{\code{ATC_group}}{the ATC group, see \code{\link[AMR]{ab_group}()}}
+     \item{\code{ATC_group}}{the ATC group, see \code{\link[AMR]{ab_atc_group1}()}}
      \item{\code{ATC_route}}{route of administration as defined in the ATC (
      \code{"O"} = oral; \code{"P"} = parenteral; \code{"R"} = rectal; 
      \code{"V"} = vaginal)}
