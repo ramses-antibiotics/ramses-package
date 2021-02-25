@@ -34,7 +34,7 @@ Imports:
     magrittr,
     Rdpack (>= 0.7),
     data.table,
-    units (>= 0.6-1),
+    units (>= 0.7-0),
     methods,
     progress
 Suggests: 

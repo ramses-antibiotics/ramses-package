@@ -1254,7 +1254,7 @@ validate_microbiology <- function(specimens, isolates, susceptibilities) {
 #'    \code{\link[units]{as_units}()}. See examples. All observations with the
 #'    same \code{"observation_code"} must be converted to the same 
 #'    \code{"observation_unit"}. See also: \code{\link[units]{valid_udunits}}, 
-#'    \code{\link[units]{install_symbolic_unit}}
+#'    \code{\link[units]{install_unit}}
 #'    \url{https://ucum.org/}}
 #' }
 #' @export 
@@ -1265,7 +1265,7 @@ validate_microbiology <- function(specimens, isolates, susceptibilities) {
 #' \dontrun{as_units("breaths/min")} # fails
 #' 
 #' # Yet, they may be declared.
-#' install_symbolic_unit("breaths") 
+#' install_unit("breaths") 
 #' as_units("breaths/min") # succeeds
 validate_investigations <- function(investigations, 
                                     custom_units = c("breaths",
@@ -1317,7 +1317,14 @@ validate_investigations <- function(investigations,
   if( !is.null(custom_units) ){
     custom_units <- custom_units[custom_units != ""]
     for (unit in custom_units) {
-      units::install_symbolic_unit(unit, warn = FALSE)
+      silent <- tryCatch(
+        expr = {
+          units::as_units(unit)
+        },
+        error = function(e) {
+          units::install_unit(unit)
+        }
+      )
     }
   }
   

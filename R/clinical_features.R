@@ -647,6 +647,7 @@ setMethod(
 #' @export
 #' @examples 
 #' \dontrun{
+#' conSQLite <- create_mock_database("example.sqlite")
 #' temperature_check <- clinical_feature_interval(
 #'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
 #'    observation_intervals = list("8310-5" = c(36, 38)),

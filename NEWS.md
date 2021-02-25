@@ -4,12 +4,13 @@
 ## Features
 
 * introduce S4 classes `Patient`, `MedicationRequest`, `TherapyEpisode`
-* introduce therapy methods `therapy_table()`, `parenteral_changes()`, `clinical_feature_last`, `clinical_feature_ols_trend`, `clinical_feature_interval`, `clinical_feature_mean`
+* introduce therapy methods `therapy_table()`, `parenteral_changes()`, `clinical_feature_last()`, `clinical_feature_ols_trend()`, `clinical_feature_interval()`, `clinical_feature_mean()`
 
 ## Improvements
 
 * remove dependencies
 * improve handling of time data types by SQLite
+* upgrade to `units` package version >=0.7-0
 
 ## Documentation
 

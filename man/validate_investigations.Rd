@@ -66,7 +66,7 @@ The following variables are required:
    \code{\link[units]{as_units}()}. See examples. All observations with the
    same \code{"observation_code"} must be converted to the same 
    \code{"observation_unit"}. See also: \code{\link[units]{valid_udunits}}, 
-   \code{\link[units]{install_symbolic_unit}}
+   \code{\link[units]{install_unit}}
    \url{https://ucum.org/}}
 }
 }
@@ -78,6 +78,6 @@ library(units)
 \dontrun{as_units("breaths/min")} # fails
 
 # Yet, they may be declared.
-install_symbolic_unit("breaths") 
+install_unit("breaths") 
 as_units("breaths/min") # succeeds
 }
