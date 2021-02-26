@@ -537,10 +537,12 @@ setMethod(
   therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
       conn = x@conn, 
-      operation = paste0("threshold", threshold),
+      operation = "threshold",
       observation_code = observation_code, 
       hours = hours,
+      range_threshold = threshold,
       observation_code_system = observation_code_system)
+
   field_name_under <- paste0(field_name, "_under")
   field_name_over <- paste0(field_name, "_strictly_over")
   

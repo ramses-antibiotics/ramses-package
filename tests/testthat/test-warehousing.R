@@ -419,7 +419,7 @@ test_that("Ramses on SQLite 2", {
       0.0216832627491193)
   )
   
-  # > - range ------------------------------------------------------------------
+  # > - interval ------------------------------------------------------------------
   
   expect_error(
     clinical_feature_interval(
@@ -448,6 +448,38 @@ test_that("Ramses on SQLite 2", {
   expect_equal(temperature_check$range_temperature36_38_24h_strictly_over[174:178],
                c(0, 0, 0, 0, 0))
   
+  expect_error(
+    therapy_table(clinical_feature_interval(
+      TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_intervals = list("8310-5" = c(NA, 38)),
+      hours = 24), collect = TRUE)
+  )
+
+  temperature_check <- therapy_table(clinical_feature_interval(
+    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_intervals = list("8310-5" = c(38)),
+    hours = 24), collect = TRUE)
+  expect_equal(temperature_check$threshold_temperature38_24h_under[1:5],
+               c(3, 3, 4, 5, 5))
+  expect_equal(temperature_check$threshold_temperature38_24h_strictly_over[1:5],
+               c(0, 0, 0, 0, 0))
+  expect_equal(temperature_check$threshold_temperature38_24h_under[174:178],
+               c(3, 3, 3, 3, 3))
+  expect_equal(temperature_check$threshold_temperature38_24h_strictly_over[174:178],
+               c(0, 0, 0, 0, 0))
+  
+  temperature_check <- therapy_table(clinical_feature_interval(
+    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_intervals = list("8310-5" = c(36)),
+    hours = 24), collect = TRUE)
+  expect_equal(temperature_check$threshold_temperature36_24h_under[1:5],
+               c(1, 1, 1, 1, 1))
+  expect_equal(temperature_check$threshold_temperature36_24h_strictly_over[1:5],
+               c(2, 2, 3, 4, 4))
+  expect_equal(temperature_check$threshold_temperature36_24h_under[174:178],
+               c(2, 2, 3, 3, 3))
+  expect_equal(temperature_check$threshold_temperature36_24h_strictly_over[174:178],
+               c(1, 1, 0, 0, 0))
   
   # > - mean ------------------------------------------------------------------
   
@@ -1065,7 +1097,7 @@ test_that("Ramses on PosgreSQL", {
       0.0216832627491193)
   )
   
-  # > - range ------------------------------------------------------------------
+  # > - interval ------------------------------------------------------------------
   
   expect_error(
     clinical_feature_interval(
@@ -1080,7 +1112,6 @@ test_that("Ramses on PosgreSQL", {
     TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_intervals = list("8310-5" = c(36, 38)),
     hours = 24), collect = TRUE)
-  # TODO test missing observation_code.
   
   expect_equal(temperature_check$range_temperature36_38_24h_in_range[1:5],
                c(3, 3, 4, 5, 5))
@@ -1095,6 +1126,38 @@ test_that("Ramses on PosgreSQL", {
   expect_equal(temperature_check$range_temperature36_38_24h_strictly_over[174:178],
                c(0, 0, 0, 0, 0))
   
+  expect_error(
+    therapy_table(clinical_feature_interval(
+      TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_intervals = list("8310-5" = c(NA, 38)),
+      hours = 24), collect = TRUE)
+  )
+  
+  temperature_check <- therapy_table(clinical_feature_interval(
+    TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_intervals = list("8310-5" = c(38)),
+    hours = 24), collect = TRUE)
+  expect_equal(temperature_check$threshold_temperature38_24h_under[1:5],
+               c(3, 3, 4, 5, 5))
+  expect_equal(temperature_check$threshold_temperature38_24h_strictly_over[1:5],
+               c(0, 0, 0, 0, 0))
+  expect_equal(temperature_check$threshold_temperature38_24h_under[174:178],
+               c(3, 3, 3, 3, 3))
+  expect_equal(temperature_check$threshold_temperature38_24h_strictly_over[174:178],
+               c(0, 0, 0, 0, 0))
+  
+  temperature_check <- therapy_table(clinical_feature_interval(
+    TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_intervals = list("8310-5" = c(36)),
+    hours = 24), collect = TRUE)
+  expect_equal(temperature_check$threshold_temperature36_24h_under[1:5],
+               c(1, 1, 1, 1, 1))
+  expect_equal(temperature_check$threshold_temperature36_24h_strictly_over[1:5],
+               c(2, 2, 3, 4, 4))
+  expect_equal(temperature_check$threshold_temperature36_24h_under[174:178],
+               c(2, 2, 3, 3, 3))
+  expect_equal(temperature_check$threshold_temperature36_24h_strictly_over[174:178],
+               c(1, 1, 0, 0, 0))
   
   # > - mean ------------------------------------------------------------------
   
