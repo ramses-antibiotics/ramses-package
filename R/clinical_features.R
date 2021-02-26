@@ -650,12 +650,20 @@ setMethod(
 #' @examples 
 #' \dontrun{
 #' conSQLite <- create_mock_database("example.sqlite")
-#' temperature_check <- clinical_feature_interval(
+#' 
+#' temperature_interval <- clinical_feature_interval(
 #'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
 #'    observation_intervals = list("8310-5" = c(36, 38)),
 #'    hours = 24
 #'    )
-#' str(therapy_table(temperature_check, collect = TRUE))
+#' str(therapy_table(temperature_interval, collect = TRUE))
+#' 
+#' temperature_threshold <- clinical_feature_interval(
+#'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+#'    observation_intervals = list("8310-5" = 38),
+#'    hours = 24
+#'    )
+#' str(therapy_table(temperature_threshold, collect = TRUE))
 #' }
 #' @include objects.R
 setGeneric(

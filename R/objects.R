@@ -339,14 +339,14 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' therapy_sequence <- parenteral_changes(example_therapy)
 #' therapy_sequence
 #' 
-#' # Look for the section of the therapy table where 0 <= t <= 145
+#' # Look for the section of the therapy table where 0 <= t <= 267
 #' filter(therapy_table(example_therapy, collect = TRUE),
 #'        between(t,
 #'                therapy_sequence[[1]][1],
 #'                therapy_sequence[[1]][2])) %>% head()
-#' # Look for the section of the therapy table near conversion (t = 73)
+#' # Look for the section of the therapy table near conversion (t = 220)
 #' filter(therapy_table(example_therapy, collect = TRUE),
-#'        between(t, 70, 75))
+#'        between(t, 218, 223))
 #' }
 parenteral_changes <- function(therapy_episode, tolerance_hours = 12L) {
   stopifnot(is.numeric(tolerance_hours) | length(tolerance_hours) != 1)

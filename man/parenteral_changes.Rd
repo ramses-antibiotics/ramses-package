@@ -66,13 +66,13 @@ example_therapy <- TherapyEpisode(conSQLite, "2a2b6da3b67f6f495f4cedafb029f631")
 therapy_sequence <- parenteral_changes(example_therapy)
 therapy_sequence
 
-# Look for the section of the therapy table where 0 <= t <= 145
+# Look for the section of the therapy table where 0 <= t <= 267
 filter(therapy_table(example_therapy, collect = TRUE),
        between(t,
                therapy_sequence[[1]][1],
                therapy_sequence[[1]][2])) \%>\% head()
-# Look for the section of the therapy table near conversion (t = 73)
+# Look for the section of the therapy table near conversion (t = 220)
 filter(therapy_table(example_therapy, collect = TRUE),
-       between(t, 70, 75))
+       between(t, 218, 223))
 }
 }
