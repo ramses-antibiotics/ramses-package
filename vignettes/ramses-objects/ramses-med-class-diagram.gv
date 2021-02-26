@@ -24,7 +24,7 @@ digraph G {
 
 # Interface
 RamsesObject [
-  width = 2
+  width = 2.2
   label = "{«interface»\n
   RamsesObject|
   + class: character\l
@@ -68,7 +68,7 @@ Prescription_Combo [
 */
 
 MedicationRequest [
-  width = 2.5
+  width = 2.7
   label = "{MedicationRequest|
   - patient_id\l|
   
@@ -82,7 +82,7 @@ MedicationRequest [
 ]
 
 TherapyEpisode [
-  width = 3.3
+  width = 3.5
   label = "{TherapyEpisode|
   - therapy_table: tbl_sql\l|
   
@@ -99,7 +99,7 @@ TherapyEpisode [
 ]
 
 Patient [
-  width = 2.5
+  width = 2.6
   label = "{Patient|
   \l|
   + Patient(DBICon, id): Patient\l
