@@ -14,8 +14,8 @@
 
 ## Documentation
 
-* new ramses-objects vignette
-* new therapy-episodes vignette
+* new `ramses-objects` vignette
+* new `therapy-episodes` vignette
 
 # Ramses 0.2.1
 
