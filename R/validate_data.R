@@ -286,7 +286,7 @@
 #'   the hospital discharge. Must not be missing.}
 #'   \item{\code{episode_number}}{a strictly positive integer indicating the
 #'   number of the episode within an admission. Must not be missing.}
-#'   \item{\code{last_episode_in_spell_indicator}}{a character indicating whether
+#'   \item{\code{last_episode_in_spell}}{a character indicating whether
 #'   the patient is discharged at the end of the episode: \itemize{
 #'        \item \code{"1"} the episode is the last episode in the spell
 #'        \item \code{"2"} the episode is \strong{not} the last episode in the spell
@@ -298,7 +298,7 @@
 #'   the hospital end Must not be missing.}
 #'   \item{\code{consultant_code}}{a code uniquely identifying the medical 
 #'   professional responsible for the episode of care. Must not be missing.}
-#'   \item{\code{care_professional_main_specialty_code}}{a code identifying
+#'   \item{\code{main_specialty_code}}{a code identifying
 #'   the main specialty of the medical professional responsible for the 
 #'   episode of care. Must not be missing.}
 #' }
