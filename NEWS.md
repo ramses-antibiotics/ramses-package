@@ -1,4 +1,11 @@
 
+
+# Ramses 0.3.1
+
+## Bugfix
+
+* fix bug in handling `data.table` objects in `arrange_variables()` and `validate_*()`
+
 # Ramses 0.3.0
 
 ## Features

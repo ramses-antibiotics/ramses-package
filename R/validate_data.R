@@ -140,7 +140,7 @@
   missing_data <- vapply(
     vectorname, 
     function(var, data) {
-      any(is.na(data[, var]))
+      any(is.na(data[[var]]))
     },
     data = data,
     FUN.VALUE = logical(1)
@@ -149,7 +149,7 @@
   empty_data <- vapply(
     vectorname, 
     function(var, data) {
-      any(as.character(na.omit(data[, var])) == "")
+      any(as.character(na.omit(data[[var]])) == "")
     },
     data = data,
     FUN.VALUE = logical(1)
@@ -1347,5 +1347,5 @@ validate_investigations <- function(investigations,
 
 arrange_variables <- function(data, first_column_names) {
   other_names <- colnames(data)[!colnames(data) %in% first_column_names]
-  data[, c(first_column_names, other_names)]
+  subset(data, select = c(first_column_names, other_names))
 }
