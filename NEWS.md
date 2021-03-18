@@ -1,8 +1,15 @@
 
 
+# Ramses 0.3.2
+
+## Bug fix
+
+* fix bug in `validate_prescriptions()` checks on `daily_frequency`
+* fix bug in `load_*()` handling of `data.table` objects 
+
 # Ramses 0.3.1
 
-## Bugfix
+## Bug fix
 
 * fix bug in handling `data.table` objects in `arrange_variables()` and `validate_*()`
 

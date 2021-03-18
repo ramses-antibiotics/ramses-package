@@ -795,12 +795,13 @@ validate_prescriptions <- function(data) {
     )))
   }
   
-  if( !all(data$daily_frequency == -999 | 
+  if( !all(data$daily_frequency == -9 | 
+           data$daily_frequency == -1 |
            dplyr::between(data$daily_frequency, 0, 48)) ){
     stop(
       simpleError(paste(
         "Prescription `daily_frequency` must be between",
-        "0 and 48, or -999 for PRN 'as required' and one-off prescriptions"
+        "0 and 48, or -9 for PRN 'as required', or -1 for one-off prescriptions"
         )))
   }
   

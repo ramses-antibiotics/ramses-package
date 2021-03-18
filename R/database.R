@@ -65,27 +65,27 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
   load_errors <- try({
     dplyr::copy_to(
       dest = conn, name = "inpatient_diagnoses", 
-      df = diagnoses_data, overwrite = overwrite, temporary = FALSE,
+      df = dplyr::tibble(diagnoses_data), overwrite = overwrite, temporary = FALSE,
       indexes = list("patient_id", "spell_id", "episode_number", "icd_code"))
     dplyr::copy_to(
       dest = conn, name = "reference_icd", 
-      df = diagnoses_lookup, overwrite = overwrite, temporary = FALSE,
+      df = dplyr::tibble(diagnoses_lookup), overwrite = overwrite, temporary = FALSE,
       indexes = list("icd_code"))
     dplyr::copy_to(
       dest = conn, name = "reference_icd_comorbidity", 
-      df = reference_icd_comorbidity, overwrite = overwrite, temporary = FALSE,
+      df = dplyr::tibble(reference_icd_comorbidity), overwrite = overwrite, temporary = FALSE,
       indexes = list("icd_code", "comorb", "comorb_group"))
     dplyr::copy_to(
       dest = conn, name = "reference_icd_infections", 
-      df = reference_icd_infections, overwrite = overwrite, temporary = FALSE,
+      df = dplyr::tibble(reference_icd_infections), overwrite = overwrite, temporary = FALSE,
       indexes = list("icd_code"))
     dplyr::copy_to(
       dest = conn, name = "reference_icd_ccs", 
-      df = reference_icd_ccs, overwrite = overwrite, temporary = FALSE,
+      df = dplyr::tibble(reference_icd_ccs), overwrite = overwrite, temporary = FALSE,
       indexes = list("icd_code", "ccs_cat_code", "ccs_L1_code", "ccs_L2_code"))
     dplyr::copy_to(
       dest = conn, name = "reference_icd_ccsr", 
-      df = reference_icd_ccsr, overwrite = overwrite, temporary = FALSE,
+      df = dplyr::tibble(reference_icd_ccsr), overwrite = overwrite, temporary = FALSE,
       indexes = list("icd_code", "ccsr_body_system_code", "ccsr_cat_code"))
   })
   
@@ -138,7 +138,7 @@ load_inpatient_episodes <- function(conn,
   dplyr::copy_to(
     dest = conn, 
     name = "patients",
-    df = patients_data,
+    df = dplyr::tibble(patients_data),
     temporary = FALSE,
     overwrite = overwrite,
     indexes = list("patient_id")
@@ -147,7 +147,7 @@ load_inpatient_episodes <- function(conn,
   dplyr::copy_to(
     dest = conn, 
     name = "inpatient_episodes",
-    df = episodes_data,
+    df = dplyr::tibble(episodes_data),
     temporary = FALSE,
     overwrite = overwrite,
     indexes = list(
@@ -180,7 +180,7 @@ load_inpatient_episodes <- function(conn,
       dplyr::copy_to(
         dest = conn, 
         name = "inpatient_ward_movements",
-        df = wards_data,
+        df = dplyr::tibble(wards_data),
         temporary = FALSE,
         overwrite = overwrite,
         indexes = list(
@@ -224,7 +224,7 @@ load_inpatient_investigations <- function(conn, investigations_data, overwrite =
     dplyr::copy_to(
       dest = conn, 
       name = "inpatient_investigations", 
-      df = investigations_data, 
+      df = dplyr::tibble(investigations_data), 
       overwrite = overwrite, 
       temporary = FALSE,
       indexes = list("patient_id", 
@@ -290,7 +290,7 @@ load_inpatient_microbiology <- function(conn,
     dplyr::copy_to(
       dest = conn,
       name = "microbiology_specimens", 
-      df = specimens, 
+      df = dplyr::tibble(specimens), 
       overwrite = overwrite, 
       temporary = FALSE,
       indexes = list("patient_id", "specimen_id", "status",
@@ -299,15 +299,15 @@ load_inpatient_microbiology <- function(conn,
     dplyr::copy_to(
       dest = conn,
       name = "microbiology_isolates", 
-      df = isolates, 
-      overwrite = overwrite, 
+      df = dplyr::tibble(isolates), 
+      overwrite = dplyr::tibble(overwrite), 
       temporary = FALSE,
       indexes = list("patient_id", "organism_id", 
                      "specimen_id", "organism_code"))
     dplyr::copy_to(
       dest = conn,
       name = "microbiology_susceptibilities", 
-      df = susceptibilities, 
+      df = dplyr::tibble(susceptibilities), 
       overwrite = overwrite, 
       temporary = FALSE,
       indexes = list("patient_id", "organism_id", "specimen_id", 
@@ -488,7 +488,7 @@ load_medications.PqConnection <- function(
   dplyr::copy_to(
     dest = conn,
     name = "drug_prescriptions",
-    df = prescriptions,
+    df = dplyr::tibble(prescriptions),
     temporary = FALSE,
     overwrite = overwrite,
     indexes = list(
@@ -557,7 +557,7 @@ load_medications.PqConnection <- function(
   dplyr::copy_to(
     dest = conn,
     name = "drug_prescriptions",
-    df = prescriptions,
+    df = dplyr::tibble(prescriptions),
     temporary = FALSE,
     overwrite = overwrite,
     indexes = list(
@@ -816,7 +816,7 @@ load_medications.PqConnection <- function(
     dplyr::copy_to(
       dest = conn,
       name = "drug_administrations",
-      df = administrations,
+      df = dplyr::tibble(administrations),
       temporary = FALSE,
       overwrite = overwrite,
       indexes = list(
