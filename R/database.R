@@ -1296,7 +1296,7 @@ UseMethod(".run_transitive_closure")
   tbl(conn, "ramses_tc_group")
 }
 
-.run_transitive_closure.PqConnection <- function(conn, edge_table, silent) {
+.run_transitive_closure2.PqConnection <- function(conn, edge_table, silent) {
   
   stopifnot(is(conn, "PqConnection"))
   .create_ramses_tc_graphs(conn)
@@ -1422,6 +1422,55 @@ UseMethod(".run_transitive_closure")
   
   tbl(conn, "ramses_tc_group")
 }
+
+
+.run_transitive_closure.PqConnection <- function(conn, edge_table, silent) {
+  # .remove_db_tables(conn, "ramses_tc_edges")
+  # 
+  # edges_table <- tbl(conn, "drug_prescriptions_edges") %>% 
+  #   dplyr::transmute(id1 = from_id, id2 = to_id) %>% 
+  #   dplyr::compute(name = "ramses_tc_edges", temporary = F)
+  # 
+  # DBI::dbExecute(conn, "CREATE INDEX ramses_tc_edges_idx1 ON ramses_tc_edges (id1, id2);")
+  # DBI::dbExecute(conn, "CREATE INDEX ramses_tc_edges_idx2 ON ramses_tc_edges (id2, id1);")
+  # 
+  stopifnot(is(conn, "PqConnection"))
+  
+  # .create_ramses_tc_graphs(conn)
+  .remove_db_tables(conn, "ramses_tc_group")
+  
+  DBI::dbSendQuery(
+    conn,
+    "WITH RECURSIVE transitive_closure(id1, id2, distance, path) AS
+( SELECT id1, id2, 1 AS distance,
+    ARRAY[id1, id2] AS path
+  FROM ramses_tc_edges
+ 
+  UNION ALL
+ 
+  SELECT tc.id1, ramses_tc_edges.id2, tc.distance + 1,
+  tc.path || ramses_tc_edges.id2 AS path
+  FROM ramses_tc_edges
+    JOIN transitive_closure AS tc
+      ON ramses_tc_edges.id1 = tc.id2
+  WHERE NOT ramses_tc_edges.id2 = ANY(path)
+)
+SELECT * INTO TABLE ramses_tc_group
+FROM transitive_closure
+ORDER BY id1, id2, distance;"
+    )
+  
+  tbl(conn, "ramses_tc_group")
+}
+
+
+
+
+
+
+
+
+
 
 .prepare_example_drug_records <- function() {
   
