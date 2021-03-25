@@ -673,7 +673,7 @@ load_medications.PqConnection <- function(
   therapy_grps <- tbl(conn, "ramses_tc_group") %>% 
     dplyr::left_join(
       dplyr::select(tbl(conn, "drug_prescriptions"), 
-                    id, prescription_id, prescription_start, drug_name), 
+                    id, patient_id, prescription_id, prescription_start, drug_name), 
       by = c("id" = "id")
     ) %>% 
     dplyr::group_by(grp) %>% 
@@ -692,7 +692,7 @@ load_medications.PqConnection <- function(
     therapy_grps,
     th_ids,  
     by = c("grp" = "grp")) %>% 
-    dplyr::distinct(prescription_id, therapy_id, therapy_rank) %>% 
+    dplyr::distinct(patient_id, prescription_id, therapy_id, therapy_rank) %>% 
     dplyr::compute(name = "ramses_tc_therapy")
   
   update_therapy_id <- .read_sql_syntax("update_drug_prescriptions_therapy_id_SQLite.sql")
@@ -747,13 +747,13 @@ load_medications.PqConnection <- function(
   therapy_grps <- tbl(conn, "ramses_tc_group") %>% 
     dplyr::left_join(
       dplyr::select(tbl(conn, "drug_prescriptions"), 
-                    id, prescription_id), 
+                    id, patient_id, prescription_id), 
       by = c("id" = "id")
     ) %>% 
     dplyr::group_by(grp) %>% 
     dplyr::mutate(combination_id = min(prescription_id, na.rm = T)) %>% 
     dplyr::ungroup() %>% 
-    dplyr::distinct(prescription_id, combination_id) %>% 
+    dplyr::distinct(patient_id, prescription_id, combination_id) %>% 
     dplyr::compute(name = "ramses_tc_combination")
   
   update_combination_id <- .read_sql_syntax("update_drug_prescriptions_combination_id_SQLite.sql")
