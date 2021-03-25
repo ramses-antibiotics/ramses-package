@@ -587,12 +587,12 @@ test_that("Ramses on SQLite 2", {
 test_that("SQLite does transitive closure", {
   
   test_edges <- dplyr::tibble(
-    id1 = as.integer(c(1,1,2,5,6,7)),
-    id2 = as.integer(c(2,3,4,6,7,8))
+    from_id = as.integer(c(1,1,2,5,6,7)),
+    to_id = as.integer(c(2,3,4,6,7,8))
   )
   test_solution <- dplyr::tibble(
     id =  as.integer(c(1,2,3,4,5,6,7,8)),
-    grp = as.integer(c(1,1,1,1,5,5,5,5))
+    grp = as.integer(c(1,1,1,1,2,2,2,2))
   )
   
   conSQLite <- suppressWarnings(
@@ -605,10 +605,8 @@ test_that("SQLite does transitive closure", {
     temporary = FALSE,
     overwrite = TRUE)
   
-  test_output <- Ramses:::.run_transitive_closure.SQLiteConnection(
-    conSQLite,"ramses_test_edges", silent = TRUE) %>% 
-    dplyr::select(id, grp) %>% 
-    dplyr::arrange(id) %>% 
+  test_output <- tbl(conSQLite,"ramses_test_edges") %>% 
+    Ramses:::.run_transitive_closure() %>% 
     dplyr::collect()
   
   expect_equal(test_output,
@@ -683,13 +681,14 @@ test_that("Postgres does transitive closure", {
     skip("Test only on Travis")
   }
   
+  
   test_edges <- dplyr::tibble(
-    id1 = as.integer(c(1,1,2,5,6,7)),
-    id2 = as.integer(c(2,3,4,6,7,8))
+    from_id = as.integer(c(1,1,2,5,6,7)),
+    to_id = as.integer(c(2,3,4,6,7,8))
   )
   test_solution <- dplyr::tibble(
     id =  as.integer(c(1,2,3,4,5,6,7,8)),
-    grp = as.integer(c(1,1,1,1,5,5,5,5))
+    grp = as.integer(c(1,1,1,1,2,2,2,2))
   )
   
   conPostgreSQL <- DBI::dbConnect(RPostgres::Postgres(),
@@ -698,36 +697,20 @@ test_that("Postgres does transitive closure", {
                                   host = "localhost", 
                                   dbname="RamsesDB",
                                   timezone = "Europe/London")
-  
-  lapply(DBI::dbListTables(conPostgreSQL), 
-         DBI::dbRemoveTable, 
-         conn = conPostgreSQL)
-
   dplyr::copy_to(
     dest = conPostgreSQL,
     name = "ramses_test_edges",
     df = test_edges,
     temporary = FALSE,
-    overwrite = TRUE) 
+    overwrite = TRUE)
   
-  expect_true(
-    is(tbl(conPostgreSQL,
-           "ramses_test_edges"),
-      "tbl_PqConnection")
-  )
-  expect_equivalent(
-    dplyr::collect(dplyr::tbl(conPostgreSQL, "ramses_test_edges")),
-    test_edges
-  )
-  
-  test_output <- Ramses:::.run_transitive_closure.PqConnection(
-    conPostgreSQL,"ramses_test_edges", silent = TRUE) %>% 
-    dplyr::select(id, grp) %>% 
-    dplyr::arrange(id) %>% 
+  test_output <- tbl(conPostgreSQL,"ramses_test_edges") %>% 
+    Ramses:::.run_transitive_closure() %>% 
     dplyr::collect()
   
   expect_equal(test_output,
                test_solution)
+  
   lapply(DBI::dbListTables(conPostgreSQL), 
          DBI::dbRemoveTable, 
          conn = conPostgreSQL)

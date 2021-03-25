@@ -1,8 +1,12 @@
 
 
-# Ramses 0.3.2
+# Ramses 0.4.0
 
-## Bug fix
+## Improvements
+
+* faster implementation of prescription linkage using `igraph` dependency
+
+## Bug fixes
 
 * fix bug in `validate_prescriptions()` checks on `daily_frequency`
 * fix bug in `load_*()` handling of `data.table` objects 

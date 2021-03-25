@@ -36,7 +36,8 @@ Imports:
     data.table,
     units (>= 0.7-0),
     methods,
-    progress
+    progress,
+    igraph
 Suggests: 
     testthat (>= 2.1.0),
     knitr,

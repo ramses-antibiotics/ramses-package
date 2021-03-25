@@ -300,7 +300,7 @@ load_inpatient_microbiology <- function(conn,
       dest = conn,
       name = "microbiology_isolates", 
       df = dplyr::tibble(isolates), 
-      overwrite = dplyr::tibble(overwrite), 
+      overwrite = overwrite, 
       temporary = FALSE,
       indexes = list("patient_id", "organism_id", 
                      "specimen_id", "organism_code"))
@@ -510,10 +510,8 @@ load_medications.PqConnection <- function(
   if (create_therapy_id | create_combination_id) {
     .create_table_drug_prescriptions_edges.SQLiteConnection(
       conn = conn, transitive_closure_controls)
-    .create_therapy_id(conn = conn, 
-                                        silent = silent)
-    .create_combination_id(conn = conn, 
-                                            silent = silent)
+    .create_therapy_id(conn = conn, silent = silent)
+    .create_combination_id(conn = conn, silent = silent)
   } else {
     .create_table_drug_therapy_episodes(conn = conn)
   }
@@ -666,22 +664,11 @@ load_medications.PqConnection <- function(
 #' @noRd
 .create_therapy_id <- function(conn, silent) {
   
-  .remove_db_tables(conn, "ramses_tc_edges")
+  edges_table <- dplyr::select(tbl(conn, "drug_prescriptions_edges"),
+                               from_id, to_id)  
   
-  edges_table <- tbl(conn, "drug_prescriptions_edges") %>% 
-    dplyr::transmute(id1 = from_id, id2 = to_id) %>% 
-    dplyr::compute(name = "ramses_tc_edges", temporary = F)
-  
-  DBI::dbExecute(conn, "CREATE INDEX ramses_tc_edges_idx1 ON ramses_tc_edges (id1, id2);")
-  DBI::dbExecute(conn, "CREATE INDEX ramses_tc_edges_idx2 ON ramses_tc_edges (id2, id1);")
-  
-  if(!silent) message("Transitive closure of therapy episodes beginning...")
-  therapy_grps <- .run_transitive_closure(
-    conn = conn, 
-    edge_table = "ramses_tc_edges",
-    silent = silent
-  )
-  if(!silent) message("\n")
+  if(!silent) message("Transitive closure of therapy episodes beginning...\n")
+  therapy_grps <- .run_transitive_closure(edges_table)
   
   therapy_grps <- tbl(conn, "ramses_tc_group") %>% 
     dplyr::left_join(
@@ -714,7 +701,7 @@ load_medications.PqConnection <- function(
   for(i in update_therapy_id) {
     DBI::dbExecute(conn = conn, i)
   }
-  .remove_db_tables(conn = conn, c("ramses_tc_group", "ramses_tc_therapy", "ramses_tc_edges"))
+  .remove_db_tables(conn = conn, c("ramses_tc_group", "ramses_tc_therapy"))
   
   .create_table_drug_therapy_episodes(conn = conn)
   
@@ -750,23 +737,12 @@ load_medications.PqConnection <- function(
 #' @noRd
 .create_combination_id <- function(conn, silent) {
   
-  .remove_db_tables(conn, "ramses_tc_edges")
-  
   edges_table <- tbl(conn, "drug_prescriptions_edges") %>% 
     dplyr::filter(edge_type == "combination") %>% 
-    dplyr::transmute(id1 = from_id, id2 = to_id) %>% 
-    dplyr::compute(name = "ramses_tc_edges", temporary = F)
+    dplyr::select(from_id, to_id) 
   
-  DBI::dbExecute(conn, "CREATE INDEX ramses_tc_edges_idx1 ON ramses_tc_edges (id1, id2);")
-  DBI::dbExecute(conn, "CREATE INDEX ramses_tc_edges_idx2 ON ramses_tc_edges (id2, id1);")
-  
-  if(!silent) message("Transitive closure of therapy combinations beginning...")
-  therapy_grps <- .run_transitive_closure(
-    conn = conn, 
-    edge_table = "ramses_tc_edges",
-    silent = silent
-  )
-  if(!silent) message("\n")
+  if(!silent) message("Transitive closure of therapy combinations beginning...\n")
+  therapy_grps <- .run_transitive_closure(edges_table)
   
   therapy_grps <- tbl(conn, "ramses_tc_group") %>% 
     dplyr::left_join(
@@ -787,7 +763,6 @@ load_medications.PqConnection <- function(
     DBI::dbExecute(conn, i)
   }
   .remove_db_tables(conn, c("ramses_tc_group", "ramses_tc_combination"))
-  
 }
 
 
@@ -1043,9 +1018,9 @@ create_mock_database <- function(file,
   if(!silent) progress_bar$tick()
   load_inpatient_microbiology(
     conn = mock_db,
-    inpatient_data$micro$specimens,
-    inpatient_data$micro$isolates,
-    inpatient_data$micro$susceptibilities,
+    specimens = inpatient_data$micro$specimens, 
+    isolates = inpatient_data$micro$isolates,
+    susceptibilities = inpatient_data$micro$susceptibilities,
     overwrite = TRUE
   )
   if(!silent) progress_bar$tick()
@@ -1154,322 +1129,45 @@ create_mock_database <- function(file,
   nrow$n
 }
 
+ 
+
 #' Run transitive closure
 #'
-#' @param conn a database connection
-#' @param edge_table a table of class `tbl_dbi` containing two columns
-#' named `id1` and `id2`
+#' @param edge_tbl_dbi a table of class `tbl_dbi` containing two columns
+#' named `from_id` and `to_id`
 #' @return a connection to a non-temporary table of class `tbl_dbi`
 #' under the name `ramses_tc_group`.
-#' @references Inspired by Itzik Ben-Gan's T-SQL challenge solution
-#' https://www.itprotoday.com/sql-server/t-sql-puzzle-challenge-grouping-connected-items
 #' @keywords internal
 #' @noRd
-.run_transitive_closure <- function(conn, edge_table, silent = FALSE) {
-UseMethod(".run_transitive_closure")
+.run_transitive_closure <- function(edge_tbl_dbi) {
+  local_edges <- dplyr::collect(edge_tbl_dbi)
+  stopifnot( names(local_edges) == c("from_id", "to_id") )
+  
+  graph_list <- igraph::groups(
+    igraph::components(
+      igraph::graph_from_edgelist(
+        as.matrix(local_edges),
+        directed = TRUE
+  )))
+  
+  rames_tc_groups_dt <- data.table::data.table(
+    id = graph_list,
+    grp = as.integer(names(graph_list))
+  )
+  rames_tc_groups_dt <- rames_tc_groups_dt[
+    , list(id = unlist(id)), 
+    by = grp
+  ]
+  
+  silent <- dplyr::copy_to(
+    dest = edge_tbl_dbi$src$con,
+    df = dplyr::tibble(rames_tc_groups_dt[, list(id, grp, lvl = NULL)]),
+    name = "ramses_tc_group",
+    overwrite = TRUE
+  )
+  
+  tbl(edge_tbl_dbi$src$con, "ramses_tc_group")
 }
-
-.run_transitive_closure.SQLiteConnection <- function(conn, edge_table, silent) {
-  
-  stopifnot(is(conn, "SQLiteConnection"))
-  .create_ramses_tc_graphs(conn)
-  
-  var_lvl <- 1
-  var_ids <- tbl(conn, edge_table) %>% 
-    dplyr::arrange(id1, id2) %>% 
-    utils::head(n = 1) %>% 
-    dplyr::collect() %>% 
-    data.frame()
-  
-  var_rowcount <- nrow(var_ids)
-  
-  if(!silent) {
-    progress_bar <- progress::progress_bar$new(
-      format = "  linking prescriptions [:bar] :percent (:eta)",
-      total = .nrow_sql_table(conn, edge_table) + 1)
-    progress_bar$tick(0)
-  }
-  
-  while (var_rowcount > 0) {
-    
-    DBI::dbAppendTable(conn = conn, 
-                       name = "ramses_tc_group",
-                       value = data.frame(cbind(
-                         id = c(var_ids$id1, var_ids$id2),
-                         grp = c(var_ids$id1, var_ids$id1),
-                         lvl = c(var_lvl, var_lvl)
-                       ), stringsAsFactors = F))
-    
-    nrow_deleted <- DBI::dbExecute(
-      conn, 
-      paste("DELETE FROM", edge_table, 
-            "WHERE id1 =", var_ids$id1,
-            "AND id2 =", var_ids$id2, ";"))
-    
-    if(!silent) {
-      progress_bar$tick(nrow_deleted)
-    }
-    
-    while(var_rowcount > 0) {  
-
-      var_lvl <- var_lvl + 1
-      
-      .remove_db_tables(conn, "ramses_tc_cur_ids")
-      DBI::dbExecute(conn,
-                     "CREATE TEMPORARY TABLE ramses_tc_cur_ids(id INTEGER NOT NULL);")
-      
-      DBI::dbExecute(conn, paste(
-        "INSERT INTO ramses_tc_cur_ids",
-        "SELECT t1.id2",
-        "FROM ramses_tc_group AS g",
-        " INNER JOIN", edge_table, "AS t1",
-        " ON g.id = t1.id1",
-        "WHERE lvl =", var_lvl - 1, ";"))
-      
-      nrow_deleted <- DBI::dbExecute(conn, paste(
-        "DELETE FROM", edge_table,
-        "WHERE id1 IN(", 
-        "  SELECT id",
-        "  FROM ramses_tc_group",
-        "  WHERE lvl =", var_lvl - 1,");"))
-      
-      if(!silent) {
-        progress_bar$tick(nrow_deleted)
-      }
-      
-      var_rowcount <- DBI::dbExecute(conn, paste(
-        "INSERT INTO ramses_tc_group",
-        "SELECT DISTINCT id,", var_ids$id1, "AS grp,", var_lvl, "AS lvl",
-        "FROM ramses_tc_cur_ids AS c",
-        "WHERE NOT EXISTS (",
-        "   SELECT * FROM ramses_tc_group AS g",
-        "   WHERE g.id = c.id);"))
-      
-      .remove_db_tables(conn, "ramses_tc_cur_ids")
-      DBI::dbExecute(conn,
-                     "CREATE TEMPORARY TABLE ramses_tc_cur_ids(id INTEGER NOT NULL);")
-      
-      DBI::dbExecute(conn, paste(
-        "INSERT INTO ramses_tc_cur_ids",
-        "SELECT t1.id1",
-        "FROM ramses_tc_group AS g",
-        " INNER JOIN", edge_table, "AS t1",
-        " ON g.id = t1.id2",
-        "WHERE lvl =", var_lvl - 1, ";"))
-      
-      nrow_deleted <- DBI::dbExecute(conn, paste(
-        "DELETE FROM", edge_table,
-        "WHERE id2 IN(", 
-        "  SELECT id",
-        "  FROM ramses_tc_group",
-        "  WHERE lvl =", var_lvl - 1,");"))
-      
-      if(!silent) {
-        progress_bar$tick(nrow_deleted)
-      }
-      
-      var_rowcount <- var_rowcount + DBI::dbExecute(conn, paste(
-        "INSERT INTO ramses_tc_group",
-        "SELECT DISTINCT id,", var_ids$id1, "AS grp,", var_lvl, "AS lvl",
-        "FROM ramses_tc_cur_ids AS c",
-        "WHERE NOT EXISTS (",
-        "   SELECT * FROM ramses_tc_group AS g",
-        "   WHERE g.id = c.id);"))
-      
-    }
-    
-    var_ids <- tbl(conn, edge_table) %>% 
-      dplyr::arrange(id1, id2) %>% 
-      utils::head(n = 1) %>% 
-      dplyr::collect() %>% 
-      data.frame()
-    
-    var_rowcount <- nrow(var_ids)
-    
-  }
-  if(!silent) {
-    progress_bar$terminate()
-  }
-  
-  .remove_db_tables(conn, "ramses_tc_cur_ids")
-  
-  tbl(conn, "ramses_tc_group")
-}
-
-.run_transitive_closure2.PqConnection <- function(conn, edge_table, silent) {
-  
-  stopifnot(is(conn, "PqConnection"))
-  .create_ramses_tc_graphs(conn)
-  
-  var_lvl <- 1
-  var_ids <- tbl(conn, edge_table) %>% 
-    dplyr::arrange(id1, id2) %>% 
-    utils::head(n = 1) %>% 
-    dplyr::collect() %>% 
-    data.frame()
-  
-  var_rowcount <- nrow(var_ids)
-  
-  if(!silent) {
-    progress_bar <- progress::progress_bar$new(
-      format = "  linking prescriptions [:bar] :percent (:eta)",
-      total = .nrow_sql_table(conn, edge_table) + 1)
-    progress_bar$tick(0)
-  }
-  
-  while (var_rowcount > 0) {
-    
-    DBI::dbAppendTable(conn = conn, 
-                       name = "ramses_tc_group",
-                       value = data.frame(cbind(
-                         id = c(var_ids$id1, var_ids$id2),
-                         grp = c(var_ids$id1, var_ids$id1),
-                         lvl = c(var_lvl, var_lvl)
-                       ), stringsAsFactors = F))
-    
-    nrow_deleted <- DBI::dbExecute(
-      conn, 
-      paste("DELETE FROM", edge_table, 
-            "WHERE id1 =", var_ids$id1,
-            "AND id2 =",  var_ids$id2, ";"))
-    
-    if(!silent) {
-      progress_bar$tick(nrow_deleted)
-    }
-    
-    while(var_rowcount > 0) {  
-      
-      var_lvl <- var_lvl + 1
-      
-      .remove_db_tables(conn, "ramses_tc_cur_ids")
-      DBI::dbExecute(conn,
-                     "CREATE TEMPORARY TABLE ramses_tc_cur_ids(id INTEGER NOT NULL);")
-      
-      DBI::dbExecute(conn, paste(
-        "INSERT INTO ramses_tc_cur_ids",
-        "SELECT t1.id2",
-        "FROM ramses_tc_group AS g",
-        " INNER JOIN", edge_table, "AS t1",
-        " ON g.id = t1.id1",
-        "WHERE lvl =", var_lvl - 1, ";"))
-      
-      nrow_deleted <- DBI::dbExecute(conn, paste(
-        "DELETE FROM", edge_table,
-        "WHERE id1 IN(", 
-        "  SELECT id",
-        "  FROM ramses_tc_group",
-        "  WHERE lvl =", var_lvl - 1,");"))
-      
-      if(!silent) {
-        progress_bar$tick(nrow_deleted)
-      }
-      
-      var_rowcount <- DBI::dbExecute(conn, paste(
-        "INSERT INTO ramses_tc_group",
-        "SELECT DISTINCT id,", var_ids$id1, "AS grp,", var_lvl, "AS lvl",
-        "FROM ramses_tc_cur_ids AS c",
-        "WHERE NOT EXISTS (",
-        "   SELECT * FROM ramses_tc_group AS g",
-        "   WHERE g.id = c.id);"))
-      
-      .remove_db_tables(conn, "ramses_tc_cur_ids")
-      DBI::dbExecute(conn,
-                     "CREATE TEMPORARY TABLE ramses_tc_cur_ids(id INTEGER NOT NULL);")
-      
-      DBI::dbExecute(conn, paste(
-        "INSERT INTO ramses_tc_cur_ids",
-        "SELECT t1.id1",
-        "FROM ramses_tc_group AS g",
-        " INNER JOIN", edge_table, "AS t1",
-        " ON g.id = t1.id2",
-        "WHERE lvl =", var_lvl - 1, ";"))
-      
-      nrow_deleted <- DBI::dbExecute(conn, paste(
-        "DELETE FROM", edge_table,
-        "WHERE id2 IN(", 
-        "  SELECT id",
-        "  FROM ramses_tc_group",
-        "  WHERE lvl =", var_lvl - 1,");"))
-      
-      if(!silent) {
-        progress_bar$tick(nrow_deleted)
-      }
-      
-      var_rowcount <- var_rowcount + DBI::dbExecute(conn, paste(
-        "INSERT INTO ramses_tc_group",
-        "SELECT DISTINCT id,", var_ids$id1, "AS grp,", var_lvl, "AS lvl",
-        "FROM ramses_tc_cur_ids AS c",
-        "WHERE NOT EXISTS (",
-        "   SELECT * FROM ramses_tc_group AS g",
-        "   WHERE g.id = c.id);"))
-      
-    }
-    
-    var_ids <- tbl(conn, edge_table) %>% 
-      dplyr::arrange(id1, id2) %>% 
-      utils::head(n = 1) %>% 
-      dplyr::collect() %>% 
-      data.frame()
-    
-    var_rowcount <- nrow(var_ids)
-    
-  }
-  if(!silent) {
-    progress_bar$terminate()
-  }
-  
-  .remove_db_tables(conn, "ramses_tc_cur_ids")
-  
-  tbl(conn, "ramses_tc_group")
-}
-
-
-.run_transitive_closure.PqConnection <- function(conn, edge_table, silent) {
-  # .remove_db_tables(conn, "ramses_tc_edges")
-  # 
-  # edges_table <- tbl(conn, "drug_prescriptions_edges") %>% 
-  #   dplyr::transmute(id1 = from_id, id2 = to_id) %>% 
-  #   dplyr::compute(name = "ramses_tc_edges", temporary = F)
-  # 
-  # DBI::dbExecute(conn, "CREATE INDEX ramses_tc_edges_idx1 ON ramses_tc_edges (id1, id2);")
-  # DBI::dbExecute(conn, "CREATE INDEX ramses_tc_edges_idx2 ON ramses_tc_edges (id2, id1);")
-  # 
-  stopifnot(is(conn, "PqConnection"))
-  
-  # .create_ramses_tc_graphs(conn)
-  .remove_db_tables(conn, "ramses_tc_group")
-  
-  DBI::dbSendQuery(
-    conn,
-    "WITH RECURSIVE transitive_closure(id1, id2, distance, path) AS
-( SELECT id1, id2, 1 AS distance,
-    ARRAY[id1, id2] AS path
-  FROM ramses_tc_edges
- 
-  UNION ALL
- 
-  SELECT tc.id1, ramses_tc_edges.id2, tc.distance + 1,
-  tc.path || ramses_tc_edges.id2 AS path
-  FROM ramses_tc_edges
-    JOIN transitive_closure AS tc
-      ON ramses_tc_edges.id1 = tc.id2
-  WHERE NOT ramses_tc_edges.id2 = ANY(path)
-)
-SELECT * INTO TABLE ramses_tc_group
-FROM transitive_closure
-ORDER BY id1, id2, distance;"
-    )
-  
-  tbl(conn, "ramses_tc_group")
-}
-
-
-
-
-
-
-
-
 
 
 .prepare_example_drug_records <- function() {
