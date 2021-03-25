@@ -1150,6 +1150,10 @@ create_mock_database <- function(file,
         directed = TRUE
   )))
   
+  graph_list <- graph_list[
+    vapply(graph_list, length, FUN.VALUE = integer(1)) > 1
+  ]
+  
   rames_tc_groups_dt <- data.table::data.table(
     id = graph_list,
     grp = as.integer(names(graph_list))
