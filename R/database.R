@@ -670,10 +670,10 @@ load_medications.PqConnection <- function(
   if(!silent) message("Transitive closure of therapy episodes beginning...\n")
   therapy_grps <- .run_transitive_closure(edges_table)
   
-  therapy_grps <- tbl(conn, "ramses_tc_group") %>% 
+  therapy_grps <- therapy_grps %>% 
     dplyr::left_join(
       dplyr::select(tbl(conn, "drug_prescriptions"), 
-                    id, patient_id, prescription_id, prescription_start, drug_name), 
+                    id, prescription_id, prescription_start, drug_name), 
       by = c("id" = "id")
     ) %>% 
     dplyr::group_by(grp) %>% 
@@ -692,8 +692,8 @@ load_medications.PqConnection <- function(
     therapy_grps,
     th_ids,  
     by = c("grp" = "grp")) %>% 
-    dplyr::distinct(patient_id, prescription_id, therapy_id, therapy_rank) %>% 
-    dplyr::compute(name = "ramses_tc_therapy")
+    dplyr::distinct(id, prescription_id, therapy_id, therapy_rank) %>% 
+    dplyr::compute(name = "ramses_tc_therapy", temporary = FALSE)
   
   update_therapy_id <- .read_sql_syntax("update_drug_prescriptions_therapy_id_SQLite.sql")
   update_therapy_id <- gsub("@@@ramses_tc_table", "ramses_tc_therapy", update_therapy_id)
@@ -744,17 +744,17 @@ load_medications.PqConnection <- function(
   if(!silent) message("Transitive closure of therapy combinations beginning...\n")
   therapy_grps <- .run_transitive_closure(edges_table)
   
-  therapy_grps <- tbl(conn, "ramses_tc_group") %>% 
+  therapy_grps <- therapy_grps %>% 
     dplyr::left_join(
       dplyr::select(tbl(conn, "drug_prescriptions"), 
-                    id, patient_id, prescription_id), 
+                    id, prescription_id), 
       by = c("id" = "id")
     ) %>% 
     dplyr::group_by(grp) %>% 
     dplyr::mutate(combination_id = min(prescription_id, na.rm = T)) %>% 
     dplyr::ungroup() %>% 
-    dplyr::distinct(patient_id, prescription_id, combination_id) %>% 
-    dplyr::compute(name = "ramses_tc_combination")
+    dplyr::distinct(id, prescription_id, combination_id) %>% 
+    dplyr::compute(name = "ramses_tc_combination", temporary = FALSE)
   
   update_combination_id <- .read_sql_syntax("update_drug_prescriptions_combination_id_SQLite.sql")
   update_combination_id <- gsub("@@@ramses_tc_table", "ramses_tc_combination", update_combination_id)
@@ -1163,14 +1163,12 @@ create_mock_database <- function(file,
     by = grp
   ]
   
-  silent <- dplyr::copy_to(
+  dplyr::copy_to(
     dest = edge_tbl_dbi$src$con,
     df = dplyr::tibble(rames_tc_groups_dt[, list(id, grp, lvl = NULL)]),
     name = "ramses_tc_group",
     overwrite = TRUE
   )
-  
-  tbl(edge_tbl_dbi$src$con, "ramses_tc_group")
 }
 
 

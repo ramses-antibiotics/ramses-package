@@ -4,10 +4,10 @@ SET therapy_id = NULL;
 UPDATE drug_prescriptions
 SET therapy_id = (SELECT therapy_id
                     FROM @@@ramses_tc_table
-                    WHERE prescription_id = drug_prescriptions.prescription_id AND patient_id = drug_prescriptions.patient_id)
+                    WHERE id = drug_prescriptions.id )
 WHERE EXISTS(SELECT therapy_id
              FROM @@@ramses_tc_table
-             WHERE prescription_id = drug_prescriptions.prescription_id AND patient_id = drug_prescriptions.patient_id);
+             WHERE id = drug_prescriptions.id );
 UPDATE drug_prescriptions
 SET therapy_id = prescription_id
 WHERE therapy_id IS NULL
@@ -16,14 +16,14 @@ WHERE therapy_id IS NULL
 UPDATE drug_prescriptions
 SET therapy_rank = (SELECT therapy_rank
                     FROM @@@ramses_tc_table
-                    WHERE prescription_id = drug_prescriptions.prescription_id AND patient_id = drug_prescriptions.patient_id)
+                    WHERE id = drug_prescriptions.id )
 WHERE EXISTS(SELECT therapy_rank
              FROM @@@ramses_tc_table
-             WHERE prescription_id = drug_prescriptions.prescription_id AND patient_id = drug_prescriptions.patient_id);
+             WHERE id = drug_prescriptions.id );
 
 UPDATE drug_prescriptions
 SET therapy_rank = 1
 WHERE NOT EXISTS(SELECT therapy_rank
-                 FROM @@@ramses_tc_table
-                 WHERE prescription_id = drug_prescriptions.prescription_id AND patient_id = drug_prescriptions.patient_id);
+                 FROM @@@ramses_tc_table 
+                 WHERE id = drug_prescriptions.id );
 
