@@ -799,7 +799,7 @@ test_that("validate_microbiology on data.frame", {
       specimen_type_display = "Urine"
     ), stringsAsFactors = FALSE),
     isolates = data.frame(
-      list(organism_id = "1", 
+      list(isolate_id = "1", 
            specimen_id = "1", 
            patient_id = "1", 
            organism_code = structure("B_ESCHR_COLI", class = c("mo", "character")), 
@@ -809,7 +809,7 @@ test_that("validate_microbiology on data.frame", {
            isolation_datetime = Sys.time() + 259200
     ), stringsAsFactors = FALSE),
     susceptibilities = data.frame(list(
-      organism_id = "1", 
+      isolate_id = "1", 
       specimen_id = "1",
       patient_id = "1",
       organism_code = "B_ESCHR_COLI",
@@ -853,7 +853,7 @@ test_that("validate_microbiology on data.frame", {
   ))
   
   testdata_missing_id2 <- testdata
-  testdata_missing_id2$susceptibilities$organism_id[1] <- "biduletruccleurtruc"
+  testdata_missing_id2$susceptibilities$isolate_id[1] <- "biduletruccleurtruc"
   expect_error(validate_microbiology(
     testdata_missing_id2$specimens,
     testdata_missing_id2$isolates,
@@ -869,7 +869,7 @@ test_that("validate_microbiology on data.frame", {
   ))
   
   testdata_invalid_organism_codes <- testdata
-  testdata_invalid_organism_codes$isolates$organism_id[1] <- "biduletruccleurtruc"
+  testdata_invalid_organism_codes$isolates$isolate_id[1] <- "biduletruccleurtruc"
   expect_error(validate_microbiology(
     testdata_invalid_organism_codes$specimens,
     testdata_invalid_organism_codes$isolates,
@@ -877,7 +877,7 @@ test_that("validate_microbiology on data.frame", {
   ))
   
   testdata_invalid_organism_codes <- testdata
-  testdata_invalid_organism_codes$susceptibilities$organism_id[1] <- "biduletruccleurtruc"
+  testdata_invalid_organism_codes$susceptibilities$isolate_id[1] <- "biduletruccleurtruc"
   expect_error(validate_microbiology(
     testdata_invalid_organism_codes$specimens,
     testdata_invalid_organism_codes$isolates,
@@ -906,7 +906,7 @@ test_that("validate_microbiology on data.table", {
       specimen_type_display = "Urine"
     ),
     isolates = data.table::data.table(
-      organism_id = "1", 
+      isolate_id = "1", 
       specimen_id = "1", 
       patient_id = "1", 
       organism_code = structure("B_ESCHR_COLI", class = c("mo", "character")), 
@@ -916,7 +916,7 @@ test_that("validate_microbiology on data.table", {
       isolation_datetime = Sys.time() + 259200
       ),
     susceptibilities = data.table::data.table(
-      organism_id = "1", 
+      isolate_id = "1", 
       specimen_id = "1",
       patient_id = "1",
       organism_code = "B_ESCHR_COLI",
@@ -960,7 +960,7 @@ test_that("validate_microbiology on data.table", {
   ))
   
   testdata_missing_id2 <- testdata
-  testdata_missing_id2$susceptibilities$organism_id[1] <- "biduletruccleurtruc"
+  testdata_missing_id2$susceptibilities$isolate_id[1] <- "biduletruccleurtruc"
   expect_error(validate_microbiology(
     testdata_missing_id2$specimens,
     testdata_missing_id2$isolates,
@@ -976,7 +976,7 @@ test_that("validate_microbiology on data.table", {
   ))
   
   testdata_invalid_organism_codes <- testdata
-  testdata_invalid_organism_codes$isolates$organism_id[1] <- "biduletruccleurtruc"
+  testdata_invalid_organism_codes$isolates$isolate_id[1] <- "biduletruccleurtruc"
   expect_error(validate_microbiology(
     testdata_invalid_organism_codes$specimens,
     testdata_invalid_organism_codes$isolates,
@@ -984,7 +984,7 @@ test_that("validate_microbiology on data.table", {
   ))
   
   testdata_invalid_organism_codes <- testdata
-  testdata_invalid_organism_codes$susceptibilities$organism_id[1] <- "biduletruccleurtruc"
+  testdata_invalid_organism_codes$susceptibilities$isolate_id[1] <- "biduletruccleurtruc"
   expect_error(validate_microbiology(
     testdata_invalid_organism_codes$specimens,
     testdata_invalid_organism_codes$isolates,

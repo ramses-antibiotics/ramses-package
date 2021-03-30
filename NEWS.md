@@ -5,6 +5,7 @@
 ## Improvements
 
 * faster implementation of prescription linkage using `igraph` dependency
+* new schema of microbiology isolates and susceptibilities: isolates are now identified by field `isolate_id` rather than `organism_id`
 
 ## Bug fixes
 

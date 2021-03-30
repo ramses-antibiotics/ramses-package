@@ -302,7 +302,7 @@ load_inpatient_microbiology <- function(conn,
       df = dplyr::tibble(isolates), 
       overwrite = overwrite, 
       temporary = FALSE,
-      indexes = list("patient_id", "organism_id", 
+      indexes = list("patient_id", "isolate_id", 
                      "specimen_id", "organism_code"))
     dplyr::copy_to(
       dest = conn,
@@ -310,7 +310,7 @@ load_inpatient_microbiology <- function(conn,
       df = dplyr::tibble(susceptibilities), 
       overwrite = overwrite, 
       temporary = FALSE,
-      indexes = list("patient_id", "organism_id", "specimen_id", 
+      indexes = list("patient_id", "isolate_id", "specimen_id", 
                      "organism_code", "drug_id"))
   })
   
@@ -1326,7 +1326,7 @@ create_mock_database <- function(file,
     dplyr::distinct() # Removing duplicates created by multiple isolates and susceptibility testing
   
   micro$isolates <- micro$raw %>% 
-    dplyr::transmute(organism_id,
+    dplyr::transmute(isolate_id,
               specimen_id,
               patient_id,
               organism_code,
@@ -1337,7 +1337,7 @@ create_mock_database <- function(file,
   
   micro$susceptibilities <- micro$raw %>% 
     dplyr::filter(!is.na(organism_code)) %>%  # Remove no growth
-    dplyr::transmute(organism_id,
+    dplyr::transmute(isolate_id,
               specimen_id,
               patient_id,
               organism_code,

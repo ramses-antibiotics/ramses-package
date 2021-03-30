@@ -1,4 +1,4 @@
-patient_id,specimen_id,status,specimen_type_display,specimen_datetime,organism_code,organism_display_name,organism_id,drug_id,drug_display_name,rsi_code
+patient_id,specimen_id,status,specimen_type_display,specimen_datetime,organism_code,organism_display_name,isolate_id,drug_id,drug_display_name,rsi_code
 99999999999,CCC2,,MRSA Screen,2017-02-14,NA,No growth,2300967,NA,NA,NA
 99999999999,CCC1,,Blood Culture,2017-02-13,NA,No growth,2365356,NA,NA,NA
 99999999999,BBB8,,MRSA Screen,2016-01-12,NA,No growth,2284807,NA,NA,NA

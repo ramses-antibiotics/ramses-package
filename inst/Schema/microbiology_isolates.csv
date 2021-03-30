@@ -1,5 +1,5 @@
 position,variable_name,must_exist,must_be_nonmissing,must_be_unique
-1,organism_id,TRUE,TRUE,TRUE
+1,isolate_id,TRUE,TRUE,TRUE
 2,specimen_id,TRUE,TRUE,FALSE
 3,patient_id,TRUE,TRUE,FALSE
 4,organism_code,TRUE,FALSE,FALSE

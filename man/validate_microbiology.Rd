@@ -71,7 +71,7 @@ Validate microbial isolates & susceptibility records
 
 \strong{The following fields are mandatory:}
 \describe{
-   \item{\code{organism_id}}{a unique isolated organism identifier with no missing value}
+   \item{\code{isolate_id}}{a unique isolated organism identifier with no missing value}
    \item{\code{specimen_id}}{a specimen identifier with no missing value}
    \item{\code{patient_id}}{a patient identifier with no missing value}
    \item{\code{organism_code}}{a character vector containing either: \itemize{
@@ -105,7 +105,7 @@ Validate microbial isolates & susceptibility records
 
 \strong{The following fields are mandatory:}
 \describe{
-  \item{\code{organism_id}}{an isolated organism identifier with no missing value}
+  \item{\code{isolate_id}}{an isolated organism identifier with no missing value}
   \item{\code{specimen_id}}{a specimen identifier with no missing value}
   \item{\code{patient_id}}{a patient identifier with no missing value}
   \item{\code{organism_code}}{a microorganism code validated using 
