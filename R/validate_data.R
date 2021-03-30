@@ -1172,13 +1172,13 @@ validate_microbiology <- function(specimens, isolates, susceptibilities) {
     stop("Some `specimen_id` in `isolates` are missing from `specimens`")
   }
   
-  stopifnot(is(specimens$specimen_datetime, "POSIXt"))
-  stopifnot(is(isolates$isolation_datetime, "POSIXt"))
+  stopifnot(is(specimens$specimen_datetime, "POSIXt") | is(specimens$specimen_datetime, "Date"))
+  stopifnot(is(isolates$isolation_datetime, "POSIXt") | is(isolates$isolation_datetime, "Date"))
   
   invalid_organism_codes <- na.omit(unique(c(isolates$organism_code,
                                      susceptibilities$organism_code)))
   invalid_organism_codes <- invalid_organism_codes[
-    !invalid_organism_codes %in% AMR::microorganisms.codes$mo
+    !invalid_organism_codes %in% AMR::microorganisms$mo
   ]
   if( length(invalid_organism_codes) > 0 ) {
     stop(paste(
