@@ -401,52 +401,13 @@ load_medications <- function(
   conn, prescriptions, administrations = NULL, overwrite = FALSE,
   transitive_closure_controls = transitive_closure_control(),
   silent = FALSE) {
-  UseMethod("load_medications")
-}
-
-
-#' @rdname load_medications
-#' @method load_medications SQLiteConnection
-#' @export
-load_medications.SQLiteConnection <- function(
-  conn, prescriptions, administrations = NULL, overwrite = FALSE,
-  transitive_closure_controls = transitive_closure_control(),
-  silent = TRUE) {
   
   load_errors <- try({
-    .load_prescriptions.SQLiteConnection(
+    .load_prescriptions(
       conn = conn, 
       prescriptions = prescriptions, 
       overwrite = overwrite,
-      transitive_closure_controls,
-      silent = silent)
-  if(!is.null(administrations)) {
-    .load_administrations(
-      conn = conn, 
-      administrations = administrations, 
-      overwrite = overwrite)
-  }
-  })
-  
-  if( is(load_errors, "try-error") ) {
-    stop(load_errors)
-  }
-}
-
-#' @rdname load_medications
-#' @method load_medications PqConnection
-#' @export
-load_medications.PqConnection <- function(
-  conn, prescriptions, administrations = NULL, overwrite = FALSE,
-  transitive_closure_controls = transitive_closure_control(),
-  silent = TRUE) {
-  
-  load_errors <- try({
-    .load_prescriptions.PqConnection(
-      conn = conn, 
-      prescriptions = prescriptions, 
-      overwrite = overwrite,
-      transitive_closure_controls,
+      transitive_closure_controls = transitive_closure_controls,
       silent = silent)
     if(!is.null(administrations)) {
       .load_administrations(
@@ -461,7 +422,7 @@ load_medications.PqConnection <- function(
   }
 }
 
-.load_prescriptions.SQLiteConnection <- function(
+.load_prescriptions <- function(
   conn, prescriptions, overwrite, 
   transitive_closure_controls, silent) {
   
@@ -471,6 +432,19 @@ load_medications.PqConnection <- function(
   prescriptions <- dplyr::arrange(prescriptions, patient_id, prescription_start)
   prescriptions$id <- seq_len(nrow(prescriptions))
   prescriptions <- .format_str_time_sqlite.tbl_df(conn, prescriptions)
+  
+  if (is(conn, "PqConnection")) {
+    if( !is(prescriptions$authoring_date, "POSIXct") ){
+      stop("prescriptions$authoring_date must be of class POSIXct")
+    }
+    if( !is(prescriptions$prescription_start, "POSIXct") ){
+      stop("prescriptions$prescription_start must be of class POSIXct")
+    }
+    if( !is(prescriptions$prescription_end, "POSIXct") ){
+      stop("prescriptions$prescription_end must be of class POSIXct")
+    }
+  }
+  
   prescriptions$therapy_rank <- NA_integer_
   
   if(create_combination_id) prescriptions$combination_id <- NA_character_
@@ -508,82 +482,14 @@ load_medications.PqConnection <- function(
   )
   
   if (create_therapy_id | create_combination_id) {
-    .create_table_drug_prescriptions_edges.SQLiteConnection(
-      conn = conn, transitive_closure_controls)
-    .create_therapy_id(conn = conn, silent = silent)
-    .create_combination_id(conn = conn, silent = silent)
-  } else {
-    .create_table_drug_therapy_episodes(conn = conn)
-  }
-   
-  TRUE
-}
-
-.load_prescriptions.PqConnection <- function(
-  conn, prescriptions, overwrite, 
-  transitive_closure_controls, silent) {
-  
-  create_therapy_id <- !exists("therapy_id", prescriptions)
-  create_combination_id <- !exists("combination_id", prescriptions)
-  
-  prescriptions <- dplyr::arrange(prescriptions, patient_id, prescription_start)
-  prescriptions$id <- seq_len(nrow(prescriptions))
-  
-  if( !is(prescriptions$authoring_date, "POSIXct") ){
-    stop("prescriptions$authoring_date must be of class Date")
-  }
-  if( !is(prescriptions$prescription_start, "POSIXct") ){
-    stop("prescriptions$prescription_start must be of class POSIXct")
-  }
-  if( !is(prescriptions$prescription_end, "POSIXct") ){
-    stop("prescriptions$prescription_end must be of class POSIXct")
-  }
-  prescriptions$therapy_rank <- NA_integer_
-  
-  if(create_combination_id) prescriptions$combination_id <- NA_character_
-  if(create_therapy_id) prescriptions$therapy_id <- NA_character_
-  
-  first_column_names <- .drug_prescriptions_variables()[["variable_name"]]
-  first_column_names <- c(
-    "id",
-    first_column_names[first_column_names %in% names(prescriptions)]
-  )
-  prescriptions <- arrange_variables(
-    prescriptions, 
-    first_column_names = first_column_names) 
-  
-  dplyr::copy_to(
-    dest = conn,
-    name = "drug_prescriptions",
-    df = dplyr::tibble(prescriptions),
-    temporary = FALSE,
-    overwrite = overwrite,
-    indexes = list(
-      "id",
-      "patient_id", 
-      "prescription_id",
-      "combination_id",
-      "therapy_id",
-      "drug_id",
-      "antiinfective_type",
-      "ATC_code",
-      "ATC_route",
-      "authoring_date",
-      "prescription_start", 
-      "prescription_end"
+    create_therapy_episodes(
+      conn,
+      transitive_closure_controls = transitive_closure_controls,
+      silent = silent
     )
-  )
-  
-  if (create_therapy_id | create_combination_id) {
-    .create_table_drug_prescriptions_edges.PqConnection(
-      conn = conn, transitive_closure_controls)
-    .create_therapy_id(conn = conn, silent = silent)
-    .create_combination_id(conn = conn, silent = silent)
   } else {
     .create_table_drug_therapy_episodes(conn = conn)
   }
-  
-  
   
   TRUE
 }
@@ -600,21 +506,22 @@ load_medications.PqConnection <- function(
 #' of edges between prescriptions
 #' @return NULL
 #' @noRd
-.create_table_drug_prescriptions_edges <- function(conn, transitive_closure_controls) {
-  UseMethod(".create_table_drug_prescriptions_edges")
-}
-
-.create_table_drug_prescriptions_edges.SQLiteConnection <- 
-  function(conn, transitive_closure_controls) {
+.create_table_drug_prescriptions_edges <- function(conn, 
+                                                   transitive_closure_controls) {
   
-  if( DBI::dbExistsTable(conn, "drug_prescriptions_edges") ){
-    DBI::dbRemoveTable(conn, "drug_prescriptions_edges")
-  }
+  .remove_db_tables(conn, "drug_prescriptions_edges")
+  
   DBI::dbExecute(
     conn = conn,
     statement = .read_sql_syntax("create_drug_prescription_edges_SQLite.sql"))
   
-  statement_edges <- .read_sql_syntax("drug_prescriptions_edges_SQLite.sql")
+  if( is(conn, "SQLiteConnection") ) {
+    statement_edges <- .read_sql_syntax("drug_prescriptions_edges_SQLite.sql")
+  } else if ( is(conn, "PqConnection") ) {
+    statement_edges <- .read_sql_syntax("drug_prescriptions_edges_PostgreSQL.sql")
+  } else {
+    .throw_error_method_not_implemented(".create_table_drug_prescriptions_edges()", class(conn))
+  }
   
   # replace variables in SQL code by their value
   for(i in seq_along(transitive_closure_controls)) {
@@ -627,33 +534,6 @@ load_medications.PqConnection <- function(
     conn = conn,
     statement = statement_edges)
 }
-
-.create_table_drug_prescriptions_edges.PqConnection <- 
-  function(conn, transitive_closure_controls) {
-    
-    stopifnot(is(conn, "PqConnection"))
-    
-    if( DBI::dbExistsTable(conn, "drug_prescriptions_edges") ){
-      DBI::dbRemoveTable(conn, "drug_prescriptions_edges")
-    }
-    DBI::dbExecute(
-      conn = conn,
-      statement = .read_sql_syntax("create_drug_prescription_edges_SQLite.sql"))
-    
-    statement_edges <- .read_sql_syntax("drug_prescriptions_edges_PostgreSQL.sql")
-    
-    # replace variables in SQL code by their value
-    for(i in seq_along(transitive_closure_controls)) {
-      statement_edges <- gsub(
-        paste0("@", names(transitive_closure_controls[i])),
-        transitive_closure_controls[[i]], statement_edges)
-    }
-    
-    DBI::dbExecute(
-      conn = conn,
-      statement = statement_edges)
-}
-
 
 
 #' Populate `drug_prescription.therapy_id`
@@ -692,40 +572,10 @@ load_medications.PqConnection <- function(
     therapy_grps,
     th_ids,  
     by = c("grp" = "grp")) %>% 
-    dplyr::distinct(id, prescription_id, therapy_id, therapy_rank) %>% 
+    dplyr::distinct(id, therapy_id, therapy_rank) %>% 
     dplyr::compute(name = "ramses_tc_therapy", temporary = FALSE)
   
-  update_therapy_id <- .read_sql_syntax("update_drug_prescriptions_therapy_id_SQLite.sql")
-  update_therapy_id <- gsub("@@@ramses_tc_table", "ramses_tc_therapy", update_therapy_id)
-  update_therapy_id <- .split_sql_batch(update_therapy_id)
-  for(i in update_therapy_id) {
-    DBI::dbExecute(conn = conn, i)
-  }
-  .remove_db_tables(conn = conn, c("ramses_tc_group", "ramses_tc_therapy"))
-  
-  .create_table_drug_therapy_episodes(conn = conn)
-  
-}
-
-
-.create_table_drug_therapy_episodes <- function(conn) {
-  
-  .remove_db_tables(conn = conn, "drug_therapy_episodes")
-
-  forget <- tbl(conn, "drug_prescriptions") %>%
-    dplyr::group_by(patient_id, therapy_id) %>% 
-    dplyr::summarise(therapy_start = min(prescription_start, na.rm = TRUE),
-                     therapy_end = max(prescription_end, na.rm = TRUE)) %>% 
-    dplyr::compute(name = "drug_therapy_episodes", temporary = FALSE)
-  
-  dplyr::db_create_index(
-    con = conn, 
-    table = "drug_therapy_episodes",
-    columns = "patient_id")
-  dplyr::db_create_index(
-    con = conn, 
-    table = "drug_therapy_episodes",
-    columns = "therapy_id")
+  therapy_grps
 }
 
 
@@ -748,67 +598,42 @@ load_medications.PqConnection <- function(
     dplyr::left_join(
       dplyr::select(tbl(conn, "drug_prescriptions"), 
                     id, prescription_id), 
-      by = c("id" = "id")
+      by = "id"
     ) %>% 
     dplyr::group_by(grp) %>% 
     dplyr::mutate(combination_id = min(prescription_id, na.rm = T)) %>% 
     dplyr::ungroup() %>% 
-    dplyr::distinct(id, prescription_id, combination_id) %>% 
+    dplyr::distinct(id, combination_id) %>% 
     dplyr::compute(name = "ramses_tc_combination", temporary = FALSE)
   
-  update_combination_id <- .read_sql_syntax("update_drug_prescriptions_combination_id_SQLite.sql")
-  update_combination_id <- gsub("@@@ramses_tc_table", "ramses_tc_combination", update_combination_id)
-  update_combination_id <- .split_sql_batch(update_combination_id)
-  for(i in update_combination_id) {
-    DBI::dbExecute(conn, i)
-  }
-  .remove_db_tables(conn, c("ramses_tc_group", "ramses_tc_combination"))
+  therapy_grps
 }
 
 
-.load_administrations <- function(
-  conn, 
-  administrations, 
-  overwrite
-  ) {
+
+#' Recreate and populate `drug_therapy_episodes`
+#'
+#' @param conn a data source with a table `drug_prescriptions_edges`
+#' already populated
+#' @noRd
+.create_table_drug_therapy_episodes <- function(conn) {
   
-  administrations <- dplyr::arrange(administrations, 
-                                    patient_id, administration_date)
-  administrations$id <- seq_len(nrow(administrations))
-   
-  first_column_names <- .drug_administrations_variables()[["variable_name"]]
-  first_column_names <- c(
-    "id",
-    first_column_names[first_column_names %in% names(administrations)]
-  )
-  administrations <- arrange_variables(
-    administrations, 
-    first_column_names = first_column_names
-    ) 
-  administrations <- .format_str_time_sqlite.tbl_df(conn, administrations)
+  .remove_db_tables(conn = conn, "drug_therapy_episodes")
   
-  load_output <- try({
-    dplyr::copy_to(
-      dest = conn,
-      name = "drug_administrations",
-      df = dplyr::tibble(administrations),
-      temporary = FALSE,
-      overwrite = overwrite,
-      indexes = list(
-        "id",
-        "patient_id", 
-        "administration_id",
-        "drug_id",
-        "ATC_code",
-        "ATC_route",
-        "administration_date"
-      )
-    )
-  })
+  forget <- tbl(conn, "drug_prescriptions") %>%
+    dplyr::group_by(patient_id, therapy_id) %>% 
+    dplyr::summarise(therapy_start = min(prescription_start, na.rm = TRUE),
+                     therapy_end = max(prescription_end, na.rm = TRUE)) %>% 
+    dplyr::compute(name = "drug_therapy_episodes", temporary = FALSE)
   
-  if(is(load_output, "try-error")) {
-    stop(load_output)
-  }
+  dplyr::db_create_index(
+    con = conn, 
+    table = "drug_therapy_episodes",
+    columns = "patient_id")
+  dplyr::db_create_index(
+    con = conn, 
+    table = "drug_therapy_episodes",
+    columns = "therapy_id")
 }
 
 
@@ -868,22 +693,105 @@ create_therapy_episodes <- function(
   if( !DBI::dbExistsTable(conn, "drug_prescriptions") ){
     stop("No `drug_prescriptions` table found on `conn`")
   }
+  .remove_db_tables(conn = conn, c("ramses_tc_combination", 
+                                   "ramses_tc_therapy",
+                                   "drug_prescriptions_new"))
   
-  if( is(conn, "SQLiteConnection") ) {
-    .create_table_drug_prescriptions_edges.SQLiteConnection(
-      conn = conn, 
-      transitive_closure_controls = transitive_closure_controls
+  .create_table_drug_prescriptions_edges(
+    conn = conn, 
+    transitive_closure_controls = transitive_closure_controls
+  )
+  
+  therapy_episode_ids <- .create_therapy_id(conn = conn, silent = silent)
+  therapy_combination_ids <- .create_combination_id(conn = conn, silent = silent)
+  
+  new_drug_prescriptions_tbl <- tbl(conn, "drug_prescriptions") %>% 
+    dplyr::select(-therapy_id, -therapy_rank) %>%
+    dplyr::left_join(therapy_episode_ids, by = "id") %>% 
+    dplyr::mutate(therapy_id = dplyr::if_else(
+      is.na(therapy_id) & 
+        !prescription_status %in% c('cancelled', 'draft', 'entered-in-error'),
+      prescription_id,
+      therapy_id),
+      therapy_rank = dplyr::if_else(
+        is.na(therapy_id) & 
+          is.na(therapy_rank) &
+          !prescription_status %in% c('cancelled', 'draft', 'entered-in-error'),
+        1L,
+        therapy_rank
+      )) %>% 
+    dplyr::compute()
+  
+  new_drug_prescriptions_tbl <- new_drug_prescriptions_tbl %>% 
+    dplyr::select(-combination_id) %>%
+    dplyr::left_join(therapy_combination_ids, by = "id") %>% 
+    compute()
+  
+  first_column_names <- .drug_prescriptions_variables()[["variable_name"]]
+  first_column_names <- c(
+    "id",
+    first_column_names[first_column_names %in% colnames(new_drug_prescriptions_tbl)]
+  )
+  new_drug_prescriptions_tbl <- arrange_variables(
+    new_drug_prescriptions_tbl, 
+    first_column_names = first_column_names)  %>% 
+    compute(name = "drug_prescriptions_new", temporary = FALSE)
+  
+  .remove_db_tables(conn = conn, c("ramses_tc_combination", 
+                                   "ramses_tc_therapy",
+                                   "drug_prescriptions"))
+  DBI::dbExecute(
+    conn = conn, 
+    "ALTER TABLE drug_prescriptions_new RENAME TO drug_prescriptions;"
+  )
+  
+  .create_table_drug_therapy_episodes(conn = conn)
+}
+
+
+.load_administrations <- function(
+  conn, 
+  administrations, 
+  overwrite
+) {
+  
+  administrations <- dplyr::arrange(administrations, 
+                                    patient_id, administration_date)
+  administrations$id <- seq_len(nrow(administrations))
+  
+  first_column_names <- .drug_administrations_variables()[["variable_name"]]
+  first_column_names <- c(
+    "id",
+    first_column_names[first_column_names %in% names(administrations)]
+  )
+  administrations <- arrange_variables(
+    administrations, 
+    first_column_names = first_column_names
+  ) 
+  administrations <- .format_str_time_sqlite.tbl_df(conn, administrations)
+  
+  load_output <- try({
+    dplyr::copy_to(
+      dest = conn,
+      name = "drug_administrations",
+      df = dplyr::tibble(administrations),
+      temporary = FALSE,
+      overwrite = overwrite,
+      indexes = list(
+        "id",
+        "patient_id", 
+        "administration_id",
+        "drug_id",
+        "ATC_code",
+        "ATC_route",
+        "administration_date"
+      )
     )
-  } else if ( is(conn, "PqConnection") ) {
-    .create_table_drug_prescriptions_edges.PqConnection(
-      conn = conn, 
-      transitive_closure_controls = transitive_closure_controls
-    )
-  } else {
-    .throw_error_method_not_implemented("create_therapy_episodes()", class(conn))
+  })
+  
+  if(is(load_output, "try-error")) {
+    stop(load_output)
   }
-  .create_therapy_id(conn = conn, silent = silent)
-  .create_combination_id(conn = conn, silent = silent)
 }
 
 
@@ -1159,7 +1067,7 @@ create_mock_database <- function(file,
     grp = as.integer(names(graph_list))
   )
   rames_tc_groups_dt <- rames_tc_groups_dt[
-    , list(id = unlist(id)), 
+    , list(id = as.integer(unlist(id))), 
     by = grp
   ]
   
