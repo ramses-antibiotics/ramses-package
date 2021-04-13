@@ -9,7 +9,7 @@ setGeneric("collect", function(x) standardGeneric("collect"))
 
 #' An S4 virtual class for Ramses objects
 #'
-#' @slot id a character identifier 
+#' @slot id a character identifier or vector of identifiers
 #' @slot conn a database connection
 #' @slot record a \code{tbl_sql} for the corresponding database record
 #' @rdname RamsesObject
@@ -26,26 +26,6 @@ setClass(
   ),
   contains = "VIRTUAL"
 )
-
-setValidity("RamsesObject", function(object) {
-  if ( length(object@id) != 1 ) {
-    "`id` must be a string of length 1"
-  } else if(object@id == "") {
-    '`id` must not equal ""'
-  } else {
-    TRUE
-  }
-})
-
-setMethod("collect", "RamsesObject", function(x) {
-  collect_ramses_tbl(x@record)
-})
-
-setMethod("compute", "RamsesObject", function(x) {
-  x@record <- dplyr::compute(x@record)
-  x
-})
-
 
 
 # Patient -----------------------------------------------------------------
@@ -78,6 +58,15 @@ Patient <- function(conn, id) {
       record = record)
 }
 
+setValidity("Patient", function(object) {
+  if ( length(object@id) != 1 ) {
+    "`id` must be a string of length 1"
+  } else if(object@id == "") {
+    '`id` must not equal ""'
+  } else {
+    TRUE
+  }
+})
 
 # MedicationRequest -------------------------------------------------------
 
@@ -110,6 +99,15 @@ MedicationRequest <- function(conn, id) {
       record = record)
 }
 
+setValidity("MedicationRequest", function(object) {
+  if ( length(object@id) != 1 ) {
+    "`id` must be a string of length 1"
+  } else if(object@id == "") {
+    '`id` must not equal ""'
+  } else {
+    TRUE
+  }
+})
 
 # TherapyEpisode ----------------------------------------------------------
 
@@ -142,11 +140,15 @@ TherapyEpisode <- function(...){
 #' @rdname TherapyEpisode
 #' @export
 TherapyEpisode.DBIConnection <- function(conn, id) {
-  id <- as.character(id)[1]
-  record <- tbl(conn, "drug_therapy_episodes") %>% 
-    dplyr::filter(therapy_id == !!id)
-  therapy_table <- .therapy_table_create(conn = conn, id = id)
-  therapy_table <- .therapy_table_parenteral_indicator(therapy_table, therapy_id = id)
+  id <- sort(na.omit(unique(trimws(id))))
+  id <- id[!id == ""]
+  record <- dplyr::inner_join(
+    tbl(conn, "drug_therapy_episodes"),
+    dplyr::tibble(therapy_id = id),
+    by = "therapy_id", copy = TRUE)
+  therapy_table <- .therapy_table_create(conn = conn, 
+                                         id = id)
+  therapy_table <- .therapy_table_parenteral_indicator(therapy_table)
   new("TherapyEpisode", 
       id = id,
       conn = conn,
@@ -173,8 +175,6 @@ TherapyEpisode.RamsesObject <- function(object) {
 setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 
 
-
-
 #' Create the therapy episode longitudinal table
 #'
 #' @param conn a database connection
@@ -186,9 +186,12 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
   if( !DBI::dbExistsTable(conn, "ramses_tally") ){
     .build_tally_table(conn)
   }
-
-  therapy_table <- tbl(conn, "drug_therapy_episodes") %>%
-    dplyr::filter(therapy_id == !!id) %>%
+  
+  therapy_table <- dplyr::inner_join(
+    tbl(conn, "drug_therapy_episodes"), 
+    dplyr::tibble(therapy_id = sort(unique(id))), 
+    by = "therapy_id", copy = TRUE
+  ) %>% 
     dplyr::select(patient_id, therapy_id, therapy_start, therapy_end)
 
   if(is(conn, "SQLiteConnection")) {
@@ -197,11 +200,13 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
       dplyr::mutate(t_start = dplyr::sql("datetime(therapy_start, (t || ' hours')) || '+00:00'")) %>% 
       dplyr::filter( dplyr::sql("DATETIME(t_start) < DATETIME(therapy_end)")) %>% 
       dplyr::mutate(t_end = dplyr::sql("datetime(therapy_start, ((t + 1) || ' hours')) || '+00:00'")) %>% 
+      dplyr::group_by(patient_id, therapy_id) %>% 
       dplyr::mutate(t_end = dplyr::if_else(
         t == max(t, na.rm = TRUE),
         therapy_end,
         t_end
-      ))
+      )) %>% 
+      dplyr::ungroup()
   } else if(is(conn, "PqConnection")) {
     tbl(conn, "ramses_tally") %>%
       dplyr::full_join(therapy_table, by = character()) %>%
@@ -212,7 +217,8 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
         t == max(t, na.rm = TRUE),
         therapy_end,
         t_end
-      ))
+      )) %>% 
+      dplyr::ungroup()
   } else {
     .throw_error_method_not_implemented(".create_therapy_table()",
                                         class(conn))
@@ -227,11 +233,13 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' @return a therapy table with an IV column (1 = 1+ drugs are parenteral,
 #' 0 = all drugs administered via oral route)
 #' @noRd
-.therapy_table_parenteral_indicator <- function(therapy_table, therapy_id){
+.therapy_table_parenteral_indicator <- function(therapy_table) {
   
-  medication_requests <- tbl(therapy_table$src$con,
-                             "drug_prescriptions") %>% 
-    dplyr::filter(therapy_id == !!therapy_id)
+  medication_requests <- dplyr::inner_join(
+    tbl(therapy_table$src$con, "drug_prescriptions"),
+    dplyr::distinct(therapy_table, therapy_id),
+    by = "therapy_id", copy = TRUE
+  )
   
   if (is(therapy_table$src$con, "SQLiteConnection")) {
     therapy_table_meds_join <- dplyr::left_join(
@@ -280,7 +288,8 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
     therapy_table, 
     therapy_table_meds_join, 
     by = c("patient_id", "therapy_id", "t")
-  )
+  ) %>% 
+    dplyr::arrange(therapy_id, t)
   
   return(therapy_table_parenteral)
 }
@@ -317,7 +326,8 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' This ensures that very short oral prescriptions (including when parenteral 
 #' therapy continues uninterrupted) do not distort the analysis of therapy 
 #' changes.
-#' @return a list containing one vector per therapy sequence. Each vector consists
+#' @return a named list containing, for every therapy episode, a nested list of 
+#' vectors describing therapy sequences. Each vector consists
 #' of three integers coding for the time \code{t}:
 #' \enumerate{ 
 #'    \item when the sequence is initiated (parenteral administration begins)
@@ -326,7 +336,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #'    (otherwise \code{NA_integer_})
 #' }
 #' 
-#' The integers are in direct correspondance with field \code{t} in the 
+#' The integers are in direct correspondence with field \code{t} in the 
 #' therapy episode table (\code{\link{therapy_table}()}).
 #' @export
 #' @examples 
@@ -342,8 +352,8 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' # Look for the section of the therapy table where 0 <= t <= 267
 #' filter(therapy_table(example_therapy, collect = TRUE),
 #'        between(t,
-#'                therapy_sequence[[1]][1],
-#'                therapy_sequence[[1]][2])) %>% head()
+#'                therapy_sequence[["2a2b6da3b67f6f495f4cedafb029f631"]][[1]][1],
+#'                therapy_sequence[["2a2b6da3b67f6f495f4cedafb029f631"]][[1]][2])) %>% head()
 #' # Look for the section of the therapy table near conversion (t = 220)
 #' filter(therapy_table(example_therapy, collect = TRUE),
 #'        between(t, 218, 223))
@@ -352,7 +362,12 @@ parenteral_changes <- function(therapy_episode, tolerance_hours = 12L) {
   stopifnot(is.numeric(tolerance_hours) | length(tolerance_hours) != 1)
   tolerance_hours <- as.integer(tolerance_hours)
   TT <- therapy_table(therapy_episode, collect = T)
-  .parenteral_vector_process(TT[["parenteral"]], tolerance_hours)
+  TT <- split(x = TT, f = TT$therapy_id)
+  lapply(TT, function(x, input_tolerance_hours){
+    .parenteral_vector_process(x[["parenteral"]], 
+                               input_tolerance_hours)
+    
+  }, input_tolerance_hours = tolerance_hours)
 }
 
 .parenteral_vector_process <- function(x, tolerance_hours) {
@@ -417,6 +432,35 @@ parenteral_changes <- function(therapy_episode, tolerance_hours = 12L) {
   match_indices
 }
 
+
+
+#' Verify that all therapy episodes are present in record
+#'
+#' @description To verify that a `tbl_objects` table contains 
+#' all therapy episodes referenced in the `episode@id` slot
+#' @param episode a `TherapyEpisode` object
+#' @param tbl_object a `tbl_sql` or `tbl_df` containing a `therapy_id` column
+#' @param silent if `TRUE`, will not throw a warning if not all therapy 
+#' episodes are present#'
+#' @return a boolean (and throws a warning)
+#' @noRd
+.therapy_table_completeness_check <- function(episode, tbl_object, silent = FALSE) {
+  
+  remote_ids <- dplyr::distinct(tbl_object, therapy_id) %>% 
+    dplyr::collect()
+  missing <- !episode@id %in% remote_ids$therapy_id
+  
+  if (any(missing)) {
+    if (!silent) {
+      warning("Some therapy episodes were not found:\n",
+              paste(head(episode@id[missing]), collapse = ", "),
+              ifelse(sum(!missing) > 5, "...", ""), call. = FALSE)
+    }
+  }
+  
+  all(!missing)
+}
+
 # therapy_table -------------------------------------------------------
 
 
@@ -434,6 +478,7 @@ setGeneric("therapy_table", function(object, collect = FALSE) standardGeneric("t
 #' @export
 setMethod("therapy_table", "TherapyEpisode", function(object, collect = FALSE) {
   stopifnot(is.logical(collect))
+  .therapy_table_completeness_check(object, object@therapy_table)
   if( collect ) {
     collect_ramses_tbl(object@therapy_table)
   } else {
@@ -446,6 +491,7 @@ setMethod("therapy_table", "TherapyEpisode", function(object, collect = FALSE) {
 setMethod("therapy_table", "MedicationRequest", function(object, collect = FALSE) {
   stopifnot(is.logical(collect))
   object <- TherapyEpisode(object)
+  .therapy_table_completeness_check(object, object@therapy_table)
   if( collect ) {
     collect_ramses_tbl(object@therapy_table)
   } else {
@@ -463,17 +509,22 @@ setMethod("show", "RamsesObject", function(object) {
 })
 
 setMethod("show", "TherapyEpisode", function(object) {
-  cat(class(object), object@id, "\n")
+   if( length(object@id) <= 3 ) {
+    cat(class(object), paste(object@id, collapse = ", "), "\n")
+  } else if( length(id) > 3 ) {
+    cat(class(object), paste(object@id[1:3], collapse = ", "), "...\n")
+  }
   record <- collect_ramses_tbl(object@record)
+
   if( nrow(record) == 0 ) {
     cat("Record is not available.\n")
     cat("Please check object id is valid\n")
-  } else {
-    prescriptions <- tbl(object@conn, "drug_prescriptions") %>% 
-      dplyr::filter(patient_id == !!record$patient_id & 
-                      therapy_id == !!object@id) %>% 
-      dplyr::arrange(therapy_rank) %>% 
-      dplyr::select(prescription_text) %>% 
+  } else if( length(object@id) == 1 ) {
+    prescriptions <- tbl(object@conn, "drug_prescriptions") %>%
+      dplyr::filter(patient_id == !!record$patient_id &
+                      therapy_id == !!object@id) %>%
+      dplyr::arrange(therapy_rank) %>%
+      dplyr::select(prescription_text) %>%
       dplyr::collect()
     cat("Patient:  ", record$patient_id, "\n")
     cat("Start:    ", as.character(record$therapy_start, format = "%Y-%m-%d %H:%M:%S %Z"), "\n")
@@ -485,7 +536,15 @@ setMethod("show", "TherapyEpisode", function(object) {
     } else {
       cat(paste0(" > ", prescriptions$prescription_text, "\n"))
     }
+  } else if( length(object@id) > 1 ) {
+    cat("[total of", nrow(record), "therapy episodes]\n")
+    if (length(unique(record$patient_id)) > 3) {
+      cat("Patients:  ", paste(unique(record$patient_id)[1:3], collapse = ", "), ", ...\n")
+    } else {
+      cat("Patient(s):  ", paste(unique(record$patient_id), collapse = ", "), "\n")
+    }
   }
+
   cat("\nDatabase connection:\n")
   show(object@conn)
 })
@@ -510,3 +569,25 @@ setMethod("show", "MedicationRequest", function(object) {
   print(object@conn)
 })
 
+
+# compute/collect methods -------------------------------------------------
+
+setMethod("collect", "RamsesObject", function(x) {
+  collect_ramses_tbl(x@record)
+})
+
+setMethod("compute", "RamsesObject", function(x) {
+  x@record <- dplyr::compute(x@record)
+  x
+})
+
+setMethod("collect", "TherapyEpisode", function(x) {
+  .therapy_table_completeness_check(x, x@record)
+  collect_ramses_tbl(x@record)
+})
+
+setMethod("compute", "TherapyEpisode", function(x) {
+  .therapy_table_completeness_check(x, x@record)
+  x@record <- dplyr::compute(x@record)
+  x
+})

@@ -94,14 +94,19 @@ setMethod(
   function(x, load_timevis_dependencies = FALSE) {
 
     input_therapy_episode <- x
+    if (length(input_therapy_episode@id) > 1) {
+      input_therapy_episode <- TherapyEpisode(x@conn, x@id[1])
+      warning("`x` contains multiple therapy episodes.\n",
+              "Only the first therapy episode will be used.", call. = FALSE)
+    }
     if( nrow(collect(input_therapy_episode)) == 0 ) {
-      stop("TherapyEpisode not found in the database")
+      stop("TherapyEpisode not found in the database", call. = FALSE)
     }
     
     input_patient <- Patient(input_therapy_episode@conn, 
                              collect(input_therapy_episode)$patient_id)
     if( nrow(collect(input_patient)) == 0 ) {
-      stop("Patient not found in the database")
+      stop("Patient not found in the database", call. = FALSE)
     }
     
     date_window <- collect(input_therapy_episode) %>% 

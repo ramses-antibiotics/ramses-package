@@ -14,7 +14,8 @@ an absence of prescription or the administration of some oral drugs
 will be ignored. The default is 12.}
 }
 \value{
-a list containing one vector per therapy sequence. Each vector consists
+a named list containing, for every therapy episode, a nested list of 
+vectors describing therapy sequences. Each vector consists
 of three integers coding for the time \code{t}:
 \enumerate{ 
    \item when the sequence is initiated (parenteral administration begins)
@@ -23,7 +24,7 @@ of three integers coding for the time \code{t}:
    (otherwise \code{NA_integer_})
 }
 
-The integers are in direct correspondance with field \code{t} in the 
+The integers are in direct correspondence with field \code{t} in the 
 therapy episode table (\code{\link{therapy_table}()}).
 }
 \description{
@@ -69,8 +70,8 @@ therapy_sequence
 # Look for the section of the therapy table where 0 <= t <= 267
 filter(therapy_table(example_therapy, collect = TRUE),
        between(t,
-               therapy_sequence[[1]][1],
-               therapy_sequence[[1]][2])) \%>\% head()
+               therapy_sequence[["2a2b6da3b67f6f495f4cedafb029f631"]][[1]][1],
+               therapy_sequence[["2a2b6da3b67f6f495f4cedafb029f631"]][[1]][2])) \%>\% head()
 # Look for the section of the therapy table near conversion (t = 220)
 filter(therapy_table(example_therapy, collect = TRUE),
        between(t, 218, 223))

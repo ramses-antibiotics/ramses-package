@@ -5,6 +5,7 @@
 ## Improvements
 
 * faster implementation of prescription linkage using `igraph` dependency
+* `TherapyEpisode` class now supporting multiple therapy episodes
 
 ## Bug fixes
 

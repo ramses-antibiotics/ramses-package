@@ -139,8 +139,9 @@ test_that("Ramses on SQLite 2", {
       therapy_end = "2016-08-03 11:15:19+01:00"
     )
   )
+  
 
-# > recreate therapy episodes and combinations --------------------------------
+  # > recreate therapy episodes and combinations --------------------------------
   
   DBI::dbRemoveTable(conSQLite, "drug_prescriptions_edges")
   DBI::dbRemoveTable(conSQLite, "drug_therapy_episodes")
@@ -266,14 +267,66 @@ test_that("Ramses on SQLite 2", {
   expect_equivalent(tail(therapy_table(test_medication_request, collect = TRUE)), 
                     test_expected_tail)
   
+  # > 2+ TherapyEpisode -------------------------------------------------------
+  
+  test_episode <- TherapyEpisode(conn = conSQLite, 
+                                 id = c("f770855cf9d424c76fdfbc9786d508ac", 
+                                        "5528fc41106bb48eb4d48bc412e13e67"))
+  expect_is(test_episode, "TherapyEpisode")
+  
+  test_expected_tail_second_therapy_episode <- dplyr::tibble(
+    t = 117:122, 
+    patient_id = "8258333156", 
+    therapy_id = "f770855cf9d424c76fdfbc9786d508ac", 
+    therapy_start = structure(
+      c(1444239793, 1444239793, 1444239793, 1444239793, 
+        1444239793, 1444239793), tzone = "", class = c("POSIXct", "POSIXt")), 
+    therapy_end = structure(
+      c(1444681333, 1444681333, 1444681333, 1444681333, 
+        1444681333, 1444681333), tzone = "", class = c("POSIXct", "POSIXt")), 
+    t_start = structure(
+      c(1444660993, 1444664593, 1444668193, 1444671793, 
+        1444675393, 1444678993), tzone = "", class = c("POSIXct", "POSIXt")), 
+    t_end = structure(
+      c(1444664593, 1444668193, 1444671793, 1444675393, 
+        1444678993, 1444681333), tzone = "", class = c("POSIXct", "POSIXt")), 
+    parenteral = 0L
+  )
+  expect_equivalent(head(therapy_table(test_episode, collect = TRUE)), 
+                    test_expected_head)
+  
+  expect_equivalent(tail(therapy_table(test_episode, collect = TRUE)), 
+                    test_expected_tail_second_therapy_episode)
+  
+  # > .therapy_table_completeness_check -------------------------------------
+  
+  expect_true(
+    .therapy_table_completeness_check(
+      episode = TherapyEpisode(conSQLite, "592a738e4c2afcae6f625c01856151e0"),
+      tbl_object = TherapyEpisode(conSQLite, "592a738e4c2afcae6f625c01856151e0")@therapy_table,
+      silent = F
+    )
+  )
+  
+  expect_false(
+    expect_warning(
+      .therapy_table_completeness_check(
+        episode = TherapyEpisode(conSQLite, "592a738e4c2afcae6f625c01856151e0"),
+        tbl_object = TherapyEpisode(conSQLite, "89ac870bc1c1e4b2a37cec79d188cb08")@therapy_table,
+        silent = F
+      )
+    )
+  )
+  
   # > IVPO ------------------------------------------------------------------
   
   expect_equal(parenteral_changes(TherapyEpisode(conSQLite, "5528fc41106bb48eb4d48bc412e13e67")), 
-               list(c(0, 241, 6)))
-  expect_equal(parenteral_changes(TherapyEpisode(conSQLite, "f770855cf9d424c76fdfbc9786d508ac")), 
-               list(c(0, 122, 74)))
-  expect_equal(parenteral_changes(TherapyEpisode(conSQLite, "74e3f378b91c6d7121a0d637bd56c2fa")), 
-               list(c(0, 97, 49)))
+               list("5528fc41106bb48eb4d48bc412e13e67" = list(c(0, 241, 6))))
+  expect_equal(parenteral_changes(TherapyEpisode(conSQLite, 
+                                                 c("f770855cf9d424c76fdfbc9786d508ac",
+                                                   "74e3f378b91c6d7121a0d637bd56c2fa"))), 
+               list("74e3f378b91c6d7121a0d637bd56c2fa" = list(c(0, 97, 49)),
+                    "f770855cf9d424c76fdfbc9786d508ac" = list(c(0, 122, 74))))
   
   # Three IVPO changes in pt 5726385525 with only one therapy episode
   single_therapy <- dplyr::collect(dplyr::filter(tbl(conSQLite, "drug_prescriptions"), 
@@ -282,9 +335,9 @@ test_that("Ramses on SQLite 2", {
   expect_equal(
     parenteral_changes(TherapyEpisode(conSQLite, "a028cf950c29ca73c01803b54642d513")),
     list(
-      c(0, 144, 97),
-      c(146, 316, 219),
-      c(318, 390,  NA)
+      "a028cf950c29ca73c01803b54642d513" = list(c(0, 144, 97),
+                                                c(146, 316, 219),
+                                                c(318, 390,  NA))
     )
   )
   
@@ -323,6 +376,14 @@ test_that("Ramses on SQLite 2", {
   expect_is(
     therapy_timeline(TherapyEpisode(conn = conSQLite,
                                     id = "4d611fc8886c23ab047ad5f74e5080d7")), 
+    "timevis")
+  
+  expect_is(
+    expect_warning(
+      therapy_timeline(TherapyEpisode(conn = conSQLite,
+                                      id = c("4d611fc8886c23ab047ad5f74e5080d7",
+                                             "a028cf950c29ca73c01803b54642d513")))
+    ), 
     "timevis")
   
   
@@ -866,14 +927,66 @@ test_that("Ramses on PosgreSQL", {
   expect_equivalent(tail(therapy_table(test_medication_request, collect = TRUE)), 
                     test_expected_tail)
   
+  # > 2+ TherapyEpisode -------------------------------------------------------
+  
+  test_episode <- TherapyEpisode(conn = conPostgreSQL, 
+                                 id = c("f770855cf9d424c76fdfbc9786d508ac", 
+                                        "5528fc41106bb48eb4d48bc412e13e67"))
+  expect_is(test_episode, "TherapyEpisode")
+  
+  test_expected_tail_second_therapy_episode <- dplyr::tibble(
+    t = 117:122, 
+    patient_id = "8258333156", 
+    therapy_id = "f770855cf9d424c76fdfbc9786d508ac", 
+    therapy_start = structure(
+      c(1444239793, 1444239793, 1444239793, 1444239793, 
+        1444239793, 1444239793), tzone = "", class = c("POSIXct", "POSIXt")), 
+    therapy_end = structure(
+      c(1444681333, 1444681333, 1444681333, 1444681333, 
+        1444681333, 1444681333), tzone = "", class = c("POSIXct", "POSIXt")), 
+    t_start = structure(
+      c(1444660993, 1444664593, 1444668193, 1444671793, 
+        1444675393, 1444678993), tzone = "", class = c("POSIXct", "POSIXt")), 
+    t_end = structure(
+      c(1444664593, 1444668193, 1444671793, 1444675393, 
+        1444678993, 1444681333), tzone = "", class = c("POSIXct", "POSIXt")), 
+    parenteral = 0L
+  )
+  expect_equivalent(head(therapy_table(test_episode, collect = TRUE)), 
+                    test_expected_head)
+  
+  expect_equivalent(tail(therapy_table(test_episode, collect = TRUE)), 
+                    test_expected_tail_second_therapy_episode)
+  
+  # > .therapy_table_completeness_check -------------------------------------
+  
+  expect_true(
+    .therapy_table_completeness_check(
+      episode = TherapyEpisode(conPostgreSQL, "592a738e4c2afcae6f625c01856151e0"),
+      tbl_object = TherapyEpisode(conPostgreSQL, "592a738e4c2afcae6f625c01856151e0")@therapy_table,
+      silent = F
+    )
+  )
+  
+  expect_false(
+    expect_warning(
+      .therapy_table_completeness_check(
+        episode = TherapyEpisode(conPostgreSQL, "592a738e4c2afcae6f625c01856151e0"),
+        tbl_object = TherapyEpisode(conPostgreSQL, "89ac870bc1c1e4b2a37cec79d188cb08")@therapy_table,
+        silent = F
+      )
+    )
+  )
+  
   #> IVPO ------------------------------------------------------------------
   
   expect_equal(parenteral_changes(TherapyEpisode(conPostgreSQL, "5528fc41106bb48eb4d48bc412e13e67")), 
-               list(c(0, 241, 6)))
-  expect_equal(parenteral_changes(TherapyEpisode(conPostgreSQL, "f770855cf9d424c76fdfbc9786d508ac")), 
-               list(c(0, 122, 74)))
-  expect_equal(parenteral_changes(TherapyEpisode(conPostgreSQL, "74e3f378b91c6d7121a0d637bd56c2fa")), 
-               list(c(0, 97, 49)))
+               list("5528fc41106bb48eb4d48bc412e13e67" = list(c(0, 241, 6))))
+  expect_equal(parenteral_changes(TherapyEpisode(conPostgreSQL, 
+                                                 c("f770855cf9d424c76fdfbc9786d508ac",
+                                                   "74e3f378b91c6d7121a0d637bd56c2fa"))), 
+               list("74e3f378b91c6d7121a0d637bd56c2fa" = list(c(0, 97, 49)),
+                    "f770855cf9d424c76fdfbc9786d508ac" = list(c(0, 122, 74))))
   
   # Three IVPO changes in pt 5726385525 with only one therapy episode
   single_therapy <- dplyr::collect(dplyr::filter(tbl(conPostgreSQL, "drug_prescriptions"), 
@@ -882,9 +995,9 @@ test_that("Ramses on PosgreSQL", {
   expect_equal(
     parenteral_changes(TherapyEpisode(conPostgreSQL, "a028cf950c29ca73c01803b54642d513")),
     list(
-      c(0, 144, 97),
-      c(146, 316, 219),
-      c(318, 390,  NA)
+      "a028cf950c29ca73c01803b54642d513" = list(c(0, 144, 97),
+                                                c(146, 316, 219),
+                                                c(318, 390,  NA))
     )
   )
   
@@ -985,6 +1098,14 @@ test_that("Ramses on PosgreSQL", {
   expect_is(
     therapy_timeline(TherapyEpisode(conn = conPostgreSQL,
                                     id = "4d611fc8886c23ab047ad5f74e5080d7")), 
+    "timevis")
+  
+  expect_is(
+    expect_warning(
+      therapy_timeline(TherapyEpisode(conn = conSQLite,
+                                      id = c("4d611fc8886c23ab047ad5f74e5080d7",
+                                             "a028cf950c29ca73c01803b54642d513")))
+    ), 
     "timevis")
   
   # > clinical features --------------------------------------------------------
