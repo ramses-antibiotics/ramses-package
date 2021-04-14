@@ -128,12 +128,14 @@
                                                  observation_code_system) {
   
   if(is(x@conn, "SQLiteConnection")) {
+    sql_expression_0 <- paste0("datetime(therapy_start, '-", hours, " hours')")
     sql_condition_0 <- paste("datetime(observation_datetime) BETWEEN ", 
                              "datetime(therapy_start) AND datetime(therapy_end)")
     sql_condition_1 <- paste0("datetime(observation_datetime) <= datetime(t_start) AND ",
                               "datetime(observation_datetime) >= ", 
                               "datetime(t_start, -", hours," || ' hours')")
   } else if(is(x@conn, "PqConnection")) {
+    sql_expression_0 <- paste0("therapy_start - interval '", hours, "h'")
     sql_condition_0 <- "observation_datetime BETWEEN therapy_start AND therapy_end"
     sql_condition_1 <- paste0(
       "observation_datetime <= t_start AND ",
@@ -143,7 +145,6 @@
                                         class(x@conn))
   }
   
-  sql_expression_0 <- paste0("datetime(therapy_start, '-", hours, " hours')")
   clinical_ix_inclusion <- x@record %>% 
     dplyr::transmute(
       patient_id, 
