@@ -1122,7 +1122,7 @@ test_that("Ramses on PosgreSQL", {
   
   expect_is(
     expect_warning(
-      therapy_timeline(TherapyEpisode(conn = conSQLite,
+      therapy_timeline(TherapyEpisode(conn = conPostgreSQL,
                                       id = c("4d611fc8886c23ab047ad5f74e5080d7",
                                              "a028cf950c29ca73c01803b54642d513")))
     ), 
