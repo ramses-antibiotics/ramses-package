@@ -404,6 +404,7 @@ test_that("Ramses on SQLite 2", {
     observation_code = "8310-5",
     hours = 24
   )
+
   expect_equal(
     collect_ramses_tbl(last_temp@therapy_table)$last_temperature_24h[1:5],
     c(36.9, 36.9, 36.8, 36.8, 36.8)
@@ -412,6 +413,25 @@ test_that("Ramses on SQLite 2", {
     collect_ramses_tbl(last_temp@therapy_table)$last_temperature_24h[174:178],
     c(35.8, 35.8, 36.0, 36.0, 36.0)
   )
+  
+  last_temp_2therapies <- clinical_feature_last(
+    TherapyEpisode(conSQLite, c("4d611fc8886c23ab047ad5f74e5080d7",
+                                "a028cf950c29ca73c01803b54642d513")),
+    observation_code = "8310-5",
+    hours = 24
+  )
+  expect_equal(
+    dplyr::filter(collect_ramses_tbl(last_temp_2therapies@therapy_table), 
+                  therapy_id == "4d611fc8886c23ab047ad5f74e5080d7")$last_temperature_24h[1:5],
+    c(36.9, 36.9, 36.8, 36.8, 36.8)
+  )
+  expect_equal(
+    dplyr::filter(collect_ramses_tbl(last_temp_2therapies@therapy_table), 
+                  therapy_id == "4d611fc8886c23ab047ad5f74e5080d7" & 
+                    t %in% 173:177)$last_temperature_24h,
+    c(35.8, 35.8, 36.0, 36.0, 36.0)
+  )
+  
   last_temp <- clinical_feature_last(
     TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_code = c("8310-5", "2160-0"),
@@ -1133,6 +1153,25 @@ test_that("Ramses on PosgreSQL", {
     collect_ramses_tbl(last_temp@therapy_table)$last_temperature_24h[174:178],
     c(35.8, 35.8, 36.0, 36.0, 36.0)
   )
+  
+  last_temp_2therapies <- clinical_feature_last(
+    TherapyEpisode(conPostgreSQL, c("4d611fc8886c23ab047ad5f74e5080d7",
+                                    "a028cf950c29ca73c01803b54642d513")),
+    observation_code = "8310-5",
+    hours = 24
+  )
+  expect_equal(
+    dplyr::filter(collect_ramses_tbl(last_temp_2therapies@therapy_table), 
+                  therapy_id == "4d611fc8886c23ab047ad5f74e5080d7")$last_temperature_24h[1:5],
+    c(36.9, 36.9, 36.8, 36.8, 36.8)
+  )
+  expect_equal(
+    dplyr::filter(collect_ramses_tbl(last_temp_2therapies@therapy_table), 
+                  therapy_id == "4d611fc8886c23ab047ad5f74e5080d7" & 
+                    t %in% 173:177)$last_temperature_24h,
+    c(35.8, 35.8, 36.0, 36.0, 36.0)
+  )
+  
   last_temp <- clinical_feature_last(
     TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_code = c("8310-5", "2160-0"),

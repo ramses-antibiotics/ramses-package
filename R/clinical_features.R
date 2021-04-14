@@ -128,24 +128,13 @@
                                                  observation_code_system) {
   
   if(is(x@conn, "SQLiteConnection")) {
-    sql_condition_0 <- paste0(
-      "datetime(observation_datetime) BETWEEN '",
-      .format_str_time_sqlite.POSIXct(therapy_record$therapy_start - 3600 * hours), "' AND '",
-      .format_str_time_sqlite.POSIXct(therapy_record$therapy_end), 
-      "'"
-    )
-    sql_condition_1 <- paste0(
-      "datetime(observation_datetime) <= datetime(t_start) AND ",
-      "datetime(observation_datetime) >= ", 
-      "datetime(t_start, -", hours," || ' hours')")
+    sql_condition_0 <- paste("datetime(observation_datetime) BETWEEN ", 
+                             "datetime(therapy_start) AND datetime(therapy_end)")
+    sql_condition_1 <- paste0("datetime(observation_datetime) <= datetime(t_start) AND ",
+                              "datetime(observation_datetime) >= ", 
+                              "datetime(t_start, -", hours," || ' hours')")
   } else if(is(x@conn, "PqConnection")) {
-    sql_condition_0 <- paste0(
-      "observation_datetime BETWEEN '",
-      format(therapy_record$therapy_start - 3600 * hours, "%Y-%m-%d %H:%M:%S", tz = "UTC"),
-      "' AND '",
-      format(therapy_record$therapy_end, "%Y-%m-%d %H:%M:%S", tz = "UTC"),
-      "'"
-    )
+    sql_condition_0 <- "observation_datetime BETWEEN therapy_start AND therapy_end"
     sql_condition_1 <- paste0(
       "observation_datetime <= t_start AND ",
       "observation_datetime >= (t_start - interval '", hours, "h')")
@@ -154,19 +143,40 @@
                                         class(x@conn))
   }
   
+  sql_expression_0 <- paste0("datetime(therapy_start, '-", hours, " hours')")
+  clinical_ix_inclusion <- x@record %>% 
+    dplyr::transmute(
+      patient_id, 
+      therapy_id, 
+      therapy_start = dplyr::sql(sql_expression_0), 
+      therapy_end
+    )
+  
+  all_observations <- tbl(x@conn, "inpatient_investigations") %>% 
+    dplyr::filter(
+      observation_code %in% !!observation_code &
+        status %in% c("final", "preliminary", "corrected", "amended") &
+        !is.na(observation_value_numeric) 
+    )
+  
   if( !is.null(observation_code_system) ) {
-    all_observations <- tbl(x@conn, "inpatient_investigations") %>%
-      dplyr::filter(observation_code_system == !!observation_code_system)
-  } else {
-    all_observations <- tbl(x@conn, "inpatient_investigations")
+    all_observations <- dplyr::filter(all_observations, 
+                                      observation_code_system == !!observation_code_system) 
   }
   
-  all_observations <- all_observations %>% 
-    dplyr::filter(patient_id %in% !!therapy_record$patient_id &
-                    observation_code %in% !!observation_code &
-                    status %in% c("final", "preliminary", "corrected", "amended") &
-                    !is.na(observation_value_numeric) &
-                    dplyr::sql(sql_condition_0)) %>%
+  clinical_ix_inclusion <- dplyr::inner_join(
+    all_observations,
+    clinical_ix_inclusion,
+    by = "patient_id"
+  ) %>% 
+    dplyr::filter(dplyr::sql(sql_condition_0)) %>% 
+    dplyr::distinct(patient_id, observation_id)
+    
+  all_observations <- dplyr::inner_join(
+    all_observations,
+    clinical_ix_inclusion, 
+    by = c("patient_id", "observation_id")
+  ) %>%
     dplyr::select(patient_id, observation_datetime,
                   observation_code, observation_value_numeric)
   

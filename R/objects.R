@@ -288,8 +288,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
     therapy_table, 
     therapy_table_meds_join, 
     by = c("patient_id", "therapy_id", "t")
-  ) %>% 
-    dplyr::arrange(therapy_id, t)
+  )
   
   return(therapy_table_parenteral)
 }
@@ -480,7 +479,8 @@ setMethod("therapy_table", "TherapyEpisode", function(object, collect = FALSE) {
   stopifnot(is.logical(collect))
   .therapy_table_completeness_check(object, object@therapy_table)
   if( collect ) {
-    collect_ramses_tbl(object@therapy_table)
+    collect_ramses_tbl(object@therapy_table) %>% 
+      dplyr::arrange(therapy_id, t)
   } else {
     object@therapy_table
   }
@@ -493,7 +493,8 @@ setMethod("therapy_table", "MedicationRequest", function(object, collect = FALSE
   object <- TherapyEpisode(object)
   .therapy_table_completeness_check(object, object@therapy_table)
   if( collect ) {
-    collect_ramses_tbl(object@therapy_table)
+    collect_ramses_tbl(object@therapy_table) %>% 
+      dplyr::arrange(therapy_id, t)
   } else {
     object@therapy_table
   }
