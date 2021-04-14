@@ -213,6 +213,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
       dplyr::mutate(t_start = dplyr::sql("therapy_start + interval '1h' * t "))%>% 
       dplyr::filter(t_start < therapy_end) %>% 
       dplyr::mutate(t_end = dplyr::sql("therapy_start + interval '1h' * (t + 1)")) %>% 
+      dplyr::group_by(patient_id, therapy_id) %>% 
       dplyr::mutate(t_end = dplyr::if_else(
         t == max(t, na.rm = TRUE),
         therapy_end,

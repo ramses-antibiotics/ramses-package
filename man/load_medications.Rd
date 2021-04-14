@@ -2,8 +2,6 @@
 % Please edit documentation in R/database.R
 \name{load_medications}
 \alias{load_medications}
-\alias{load_medications.SQLiteConnection}
-\alias{load_medications.PqConnection}
 \title{Load drug prescription records into the warehouse}
 \usage{
 load_medications(
@@ -13,24 +11,6 @@ load_medications(
   overwrite = FALSE,
   transitive_closure_controls = transitive_closure_control(),
   silent = FALSE
-)
-
-\method{load_medications}{SQLiteConnection}(
-  conn,
-  prescriptions,
-  administrations = NULL,
-  overwrite = FALSE,
-  transitive_closure_controls = transitive_closure_control(),
-  silent = TRUE
-)
-
-\method{load_medications}{PqConnection}(
-  conn,
-  prescriptions,
-  administrations = NULL,
-  overwrite = FALSE,
-  transitive_closure_controls = transitive_closure_control(),
-  silent = TRUE
 )
 }
 \arguments{

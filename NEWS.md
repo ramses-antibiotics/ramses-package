@@ -6,6 +6,7 @@
 
 * faster implementation of prescription linkage using `igraph` dependency
 * `TherapyEpisode` class now supporting multiple therapy episodes
+* updated schema of microbiology isolates and susceptibilities: isolates are now identified by field `isolate_id` rather than `organism_id`
 
 ## Bug fixes
 

@@ -1045,7 +1045,7 @@ validate_administrations <- function(data) {
 #' 
 #' \strong{The following fields are mandatory:}
 #' \describe{
-#'    \item{\code{organism_id}}{a unique isolated organism identifier with no missing value}
+#'    \item{\code{isolate_id}}{a unique isolated organism identifier with no missing value}
 #'    \item{\code{specimen_id}}{a specimen identifier with no missing value}
 #'    \item{\code{patient_id}}{a patient identifier with no missing value}
 #'    \item{\code{organism_code}}{a character vector containing either: \itemize{
@@ -1077,7 +1077,7 @@ validate_administrations <- function(data) {
 #' 
 #' \strong{The following fields are mandatory:}
 #' \describe{
-#'   \item{\code{organism_id}}{an isolated organism identifier with no missing value}
+#'   \item{\code{isolate_id}}{an isolated organism identifier with no missing value}
 #'   \item{\code{specimen_id}}{a specimen identifier with no missing value}
 #'   \item{\code{patient_id}}{a patient identifier with no missing value}
 #'   \item{\code{organism_code}}{a microorganism code validated using 
@@ -1159,8 +1159,8 @@ validate_microbiology <- function(specimens, isolates, susceptibilities) {
     ))
   }
   
-  if( any(!susceptibilities$organism_id %in% isolates$organism_id) ) {
-    stop("Some `organism_id` in `susceptibility` are missing from `isolates`")
+  if( any(!susceptibilities$isolate_id %in% isolates$isolate_id) ) {
+    stop("Some `isolate_id` in `susceptibility` are missing from `isolates`")
   }
   if( any(!susceptibilities$specimen_id %in% isolates$specimen_id) ) {
     stop("Some `specimen_id` in `susceptibility` are missing from `isolates`")
@@ -1348,5 +1348,5 @@ validate_investigations <- function(investigations,
 
 arrange_variables <- function(data, first_column_names) {
   other_names <- colnames(data)[!colnames(data) %in% first_column_names]
-  subset(data, select = c(first_column_names, other_names))
+  dplyr::select(data, c(first_column_names, other_names))
 }
