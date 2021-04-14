@@ -35,8 +35,10 @@ These fields are required in order to pass the validation:
      "antiviral", or "antiparasitic")}
      \item{\code{ATC_code}}{the ATC code, see \code{\link[AMR]{ab_atc}()}}
      \item{\code{ATC_group}}{the ATC group, see \code{\link[AMR]{ab_atc_group1}()}}
-     \item{\code{ATC_route}}{route of administration as defined in the ATC 
-     (\code{"O"} = oral; \code{"P"} = parenteral; \code{"R"} = rectal; \code{"V"} = vaginal)}
+     \item{\code{ATC_route}}{route of administration as defined in the ATC (
+     \code{"O"} = oral; \code{"P"} = parenteral; \code{"Inhal"} = inhaled; 
+     \code{"N"} = nasal; \code{"SL"} = sublingual/buccal/oromucosal;
+     \code{"TD"} = transdermal; \code{"R"} = rectal; \code{"V"} = vaginal)}
      \item{\code{authoring_date}}{timestamp for when the prescription was issued}
      \item{\code{prescription_start}}{timestamp for the prescription start}
      \item{\code{prescription_end}}{timestamp for the prescription end (mandated except

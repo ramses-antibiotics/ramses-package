@@ -37,8 +37,9 @@ optional requirements on drug administrations data.
      \item{\code{ATC_code}}{the ATC code, see \code{\link[AMR]{ab_atc}()}}
      \item{\code{ATC_group}}{the ATC group, see \code{\link[AMR]{ab_atc_group1}()}}
      \item{\code{ATC_route}}{route of administration as defined in the ATC (
-     \code{"O"} = oral; \code{"P"} = parenteral; \code{"R"} = rectal; 
-     \code{"V"} = vaginal)}
+     \code{"O"} = oral; \code{"P"} = parenteral; \code{"Inhal"} = inhaled; 
+     \code{"N"} = nasal; \code{"SL"} = sublingual/buccal/oromucosal;
+     \code{"TD"} = transdermal; \code{"R"} = rectal; \code{"V"} = vaginal)}
      \item{\code{dose}}{a numeric vector of dosage quantities}
      \item{\code{unit}}{a character vector of dosage units}
      \item{\code{route}}{the route of administration value natively assigned by system}
