@@ -406,11 +406,11 @@ test_that("Ramses on SQLite 2", {
   )
 
   expect_equal(
-    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_24h[1:5],
+    therapy_table(last_temp, collect = T)$last_temperature_24h[1:5],
     c(36.9, 36.9, 36.8, 36.8, 36.8)
   )
   expect_equal(
-    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_24h[174:178],
+    therapy_table(last_temp, collect = T)$last_temperature_24h[174:178],
     c(35.8, 35.8, 36.0, 36.0, 36.0)
   )
   
@@ -421,12 +421,12 @@ test_that("Ramses on SQLite 2", {
     hours = 24
   )
   expect_equal(
-    dplyr::filter(collect_ramses_tbl(last_temp_2therapies@therapy_table), 
+    dplyr::filter(therapy_table(last_temp_2therapies, collect = T), 
                   therapy_id == "4d611fc8886c23ab047ad5f74e5080d7")$last_temperature_24h[1:5],
     c(36.9, 36.9, 36.8, 36.8, 36.8)
   )
   expect_equal(
-    dplyr::filter(collect_ramses_tbl(last_temp_2therapies@therapy_table), 
+    dplyr::filter(therapy_table(last_temp_2therapies, collect = T), 
                   therapy_id == "4d611fc8886c23ab047ad5f74e5080d7" & 
                     t %in% 173:177)$last_temperature_24h,
     c(35.8, 35.8, 36.0, 36.0, 36.0)
@@ -438,19 +438,19 @@ test_that("Ramses on SQLite 2", {
     hours = 32
   )
   expect_equal(
-    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_32h[1:5],
+    therapy_table(last_temp, collect = T)$last_temperature_32h[1:5],
     c(36.9, 36.9, 36.8, 36.8, 36.8)
   )
   expect_equal(
-    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_32h[174:178],
+    therapy_table(last_temp, collect = T)$last_temperature_32h[174:178],
     c(35.8, 35.8, 36.0, 36.0, 36.0)
   )
   expect_equal(
-    collect_ramses_tbl(last_temp@therapy_table)$last_creatinine_32h[1:5],
+    therapy_table(last_temp, collect = T)$last_creatinine_32h[1:5],
     c(116, 116, 116, 135, 135)
   )
   expect_equal(
-    collect_ramses_tbl(last_temp@therapy_table)$last_creatinine_32h[174:178],
+    therapy_table(last_temp, collect = T)$last_creatinine_32h[174:178],
     c(109, 109, 109, NA, NA)
   )
   
@@ -1146,11 +1146,11 @@ test_that("Ramses on PosgreSQL", {
     hours = 24
   )
   expect_equal(
-    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_24h[1:5],
+    therapy_table(last_temp, collect = T)$last_temperature_24h[1:5],
     c(36.9, 36.9, 36.8, 36.8, 36.8)
   )
   expect_equal(
-    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_24h[174:178],
+    therapy_table(last_temp, collect = T)$last_temperature_24h[174:178],
     c(35.8, 35.8, 36.0, 36.0, 36.0)
   )
   
@@ -1161,12 +1161,12 @@ test_that("Ramses on PosgreSQL", {
     hours = 24
   )
   expect_equal(
-    dplyr::filter(collect_ramses_tbl(last_temp_2therapies@therapy_table), 
+    dplyr::filter(therapy_table(last_temp_2therapies, collect = T), 
                   therapy_id == "4d611fc8886c23ab047ad5f74e5080d7")$last_temperature_24h[1:5],
     c(36.9, 36.9, 36.8, 36.8, 36.8)
   )
   expect_equal(
-    dplyr::filter(collect_ramses_tbl(last_temp_2therapies@therapy_table), 
+    dplyr::filter(therapy_table(last_temp_2therapies, collect = T), 
                   therapy_id == "4d611fc8886c23ab047ad5f74e5080d7" & 
                     t %in% 173:177)$last_temperature_24h,
     c(35.8, 35.8, 36.0, 36.0, 36.0)
@@ -1178,19 +1178,19 @@ test_that("Ramses on PosgreSQL", {
     hours = 32
   )
   expect_equal(
-    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_32h[1:5],
+    therapy_table(last_temp, collect = T)$last_temperature_32h[1:5],
     c(36.9, 36.9, 36.8, 36.8, 36.8)
   )
   expect_equal(
-    collect_ramses_tbl(last_temp@therapy_table)$last_temperature_32h[174:178],
+    therapy_table(last_temp, collect = T)$last_temperature_32h[174:178],
     c(35.8, 35.8, 36.0, 36.0, 36.0)
   )
   expect_equal(
-    collect_ramses_tbl(last_temp@therapy_table)$last_creatinine_32h[1:5],
+    therapy_table(last_temp, collect = T)$last_creatinine_32h[1:5],
     c(116, 116, 116, 135, 135)
   )
   expect_equal(
-    collect_ramses_tbl(last_temp@therapy_table)$last_creatinine_32h[174:178],
+    therapy_table(last_temp, collect = T)$last_creatinine_32h[174:178],
     c(109, 109, 109, NA, NA)
   )
   

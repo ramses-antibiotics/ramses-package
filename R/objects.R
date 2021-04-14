@@ -453,7 +453,7 @@ parenteral_changes <- function(therapy_episode, tolerance_hours = 12L) {
   if (any(missing)) {
     if (!silent) {
       warning("Some therapy episodes were not found:\n",
-              paste(head(episode@id[missing]), collapse = ", "),
+              paste(utils::head(episode@id[missing]), collapse = ", "),
               ifelse(sum(!missing) > 5, "...", ""), call. = FALSE)
     }
   }
