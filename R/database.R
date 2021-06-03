@@ -59,8 +59,8 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
       "icd_code",
       "diagnosis_position"
     ))
-  
   diagnoses_data <- .format_str_time_sqlite.tbl_df(conn, diagnoses_data)
+  diagnoses_data <- .format_id_as_character(diagnoses_data)
 
   load_errors <- try({
     dplyr::copy_to(
@@ -122,6 +122,7 @@ load_inpatient_episodes <- function(conn,
   ]
 
   patients_data <- .format_str_time_sqlite.tbl_df(conn, patients_data)
+  patients_data <- .format_id_as_character(patients_data)
 
   episodes_data <- dplyr::arrange(episodes_data, 
                                   patient_id, episode_start)
@@ -134,6 +135,7 @@ load_inpatient_episodes <- function(conn,
     first_column_names = first_column_names_episodes) 
   
   episodes_data <- .format_str_time_sqlite.tbl_df(conn, episodes_data)
+  episodes_data <- .format_id_as_character(episodes_data)
   
   dplyr::copy_to(
     dest = conn, 
@@ -175,6 +177,7 @@ load_inpatient_episodes <- function(conn,
       first_column_names = first_column_names_wards)   
     
     wards_data <- .format_str_time_sqlite.tbl_df(conn, wards_data)
+    wards_data <- .format_id_as_character(wards_data)
 
     load_errors <- try({
       dplyr::copy_to(
@@ -219,6 +222,7 @@ load_inpatient_investigations <- function(conn, investigations_data, overwrite =
     first_column_names = first_variables)
   
   investigations_data <- .format_str_time_sqlite.tbl_df(conn, investigations_data)
+  investigations_data <- .format_id_as_character(investigations_data)
   
   load_errors <- try({
     dplyr::copy_to(
@@ -285,7 +289,10 @@ load_inpatient_microbiology <- function(conn,
   specimens <- .format_str_time_sqlite.tbl_df(conn, specimens)
   isolates <- .format_str_time_sqlite.tbl_df(conn, isolates)
   susceptibilities <- .format_str_time_sqlite.tbl_df(conn, susceptibilities)
-  
+  specimens <- .format_id_as_character(specimens)
+  isolates <- .format_id_as_character(isolates)
+  susceptibilities <- .format_id_as_character(susceptibilities)
+
   load_errors <- try({
     dplyr::copy_to(
       dest = conn,
@@ -432,6 +439,7 @@ load_medications <- function(
   prescriptions <- dplyr::arrange(prescriptions, patient_id, prescription_start)
   prescriptions$id <- seq_len(nrow(prescriptions))
   prescriptions <- .format_str_time_sqlite.tbl_df(conn, prescriptions)
+  prescriptions <- .format_id_as_character(prescriptions)
   
   if (is(conn, "PqConnection")) {
     if( !is(prescriptions$authoring_date, "POSIXct") ){
@@ -769,6 +777,7 @@ create_therapy_episodes <- function(
     first_column_names = first_column_names
   ) 
   administrations <- .format_str_time_sqlite.tbl_df(conn, administrations)
+  administrations <- .format_id_as_character(administrations)
   
   load_output <- try({
     dplyr::copy_to(
@@ -1391,7 +1400,29 @@ create_mock_database <- function(file,
     ":",
     substr(as.character(x, format = "%z"), 4, 5)
   )
-} 
+}
+
+.format_id_as_character <- function(x) {
+  
+  idvars <- c(
+    "patient_id",
+    "spell_id",
+    "observation_id",
+    "specimen_id",
+    "isolate_id",
+    "prescription_id",
+    "combination_id",
+    "therapy_id",
+    "administration_id"
+  )
+  idvars <- idvars[idvars %in% colnames(x)]
+  
+  for (i in idvars) {
+    x[[i]] <- as.character(x[[i]])
+  }
+  
+  x
+}
 
 #' Collect SQL tibble with correct date-time specifications
 #' 

@@ -70,3 +70,14 @@ test_that(".compute_bed_days.SQLiteConnection", {
     1.25)
   dbDisconnect(temp_db)
 })
+
+test_that(".format_id_as_character", {
+  expect_equal(
+    .format_id_as_character(data.frame(list(patient_id = 1:2))),
+    data.frame(list(patient_id = c("1", "2")), stringsAsFactors = F)
+  )
+  expect_equal(
+    .format_id_as_character(data.frame(list(patient_id2 = 1:2))),
+    data.frame(list(patient_id2 = 1:2), stringsAsFactors = F)
+  )
+})
