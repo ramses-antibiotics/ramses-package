@@ -60,6 +60,7 @@ Remotes:
     ramses-antibiotics/snomedizer
 RdMacros: Rdpack    
 RoxygenNote: 7.1.1
+Config/testthat/edition: 3
 VignetteBuilder: knitr,rmarkdown
 Collate: 
     'Ramses-package.R'
