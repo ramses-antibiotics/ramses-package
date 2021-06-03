@@ -20,7 +20,7 @@ test_that("Ramses on SQLite 1", {
     dplyr::select(prescription_id, combination_id, therapy_id) %>% 
     dplyr::arrange(therapy_id, prescription_id) %>% 
     dplyr::collect()
-  expect_equivalent(
+  expect_equal(ignore_attr = TRUE, 
     test_output, 
     dplyr::tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0",
                                       "0bf9ea7732dd6e904ab670a407382d95",
@@ -114,7 +114,7 @@ test_that("Ramses on SQLite 2", {
     dplyr::select(prescription_id, combination_id, therapy_id) %>% 
     dplyr::arrange(therapy_id, prescription_id) %>% 
     dplyr::collect()
-  expect_equivalent(
+  expect_equal(ignore_attr = TRUE, 
     test_output, 
     dplyr::tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0",
                                       "0bf9ea7732dd6e904ab670a407382d95",
@@ -130,7 +130,7 @@ test_that("Ramses on SQLite 2", {
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
     dplyr::collect() 
   
-  expect_equivalent(
+  expect_equal(ignore_attr = TRUE, 
     test_output, 
     dplyr::tibble(
       patient_id = "1555756339",
@@ -152,7 +152,7 @@ test_that("Ramses on SQLite 2", {
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
     dplyr::collect()
   
-  expect_equivalent(
+  expect_equal(ignore_attr = TRUE, 
     test_output, 
     dplyr::tibble(
       patient_id = "1555756339",
@@ -248,8 +248,8 @@ test_that("Ramses on SQLite 2", {
     parenteral = 0L
   )
   
-  expect_equivalent(head(test_output), test_expected_head)
-  expect_equivalent(tail(test_output), test_expected_tail)
+  expect_equal(ignore_attr = TRUE, head(test_output), test_expected_head)
+  expect_equal(ignore_attr = TRUE, tail(test_output), test_expected_tail)
   expect_equal(
     sum(difftime(test_output$t_end, test_output$t_start,units =  "hours")),
     structure(241.883333333333, class = "difftime", units = "hours")
@@ -258,13 +258,13 @@ test_that("Ramses on SQLite 2", {
   test_medication_request <- MedicationRequest(conSQLite, "5528fc41106bb48eb4d48bc412e13e67")
   expect_is(test_medication_request, "MedicationRequest")
   expect_is(TherapyEpisode(test_medication_request), "TherapyEpisode")
-  expect_equivalent(head(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+  expect_equal(ignore_attr = TRUE, head(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_head)
-  expect_equivalent(tail(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+  expect_equal(ignore_attr = TRUE, tail(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_tail)
-  expect_equivalent(head(therapy_table(test_medication_request, collect = TRUE)), 
+  expect_equal(ignore_attr = TRUE, head(therapy_table(test_medication_request, collect = TRUE)), 
                     test_expected_head)
-  expect_equivalent(tail(therapy_table(test_medication_request, collect = TRUE)), 
+  expect_equal(ignore_attr = TRUE, tail(therapy_table(test_medication_request, collect = TRUE)), 
                     test_expected_tail)
   
   # > 2+ TherapyEpisode -------------------------------------------------------
@@ -292,10 +292,10 @@ test_that("Ramses on SQLite 2", {
         1444678993, 1444681333), tzone = "", class = c("POSIXct", "POSIXt")), 
     parenteral = 0L
   )
-  expect_equivalent(head(therapy_table(test_episode, collect = TRUE)), 
+  expect_equal(ignore_attr = TRUE, head(therapy_table(test_episode, collect = TRUE)), 
                     test_expected_head)
   
-  expect_equivalent(tail(therapy_table(test_episode, collect = TRUE)), 
+  expect_equal(ignore_attr = TRUE, tail(therapy_table(test_episode, collect = TRUE)), 
                     test_expected_tail_second_therapy_episode)
   
   # > .therapy_table_completeness_check -------------------------------------
@@ -712,7 +712,7 @@ test_that(".format_str_time_sqlite.tbl_df", {
   dplyr::copy_to(conSQLite, 
                  test_posixct,
                  overwrite = TRUE)
-  expect_equivalent(
+  expect_equal(ignore_attr = TRUE, 
     collect_ramses_tbl(tbl(conSQLite, "test_posixct")),
     dplyr::tibble(t_start = as.POSIXct("2017-07-02 01:15:46", tz = "Europe/London"))
   )
@@ -866,7 +866,7 @@ test_that("Ramses on PosgreSQL", {
     dplyr::select(prescription_id, combination_id, therapy_id) %>% 
     dplyr::arrange(therapy_id, prescription_id) %>% 
     dplyr::collect()
-  expect_equivalent(
+  expect_equal(ignore_attr = TRUE, 
     test_output, 
     dplyr::tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0",
                                       "0bf9ea7732dd6e904ab670a407382d95",
@@ -882,7 +882,7 @@ test_that("Ramses on PosgreSQL", {
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
     dplyr::collect()
   
-  expect_equivalent(
+  expect_equal(ignore_attr = TRUE, 
     test_output, 
     dplyr::tibble(
       patient_id = "1555756339",
@@ -928,8 +928,8 @@ test_that("Ramses on PosgreSQL", {
     parenteral = 0L
   )
 
-  expect_equivalent(head(test_output), test_expected_head)
-  expect_equivalent(tail(test_output), test_expected_tail)
+  expect_equal(ignore_attr = TRUE, head(test_output), test_expected_head)
+  expect_equal(ignore_attr = TRUE, tail(test_output), test_expected_tail)
   expect_equal(
     sum(difftime(test_output$t_end, test_output$t_start,units =  "hours")),
     structure(241.883333333333, class = "difftime", units = "hours")
@@ -938,13 +938,13 @@ test_that("Ramses on PosgreSQL", {
   test_medication_request <- MedicationRequest(conPostgreSQL, "5528fc41106bb48eb4d48bc412e13e67")
   expect_is(test_medication_request, "MedicationRequest")
   expect_is(TherapyEpisode(test_medication_request), "TherapyEpisode")
-  expect_equivalent(head(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+  expect_equal(ignore_attr = TRUE, head(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_head)
-  expect_equivalent(tail(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+  expect_equal(ignore_attr = TRUE, tail(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_tail)
-  expect_equivalent(head(therapy_table(test_medication_request, collect = TRUE)), 
+  expect_equal(ignore_attr = TRUE, head(therapy_table(test_medication_request, collect = TRUE)), 
                     test_expected_head)
-  expect_equivalent(tail(therapy_table(test_medication_request, collect = TRUE)), 
+  expect_equal(ignore_attr = TRUE, tail(therapy_table(test_medication_request, collect = TRUE)), 
                     test_expected_tail)
   
   # > 2+ TherapyEpisode -------------------------------------------------------
@@ -972,10 +972,10 @@ test_that("Ramses on PosgreSQL", {
         1444678993, 1444681333), tzone = "", class = c("POSIXct", "POSIXt")), 
     parenteral = 0L
   )
-  expect_equivalent(head(therapy_table(test_episode, collect = TRUE)), 
+  expect_equal(ignore_attr = TRUE, head(therapy_table(test_episode, collect = TRUE)), 
                     test_expected_head)
   
-  expect_equivalent(tail(therapy_table(test_episode, collect = TRUE)), 
+  expect_equal(ignore_attr = TRUE, tail(therapy_table(test_episode, collect = TRUE)), 
                     test_expected_tail_second_therapy_episode)
   
   # > .therapy_table_completeness_check -------------------------------------
@@ -1032,7 +1032,7 @@ test_that("Ramses on PosgreSQL", {
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
     dplyr::collect()
 
-  expect_equivalent(
+  expect_equal(ignore_attr = TRUE, 
     test_output, 
     dplyr::tibble(
       patient_id = "1555756339",

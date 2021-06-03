@@ -13,6 +13,10 @@
 * fix bug in `validate_prescriptions()` checks on `daily_frequency`
 * fix bug in `load_*()` handling of `data.table` objects 
 
+## Dependencies
+
+* upgraded to `testthat>=0.3.1`
+
 # Ramses 0.3.1
 
 ## Bug fix
