@@ -20,7 +20,7 @@ test_that("Ramses on SQLite 1", {
     dplyr::select(prescription_id, combination_id, therapy_id) %>% 
     dplyr::arrange(therapy_id, prescription_id) %>% 
     dplyr::collect()
-  expect_equivalent(
+  expect_equal(
     test_output, 
     dplyr::tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0",
                                       "0bf9ea7732dd6e904ab670a407382d95",
@@ -114,7 +114,7 @@ test_that("Ramses on SQLite 2", {
     dplyr::select(prescription_id, combination_id, therapy_id) %>% 
     dplyr::arrange(therapy_id, prescription_id) %>% 
     dplyr::collect()
-  expect_equivalent(
+  expect_equal(
     test_output, 
     dplyr::tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0",
                                       "0bf9ea7732dd6e904ab670a407382d95",
@@ -130,7 +130,7 @@ test_that("Ramses on SQLite 2", {
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
     dplyr::collect() 
   
-  expect_equivalent(
+  expect_equal(
     test_output, 
     dplyr::tibble(
       patient_id = "1555756339",
@@ -152,7 +152,7 @@ test_that("Ramses on SQLite 2", {
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
     dplyr::collect()
   
-  expect_equivalent(
+  expect_equal(
     test_output, 
     dplyr::tibble(
       patient_id = "1555756339",
@@ -223,33 +223,31 @@ test_that("Ramses on SQLite 2", {
     t = 0:5,
     patient_id = "99999999999",
     therapy_id = "5528fc41106bb48eb4d48bc412e13e67",
-    therapy_start = as.POSIXct("2015-08-07 10:27:00", tz = "Europe/London"),
-    therapy_end = as.POSIXct("2015-08-17 12:20:00", tz = "Europe/London"),
-    t_start = as.POSIXct(
-      c("2015-08-07 10:27:00", "2015-08-07 11:27:00", "2015-08-07 12:27:00",
-        "2015-08-07 13:27:00", "2015-08-07 14:27:00", "2015-08-07 15:27:00"), tz = "Europe/London"),
-    t_end = as.POSIXct(
-      c("2015-08-07 11:27:00", "2015-08-07 12:27:00", "2015-08-07 13:27:00", 
-        "2015-08-07 14:27:00", "2015-08-07 15:27:00", "2015-08-07 16:27:00"), tz = "Europe/London"),
+    therapy_start = structure(c(1438939620, 1438939620, 1438939620, 1438939620, 
+                                1438939620, 1438939620), tzone = "", class = c("POSIXct", "POSIXt")), 
+    therapy_end = structure(c(1439810400, 1439810400, 1439810400, 1439810400,
+                              1439810400, 1439810400), tzone = "", class = c("POSIXct", "POSIXt")), 
+    t_start = structure(c(1438939620, 1438943220, 1438946820, 1438950420, 
+                          1438954020, 1438957620), tzone = "", class = c("POSIXct", "POSIXt")), 
+    t_end = structure(c(1438943220, 1438946820, 1438950420, 1438954020, 
+                        1438957620, 1438961220), tzone = "", class = c("POSIXct", "POSIXt")), 
     parenteral = 1L
   )
   test_expected_tail <- dplyr::tibble(
     t = 236:241,
     patient_id = "99999999999",
     therapy_id = "5528fc41106bb48eb4d48bc412e13e67",
-    therapy_start = as.POSIXct("2015-08-07 10:27:00", tz = "Europe/London"),
-    therapy_end = as.POSIXct("2015-08-17 12:20:00", tz = "Europe/London"),
-    t_start = as.POSIXct(
-      c("2015-08-17 06:27:00", "2015-08-17 07:27:00", "2015-08-17 08:27:00", 
-        "2015-08-17 09:27:00", "2015-08-17 10:27:00", "2015-08-17 11:27:00"), tz = "Europe/London"),
-    t_end = as.POSIXct(
-      c("2015-08-17 07:27:00", "2015-08-17 08:27:00", "2015-08-17 09:27:00", "2015-08-17 10:27:00", 
-        "2015-08-17 11:27:00", "2015-08-17 12:20:00"), tz = "Europe/London"),
+    therapy_start = structure(1438939620, tzone = "", class = c("POSIXct", "POSIXt")),
+    therapy_end = structure(1439810400, tzone = "", class = c("POSIXct", "POSIXt")),
+    t_start = structure(c(1439789220, 1439792820, 1439796420, 1439800020, 
+                          1439803620, 1439807220), tzone = "", class = c("POSIXct", "POSIXt")),
+    t_end = structure(c(1439792820, 1439796420, 1439800020, 1439803620, 1439807220, 
+                        1439810400), tzone = "", class = c("POSIXct", "POSIXt")),
     parenteral = 0L
   )
   
-  expect_equivalent(head(test_output), test_expected_head)
-  expect_equivalent(tail(test_output), test_expected_tail)
+  expect_equal(head(test_output), test_expected_head)
+  expect_equal(tail(test_output), test_expected_tail)
   expect_equal(
     sum(difftime(test_output$t_end, test_output$t_start,units =  "hours")),
     structure(241.883333333333, class = "difftime", units = "hours")
@@ -258,13 +256,13 @@ test_that("Ramses on SQLite 2", {
   test_medication_request <- MedicationRequest(conSQLite, "5528fc41106bb48eb4d48bc412e13e67")
   expect_is(test_medication_request, "MedicationRequest")
   expect_is(TherapyEpisode(test_medication_request), "TherapyEpisode")
-  expect_equivalent(head(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+  expect_equal(head(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_head)
-  expect_equivalent(tail(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+  expect_equal(tail(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_tail)
-  expect_equivalent(head(therapy_table(test_medication_request, collect = TRUE)), 
+  expect_equal(head(therapy_table(test_medication_request, collect = TRUE)), 
                     test_expected_head)
-  expect_equivalent(tail(therapy_table(test_medication_request, collect = TRUE)), 
+  expect_equal(tail(therapy_table(test_medication_request, collect = TRUE)), 
                     test_expected_tail)
   
   # > 2+ TherapyEpisode -------------------------------------------------------
@@ -292,10 +290,10 @@ test_that("Ramses on SQLite 2", {
         1444678993, 1444681333), tzone = "", class = c("POSIXct", "POSIXt")), 
     parenteral = 0L
   )
-  expect_equivalent(head(therapy_table(test_episode, collect = TRUE)), 
+  expect_equal(head(therapy_table(test_episode, collect = TRUE)), 
                     test_expected_head)
   
-  expect_equivalent(tail(therapy_table(test_episode, collect = TRUE)), 
+  expect_equal(tail(therapy_table(test_episode, collect = TRUE)), 
                     test_expected_tail_second_therapy_episode)
   
   # > .therapy_table_completeness_check -------------------------------------
@@ -712,9 +710,9 @@ test_that(".format_str_time_sqlite.tbl_df", {
   dplyr::copy_to(conSQLite, 
                  test_posixct,
                  overwrite = TRUE)
-  expect_equivalent(
+  expect_equal(
     collect_ramses_tbl(tbl(conSQLite, "test_posixct")),
-    dplyr::tibble(t_start = as.POSIXct("2017-07-02 01:15:46", tz = "Europe/London"))
+    dplyr::tibble(t_start = structure(1498954546, class = c("POSIXct", "POSIXt"), tzone = ""))
   )
   
   DBI::dbDisconnect(conSQLite)
@@ -761,7 +759,6 @@ test_that("Postgres does transitive closure", {
   if (!identical(Sys.getenv("CI"), "true")) {
     skip("Test only on Travis")
   }
-  
   
   test_edges <- dplyr::tibble(
     from_id = as.integer(c(1,1,2,5,6,7)),
@@ -866,7 +863,7 @@ test_that("Ramses on PosgreSQL", {
     dplyr::select(prescription_id, combination_id, therapy_id) %>% 
     dplyr::arrange(therapy_id, prescription_id) %>% 
     dplyr::collect()
-  expect_equivalent(
+  expect_equal(
     test_output, 
     dplyr::tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0",
                                       "0bf9ea7732dd6e904ab670a407382d95",
@@ -882,7 +879,7 @@ test_that("Ramses on PosgreSQL", {
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
     dplyr::collect()
   
-  expect_equivalent(
+  expect_equal(
     test_output, 
     dplyr::tibble(
       patient_id = "1555756339",
@@ -928,8 +925,8 @@ test_that("Ramses on PosgreSQL", {
     parenteral = 0L
   )
 
-  expect_equivalent(head(test_output), test_expected_head)
-  expect_equivalent(tail(test_output), test_expected_tail)
+  expect_equal(head(test_output), test_expected_head)
+  expect_equal(tail(test_output), test_expected_tail)
   expect_equal(
     sum(difftime(test_output$t_end, test_output$t_start,units =  "hours")),
     structure(241.883333333333, class = "difftime", units = "hours")
@@ -938,13 +935,13 @@ test_that("Ramses on PosgreSQL", {
   test_medication_request <- MedicationRequest(conPostgreSQL, "5528fc41106bb48eb4d48bc412e13e67")
   expect_is(test_medication_request, "MedicationRequest")
   expect_is(TherapyEpisode(test_medication_request), "TherapyEpisode")
-  expect_equivalent(head(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+  expect_equal(head(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_head)
-  expect_equivalent(tail(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+  expect_equal(tail(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_tail)
-  expect_equivalent(head(therapy_table(test_medication_request, collect = TRUE)), 
+  expect_equal(head(therapy_table(test_medication_request, collect = TRUE)), 
                     test_expected_head)
-  expect_equivalent(tail(therapy_table(test_medication_request, collect = TRUE)), 
+  expect_equal(tail(therapy_table(test_medication_request, collect = TRUE)), 
                     test_expected_tail)
   
   # > 2+ TherapyEpisode -------------------------------------------------------
@@ -960,23 +957,22 @@ test_that("Ramses on PosgreSQL", {
     therapy_id = "f770855cf9d424c76fdfbc9786d508ac", 
     therapy_start = structure(
       c(1444239793, 1444239793, 1444239793, 1444239793, 
-        1444239793, 1444239793), tzone = "", class = c("POSIXct", "POSIXt")), 
+        1444239793, 1444239793), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
     therapy_end = structure(
       c(1444681333, 1444681333, 1444681333, 1444681333, 
-        1444681333, 1444681333), tzone = "", class = c("POSIXct", "POSIXt")), 
+        1444681333, 1444681333), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
     t_start = structure(
       c(1444660993, 1444664593, 1444668193, 1444671793, 
-        1444675393, 1444678993), tzone = "", class = c("POSIXct", "POSIXt")), 
+        1444675393, 1444678993), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
     t_end = structure(
       c(1444664593, 1444668193, 1444671793, 1444675393, 
-        1444678993, 1444681333), tzone = "", class = c("POSIXct", "POSIXt")), 
+        1444678993, 1444681333), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
     parenteral = 0L
   )
-  expect_equivalent(head(therapy_table(test_episode, collect = TRUE)), 
-                    test_expected_head)
-  
-  expect_equivalent(tail(therapy_table(test_episode, collect = TRUE)), 
-                    test_expected_tail_second_therapy_episode)
+  expect_equal(head(therapy_table(test_episode, collect = TRUE)), 
+               test_expected_head)
+  expect_equal(tail(therapy_table(test_episode, collect = TRUE)), 
+               test_expected_tail_second_therapy_episode)
   
   # > .therapy_table_completeness_check -------------------------------------
   
@@ -1032,7 +1028,7 @@ test_that("Ramses on PosgreSQL", {
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
     dplyr::collect()
 
-  expect_equivalent(
+  expect_equal(
     test_output, 
     dplyr::tibble(
       patient_id = "1555756339",
