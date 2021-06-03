@@ -39,7 +39,7 @@ Imports:
     progress,
     igraph
 Suggests: 
-    testthat (>= 3.0.1),
+    testthat (>= 2.1.0),
     knitr,
     rmarkdown,
     covr,
