@@ -190,9 +190,13 @@
 }
 
 
-.clinical_feature_last <- function(x, observation_code, hours, observation_code_system) {
+.clinical_feature_last <- function(x, observation_code, hours, observation_code_system, compute) {
+  stopifnot(is.logical(compute))
+  TT <- x@therapy_table
+  if(compute) {
+    TT <- dplyr::compute(TT)
+  }
   
-  TT <- .therapy_table_create(x@conn, x@id)
   therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
     conn = x@conn, 
@@ -218,10 +222,13 @@
                      {{field_name}} := observation_value_numeric)
   
   x@therapy_table <- dplyr::left_join(
-    x@therapy_table,
+    TT,
     observations_linked,
     by = c("patient_id", "t")
   )
+  if(compute) {
+    x@therapy_table <- dplyr::compute(x@therapy_table)
+  }
   
   return(x)
 }
@@ -240,9 +247,10 @@
 #' @param observation_code_system (optional, reserved to situations where 
 #' \code{observation_code} is ambiguous across code systems/vocabularies) a single 
 #' character string specifying the code system identifier (example:
-#'  \code{"http://snomed.info/sct"}) of \code{observation_code}.
-#' 
+#'  \code{"http://snomed.info/sct"}) of \code{observation_code}. 
 #' The default (\code{NULL}) filters observations using the \code{observation_code} only.
+#' @param compute if \code{TRUE} (the default), the remote therapy table will 
+#' be computed on the remote server. This is generally faster.
 #' @details The feature will be computed exclusively on numeric investigations 
 #' marked with status \code{"final"}, \code{"preliminary"}, \code{"corrected"}, 
 #' or \code{"amended"}.
@@ -262,7 +270,7 @@
 #' }
 setGeneric(
   "clinical_feature_last", 
-  function(x, observation_code, hours, observation_code_system = NULL) standardGeneric("clinical_feature_last"), 
+  function(x, observation_code, hours, observation_code_system = NULL, compute = TRUE) standardGeneric("clinical_feature_last"), 
   signature = "x")
 
 
@@ -271,7 +279,7 @@ setGeneric(
 setMethod(
   "clinical_feature_last",
   c(x = "TherapyEpisode"),
-  function(x, observation_code, hours, observation_code_system = NULL) {
+  function(x, observation_code, hours, observation_code_system = NULL, compute = TRUE) {
     stopifnot(is.character(observation_code))
     stopifnot(is.numeric(hours) & length(hours) == 1 & hours >= 0)
     .clinical_investigation_code_validate(conn = x@conn, 
@@ -282,7 +290,8 @@ setMethod(
       x <- .clinical_feature_last(x = x, 
                                   observation_code = observation_code[[i]], 
                                   hours = hours, 
-                                  observation_code_system = observation_code_system)
+                                  observation_code_system = observation_code_system,
+                                  compute = compute)
     }
     
     return(x)
@@ -290,9 +299,13 @@ setMethod(
 )
 
 
-.clinical_feature_mean <- function(x, observation_code, hours, observation_code_system) {
+.clinical_feature_mean <- function(x, observation_code, hours, observation_code_system, compute) {
+  stopifnot(is.logical(compute))
+  TT <- x@therapy_table
+  if(compute) {
+    TT <- dplyr::compute(TT)
+  }
   
-  TT <- .therapy_table_create(x@conn, x@id)
   therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
     conn = x@conn, 
@@ -317,10 +330,13 @@ setMethod(
     )
   
   x@therapy_table <- dplyr::left_join(
-    x@therapy_table,
+    TT,
     observations_linked,
     by = c("patient_id", "t")
   )
+  if(compute) {
+    x@therapy_table <- dplyr::compute(x@therapy_table)
+  }
   
   return(x)
 }
@@ -343,6 +359,8 @@ setMethod(
 #'  \code{"http://snomed.info/sct"}) of \code{observation_code}.
 #' 
 #' The default (\code{NULL}) filters observations using the \code{observation_code} only.
+#' @param compute if \code{TRUE} (the default), the remote therapy table will 
+#' be computed on the remote server. This is generally faster.
 #' @details The feature will be computed exclusively on numeric investigations 
 #' marked with status \code{"final"}, \code{"preliminary"}, \code{"corrected"}, 
 #' or \code{"amended"}.
@@ -363,7 +381,7 @@ setMethod(
 #' }
 setGeneric(
   "clinical_feature_mean", 
-  function(x, observation_code, hours, observation_code_system = NULL) standardGeneric("clinical_feature_mean"), 
+  function(x, observation_code, hours, observation_code_system = NULL, compute = TRUE) standardGeneric("clinical_feature_mean"), 
   signature = "x")
 
 
@@ -372,7 +390,7 @@ setGeneric(
 setMethod(
   "clinical_feature_mean",
   c(x = "TherapyEpisode"),
-  function(x, observation_code, hours, observation_code_system = NULL) {
+  function(x, observation_code, hours, observation_code_system = NULL, compute = TRUE) {
     stopifnot(is.character(observation_code))
     stopifnot(is.numeric(hours) & length(hours) == 1 & hours >= 0)
     .clinical_investigation_code_validate(x@conn, 
@@ -380,7 +398,7 @@ setMethod(
                                           observation_code_system)
     
     for (i in seq_len(length(observation_code))) {
-      x <- .clinical_feature_mean(x, observation_code[[i]], hours, observation_code_system)
+      x <- .clinical_feature_mean(x, observation_code[[i]], hours, observation_code_system, compute = compute)
     }
     
     return(x)
@@ -388,12 +406,15 @@ setMethod(
 )
 
 
-.clinical_feature_ols_trend <- function(x, observation_code, hours, observation_code_system) {
-  
+.clinical_feature_ols_trend <- function(x, observation_code, hours, observation_code_system, compute) {
+  stopifnot(is.logical(compute))
   final_slope <- observation_datetime_int <- regression_N <- NULL
   slope_denominator <- slope_numerator <- t_bar <- y_bar <- NULL
   
-  TT <- .therapy_table_create(x@conn, x@id)
+  TT <- x@therapy_table
+  if(compute) {
+    TT <- dplyr::compute(TT)
+  }
   therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
     conn = x@conn, 
@@ -465,10 +486,13 @@ setMethod(
                      {{field_name_N}} := regression_N)
   
   x@therapy_table <- dplyr::left_join(
-    x@therapy_table,
+    TT,
     observations_linked,
     by = c("patient_id", "t")
   )
+  if(compute) {
+    x@therapy_table <- dplyr::compute(x@therapy_table)
+  }
   
   return(x)
 }
@@ -491,6 +515,8 @@ setMethod(
 #'  \code{"http://snomed.info/sct"}) of \code{observation_code}.
 #' 
 #' The default (\code{NULL}) filters observations using the \code{observation_code} only.
+#' @param compute if \code{TRUE} (the default), the remote therapy table will 
+#' be computed on the remote server. This is generally faster.
 #' @details The feature will be computed exclusively on numeric investigations 
 #' marked with status \code{"final"}, \code{"preliminary"}, \code{"corrected"}, 
 #' or \code{"amended"}.
@@ -517,7 +543,7 @@ setMethod(
 #' }
 setGeneric(
   "clinical_feature_ols_trend", 
-  function(x, observation_code, hours, observation_code_system = NULL) standardGeneric("clinical_feature_ols_trend"), 
+  function(x, observation_code, hours, observation_code_system = NULL, compute = TRUE) standardGeneric("clinical_feature_ols_trend"), 
   signature = "x")
 
 
@@ -526,7 +552,7 @@ setGeneric(
 setMethod(
   "clinical_feature_ols_trend",
   c(x = "TherapyEpisode"),
-  function(x, observation_code, hours, observation_code_system = NULL) {
+  function(x, observation_code, hours, observation_code_system = NULL, compute = TRUE) {
     stopifnot(is.character(observation_code))
     stopifnot(is.numeric(hours) & length(hours) == 1 & hours >= 0)
     .clinical_investigation_code_validate(x@conn, 
@@ -534,7 +560,7 @@ setMethod(
                                           observation_code_system)
     
     for (i in seq_len(length(observation_code))) {
-      x <- .clinical_feature_ols_trend(x, observation_code[[i]], hours, observation_code_system)
+      x <- .clinical_feature_ols_trend(x, observation_code[[i]], hours, observation_code_system, compute = compute)
     }
     
     return(x)
@@ -543,8 +569,12 @@ setMethod(
 
 
 
-.clinical_feature_threshold <- function(x, observation_code, threshold, hours, observation_code_system) {
-  TT <- .therapy_table_create(x@conn, x@id)
+.clinical_feature_threshold <- function(x, observation_code, threshold, hours, observation_code_system, compute) {
+  stopifnot(is.logical(compute))
+  TT <- x@therapy_table
+  if(compute) {
+    TT <- dplyr::compute(TT)
+  }
   therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
       conn = x@conn, 
@@ -578,16 +608,23 @@ setMethod(
       ), na.rm = TRUE))
   
   x@therapy_table <- dplyr::left_join(
-    x@therapy_table,
+    TT,
     observations_linked,
     by = c("patient_id", "t")
   )
+  if(compute) {
+    x@therapy_table <- dplyr::compute(x@therapy_table)
+  }
   
   return(x)
 }
 
-.clinical_feature_interval <- function(x, observation_code, lower_bound, upper_bound, hours, observation_code_system) {
-  TT <- .therapy_table_create(x@conn, x@id)
+.clinical_feature_interval <- function(x, observation_code, lower_bound, upper_bound, hours, observation_code_system, compute) {
+  stopifnot(is.logical(compute))
+  TT <- x@therapy_table
+  if(compute) {
+    TT <- dplyr::compute(TT)
+  }
   therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
     conn = x@conn, 
@@ -625,10 +662,13 @@ setMethod(
       ), na.rm = TRUE))
   
   x@therapy_table <- dplyr::left_join(
-    x@therapy_table,
-    observations_linked,
-    by = c("patient_id", "t")
-  )
+      TT,
+      observations_linked,
+      by = c("patient_id", "t")
+    )
+  if(compute) {
+    x@therapy_table <- dplyr::compute(x@therapy_table)
+  }
   
   return(x)
 }
@@ -652,6 +692,8 @@ setMethod(
 #'  \code{"http://snomed.info/sct"}) of \code{observation_code}.
 #' 
 #' The default (\code{NULL}) filters observations using the \code{observation_code} only.
+#' @param compute if \code{TRUE} (the default), the remote therapy table will 
+#' be computed on the remote server. This is generally faster.
 #' @details The feature will be computed exclusively on numeric investigations 
 #' marked with status \code{"final"}, \code{"preliminary"}, \code{"corrected"}, 
 #' or \code{"amended"}.
@@ -679,7 +721,7 @@ setMethod(
 #' @include objects.R
 setGeneric(
   "clinical_feature_interval", 
-  function(x, observation_intervals, hours, observation_code_system = NULL) standardGeneric("clinical_feature_interval"), 
+  function(x, observation_intervals, hours, observation_code_system = NULL, compute = TRUE) standardGeneric("clinical_feature_interval"), 
   signature = "x")
 
 
@@ -688,7 +730,7 @@ setGeneric(
 setMethod(
   "clinical_feature_interval",
   c(x = "TherapyEpisode"),
-  function(x, observation_intervals, hours, observation_code_system = NULL) {
+  function(x, observation_intervals, hours, observation_code_system = NULL, compute = TRUE) {
     stopifnot(is.list(observation_intervals))
     stopifnot(all(unlist(lapply(observation_intervals, length)) %in% 1:2))
     stopifnot(is.numeric(hours) & length(hours) == 1 & hours >= 0)
@@ -706,7 +748,8 @@ setMethod(
                                          observation_code = input_observation_codes[[i]], 
                                          threshold = observation_intervals[[i]],
                                          hours = hours, 
-                                         observation_code_system = observation_code_system)
+                                         observation_code_system = observation_code_system, 
+                                         compute = compute)
       } else {
         stopifnot(!any(is.na(observation_intervals[[i]])) &
                     !any(is.infinite(observation_intervals[[i]])))
@@ -715,7 +758,8 @@ setMethod(
                                         lower_bound = sort(observation_intervals[[i]])[1],
                                         upper_bound = sort(observation_intervals[[i]])[2],
                                         hours = hours,
-                                        observation_code_system = observation_code_system)
+                                        observation_code_system = observation_code_system, 
+                                        compute = compute)
       }
     }
     

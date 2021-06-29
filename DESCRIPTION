@@ -30,7 +30,7 @@ Imports:
     RSQLite (>= 2.1.4),
     DBI,
     dplyr (>= 0.8.3),
-    dbplyr (>= 1.4.2),
+    dbplyr (>= 2.0.0),
     magrittr,
     Rdpack (>= 0.7),
     data.table,

@@ -9,14 +9,16 @@ clinical_feature_last(
   x,
   observation_code,
   hours,
-  observation_code_system = NULL
+  observation_code_system = NULL,
+  compute = TRUE
 )
 
 \S4method{clinical_feature_last}{TherapyEpisode}(
   x,
   observation_code,
   hours,
-  observation_code_system = NULL
+  observation_code_system = NULL,
+  compute = TRUE
 )
 }
 \arguments{
@@ -32,9 +34,11 @@ table (see \code{\link{validate_investigations}()})}
 \item{observation_code_system}{(optional, reserved to situations where 
 \code{observation_code} is ambiguous across code systems/vocabularies) a single 
 character string specifying the code system identifier (example:
- \code{"http://snomed.info/sct"}) of \code{observation_code}.
-
+ \code{"http://snomed.info/sct"}) of \code{observation_code}. 
 The default (\code{NULL}) filters observations using the \code{observation_code} only.}
+
+\item{compute}{if \code{TRUE} (the default), the remote therapy table will 
+be computed on the remote server. This is generally faster.}
 }
 \value{
 an object of class \code{\link{TherapyEpisode}}

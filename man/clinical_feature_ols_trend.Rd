@@ -9,14 +9,16 @@ clinical_feature_ols_trend(
   x,
   observation_code,
   hours,
-  observation_code_system = NULL
+  observation_code_system = NULL,
+  compute = TRUE
 )
 
 \S4method{clinical_feature_ols_trend}{TherapyEpisode}(
   x,
   observation_code,
   hours,
-  observation_code_system = NULL
+  observation_code_system = NULL,
+  compute = TRUE
 )
 }
 \arguments{
@@ -35,6 +37,9 @@ character string specifying the code system identifier (example:
  \code{"http://snomed.info/sct"}) of \code{observation_code}.
 
 The default (\code{NULL}) filters observations using the \code{observation_code} only.}
+
+\item{compute}{if \code{TRUE} (the default), the remote therapy table will 
+be computed on the remote server. This is generally faster.}
 }
 \value{
 an object of class \code{\link{TherapyEpisode}}

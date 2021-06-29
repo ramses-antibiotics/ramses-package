@@ -231,9 +231,9 @@ load_inpatient_investigations <- function(conn, investigations_data, overwrite =
       df = dplyr::tibble(investigations_data), 
       overwrite = overwrite, 
       temporary = FALSE,
-      indexes = list("patient_id", 
-                     "spell_id", 
-                     "observation_code", 
+      indexes = list("observation_code", 
+                     "patient_id", 
+                     "observation_datetime",
                      "status"))
   })
   
@@ -716,24 +716,26 @@ create_therapy_episodes <- function(
   new_drug_prescriptions_tbl <- tbl(conn, "drug_prescriptions") %>% 
     dplyr::select(-therapy_id, -therapy_rank) %>%
     dplyr::left_join(therapy_episode_ids, by = "id") %>% 
-    dplyr::mutate(therapy_id = dplyr::if_else(
-      is.na(therapy_id) & 
-        !prescription_status %in% c('cancelled', 'draft', 'entered-in-error'),
-      prescription_id,
-      therapy_id),
+    dplyr::mutate(
+      therapy_id = dplyr::if_else(
+        is.na(therapy_id) & 
+          !prescription_status %in% c('cancelled', 'draft', 'entered-in-error'),
+        prescription_id,
+        therapy_id),
       therapy_rank = dplyr::if_else(
         is.na(therapy_id) & 
           is.na(therapy_rank) &
           !prescription_status %in% c('cancelled', 'draft', 'entered-in-error'),
         1L,
         therapy_rank
-      )) %>% 
+      )
+    ) %>% 
     dplyr::compute()
   
   new_drug_prescriptions_tbl <- new_drug_prescriptions_tbl %>% 
     dplyr::select(-combination_id) %>%
     dplyr::left_join(therapy_combination_ids, by = "id") %>% 
-    compute()
+    dplyr::compute()
   
   first_column_names <- .drug_prescriptions_variables()[["variable_name"]]
   first_column_names <- c(

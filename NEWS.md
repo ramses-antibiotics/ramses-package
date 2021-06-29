@@ -7,11 +7,16 @@
 * faster implementation of prescription linkage using `igraph` dependency
 * `TherapyEpisode` class now supporting multiple therapy episodes
 * updated schema of microbiology isolates and susceptibilities: isolates are now identified by field `isolate_id` rather than `organism_id`
+* faster execution of `clinical_feature_*()` functions
 
 ## Bug fixes
 
 * fix bug in `validate_prescriptions()` checks on `daily_frequency`
 * fix bug in `load_*()` handling of `data.table` objects 
+
+## Dependencies
+
+* `dbplyr>=2.0.0`
 
 # Ramses 0.3.1
 

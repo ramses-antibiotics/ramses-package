@@ -21,6 +21,7 @@ knitr::opts_chunk$set(
   fig.align = "center",
   df_print = "tibble"
 )
+options(dplyr.summarise.inform = FALSE)
 ```
 
 <style type="text/css">
