@@ -11,7 +11,7 @@ Patient(conn, id)
 \arguments{
 \item{conn}{a database connection}
 
-\item{id}{a character identifier}
+\item{id}{a patient identifier}
 }
 \description{
 An S4 class to represent patients

@@ -19,7 +19,7 @@ TherapyEpisode.RamsesObject(object)
 
 \item{conn}{a database connection}
 
-\item{id}{a character therapy episode identifier}
+\item{id}{a vector of one or several therapy episode identifiers}
 
 \item{object}{an object of class \code{MedicationRequest} or 
 \code{Prescription}}

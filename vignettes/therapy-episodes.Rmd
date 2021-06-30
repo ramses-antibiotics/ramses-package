@@ -163,6 +163,15 @@ uti_episode <- TherapyEpisode(ramses_db, "d7c0310a08cf9f0f318276125cd282ed")
 uti_episode
 ```
 
+
+S4 class `TherapyEpisode` is capable of handling multiple therapy episodes at once.
+
+```{r demo_therapy_multiepisodes}
+TherapyEpisode(ramses_db, 
+               c("d7c0310a08cf9f0f318276125cd282ed", 
+                 "5528fc41106bb48eb4d48bc412e13e67"))
+```
+
 For more information on S4 classes used in Ramses and their associated methods, see the [Objects and classes vignette](ramses-objects.html).
 
 # Longitudinal analysis

@@ -37,7 +37,7 @@ setClass(
 #' @slot id a patient identifier 
 #' @slot conn a database connection
 #' @slot record a \code{tbl_sql} for the corresponding database record
-#' @param id a character identifier 
+#' @param id a patient identifier 
 #' @param conn a database connection
 #' @rdname Patient
 #' @export
@@ -49,7 +49,7 @@ setClass(
 #' @rdname Patient
 #' @export
 Patient <- function(conn, id) {
-  id <- as.character(id)[1]
+  id <- id[1]
   record <- tbl(conn, "patients") %>% 
     dplyr::filter(patient_id == !!id)
   
@@ -91,7 +91,7 @@ setClass(
 #' @rdname MedicationRequest
 #' @export
 MedicationRequest <- function(conn, id) {
-  id <- as.character(id)[1]
+  id <- id[1]
   record <- dplyr::filter(tbl(conn, "drug_prescriptions"),
                           prescription_id == !!id)
   new("MedicationRequest", 
@@ -119,7 +119,7 @@ setValidity("MedicationRequest", function(object) {
 #' @slot conn a database connection
 #' @slot record a \code{tbl_sql} for the corresponding database record
 #' @slot therapy_table a \code{tbl_sql} for the longitudinal therapy table
-#' @param id a character therapy episode identifier
+#' @param id a vector of one or several therapy episode identifiers
 #' @param conn a database connection
 #' @param object an object of class \code{MedicationRequest} or 
 #' \code{Prescription}
@@ -179,7 +179,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' Create the therapy episode longitudinal table
 #'
 #' @param conn a database connection
-#' @param id a therapy episode character identifier (by design, Ramses creates
+#' @param id a vector of therapy episode character identifiers (by design, Ramses creates
 #' this as the identifier of the first prescription ordered in an episode)  
 #' @noRd
 .therapy_table_create <- function(conn, id) {
@@ -541,6 +541,8 @@ setMethod("show", "TherapyEpisode", function(object) {
     }
   } else if( length(object@id) > 1 ) {
     cat("[total of", nrow(record), "therapy episodes]\n")
+    record <- dplyr::arrange(record, therapy_id)
+    record <- record[order(object@id), ]
     if (length(unique(record$patient_id)) > 3) {
       cat("Patients:  ", paste(unique(record$patient_id)[1:3], collapse = ", "), ", ...\n")
     } else {

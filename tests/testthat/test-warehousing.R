@@ -625,6 +625,15 @@ test_that("Ramses on SQLite 2", {
     c("TherapyEpisode biduletruc ", "Record is not available.", "Please check object id is valid", 
       "", "Database connection:")
   )
+  expect_equal(
+    utils::capture.output(
+      TherapyEpisode(conn = conSQLite, 
+                     id = c("f770855cf9d424c76fdfbc9786d508ac", 
+                            "5528fc41106bb48eb4d48bc412e13e67")))[1:3],
+    c("TherapyEpisode 5528fc41106bb48eb4d48bc412e13e67, f770855cf9d424c76fdfbc9786d508ac ", 
+      "[total of 2 therapy episodes]",
+      "Patient(s):   99999999999, 8258333156 ")
+  )
   
   # MedicationRequest
   
@@ -1363,6 +1372,15 @@ test_that("Ramses on PosgreSQL", {
     utils::capture.output(TherapyEpisode(conPostgreSQL, "biduletruc"))[1:5],
     c("TherapyEpisode biduletruc ", "Record is not available.", "Please check object id is valid", 
       "", "Database connection:")
+  )
+  expect_equal(
+    utils::capture.output(
+      TherapyEpisode(conn = conPostgreSQL, 
+                     id = c("f770855cf9d424c76fdfbc9786d508ac", 
+                            "5528fc41106bb48eb4d48bc412e13e67")))[1:3],
+      c("TherapyEpisode 5528fc41106bb48eb4d48bc412e13e67, f770855cf9d424c76fdfbc9786d508ac ", 
+        "[total of 2 therapy episodes]",
+        "Patient(s):   99999999999, 8258333156 ")
   )
   
   # MedicationRequest

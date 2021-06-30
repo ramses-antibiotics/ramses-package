@@ -8,6 +8,7 @@
 * `TherapyEpisode` class now supporting multiple therapy episodes
 * updated schema of microbiology isolates and susceptibilities: isolates are now identified by field `isolate_id` rather than `organism_id`
 * faster execution of `clinical_feature_*()` functions
+* support for integer `*_id` variables
 
 ## Bug fixes
 
