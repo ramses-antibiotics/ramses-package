@@ -128,66 +128,43 @@
                                                  observation_code_system) {
   
   if(is(x@conn, "SQLiteConnection")) {
-    sql_expression_0 <- paste0("datetime(therapy_start, '-", hours, " hours')")
-    sql_condition_0 <- paste("datetime(observation_datetime) BETWEEN ", 
-                             "datetime(therapy_start) AND datetime(therapy_end)")
-    sql_condition_1 <- paste0("datetime(observation_datetime) <= datetime(t_start) AND ",
+    sql_condition_1 <- paste0("datetime(observation_datetime) < datetime(t_start) AND ",
                               "datetime(observation_datetime) >= ", 
                               "datetime(t_start, -", hours," || ' hours')")
   } else if(is(x@conn, "PqConnection")) {
-    sql_expression_0 <- paste0("therapy_start - interval '", hours, "h'")
-    sql_condition_0 <- "observation_datetime BETWEEN therapy_start AND therapy_end"
     sql_condition_1 <- paste0(
-      "observation_datetime <= t_start AND ",
-      "observation_datetime >= (t_start - interval '", hours, "h')")
+      "tstzrange((t_start - interval '", hours, "h'), t_start, '[)')",
+      " @> observation_datetime ")
   } else {
     .throw_error_method_not_implemented(".clinical_feature_threshold()",
                                         class(x@conn))
   }
   
-  clinical_ix_inclusion <- x@record %>% 
-    dplyr::transmute(
-      patient_id, 
-      therapy_id, 
-      therapy_start = dplyr::sql(sql_expression_0), 
-      therapy_end
-    )
+  observations <- tbl(x@conn, "inpatient_investigations") %>% 
+    dplyr::select(patient_id, observation_datetime,
+                  observation_code, observation_value_numeric,
+                  status, observation_code_system) 
   
-  all_observations <- tbl(x@conn, "inpatient_investigations") %>% 
-    dplyr::filter(
-      observation_code %in% !!observation_code &
-        status %in% c("final", "preliminary", "corrected", "amended") &
-        !is.na(observation_value_numeric) 
-    )
-  
-  if( !is.null(observation_code_system) ) {
-    all_observations <- dplyr::filter(all_observations, 
-                                      observation_code_system == !!observation_code_system) 
-  }
-  
-  clinical_ix_inclusion <- dplyr::inner_join(
-    all_observations,
-    clinical_ix_inclusion,
+  observations_linked <- dplyr::inner_join(
+    TT, 
+    observations,
     by = "patient_id"
   ) %>% 
-    dplyr::filter(dplyr::sql(sql_condition_0)) %>% 
-    dplyr::distinct(patient_id, observation_id)
-    
-  all_observations <- dplyr::inner_join(
-    all_observations,
-    clinical_ix_inclusion, 
-    by = c("patient_id", "observation_id")
-  ) %>%
-    dplyr::select(patient_id, observation_datetime,
-                  observation_code, observation_value_numeric)
+    dplyr::filter(
+      dplyr::sql(sql_condition_1) &
+        observation_code %in% !!observation_code &
+        status %in% c("final", "preliminary", "corrected", "amended") &
+        !is.na(observation_value_numeric)
+    ) 
   
-  observations_linked <- dplyr::inner_join(TT, 
-                                           all_observations, 
-                                           by = "patient_id") %>% 
-    dplyr::filter(dplyr::sql(sql_condition_1))
+  if( !is.null(observation_code_system) ) {
+    observations_linked <- dplyr::filter(observations_linked, 
+                                  observation_code_system == !!observation_code_system) 
+  }
   
   observations_linked
 }
+
 
 
 .clinical_feature_last <- function(x, observation_code, hours, observation_code_system, compute) {

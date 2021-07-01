@@ -227,11 +227,12 @@ load_inpatient_investigations <- function(conn, investigations_data, overwrite =
       overwrite = overwrite, 
       temporary = FALSE,
       indexes = list("observation_code", 
+                     "observation_code_system",
                      "patient_id", 
                      "observation_datetime",
                      "status"))
   })
-  
+
   if ( is(load_errors, "try-error") ) {
     stop(load_errors)
   } 
