@@ -86,17 +86,17 @@ We first map drug concepts thanks to the `as.ab()` function provided by the AMR 
 
 ```{r map_drug_failing}
 # attempting to map drug name using AMR package
-drug_prescriptions$drug_id <- AMR::as.ab(drug_prescriptions$tr_DESC)
+drug_prescriptions$drug_code <- AMR::as.ab(drug_prescriptions$tr_DESC)
 ```
 
 ```{r map_drug}
 # editing drug names
-drug_prescriptions$drug_id <- gsub("Vancomycin protocol", 
+drug_prescriptions$drug_code <- gsub("Vancomycin protocol", 
                                    "Vancomycin",
                                    drug_prescriptions$tr_DESC)
 # mapping drug name using AMR package
-drug_prescriptions$drug_id <- AMR::as.ab(drug_prescriptions$drug_id)
-drug_prescriptions$drug_name <- AMR::ab_name(drug_prescriptions$drug_id)
+drug_prescriptions$drug_code <- AMR::as.ab(drug_prescriptions$drug_code)
+drug_prescriptions$drug_name <- AMR::ab_name(drug_prescriptions$drug_code)
 # recoding route of administration
 drug_prescriptions <- mutate(drug_prescriptions, 
   ATC_route = 
@@ -135,15 +135,15 @@ In this example, however, we use a look-up table for the strength of compound me
 
 ```{r compute_ddd}
 # extracting the ATC code (eg J01CR02) group (eg Beta-lactam antibacterials, penicillins)
-drug_prescriptions$ATC_code <- AMR::ab_atc(drug_prescriptions$drug_id)
-drug_prescriptions$ATC_group <- AMR::ab_atc_group1(drug_prescriptions$drug_id)
+drug_prescriptions$ATC_code <- AMR::ab_atc(drug_prescriptions$drug_code)
+drug_prescriptions$ATC_group <- AMR::ab_atc_group1(drug_prescriptions$drug_code)
 # removing antifungal drug, if applicable
 drug_prescriptions <- filter(drug_prescriptions, 
                              ATC_group != "Antimycotics for systemic use")
 
 # prepare DDD extraction
 compound_strength_lookup <- data.frame(list(
-  drug_id = c("AMC", "AMC", "TZP", "SMX"),
+  drug_code = c("AMC", "AMC", "TZP", "SMX"),
   route = c("oral", "oral", "oral", "oral"),
   dose = c(625, 1.2, 4.5, 480),
   units = c("mg", "g", "g", "mg"),
@@ -157,7 +157,7 @@ drug_prescriptions <- merge(drug_prescriptions,
 drug_prescriptions <- drug_prescriptions %>% 
   mutate(strength = if_else(is.na(strength), dose, strength),  
          basis_of_strength = if_else(is.na(basis_of_strength),
-                                     as.character(drug_id),
+                                     as.character(drug_code),
                                      basis_of_strength))
 
 drug_prescriptions <- merge(drug_prescriptions, 
@@ -199,7 +199,7 @@ drug_prescriptions <- drug_prescriptions %>%
               dose, units, " ", 
               duration_days
             ),
-            drug_id,
+            drug_code,
             drug_name = drug_name,
             drug_display_name = drug_name,
             # in this example dataset, only antibacterial drugs are included
@@ -225,11 +225,12 @@ drug_prescriptions <- drug_prescriptions %>%
 An identical process is followed for drug administration, with the difference that DDDs do not rely on a daily frequency of administration variable
 
 ```{r prepare_drug_admin}
-drug_administrations$drug_id <- gsub("Vancomycin protocol", 
+drug_administrations$drug_code <- gsub("Vancomycin protocol", 
                                      "Vancomycin", 
                                      drug_administrations$tr_DESC)
-drug_administrations$drug_id <- AMR::as.ab(drug_administrations$drug_id)
-drug_administrations$drug_name <- AMR::ab_name(drug_administrations$drug_id)
+drug_administrations$drug_code <- AMR::as.ab(drug_administrations$drug_code)
+drug_administrations$drug_name <- AMR::ab_name(drug_administrations$drug_code)
+drug_administrations$drug_group <- AMR::ab_group(drug_administrations$drug_code)
 # recoding route of administration
 drug_administrations <- mutate(drug_administrations, 
   ATC_route = 
@@ -247,16 +248,15 @@ drug_administrations <- mutate(drug_administrations,
       route %in% c("PV") ~ "V", 
       TRUE ~ "NA_character_"
     ))
-drug_administrations$ATC_code <- AMR::ab_atc(drug_administrations$drug_id)
-drug_administrations$ATC_group <- AMR::ab_atc_group1(drug_administrations$drug_id)
+drug_administrations$ATC_code <- AMR::ab_atc(drug_administrations$drug_code)
 drug_administrations <- filter(drug_administrations, 
-                               ATC_group != "Antimycotics for systemic use")
+                               drug_group != "Antifungals/antimycotics")
 
 drug_administrations <- merge(drug_administrations, compound_strength_lookup, all.x = T)
 drug_administrations <- drug_administrations %>% 
   mutate(strength = if_else(is.na(strength), dose, strength),
          basis_of_strength = if_else(is.na(basis_of_strength),
-                                     as.character(drug_id),
+                                     as.character(drug_code),
                                      basis_of_strength))
 
 drug_administrations <- drug_administrations %>% 
@@ -273,7 +273,7 @@ drug_administrations <- drug_administrations %>%
 drug_administrations$administration_id <- drug_administrations %>%
   dplyr::group_indices(
     patient_id,
-    drug_id,
+    drug_code,
     route,
     dose,
     units,
@@ -286,13 +286,13 @@ drug_administrations <- drug_administrations %>%
       prescription_id,
       administration_text = paste0(
           drug_name, " ", route, " ", dose, units),
-      drug_id,
+      drug_code,
       drug_name,
       drug_display_name = drug_name,
+      drug_group,
       # in this example dataset, only antibacterial drugs are included
       antiinfective_type = "antibacterial", 
       ATC_code,
-      ATC_group,
       ATC_route,
       dose,
       unit = units,
@@ -456,9 +456,9 @@ microbiology_data$raw <- microbiology_data$raw %>%
       organism_display_name == "No growth",
       NA_character_,
       organism_display_name)),
-    drug_id = AMR::as.ab(drug_display_name)) %>% 
+    agent_code = AMR::as.ab(agent_display_name)) %>% 
   mutate(organism_name = AMR::mo_name(organism_code),
-         drug_name = AMR::ab_name(drug_id))
+         agent_name = AMR::ab_name(agent_code))
 ```
 
 
@@ -518,9 +518,9 @@ microbiology_data$susceptibilities <- microbiology_data$raw %>%
             organism_code,
             organism_name,
             organism_display_name,
-            drug_id,
-            drug_name,
-            drug_display_name,
+            agent_code,
+            agent_name,
+            agent_display_name,
             rsi_code,
             concept_code = NA_character_) %>% 
   distinct()
@@ -540,10 +540,10 @@ In this vignette, we adopt intrinsic resistances as defined by EUCAST guidelines
 mdr_classification <- microbiology_data$susceptibilities  %>% 
   select(isolate_id,
          organism_code,
-         drug_id,
+         agent_code,
          rsi_code) %>% 
   tidyr::pivot_wider(id_cols = c("isolate_id", "organism_code"),
-                     names_from = drug_id,
+                     names_from = agent_code,
                      values_from = rsi_code)
 
 mdr_classification$multidrug_resistance <- 

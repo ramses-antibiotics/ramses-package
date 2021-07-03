@@ -595,12 +595,5 @@ setMethod("compute", "TherapyEpisode", function(x) {
   .therapy_table_completeness_check(x, x@record)
   x@record <- dplyr::compute(x@record)
   x@therapy_table <- dplyr::compute(x@therapy_table)
-  DBI::dbExecute(
-    x@conn, 
-    dbplyr::sql_table_index(
-      con = x@conn,
-      table = x@therapy_table$ops$x$x,
-      columns = c("patient_id", "t_start", "t_end"))
-    )
   x
 })

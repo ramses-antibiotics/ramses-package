@@ -43,8 +43,8 @@ FROM (SELECT *,
                     , b.prescription_start                                                     AS to_start
                     , b.prescription_end                                                       AS to_end
                     , b.authoring_date                                                         AS to_authoring
-                    , a.drug_id                                                                AS from_drug
-                    , b.drug_id                                                                AS to_drug
+                    , a.drug_code                                                              AS from_drug
+                    , b.drug_code                                                              AS to_drug
                     , CASE
                           WHEN (a.daily_frequency = -1) and (b.daily_frequency = -1) THEN '1'
                           WHEN (a.daily_frequency = -1) and (b.daily_frequency <> -1) THEN '2'

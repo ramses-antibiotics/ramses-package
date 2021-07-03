@@ -1,23 +1,21 @@
 
 
-# Ramses 0.4.0
+# Ramses 0.3.2
 
 ## Improvements
 
 * faster implementation of prescription linkage using `igraph` dependency
 * `TherapyEpisode` class now supporting multiple therapy episodes
-* updated schema of microbiology isolates and susceptibilities: isolates are now identified by field `isolate_id` rather than `organism_id`
-* faster execution of `clinical_feature_*()` functions
 * support for integer `*_id` variables
+* updated schema of drug prescriptions and administrations: `drug_id` refactored into `drug_code`; `ATC_group` retired in favour of `drug_group`
+* updated schema of microbiology isolates and susceptibilities: isolates are now identified by `isolate_id` rather than `organism_id`
+* updated schema of microbiology susceptibilities: `drug_id`, `drug_name` and `drug_display_name` refactored into `agent_code`, `agent_name` and `agent_display_name`
+* faster execution of `clinical_feature_*()` functions
 
 ## Bug fixes
 
 * fix bug in `validate_prescriptions()` checks on `daily_frequency`
-* fix bug in `load_*()` handling of `data.table` objects 
-
-## Dependencies
-
-* `dbplyr>=2.0.0`
+* fix bug in `load_*()` handling of `data.table` objects
 
 # Ramses 0.3.1
 

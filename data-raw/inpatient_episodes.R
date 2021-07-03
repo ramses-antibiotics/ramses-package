@@ -5,6 +5,8 @@
 ## code to prepare `data/inpatient_microbiology.rda` dataset goes here
 ## code to prepare `data/inpatient_investigations.rda` dataset goes here
 library(dplyr)
+library(lubridate)
+
 inpatient_episodes <- read.csv(
   file = "data-raw/inpatient_episodes.csv", stringsAsFactors = F,
   colClasses = c("character", "character", "Date", "Date", 
@@ -106,7 +108,6 @@ for (i in which(vapply(inpatient_investigations, is, class2 = "POSIXct", FUN.VAL
 usethis::use_data(inpatient_investigations, overwrite = T)
 
 
-library(lubridate)
 
 inpatient_microbiology <- read.csv(
   "data-raw/inpatient_microbiology.csv", 
@@ -114,7 +115,7 @@ inpatient_microbiology <- read.csv(
   colClasses = c("character", "character", "character", "character",
                  "POSIXct", "character", "character", "character",
                  "character", "character", "character")) %>% 
-  select(-organism_code, -drug_id) %>% 
+  select(-organism_code, -agent_code) %>% 
   mutate(status = NA_character_,
          specimen_datetime = lubridate::as_datetime(specimen_datetime),
          isolation_datetime = lubridate::as_datetime(specimen_datetime) %m+% days(3))
