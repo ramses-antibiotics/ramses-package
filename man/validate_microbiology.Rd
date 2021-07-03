@@ -114,11 +114,11 @@ Validate microbial isolates & susceptibility records
   \code{\link[AMR]{mo_name}()}, with no missing values}
   \item{\code{organism_display_name}}{microorganism name as labelled by the
   laboratory, for display in user interfaces, with no missing values}
-  \item{\code{drug_id}}{code of the antimicrobial tested as provided by 
+  \item{\code{agent_code}}{code of the antimicrobial tested as provided by 
   \code{\link[AMR]{as.ab}()}}
-  \item{\code{drug_name}}{name of the antimicrobial tested as provided by 
+  \item{\code{agent_name}}{name of the antimicrobial tested as provided by 
   \code{\link[AMR]{ab_name}()}}
-  \item{\code{drug_display_name}}{name of the antimicrobial tested, 
+  \item{\code{agent_display_name}}{name of the antimicrobial tested, 
   with no missing values, for  display in reports and user interfaces
   (can be the same as \code{drug_name})}
   \item{\code{rsi_code}}{\code{"R"} (resistant), \code{"S"} (susceptible), 

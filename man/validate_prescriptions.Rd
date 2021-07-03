@@ -26,15 +26,15 @@ These fields are required in order to pass the validation:
      \item{\code{prescription_id}}{a prescription identifier with no missing value}
      \item{\code{prescription_text}}{a character string summarising the prescription 
      (to be displayed in user interfaces, eg: \code{'Amoxicillin oral 500mg BDS'})}
-     \item{\code{drug_id}}{identifier of the drug (from a dictionary such as SNOMED CT or
+     \item{\code{drug_code}}{identifier of the drug (from a dictionary such as SNOMED CT or
       from \code{\link[AMR]{as.ab}()})}
      \item{\code{drug_name}}{preferred name of the drug in the drug dictionary}
      \item{\code{drug_display_name}}{drug name to display in reports and user interfaces
      (can be the same as \code{drug_name})}
+     \item{\code{drug_group}}{the antimicrobial class see \code{\link[AMR]{ab_group}()}}
      \item{\code{antiinfective_type}}{type of antiinfective ("antibacterial", "antifungal",
      "antiviral", or "antiparasitic")}
      \item{\code{ATC_code}}{the ATC code, see \code{\link[AMR]{ab_atc}()}}
-     \item{\code{ATC_group}}{the ATC group, see \code{\link[AMR]{ab_atc_group1}()}}
      \item{\code{ATC_route}}{route of administration as defined in the ATC (
      \code{"O"} = oral; \code{"P"} = parenteral; \code{"Inhal"} = inhaled; 
      \code{"N"} = nasal; \code{"SL"} = sublingual/buccal/oromucosal;

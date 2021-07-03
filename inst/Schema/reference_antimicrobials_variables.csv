@@ -1,7 +1,0 @@
-position,variable_name,must_exist,must_be_nonmissing,must_be_unique
-1,drug_code,TRUE,TRUE,TRUE
-2,drug_name,TRUE,TRUE,FALSE
-3,drug_display_name,TRUE,FALSE,FALSE
-4,antimicrobial_code,TRUE,FALSE,FALSE
-5,antimicrobial_name,TRUE,FALSE,FALSE
-6,antimicrobial_display_name,TRUE,TRUE,FALSE

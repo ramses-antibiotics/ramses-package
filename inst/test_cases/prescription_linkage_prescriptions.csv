@@ -1,4 +1,4 @@
-patient_id,prescription_id,daily_frequency,authoring_date,prescription_start,prescription_end,drug_name,drug_id,prescription_status,antiinfective_type,ATC_route,ATC_code,prescription_context
+patient_id,prescription_id,daily_frequency,authoring_date,prescription_start,prescription_end,drug_name,drug_code,prescription_status,antiinfective_type,ATC_route,ATC_code,prescription_context
 101,A,-1,2016-12-01 08:00:00 GMT,2016-12-01 09:30:00 GMT,2016-12-01 09:30:00 GMT,Amoxicillin,AMX,completed,antibacterial,O,X,inpatient
 101,B,-1,2016-12-01 09:00:00 GMT,2016-12-01 09:30:00 GMT,2016-12-01 09:30:00 GMT,Clarithromycin,CLR,completed,antibacterial,O,X,inpatient
 102,A,-1,2016-12-01 08:00:00 GMT,2016-12-01 09:30:00 GMT,2016-12-01 09:30:00 GMT,Amoxicillin,AMX,completed,antibacterial,O,X,inpatient

@@ -310,7 +310,7 @@ load_inpatient_microbiology <- function(conn,
       overwrite = overwrite, 
       temporary = FALSE,
       indexes = list("patient_id", "isolate_id", "specimen_id", 
-                     "organism_code", "drug_id"))
+                     "organism_code", "agent_code"))
   })
   
   if ( is(load_errors, "try-error") ) {
@@ -476,7 +476,7 @@ load_medications <- function(
       "prescription_id",
       "combination_id",
       "therapy_id",
-      "drug_id",
+      "drug_code",
       "antiinfective_type",
       "ATC_code",
       "ATC_route",
@@ -784,7 +784,7 @@ create_therapy_episodes <- function(
         "id",
         "patient_id", 
         "administration_id",
-        "drug_id",
+        "drug_code",
         "ATC_code",
         "ATC_route",
         "administration_date"
@@ -1090,9 +1090,10 @@ create_mock_database <- function(file,
   
   drug_rx$antiinfective_type <- "antibacterial"
   drug_admins$antiinfective_type <- "antibacterial"
-  drug_rx$ab <- gsub("Vancomycin protocol", "Vancomycin", drug_rx$tr_DESC)
-  drug_rx$ab <- as.character(AMR::as.ab(drug_rx$ab))
-  drug_rx$drug_name <- AMR::ab_name(drug_rx$ab)
+  drug_rx$drug_code <- gsub("Vancomycin protocol", "Vancomycin", drug_rx$tr_DESC)
+  drug_rx$drug_code <- as.character(AMR::as.ab(drug_rx$drug_code))
+  drug_rx$drug_name <- AMR::ab_name(drug_rx$drug_code)
+  drug_rx$drug_group <- AMR::ab_group(drug_rx$drug_code)
   ## recoding route of administration
   drug_rx <- dplyr::mutate(
     drug_rx, 
@@ -1112,12 +1113,11 @@ create_mock_database <- function(file,
     ))
   
   ## compute_ddd
-  drug_rx$ATC_code <- AMR::ab_atc(drug_rx$ab)
-  drug_rx$ATC_group <- AMR::ab_atc_group1(drug_rx$ab)
+  drug_rx$ATC_code <- AMR::ab_atc(drug_rx$drug_code)
   
   # prepare DDD extraction
   compound_strength_lookup <- data.frame(list(
-    ab = c("AMC", "AMC", "TZP", "SMX"),
+    drug_code = c("AMC", "AMC", "TZP", "SMX"),
     route = c("oral", "oral", "oral", "oral"),
     dose = c(625, 1.2, 4.5, 480),
     units = c("mg", "g", "g", "mg"),
@@ -1129,7 +1129,7 @@ create_mock_database <- function(file,
   drug_rx <- drug_rx %>% 
     dplyr::mutate(strength = dplyr::if_else(is.na(strength), dose, strength),  
            basis_of_strength = dplyr::if_else(is.na(basis_of_strength),
-                                       as.character(ab), basis_of_strength))
+                                       as.character(drug_code), basis_of_strength))
   
   drug_rx <- merge(drug_rx, reference_drug_frequency, by = "frequency", all.x = T)
   
@@ -1160,11 +1160,11 @@ create_mock_database <- function(file,
               prescription_text = paste0(
                 drug_name, " ", route, " ", dose, units,
                 " ",  duration_days),
-              drug_id = ab,
+              drug_code,
               drug_name = drug_name,
               drug_display_name = drug_name,
+              drug_group,
               ATC_code,
-              ATC_group, 
               ATC_route,
               antiinfective_type,
               authoring_date,
@@ -1181,9 +1181,11 @@ create_mock_database <- function(file,
   
   
   ## prepare_drug_admin
-  drug_admins$ab <- gsub("Vancomycin protocol", "Vancomycin", drug_admins$tr_DESC)
-  drug_admins$ab <- as.character(AMR::as.ab(drug_admins$ab))
-  drug_admins$drug_name <- AMR::ab_name(drug_admins$ab)
+  drug_admins$drug_code <- gsub("Vancomycin protocol", "Vancomycin", drug_admins$tr_DESC)
+  drug_admins$drug_code <- as.character(AMR::as.ab(drug_admins$drug_code))
+  drug_admins$drug_name <- AMR::ab_name(drug_admins$drug_code)
+  drug_admins$drug_group <- AMR::ab_group(drug_admins$drug_code)
+  
   # recoding route of administration
   drug_admins <- dplyr::mutate(
     drug_admins, 
@@ -1201,15 +1203,14 @@ create_mock_database <- function(file,
       route %in% c("PV") ~ "V", 
       TRUE ~ "NA_character_"
     ))
-  drug_admins$ATC_code <- AMR::ab_atc(drug_admins$ab)
-  drug_admins$ATC_group <- AMR::ab_atc_group1(drug_admins$ab)
+  drug_admins$ATC_code <- AMR::ab_atc(drug_admins$drug_code)
   
   drug_admins <- merge(drug_admins, compound_strength_lookup, all.x = T)
   drug_admins <- drug_admins %>% 
     dplyr::mutate(
       strength = dplyr::if_else(is.na(strength), dose, strength),
       basis_of_strength = dplyr::if_else(is.na(basis_of_strength),
-                                  as.character(ab), basis_of_strength))
+                                  as.character(drug_code), basis_of_strength))
   
   drug_admins <- drug_admins %>% 
     dplyr::mutate(
@@ -1225,7 +1226,7 @@ create_mock_database <- function(file,
     drug_admins <- drug_admins %>% 
       dplyr::group_by(
         patient_id,
-        ab,
+        drug_code,
         route,
         dose,
         units,
@@ -1236,7 +1237,7 @@ create_mock_database <- function(file,
     drug_admins <- drug_admins %>% 
       dplyr::group_by(
         patient_id,
-        ab,
+        drug_code,
         route,
         dose,
         units,
@@ -1251,12 +1252,12 @@ create_mock_database <- function(file,
       prescription_id,
       administration_text = paste0(
           drug_name, " ", route, " ", dose, units),
-      drug_id = ab,
+      drug_code,
       drug_name,
       drug_display_name = drug_name,
+      drug_group,
       antiinfective_type,
       ATC_code,
-      ATC_group,
       ATC_route,
       dose,
       unit = units,
@@ -1296,10 +1297,10 @@ create_mock_database <- function(file,
         organism_display_name == "No growth",
         NA_character_,
         organism_display_name)),
-      drug_id = AMR::as.ab(drug_display_name)
+      agent_code = AMR::as.ab(agent_display_name)
     ) %>% 
     dplyr::mutate(organism_name = AMR::mo_name(organism_code),
-                  drug_name = AMR::ab_name(drug_id))
+                  agent_name = AMR::ab_name(agent_code))
   micro$raw <- micro$raw %>% 
     dplyr::mutate(specimen_type_code = dplyr::case_when(
       specimen_type_display == "Blood Culture" ~ 
@@ -1346,9 +1347,9 @@ create_mock_database <- function(file,
               organism_code,
               organism_name,
               organism_display_name,
-              drug_id,
-              drug_name,
-              drug_display_name,
+              agent_code,
+              agent_name,
+              agent_display_name,
               rsi_code,
               concept_code = NA_character_) %>% 
     dplyr::distinct()

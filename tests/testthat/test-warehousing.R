@@ -271,18 +271,6 @@ test_that("Ramses on SQLite 2", {
                                  id = c("f770855cf9d424c76fdfbc9786d508ac", 
                                         "5528fc41106bb48eb4d48bc412e13e67"))
   expect_is(test_episode, "TherapyEpisode")
-  test_episode <- compute(test_episode)
-  # verify the temporary therapy table is indexed
-  expect_true(
-    grepl(
-      "t_start", 
-      DBI::dbGetQuery(
-        conSQLite,
-        paste0("SELECT sql FROM sqlite_temp_master WHERE type = 'index' AND tbl_name = '", 
-               test_episode@therapy_table$ops$x$x, "';")
-      )$sql
-    )
-  )
   
   test_expected_tail_second_therapy_episode <- dplyr::tibble(
     t = 117:122, 
@@ -971,18 +959,6 @@ test_that("Ramses on PosgreSQL", {
                                  id = c("f770855cf9d424c76fdfbc9786d508ac", 
                                         "5528fc41106bb48eb4d48bc412e13e67"))
   expect_is(test_episode, "TherapyEpisode")
-  test_episode <- compute(test_episode)
-  # verify the temporary therapy table is indexed
-  expect_true(
-    grepl(
-      "t_start", 
-      DBI::dbGetQuery(
-        conPostgreSQL,
-        paste0("SELECT * FROM pg_indexes WHERE tablename = '", 
-               test_episode@therapy_table$ops$x$x, "';")
-      )$indexdef
-    )
-  )
   
   test_expected_tail_second_therapy_episode <- dplyr::tibble(
     t = 117:122, 

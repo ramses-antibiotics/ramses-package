@@ -5,12 +5,12 @@ position,variable_name,must_exist,must_be_nonmissing,must_be_unique
 4,therapy_id,FALSE,FALSE,FALSE
 5,therapy_rank,FALSE,FALSE,FALSE
 6,prescription_text,TRUE,FALSE,FALSE
-7,drug_id,TRUE,TRUE,FALSE
+7,drug_code,TRUE,TRUE,FALSE
 8,drug_name,TRUE,TRUE,FALSE
 9,drug_display_name,TRUE,FALSE,FALSE
-10,antiinfective_type,TRUE,TRUE,FALSE
-11,ATC_code,TRUE,TRUE,FALSE
-12,ATC_group,TRUE,TRUE,FALSE
+10,drug_group,TRUE,TRUE,FALSE
+11,antiinfective_type,TRUE,TRUE,FALSE
+12,ATC_code,TRUE,TRUE,FALSE
 13,ATC_route,TRUE,TRUE,FALSE
 14,dose,TRUE,FALSE,FALSE
 15,unit,TRUE,FALSE,FALSE
