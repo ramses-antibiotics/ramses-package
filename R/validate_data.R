@@ -753,7 +753,7 @@ validate_prescriptions <- function(data) {
     drug_prescriptions_variables[["must_be_nonmissing"]],
     "variable_name"
   ]
-
+  
   not_exist <- !vapply(variable_exists, exists, where = data,
                        FUN.VALUE = logical(1))
   if( any(not_exist) ){
@@ -785,14 +785,18 @@ validate_prescriptions <- function(data) {
     )
   }
   
-  if( any(is.na(data$prescription_end) & data$daily_frequency != -1) ) {
+  if( any(is.na(data$prescription_end) & 
+          data$daily_frequency != -1 &
+          data$prescription_status == "completed") ) {
     stop(
       simpleError(paste(
-        "`prescription_end` must contain valid data", 
+        "prescriptions with status 'completed' must have a valid `prescription_end`", 
         "except for one-off prescriptions\n",
         .print_and_capture(utils::head(
           dplyr::select(dplyr::filter(
-            data, is.na(prescription_end) & daily_frequency != -1),
+            data, is.na(prescription_end) & 
+              daily_frequency != -1 &
+              prescription_status == "completed"),
             patient_id, daily_frequency, prescription_end)))
     )))
   }

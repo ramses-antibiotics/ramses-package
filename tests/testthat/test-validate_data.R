@@ -533,8 +533,6 @@ test_that("validate_prescriptions() on data.frame", {
       daily_frequency = 4, DDD = 4), stringsAsFactors = F)
   ))
   
-  
-  
   expect_warning(validate_prescriptions(
     data.frame(list(
       patient_id = c("5593245762", "5593245762"),
@@ -563,6 +561,53 @@ test_that("validate_prescriptions() on data.frame", {
       daily_frequency = c(4, 4), DDD = c( 4,  4)), stringsAsFactors = F)
   ))
   
+  expect_null(validate_prescriptions(
+    data.frame(list(
+      patient_id = "5593245762", 
+      prescription_id = "6025e96e1cc750dc6ec7fb9aadca0dbd", 
+      prescription_text = "Flucloxacillin IV 2g 3 days", 
+      drug_code = "FLC", drug_name = "Flucloxacillin", 
+      drug_display_name = "Flucloxacillin", 
+      drug_group = "Beta-lactams/penicillins", 
+      antiinfective_type = c("antibacterial"),
+      ATC_code = "J01CF05",
+      ATC_route = "P",
+      authoring_date = structure(1421048831, 
+                                 class = c("POSIXct", "POSIXt"), 
+                                 tzone = ""), 
+      prescription_start = structure(1421051891, 
+                                     class = c("POSIXct", "POSIXt"), 
+                                     tzone = ""), 
+      prescription_end = as.POSIXct(NA), 
+      prescription_status = "cancelled", 
+      prescription_context = "inpatient", 
+      dose = 2, unit = "g", route = "IV", frequency = "6H", 
+      daily_frequency = 4, DDD = 4))
+  ))
+  
+  expect_error(validate_prescriptions(
+    data.frame(list(
+      patient_id = "5593245762", 
+      prescription_id = "6025e96e1cc750dc6ec7fb9aadca0dbd", 
+      prescription_text = "Flucloxacillin IV 2g 3 days", 
+      drug_code = "FLC", drug_name = "Flucloxacillin", 
+      drug_display_name = "Flucloxacillin", 
+      drug_group = "Beta-lactams/penicillins", 
+      antiinfective_type = c("antibacterial"),
+      ATC_code = "J01CF05",
+      ATC_route = "P",
+      authoring_date = structure(1421048831, 
+                                 class = c("POSIXct", "POSIXt"), 
+                                 tzone = ""), 
+      prescription_start = structure(1421051891, 
+                                     class = c("POSIXct", "POSIXt"), 
+                                     tzone = ""), 
+      prescription_end = as.POSIXct(NA), 
+      prescription_status = "completed", 
+      prescription_context = "inpatient", 
+      dose = 2, unit = "g", route = "IV", frequency = "6H", 
+      daily_frequency = 4, DDD = 4))
+  ))
 })
 
 test_that("validate_prescriptions() on data.table", {
