@@ -595,5 +595,29 @@ setMethod("compute", "TherapyEpisode", function(x) {
   .therapy_table_completeness_check(x, x@record)
   x@record <- dplyr::compute(x@record)
   x@therapy_table <- dplyr::compute(x@therapy_table)
+  if (is(x@conn, "SQLiteConnection")) {
+    .create_sql_index(
+      conn = x@conn,
+      table = x@therapy_table$ops$x$x,
+      fields = c(
+        "patient_id",
+        "therapy_id",
+        "t_start"
+      )
+    )
+  } else {
+    .create_sql_primary_key(
+      conn = x@conn,
+      table = x@therapy_table$ops$x$x,
+      field = "t, patient_id, therapy_id",
+      override_index_name = paste0("idx_pk_", x@therapy_table$ops$x$x)
+    )
+    .create_sql_index(
+      conn = x@conn,
+      table = x@therapy_table$ops$x$x,
+      fields = "patient_id, (t_start at time zone 'UTC')",
+      override_index_name = paste0("idx_pt_time_", x@therapy_table$ops$x$x)
+    )
+  }
   x
 })

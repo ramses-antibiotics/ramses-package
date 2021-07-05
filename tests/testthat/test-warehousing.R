@@ -401,56 +401,64 @@ test_that("Ramses on SQLite 2", {
     TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_code = "8310-5",
     hours = 24
-  )
+  ) %>% 
+    therapy_table(collect = T)
 
   expect_equal(
-    therapy_table(last_temp, collect = T)$last_temperature_24h[1:5],
+    last_temp$last_temperature_24h[1:5],
     c(36.9, 36.9, 36.8, 36.8, 36.8)
   )
   expect_equal(
-    therapy_table(last_temp, collect = T)$last_temperature_24h[174:178],
+    last_temp$last_temperature_24h[174:178],
     c(35.8, 35.8, 36.0, 36.0, 36.0)
   )
+  rm(last_temp)
   
   last_temp_2therapies <- clinical_feature_last(
     TherapyEpisode(conSQLite, c("4d611fc8886c23ab047ad5f74e5080d7",
                                 "a028cf950c29ca73c01803b54642d513")),
     observation_code = "8310-5",
     hours = 24
-  )
+  ) %>% 
+    therapy_table(collect = T)
+  
   expect_equal(
-    dplyr::filter(therapy_table(last_temp_2therapies, collect = T), 
+    dplyr::filter(last_temp_2therapies, 
                   therapy_id == "4d611fc8886c23ab047ad5f74e5080d7")$last_temperature_24h[1:5],
     c(36.9, 36.9, 36.8, 36.8, 36.8)
   )
   expect_equal(
-    dplyr::filter(therapy_table(last_temp_2therapies, collect = T), 
+    dplyr::filter(last_temp_2therapies, 
                   therapy_id == "4d611fc8886c23ab047ad5f74e5080d7" & 
                     t %in% 173:177)$last_temperature_24h,
     c(35.8, 35.8, 36.0, 36.0, 36.0)
   )
+  rm(last_temp_2therapies)
   
   last_temp <- clinical_feature_last(
     TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_code = c("8310-5", "2160-0"),
     hours = 32
-  )
+  ) %>% 
+    therapy_table(collect = T)
+    
   expect_equal(
-    therapy_table(last_temp, collect = T)$last_temperature_32h[1:5],
+    last_temp$last_temperature_32h[1:5],
     c(36.9, 36.9, 36.8, 36.8, 36.8)
   )
   expect_equal(
-    therapy_table(last_temp, collect = T)$last_temperature_32h[174:178],
+    last_temp$last_temperature_32h[174:178],
     c(35.8, 35.8, 36.0, 36.0, 36.0)
   )
   expect_equal(
-    therapy_table(last_temp, collect = T)$last_creatinine_32h[1:5],
+    last_temp$last_creatinine_32h[1:5],
     c(116, 116, 116, 135, 135)
   )
   expect_equal(
-    therapy_table(last_temp, collect = T)$last_creatinine_32h[174:178],
+    last_temp$last_creatinine_32h[174:178],
     c(109, 109, 109, NA, NA)
   )
+  rm(last_temp)
   
   # > - OLS -------------------------------------------------------------------
 
@@ -1149,55 +1157,63 @@ test_that("Ramses on PosgreSQL", {
     TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_code = "8310-5",
     hours = 24
-  )
+  ) %>% 
+    therapy_table(collect = T)
+  
   expect_equal(
-    therapy_table(last_temp, collect = T)$last_temperature_24h[1:5],
+    last_temp$last_temperature_24h[1:5],
     c(36.9, 36.9, 36.8, 36.8, 36.8)
   )
   expect_equal(
-    therapy_table(last_temp, collect = T)$last_temperature_24h[174:178],
+    last_temp$last_temperature_24h[174:178],
     c(35.8, 35.8, 36.0, 36.0, 36.0)
   )
+  rm(last_temp)
   
   last_temp_2therapies <- clinical_feature_last(
     TherapyEpisode(conPostgreSQL, c("4d611fc8886c23ab047ad5f74e5080d7",
                                     "a028cf950c29ca73c01803b54642d513")),
     observation_code = "8310-5",
     hours = 24
-  )
+  ) %>% 
+    therapy_table(collect = T)
+  
   expect_equal(
-    dplyr::filter(therapy_table(last_temp_2therapies, collect = T), 
+    dplyr::filter(last_temp_2therapies, 
                   therapy_id == "4d611fc8886c23ab047ad5f74e5080d7")$last_temperature_24h[1:5],
     c(36.9, 36.9, 36.8, 36.8, 36.8)
   )
   expect_equal(
-    dplyr::filter(therapy_table(last_temp_2therapies, collect = T), 
+    dplyr::filter(last_temp_2therapies, 
                   therapy_id == "4d611fc8886c23ab047ad5f74e5080d7" & 
                     t %in% 173:177)$last_temperature_24h,
     c(35.8, 35.8, 36.0, 36.0, 36.0)
   )
+  rm(last_temp_2therapies)
   
   last_temp <- clinical_feature_last(
     TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_code = c("8310-5", "2160-0"),
     hours = 32
-  )
+  ) %>% 
+    therapy_table(collect = T)
   expect_equal(
-    therapy_table(last_temp, collect = T)$last_temperature_32h[1:5],
+    last_temp$last_temperature_32h[1:5],
     c(36.9, 36.9, 36.8, 36.8, 36.8)
   )
   expect_equal(
-    therapy_table(last_temp, collect = T)$last_temperature_32h[174:178],
+    last_temp$last_temperature_32h[174:178],
     c(35.8, 35.8, 36.0, 36.0, 36.0)
   )
   expect_equal(
-    therapy_table(last_temp, collect = T)$last_creatinine_32h[1:5],
+    last_temp$last_creatinine_32h[1:5],
     c(116, 116, 116, 135, 135)
   )
   expect_equal(
-    therapy_table(last_temp, collect = T)$last_creatinine_32h[174:178],
+    last_temp$last_creatinine_32h[174:178],
     c(109, 109, 109, NA, NA)
   )
+  rm(last_temp)
   
   # > - OLS -------------------------------------------------------------------
   
@@ -1420,7 +1436,7 @@ test_that("Postgres drug_prescriptions_edges", {
   
   records_rx <- read.csv(system.file("test_cases", "prescription_linkage_prescriptions.csv", 
                                      package = "Ramses"),
-                         colClasses = c("character", "character", "numeric", 
+                         colClasses = c("character", "numeric", "numeric", 
                                         "POSIXct", "POSIXct", "POSIXct", "character", "character", 
                                         "character", "character", "character", "character", "character"))
   load_medications(conPostgreSQL, records_rx, overwrite = T)
