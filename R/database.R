@@ -642,6 +642,7 @@ load_medications <- function(
   .remove_db_tables(conn = conn, "drug_therapy_episodes")
   
   forget <- tbl(conn, "drug_prescriptions") %>%
+    dplyr::filter(!is.na(therapy_id)) %>% 
     dplyr::group_by(patient_id, therapy_id) %>% 
     dplyr::summarise(therapy_start = min(prescription_start, na.rm = TRUE),
                      therapy_end = max(prescription_end, na.rm = TRUE)) %>% 
@@ -1009,6 +1010,28 @@ create_mock_database <- function(file,
   statement
 }
 
+#' Get table field data type
+#'
+#' @param conn a database connection
+#' @param table a character table name
+#' @param field a character field name
+#'
+#' @return a variable type
+#' @noRd
+.sql_data_type <- function(conn, table, field = NULL) {
+  stopifnot(length(table)==1)
+  stopifnot(is.character(table))
+  stopifnot(is.character(field) | is.null(field))
+  x <- tbl(conn, table)
+  if (!is.null(field)) {
+    x <- dplyr::select(x, !!field)
+  }
+  x <- utils::head(x, 1) %>% 
+    dplyr::collect() %>% 
+    vapply(class, FUN.VALUE = character(1))
+  
+  x
+}
 
 #' Split SQL statements from a batch script
 #'

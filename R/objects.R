@@ -10,7 +10,7 @@ setGeneric("compute", function(x) standardGeneric("compute"))
 
 #' An S4 virtual class for Ramses objects
 #'
-#' @slot id a character identifier or vector of identifiers
+#' @slot id an identifier or vector of identifiers
 #' @slot conn a database connection
 #' @slot record a \code{tbl_sql} for the corresponding database record
 #' @rdname RamsesObject
@@ -21,7 +21,7 @@ setGeneric("compute", function(x) standardGeneric("compute"))
 setClass(
   "RamsesObject", 
   slots = c(
-    id = "character", 
+    id = "vector", 
     conn = "DBIConnection",
     record = "tbl_sql"
   ),
@@ -49,7 +49,22 @@ setClass(
 #' @rdname Patient
 #' @export
 Patient <- function(conn, id) {
-  id <- id[1]
+  if ( is.null(id) | length(id) != 1 ) {
+    stop("`id` must have length 1")
+  }
+  if (is.na(id)) {
+    stop("`id` must not be NA.")
+  }
+  id_data_type <- .sql_data_type(conn = conn,
+                                 table = "patients",
+                                 field = "patient_id")
+  if (is.numeric(id) & id_data_type == "character") {
+    stop("`id` must be character")
+  }
+  if (is.character(id) & id_data_type !="character") {
+    stop(paste("`id` must be", id_data_type))
+  }
+  
   record <- tbl(conn, "patients") %>% 
     dplyr::filter(patient_id == !!id)
   
@@ -59,15 +74,7 @@ Patient <- function(conn, id) {
       record = record)
 }
 
-setValidity("Patient", function(object) {
-  if ( length(object@id) != 1 ) {
-    "`id` must be a string of length 1"
-  } else if(object@id == "") {
-    '`id` must not equal ""'
-  } else {
-    TRUE
-  }
-})
+ 
 
 # MedicationRequest -------------------------------------------------------
 
@@ -91,7 +98,27 @@ setClass(
 #' @rdname MedicationRequest
 #' @export
 MedicationRequest <- function(conn, id) {
-  id <- id[1]
+  if ( is.null(id) | length(id) == 0 ) {
+    stop("`id` must have length 1.")
+    id <- id[1]
+  }
+  if ( length(id) > 1 ) {
+    warning("`id` must have length 1. The first value will be used")
+    id <- id[1]
+  }
+  if (is.na(id)) {
+    stop("`id` must not be NA.")
+  }
+  id_data_type <- .sql_data_type(conn = conn,
+                                 table = "drug_prescriptions",
+                                 field = "prescription_id")
+  if (is.numeric(id) & id_data_type == "character") {
+    stop("`id` must be character")
+  }
+  if (is.character(id) & id_data_type !="character") {
+    stop(paste("`id` must be character", id_data_type))
+  }
+  
   record <- dplyr::filter(tbl(conn, "drug_prescriptions"),
                           prescription_id == !!id)
   new("MedicationRequest", 
@@ -100,15 +127,7 @@ MedicationRequest <- function(conn, id) {
       record = record)
 }
 
-setValidity("MedicationRequest", function(object) {
-  if ( length(object@id) != 1 ) {
-    "`id` must be a string of length 1"
-  } else if(object@id == "") {
-    '`id` must not equal ""'
-  } else {
-    TRUE
-  }
-})
+
 
 # TherapyEpisode ----------------------------------------------------------
 
@@ -141,8 +160,20 @@ TherapyEpisode <- function(...){
 #' @rdname TherapyEpisode
 #' @export
 TherapyEpisode.DBIConnection <- function(conn, id) {
-  id <- sort(na.omit(unique(trimws(id))))
-  id <- id[!id == ""]
+  id <- sort(na.omit(unique(id)))
+  if ( is.null(id) | length(id) < 1) {
+    stop("`id` must contain at least one identifier")
+  }
+  id_data_type <- .sql_data_type(conn = conn,
+                                 table = "drug_therapy_episodes",
+                                 field = "therapy_id")
+  if (is.numeric(id) & id_data_type == "character") {
+    stop("`id` must be character")
+  }
+  if (is.character(id) & id_data_type !="character") {
+    stop(paste("`id` must be character", id_data_type))
+  }
+  
   record <- dplyr::inner_join(
     tbl(conn, "drug_therapy_episodes"),
     dplyr::tibble(therapy_id = id),
@@ -506,16 +537,16 @@ setMethod("therapy_table", "MedicationRequest", function(object, collect = FALSE
 # show methods ------------------------------------------------------------
 
 setMethod("show", "RamsesObject", function(object) {
-  cat(class(object), object@id, "\n")
+  cat(class(object), as.character(object@id), "\n")
   cat("\nDatabase connection:\n")
   print(object@conn)
 })
 
 setMethod("show", "TherapyEpisode", function(object) {
    if( length(object@id) <= 3 ) {
-    cat(class(object), paste(object@id, collapse = ", "), "\n")
+    cat(class(object), paste(as.character(object@id), collapse = ", "), "\n")
   } else if( length(id) > 3 ) {
-    cat(class(object), paste(object@id[1:3], collapse = ", "), "...\n")
+    cat(class(object), paste(as.character(object@id)[1:3], collapse = ", "), "...\n")
   }
   record <- collect_ramses_tbl(object@record)
 
@@ -544,9 +575,9 @@ setMethod("show", "TherapyEpisode", function(object) {
     record <- dplyr::arrange(record, therapy_id)
     record <- record[order(object@id), ]
     if (length(unique(record$patient_id)) > 3) {
-      cat("Patients:  ", paste(unique(record$patient_id)[1:3], collapse = ", "), ", ...\n")
+      cat("Patients:  ", paste(as.character(unique(record$patient_id)[1:3]), collapse = ", "), ", ...\n")
     } else {
-      cat("Patient(s):  ", paste(unique(record$patient_id), collapse = ", "), "\n")
+      cat("Patient(s):  ", paste(as.character(unique(record$patient_id)), collapse = ", "), "\n")
     }
   }
 
@@ -555,20 +586,20 @@ setMethod("show", "TherapyEpisode", function(object) {
 })
 
 setMethod("show", "MedicationRequest", function(object) {
-  cat(class(object), object@id, "\n")
+  cat(class(object), as.character(object@id), "\n")
   record <- collect_ramses_tbl(object@record)
   if( nrow(record) == 0 ) {
     cat("Record is not available.\n")
     cat("Please check object id is valid\n")
   } else {
     cat(record$prescription_text, "\n")
-    cat("Patient:    ", record$patient_id, "\n")
+    cat("Patient:    ", as.character(record$patient_id), "\n")
     cat("Start:       ", as.character(record$prescription_start, format = "%Y-%m-%d %H:%M:%S %Z"), "\n")
     cat("End:         ", as.character(record$prescription_end, format = "%Y-%m-%d %H:%M:%S %Z"), "\n")
     if( !is.na(record$combination_id) ) {
-      cat("Combination: ", record$combination_id, "\n")
+      cat("Combination: ", as.character(record$combination_id), "\n")
     }
-    cat("Therapy:     ", record$therapy_id, "\n")
+    cat("Therapy:     ", as.character(record$therapy_id), "\n")
   }
   cat("\nDatabase connection:\n")
   print(object@conn)

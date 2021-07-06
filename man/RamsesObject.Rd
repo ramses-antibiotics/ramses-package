@@ -10,7 +10,7 @@ An S4 virtual class for Ramses objects
 \section{Slots}{
 
 \describe{
-\item{\code{id}}{a character identifier or vector of identifiers}
+\item{\code{id}}{an identifier or vector of identifiers}
 
 \item{\code{conn}}{a database connection}
 
