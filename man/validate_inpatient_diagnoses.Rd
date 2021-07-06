@@ -23,6 +23,36 @@ Validate constraints on diagnosis records, namely that the
 minimum variables are present, and that all \code{icd_code} values can be 
 looked up in an ICD-10 reference table
 }
+\section{Diagnoses set mandatory variables}{
+
+\describe{
+  \item{\code{patient_id}}{a patient identifier with no missing value}
+  \item{\code{spell_id}}{a hospital admission identifier with no missing value}
+  \item{\code{episode_number}}{a strictly positive integer indicating the
+  number of the episode within an admission. Must not be missing.}
+  \item{\code{icd_code}}{a code corresponding to the International Classification of Diseases
+  without a "." separator}
+  \item{\code{diagnosis_position}}{an integer describing the diagnosis position
+  on the discharge summary (1 = primary cause of admission}
+}
+}
+
+\section{Diagnoses lookup mandatory variables}{
+
+
+\describe{
+  \item{\code{icd_code}}{character diagnosis codes corresponding to the 
+  International Classification of Diseases formatted without a "." separator (eg "A0101")}
+  \item{\code{icd_display}}{laid-out diagnosis codes for display (eg: "A01.01")}
+  \item{\code{icd_description}}{full text descriptions of the diagnoses}
+  \item{\code{category_code}}{three-character heading codes (eg "A01")}
+  \item{\code{category_description}}{full text descriptions of three-character heading codes}
+}
+
+*Note*: \code{\link[Ramses]{import_icd}()} can produce this lookup data frame from
+a standard ICD release archive file.
+}
+
 \examples{
 data_icd <- dplyr::filter(Ramses::inpatient_diagnoses, !is.na(icd_code))
 lookup_icd <- dplyr::distinct(data_icd, icd_code)

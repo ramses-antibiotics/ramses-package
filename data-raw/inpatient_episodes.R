@@ -80,11 +80,11 @@ usethis::use_data(inpatient_diagnoses, overwrite = T)
 
 inpatient_wards <- read.csv(
   file = "data-raw/inpatient_wards.csv", stringsAsFactors = F, 
-  colClasses = c("character", "character", "character",
+  colClasses = c("character", "character", "character","character", "character",
                  "POSIXct", "POSIXct"))
 inpatient_wards2 <- read.csv(
   file = "data-raw/inpatient_wards2.csv", stringsAsFactors = F, 
-  colClasses = c("character", "character", "character",
+  colClasses = c("character", "character", "character","character", "character",
                  "POSIXct", "POSIXct"))
 inpatient_wards <- dplyr::bind_rows(inpatient_wards,
                                     inpatient_wards2)

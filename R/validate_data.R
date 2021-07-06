@@ -302,6 +302,19 @@
 #'   the main specialty of the medical professional responsible for the 
 #'   episode of care. Must not be missing.}
 #' }
+#' 
+#' @section Ward mandatory variables:
+#' \describe{
+#'   \item{\code{patient_id}}{a patient identifier with no missing value}
+#'   \item{\code{spell_id}}{a hospital spell identifier with no missing value}
+#'   \item{\code{ward_code}}{character vector of ward codes}
+#'   \item{\code{ward_display_name}}{character vector of expanded ward designations}
+#'   \item{\code{ward_description}}{full text description of service/unit/specialty}
+#'   \item{\code{ward_start}}{a \code{POSIXct} timestamp for 
+#'   the arrival time on the ward}
+#'   \item{\code{ward_end}}{a \code{POSIXct} timestamp for 
+#'   the ward departure time}
+#' }
 #' @return A logical value indicating success
 #' @export
 validate_inpatient_episodes <- function(patients,
@@ -572,7 +585,31 @@ validate_inpatient_episode_dates <- function(data, type = "episodes") {
 #' @param diagnoses_lookup a data frame containing an ICD-10 reference look up 
 #' table with, at minimum, variables \code{icd_description}, \code{icd_display}, 
 #' \code{category_code}, \code{category_description}
-#'
+#' @section Diagnoses set mandatory variables:
+#' \describe{
+#'   \item{\code{patient_id}}{a patient identifier with no missing value}
+#'   \item{\code{spell_id}}{a hospital admission identifier with no missing value}
+#'   \item{\code{episode_number}}{a strictly positive integer indicating the
+#'   number of the episode within an admission. Must not be missing.}
+#'   \item{\code{icd_code}}{a code corresponding to the International Classification of Diseases
+#'   without a "." separator}
+#'   \item{\code{diagnosis_position}}{an integer describing the diagnosis position
+#'   on the discharge summary (1 = primary cause of admission}
+#' }
+#' @section Diagnoses lookup mandatory variables:
+#' 
+#' \describe{
+#'   \item{\code{icd_code}}{character diagnosis codes corresponding to the 
+#'   International Classification of Diseases formatted without a "." separator (eg "A0101")}
+#'   \item{\code{icd_display}}{laid-out diagnosis codes for display (eg: "A01.01")}
+#'   \item{\code{icd_description}}{full text descriptions of the diagnoses}
+#'   \item{\code{category_code}}{three-character heading codes (eg "A01")}
+#'   \item{\code{category_description}}{full text descriptions of three-character heading codes}
+#' }
+#' 
+#' *Note*: \code{\link[Ramses]{import_icd}()} can produce this lookup data frame from
+#' a standard ICD release archive file.
+#' 
 #' @return A logical value indicating success
 #' @export
 #' @importFrom data.table data.table :=

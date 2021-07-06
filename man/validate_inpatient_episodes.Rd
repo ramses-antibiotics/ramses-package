@@ -120,3 +120,18 @@ closely follow those of the
 }
 }
 
+\section{Ward mandatory variables}{
+
+\describe{
+  \item{\code{patient_id}}{a patient identifier with no missing value}
+  \item{\code{spell_id}}{a hospital spell identifier with no missing value}
+  \item{\code{ward_code}}{character vector of ward codes}
+  \item{\code{ward_display_name}}{character vector of expanded ward designations}
+  \item{\code{ward_description}}{full text description of service/unit/specialty}
+  \item{\code{ward_start}}{a \code{POSIXct} timestamp for 
+  the arrival time on the ward}
+  \item{\code{ward_end}}{a \code{POSIXct} timestamp for 
+  the ward departure time}
+}
+}
+

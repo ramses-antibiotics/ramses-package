@@ -167,8 +167,10 @@ load_inpatient_episodes <- function(conn,
                                  patient_id, ward_start)
     first_column_names_wards <- .inpatient_wards_variables()[["variable_name"]]
     first_column_names_wards <- c(
+      "id",
       first_column_names_wards[first_column_names_wards %in% names(wards_data)]
     )
+    wards_data$id <- seq_len(nrow(wards_data))
     wards_data <- arrange_variables(
       wards_data, 
       first_column_names = first_column_names_wards)   
@@ -181,14 +183,25 @@ load_inpatient_episodes <- function(conn,
         name = "inpatient_ward_movements",
         df = dplyr::tibble(wards_data),
         temporary = FALSE,
-        overwrite = overwrite,
-        indexes = list(
+        overwrite = overwrite
+      )
+      .create_sql_primary_key(
+        conn = conn,
+        table = "inpatient_ward_movements",
+        field = "id"
+      )
+      .create_sql_index(
+        conn = conn,
+        table = "inpatient_ward_movements",
+        fields = c(
           "patient_id", 
           "spell_id",
+          "ward_code",
           "ward_start",
           "ward_end"
         )
       )
+      
     })
     
     if ( is(load_errors, "try-error") ) {

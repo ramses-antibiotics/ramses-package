@@ -323,7 +323,7 @@ load_medications(conn = ramses_db,
 We now turn to records of patient demographics, admissions, discharges and transfers. Ramses is designed around the notion of *hospital spells* identified by variable `spell_id`, which correspond to the window from the time a patient is admitted to the time a patient is discharged. 
 
 In addition, Ramses use subdivisions of *hospital spells* called *episodes of care*, which designate a continuous period of inpatient care under the responsibility of a department, specialty, or clinical team. This corresponds to the 'finished consultant episode' in the UK NHS Admitted Patient Care data model [@Herbert2017]. All *hospital spells* consist of at least one *episode of care*.
-Episodes of care are used to calculate bed-days as well as rates of infection, prescribing and other stewardship metrics for individal specialties and teams of clinicians. 
+Episodes of care are used to calculate bed-days as well as rates of infection, prescribing and other stewardship metrics for individual specialties and teams of clinicians. 
 
 Hospital spells and episodes of care are recorded in a single table in which every row corresponds to one episode of care.
 
