@@ -3,11 +3,31 @@ test_that("Patient..constructor", {
   patients <- dplyr::tibble(patient_id = "99999999999")
   fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
   dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
-  expect_error(Patient(fake_db_conn, ""))
+  expect_error(Patient(fake_db_conn, NA))
+  expect_error(Patient(fake_db_conn, c()))
+  expect_error(Patient(fake_db_conn, c("a", "b")))
   patient_object <- Patient(fake_db_conn, "99999999999")
   expect_s4_class(patient_object, "Patient")
   expect_s4_class(compute(patient_object), "Patient")
   expect_is(collect(patient_object), "tbl_df")
+  expect_error(Patient(fake_db_conn, 99999999999))
+  DBI::dbDisconnect(fake_db_conn)
+  
+  # works with integer/numeric
+  patients <- dplyr::tibble(patient_id = 999)
+  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
+  expect_error(Patient(fake_db_conn, "999"))
+  expect_s4_class(Patient(fake_db_conn, 999), "Patient")
+  expect_s4_class(Patient(fake_db_conn, 999L), "Patient")
+  DBI::dbDisconnect(fake_db_conn)
+  
+  patients <- dplyr::tibble(patient_id = 999L)
+  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
+  expect_error(Patient(fake_db_conn, "999"))
+  expect_s4_class(Patient(fake_db_conn, 999), "Patient")
+  expect_s4_class(Patient(fake_db_conn, 999L), "Patient")
   DBI::dbDisconnect(fake_db_conn)
 })
 
@@ -17,6 +37,13 @@ test_that("Patient..show", {
   dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
   expect_equal(capture.output(Patient(fake_db_conn, "3422481921"))[1],
                "Patient 3422481921 ")
+  DBI::dbDisconnect(fake_db_conn)
+  
+  patients <- dplyr::tibble(patient_id = 99999999999)
+  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
+  expect_equal(capture.output(Patient(fake_db_conn, 99999999999))[1],
+               "Patient 99999999999 ")
   DBI::dbDisconnect(fake_db_conn)
 })
 
@@ -59,5 +86,70 @@ test_that(".process_io_parenteral_vector", {
 })
 
 
+test_that("MedicationRequest..constructor", {
+  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(fake_db_conn, 
+                 dplyr::tibble(prescription_id = "999999"),
+                 "drug_prescriptions", 
+                 temporary = FALSE)
+  expect_error(MedicationRequest(fake_db_conn, NA))
+  expect_error(MedicationRequest(fake_db_conn, c()))
+  expect_warning(MedicationRequest(fake_db_conn, c("a", "b")))
+  object <- MedicationRequest(fake_db_conn, "999999")
+  expect_s4_class(object, "MedicationRequest")
+  expect_error(MedicationRequest(fake_db_conn, 999999))
+  DBI::dbDisconnect(fake_db_conn)
+  
+  # works with integer/numeric
+  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(fake_db_conn, 
+                 dplyr::tibble(prescription_id = 999L),
+                 "drug_prescriptions", 
+                 temporary = FALSE)
+  expect_error(MedicationRequest(fake_db_conn, "999"))
+  expect_s4_class(MedicationRequest(fake_db_conn, 999), "MedicationRequest")
+  expect_s4_class(MedicationRequest(fake_db_conn, 999L), "MedicationRequest")
+  DBI::dbDisconnect(fake_db_conn)
+  
+  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(fake_db_conn, 
+                 dplyr::tibble(prescription_id = 999),
+                 "drug_prescriptions", 
+                 temporary = FALSE)
+  expect_error(MedicationRequest(fake_db_conn, "999"))
+  expect_s4_class(MedicationRequest(fake_db_conn, 999), "MedicationRequest")
+  expect_s4_class(MedicationRequest(fake_db_conn, 999L), "MedicationRequest")
+  DBI::dbDisconnect(fake_db_conn)
+})
 
 
+
+test_that("TherapyEpisode..constructor", {
+  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(fake_db_conn, 
+                 dplyr::tibble(therapy_id = "999999"),
+                 "drug_therapy_episodes", 
+                 temporary = FALSE)
+  expect_error(TherapyEpisode(fake_db_conn, NA))
+  expect_error(TherapyEpisode(fake_db_conn, c()))
+  expect_error(TherapyEpisode(fake_db_conn, 999999))
+  expect_error(TherapyEpisode(fake_db_conn, 999999L))
+  DBI::dbDisconnect(fake_db_conn)
+  
+  # works with integer/numeric
+  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(fake_db_conn, 
+                 dplyr::tibble(therapy_id = 999999L),
+                 "drug_therapy_episodes", 
+                 temporary = FALSE)
+  expect_error(TherapyEpisode(fake_db_conn, "999999"))
+  DBI::dbDisconnect(fake_db_conn)
+  
+  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(fake_db_conn, 
+                 dplyr::tibble(therapy_id = 999999),
+                 "drug_therapy_episodes", 
+                 temporary = FALSE)
+  expect_error(TherapyEpisode(fake_db_conn, "999999"))
+  DBI::dbDisconnect(fake_db_conn)
+})

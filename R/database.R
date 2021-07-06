@@ -225,13 +225,25 @@ load_inpatient_investigations <- function(conn, investigations_data, overwrite =
       name = "inpatient_investigations", 
       df = dplyr::tibble(investigations_data), 
       overwrite = overwrite, 
-      temporary = FALSE,
-      indexes = list("observation_code", 
-                     "patient_id", 
-                     "observation_datetime",
-                     "status"))
+      temporary = FALSE)
+    
+    .create_sql_primary_key(
+      conn = conn,
+      table = "inpatient_investigations",
+      field = "observation_id"
+    )
+
+    DBI::dbExecute(
+      conn,
+      statement = paste(
+        "create index idx_inpatient_investigations_codes_num_not_null on inpatient_investigations",
+        "(patient_id, observation_code_system, observation_code, (observation_value_numeric IS NOT NULL))",
+        "where (NOT (observation_value_numeric IS NULL));"
+      )
+    )
+    
   })
-  
+
   if ( is(load_errors, "try-error") ) {
     stop(load_errors)
   } 
@@ -469,21 +481,7 @@ load_medications <- function(
     name = "drug_prescriptions",
     df = dplyr::tibble(prescriptions),
     temporary = FALSE,
-    overwrite = overwrite,
-    indexes = list(
-      "id",
-      "patient_id", 
-      "prescription_id",
-      "combination_id",
-      "therapy_id",
-      "drug_code",
-      "antiinfective_type",
-      "ATC_code",
-      "ATC_route",
-      "authoring_date",
-      "prescription_start", 
-      "prescription_end"
-    )
+    overwrite = overwrite
   )
   
   if (create_therapy_id | create_combination_id) {
@@ -495,6 +493,28 @@ load_medications <- function(
   } else {
     .create_table_drug_therapy_episodes(conn = conn)
   }
+  
+  .create_sql_primary_key(
+    conn = conn,
+    table = "drug_prescriptions",
+    field = "prescription_id"
+  )
+  
+  .create_sql_index(
+    conn = conn,
+    table = "drug_prescriptions",
+    fields = c(
+      "combination_id",
+      "therapy_id",
+      "drug_code",
+      "antiinfective_type",
+      "ATC_code",
+      "ATC_route",
+      "authoring_date",
+      "prescription_start", 
+      "prescription_end"
+    )
+  )
   
   TRUE
 }
@@ -622,19 +642,27 @@ load_medications <- function(
   .remove_db_tables(conn = conn, "drug_therapy_episodes")
   
   forget <- tbl(conn, "drug_prescriptions") %>%
+    dplyr::filter(!is.na(therapy_id)) %>% 
     dplyr::group_by(patient_id, therapy_id) %>% 
     dplyr::summarise(therapy_start = min(prescription_start, na.rm = TRUE),
                      therapy_end = max(prescription_end, na.rm = TRUE)) %>% 
     dplyr::compute(name = "drug_therapy_episodes", temporary = FALSE)
   
-  dplyr::db_create_index(
-    con = conn, 
+  .create_sql_primary_key(
+    conn = conn,
     table = "drug_therapy_episodes",
-    columns = "patient_id")
-  dplyr::db_create_index(
-    con = conn, 
+    field = "therapy_id"
+  )
+  .create_sql_index(
+    conn = conn,
     table = "drug_therapy_episodes",
-    columns = "therapy_id")
+    fields = c(
+      "patient_id",
+      "therapy_start",
+      "therapy_end"
+    )
+  )
+ 
 }
 
 
@@ -779,8 +807,19 @@ create_therapy_episodes <- function(
       name = "drug_administrations",
       df = dplyr::tibble(administrations),
       temporary = FALSE,
-      overwrite = overwrite,
-      indexes = list(
+      overwrite = overwrite
+    )
+    
+    .create_sql_primary_key(
+      conn = conn,
+      table = "drug_administrations",
+      field = "administration_id"
+    )
+    
+    .create_sql_index(
+      conn = conn,
+      table = "drug_administrations",
+      fields = c(
         "id",
         "patient_id", 
         "administration_id",
@@ -796,7 +835,6 @@ create_therapy_episodes <- function(
     stop(load_output)
   }
 }
-
 
 
 # Database management -----------------------------------------------------
@@ -972,6 +1010,28 @@ create_mock_database <- function(file,
   statement
 }
 
+#' Get table field data type
+#'
+#' @param conn a database connection
+#' @param table a character table name
+#' @param field a character field name
+#'
+#' @return a variable type
+#' @noRd
+.sql_data_type <- function(conn, table, field = NULL) {
+  stopifnot(length(table)==1)
+  stopifnot(is.character(table))
+  stopifnot(is.character(field) | is.null(field))
+  x <- tbl(conn, table)
+  if (!is.null(field)) {
+    x <- dplyr::select(x, !!field)
+  }
+  x <- utils::head(x, 1) %>% 
+    dplyr::collect() %>% 
+    vapply(class, FUN.VALUE = character(1))
+  
+  x
+}
 
 #' Split SQL statements from a batch script
 #'
@@ -1011,6 +1071,61 @@ create_mock_database <- function(file,
   
   NULL
 }
+
+#' Create primary key
+#'
+#' @param conn a database connection
+#' @param table a character table name
+#' @param field a character field name
+#' @noRd
+.create_sql_primary_key <- function(conn, table, field, override_index_name = NULL) {
+  if (!is(conn, "SQLiteConnection")) {
+    
+    if(!is.null(override_index_name)) {
+      DBI::dbExecute(
+        conn,
+        paste0("alter table ", table,
+               " add constraint ", override_index_name,
+               " primary key (", field,");")
+      )
+    } else {
+      DBI::dbExecute(
+        conn,
+        statement = paste0(
+          "alter table ", table,
+          " add constraint ", table, "_pk ",
+          "primary key (\"", field,"\");"
+        ))
+    }
+  }
+}
+
+
+#' Create individual indexes
+#'
+#' @param conn a database connection
+#' @param table a character table name
+#' @param fields a character vector of field names
+#' @noRd
+.create_sql_index <- function(conn, table, fields, override_index_name = NULL) {
+  
+  if(!is.null(override_index_name)) {
+    DBI::dbExecute(
+      conn,
+      paste0("create index ", override_index_name,  
+             " on ", table, " (", fields, ");")
+    )
+  } else {
+    for (i in fields) {
+      DBI::dbExecute(
+        conn,
+        paste0("create index idx_", table, "_", i, 
+               " on ", table, " (\"", i, "\");")
+      )
+    }
+  }
+}
+
 
 .create_ramses_tc_graphs <- function(conn){
   UseMethod(".create_ramses_tc_graphs")

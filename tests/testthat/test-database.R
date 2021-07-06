@@ -81,3 +81,28 @@ test_that(".format_id_as_character", {
     data.frame(list(patient_id2 = 1:2), stringsAsFactors = F)
   )
 })
+
+test_that(".sql_data_type", {
+  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(dest = fake_db_conn,
+                 df = dplyr::tibble(patient_id = "99999999999", 
+                                    int_var = 1L,
+                                    num_var = 1.1), 
+                 name = "patients", 
+                 temporary = FALSE)
+  expect_equal(
+    .sql_data_type(fake_db_conn, "patients", c("patient_id", "int_var")),
+    c("patient_id" = "character",
+      "int_var" = "integer")
+  )
+  expect_equal(
+    .sql_data_type(fake_db_conn, "patients"),
+    c(patient_id = "character", 
+      int_var = "integer", 
+      num_var = "numeric")
+  )
+  expect_error(
+    .sql_data_type(fake_db_conn, "patients", 1)
+  )
+  DBI::dbDisconnect(fake_db_conn)
+})

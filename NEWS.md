@@ -10,7 +10,7 @@
 * updated schema of drug prescriptions and administrations: `drug_id` refactored into `drug_code`; `ATC_group` retired in favour of `drug_group`
 * updated schema of microbiology isolates and susceptibilities: isolates are now identified by `isolate_id` rather than `organism_id`
 * updated schema of microbiology susceptibilities: `drug_id`, `drug_name` and `drug_display_name` refactored into `agent_code`, `agent_name` and `agent_display_name`
-* faster execution of `clinical_feature_*()` functions
+* faster execution of `clinical_feature_*()` functions on PostgreSQL
 
 ## Bug fixes
 

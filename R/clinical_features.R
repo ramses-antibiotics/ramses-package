@@ -128,63 +128,38 @@
                                                  observation_code_system) {
   
   if(is(x@conn, "SQLiteConnection")) {
-    sql_expression_0 <- paste0("datetime(therapy_start, '-", hours, " hours')")
-    sql_condition_0 <- paste("datetime(observation_datetime) BETWEEN ", 
-                             "datetime(therapy_start) AND datetime(therapy_end)")
-    sql_condition_1 <- paste0("datetime(observation_datetime) <= datetime(t_start) AND ",
+    sql_condition_1 <- paste0("datetime(observation_datetime) < datetime(t_start) AND ",
                               "datetime(observation_datetime) >= ", 
                               "datetime(t_start, -", hours," || ' hours')")
   } else if(is(x@conn, "PqConnection")) {
-    sql_expression_0 <- paste0("therapy_start - interval '", hours, "h'")
-    sql_condition_0 <- "observation_datetime BETWEEN therapy_start AND therapy_end"
     sql_condition_1 <- paste0(
-      "observation_datetime <= t_start AND ",
-      "observation_datetime >= (t_start - interval '", hours, "h')")
+      "(t_start at time zone 'UTC') > (observation_datetime at time zone 'UTC' ) ",
+      "AND (t_start at time zone 'UTC') <= (observation_datetime at time zone 'UTC' + interval '", hours, "h' )"
+      )
   } else {
     .throw_error_method_not_implemented(".clinical_feature_threshold()",
                                         class(x@conn))
   }
   
-  clinical_ix_inclusion <- x@record %>% 
-    dplyr::transmute(
-      patient_id, 
-      therapy_id, 
-      therapy_start = dplyr::sql(sql_expression_0), 
-      therapy_end
-    )
-  
-  all_observations <- tbl(x@conn, "inpatient_investigations") %>% 
+  observations_linked <- dplyr::inner_join(
+    TT, 
+    dplyr::select(tbl(x@conn, "inpatient_investigations"),
+                  patient_id, observation_datetime,
+                  observation_code, observation_value_numeric,
+                  status, observation_code_system),
+    by = "patient_id"
+  ) %>% 
     dplyr::filter(
-      observation_code %in% !!observation_code &
+      dplyr::sql(sql_condition_1) &
         status %in% c("final", "preliminary", "corrected", "amended") &
-        !is.na(observation_value_numeric) 
+        observation_code %in% !!observation_code & 
+        !is.na(observation_value_numeric)
     )
   
   if( !is.null(observation_code_system) ) {
-    all_observations <- dplyr::filter(all_observations, 
-                                      observation_code_system == !!observation_code_system) 
+    observations_linked <- observations_linked %>% 
+      dplyr::filter(observation_code_system == !!observation_code_system)
   }
-  
-  clinical_ix_inclusion <- dplyr::inner_join(
-    all_observations,
-    clinical_ix_inclusion,
-    by = "patient_id"
-  ) %>% 
-    dplyr::filter(dplyr::sql(sql_condition_0)) %>% 
-    dplyr::distinct(patient_id, observation_id)
-    
-  all_observations <- dplyr::inner_join(
-    all_observations,
-    clinical_ix_inclusion, 
-    by = c("patient_id", "observation_id")
-  ) %>%
-    dplyr::select(patient_id, observation_datetime,
-                  observation_code, observation_value_numeric)
-  
-  observations_linked <- dplyr::inner_join(TT, 
-                                           all_observations, 
-                                           by = "patient_id") %>% 
-    dplyr::filter(dplyr::sql(sql_condition_1))
   
   observations_linked
 }
@@ -192,10 +167,10 @@
 
 .clinical_feature_last <- function(x, observation_code, hours, observation_code_system, compute) {
   stopifnot(is.logical(compute))
-  TT <- x@therapy_table
   if(compute) {
-    TT <- dplyr::compute(TT)
+    x <- compute(x)
   }
+  TT <- x@therapy_table
   
   therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
@@ -227,7 +202,7 @@
     by = c("patient_id", "t")
   )
   if(compute) {
-    x@therapy_table <- dplyr::compute(x@therapy_table)
+    x <- compute(x)
   }
   
   return(x)
@@ -301,10 +276,10 @@ setMethod(
 
 .clinical_feature_mean <- function(x, observation_code, hours, observation_code_system, compute) {
   stopifnot(is.logical(compute))
-  TT <- x@therapy_table
   if(compute) {
-    TT <- dplyr::compute(TT)
+    x <- compute(x)
   }
+  TT <- x@therapy_table
   
   therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
@@ -334,8 +309,9 @@ setMethod(
     observations_linked,
     by = c("patient_id", "t")
   )
+  
   if(compute) {
-    x@therapy_table <- dplyr::compute(x@therapy_table)
+    x <- compute(x)
   }
   
   return(x)
@@ -411,10 +387,11 @@ setMethod(
   final_slope <- observation_datetime_int <- regression_N <- NULL
   slope_denominator <- slope_numerator <- t_bar <- y_bar <- NULL
   
-  TT <- x@therapy_table
   if(compute) {
-    TT <- dplyr::compute(TT)
+    x <- compute(x)
   }
+  TT <- x@therapy_table
+
   therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
     conn = x@conn, 
@@ -490,8 +467,9 @@ setMethod(
     observations_linked,
     by = c("patient_id", "t")
   )
+  
   if(compute) {
-    x@therapy_table <- dplyr::compute(x@therapy_table)
+    x <- compute(x)
   }
   
   return(x)
@@ -571,10 +549,10 @@ setMethod(
 
 .clinical_feature_threshold <- function(x, observation_code, threshold, hours, observation_code_system, compute) {
   stopifnot(is.logical(compute))
-  TT <- x@therapy_table
   if(compute) {
-    TT <- dplyr::compute(TT)
+    x <- compute(x)
   }
+  TT <- x@therapy_table
   therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
       conn = x@conn, 
@@ -612,8 +590,9 @@ setMethod(
     observations_linked,
     by = c("patient_id", "t")
   )
+  
   if(compute) {
-    x@therapy_table <- dplyr::compute(x@therapy_table)
+    x <- compute(x)
   }
   
   return(x)
@@ -621,10 +600,10 @@ setMethod(
 
 .clinical_feature_interval <- function(x, observation_code, lower_bound, upper_bound, hours, observation_code_system, compute) {
   stopifnot(is.logical(compute))
-  TT <- x@therapy_table
   if(compute) {
-    TT <- dplyr::compute(TT)
+    x <- compute(x)
   }
+  TT <- x@therapy_table
   therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
     conn = x@conn, 
@@ -666,8 +645,9 @@ setMethod(
       observations_linked,
       by = c("patient_id", "t")
     )
+  
   if(compute) {
-    x@therapy_table <- dplyr::compute(x@therapy_table)
+    x <- compute(x)
   }
   
   return(x)
