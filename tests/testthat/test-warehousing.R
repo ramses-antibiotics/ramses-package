@@ -136,7 +136,8 @@ test_that("Ramses on SQLite 2", {
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
       therapy_start = "2016-08-01 11:15:19+01:00",
-      therapy_end = "2016-08-03 11:15:19+01:00"
+      therapy_end = "2016-08-03 11:15:19+01:00",
+      antiinfective_type = "antibacterial"
     )
   )
   
@@ -158,7 +159,8 @@ test_that("Ramses on SQLite 2", {
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
       therapy_start = "2016-08-01 11:15:19+01:00",
-      therapy_end = "2016-08-03 11:15:19+01:00"
+      therapy_end = "2016-08-03 11:15:19+01:00",
+      antiinfective_type = "antibacterial"
     )
     )
   
@@ -902,7 +904,8 @@ test_that("Ramses on PosgreSQL", {
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
       therapy_start = as.POSIXct("2016-08-01 11:15:19", tz = "Europe/London"),
-      therapy_end = as.POSIXct("2016-08-03 11:15:19", tz = "Europe/London")
+      therapy_end = as.POSIXct("2016-08-03 11:15:19", tz = "Europe/London"),
+      antiinfective_type = "antibacterial"
     )
   )
   
@@ -1051,7 +1054,8 @@ test_that("Ramses on PosgreSQL", {
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
       therapy_start = as.POSIXct("2016-08-01 11:15:19", tz = "Europe/London"),
-      therapy_end = as.POSIXct("2016-08-03 11:15:19", tz = "Europe/London")
+      therapy_end = as.POSIXct("2016-08-03 11:15:19", tz = "Europe/London"),
+      antiinfective_type = "antibacterial"
     )
   )
   

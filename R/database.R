@@ -643,7 +643,7 @@ load_medications <- function(
   
   forget <- tbl(conn, "drug_prescriptions") %>%
     dplyr::filter(!is.na(therapy_id)) %>% 
-    dplyr::group_by(patient_id, therapy_id) %>% 
+    dplyr::group_by(patient_id, therapy_id, antiinfective_type) %>% 
     dplyr::summarise(therapy_start = min(prescription_start, na.rm = TRUE),
                      therapy_end = max(prescription_end, na.rm = TRUE)) %>% 
     dplyr::compute(name = "drug_therapy_episodes", temporary = FALSE)
@@ -659,7 +659,8 @@ load_medications <- function(
     fields = c(
       "patient_id",
       "therapy_start",
-      "therapy_end"
+      "therapy_end",
+      "antiinfective_type"
     )
   )
  
