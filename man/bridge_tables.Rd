@@ -33,6 +33,8 @@ events with spells or episodes of care. Bridge tables are used when computing
 rates of prescribing per admission or per 1,000 bed-days.
 }
 \details{
+Prescriptions with status \code{"entered-in-error"}, \code{"draft"}, 
+\code{"cancelled"}, or \code{"unknown"} are not taken into account.
 \describe{
    \item{\code{bridge_tables()}}{Generates all bridge tables.}
    \item{\code{bridge_episode_prescription_overlap()}}{Links prescriptions

@@ -290,9 +290,6 @@ ggplot(consumption_aware_episodes,
 ```
 
 
-
-
-
 # Once you are done 
 
 Always remember close database connections when you are finished.

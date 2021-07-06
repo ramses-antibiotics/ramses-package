@@ -11,6 +11,7 @@
 * updated schema of microbiology isolates and susceptibilities: isolates are now identified by `isolate_id` rather than `organism_id`
 * updated schema of microbiology susceptibilities: `drug_id`, `drug_name` and `drug_display_name` refactored into `agent_code`, `agent_name` and `agent_display_name`
 * faster execution of `clinical_feature_*()` functions on PostgreSQL
+* uniform handling of `prescription_status`: therapy episodes and bridge table records will not be generated for prescriptions with status `"draft"`, `"entered-in-error"`,  `"cancelled"`, or `"unknown"`.
 
 ## Bug fixes
 

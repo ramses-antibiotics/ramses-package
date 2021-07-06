@@ -699,6 +699,15 @@ load_medications <- function(
 #' overlap and succession of prescriptions, and using a graph theory method 
 #' known as 'transitive closure'.
 #' 
+#' Ramses links prescriptions together if:
+#' \itemize{
+#'   \item{prescriptions share the same \code{antiinfective_type}: 
+#'   antibacterials are linked with antibacterials, antifungals with 
+#'   antifungals, etc.}
+#'   \item{\code{prescription_status} is *not* \code{'cancelled'},  
+#'   \code{'draft'}, \code{'entered-in-error'}, or \code{'unknown'}.}
+#' }
+#' 
 #' @section Operations:
 #' 
 #' This function performs the following operations:
@@ -741,13 +750,13 @@ create_therapy_episodes <- function(
     dplyr::mutate(
       therapy_id = dplyr::if_else(
         is.na(therapy_id) & 
-          !prescription_status %in% c('cancelled', 'draft', 'entered-in-error'),
+          !prescription_status %in% c('unknown', 'cancelled', 'draft', 'entered-in-error'),
         prescription_id,
         therapy_id),
       therapy_rank = dplyr::if_else(
         is.na(therapy_id) & 
           is.na(therapy_rank) &
-          !prescription_status %in% c('cancelled', 'draft', 'entered-in-error'),
+          !prescription_status %in% c('unknown', 'cancelled', 'draft', 'entered-in-error'),
         1L,
         therapy_rank
       )
@@ -1605,6 +1614,9 @@ collect_ramses_tbl <- function(tbl) {
 #' @param silent if \code{TRUE}, the progress bar will be hidden. The default is 
 #' \code{FALSE}.
 #' @details 
+#' 
+#' Prescriptions with status \code{"entered-in-error"}, \code{"draft"}, 
+#' \code{"cancelled"}, or \code{"unknown"} are not taken into account.
 #' \describe{
 #'    \item{\code{bridge_tables()}}{Generates all bridge tables.}
 #'    \item{\code{bridge_episode_prescription_overlap()}}{Links prescriptions
@@ -1659,7 +1671,13 @@ bridge_episode_prescription_overlap <- function(conn,
   stopifnot(is(conn, "SQLiteConnection") | is(conn, "PqConnection"))
 
   tblz_episodes <- tbl(conn, "inpatient_episodes")
-  tblz_prescriptions <- tbl(conn, "drug_prescriptions")
+  tblz_prescriptions <- tbl(conn, "drug_prescriptions") %>% 
+    dplyr::filter(
+      !prescription_status %in% c("entered-in-error",
+                                  "draft",
+                                  "cancelled",
+                                  "unknown")
+    )
   
   tblz_bridge_episode_prescriptions_overlap <- tblz_episodes %>% 
     dplyr::inner_join(tblz_prescriptions, 
@@ -1734,7 +1752,13 @@ bridge_episode_prescription_initiation <- function(conn,
   stopifnot(is(conn, "SQLiteConnection") | is(conn, "PqConnection"))
   
   tblz_episodes <- tbl(conn, "inpatient_episodes")
-  tblz_prescriptions <- tbl(conn, "drug_prescriptions")
+  tblz_prescriptions <- tbl(conn, "drug_prescriptions") %>% 
+    dplyr::filter(
+      !prescription_status %in% c("entered-in-error",
+                                  "draft",
+                                  "cancelled",
+                                  "unknown")
+    )
   
   tblz_bridge_episode_prescription_initiation <- tblz_episodes %>% 
     dplyr::inner_join(tblz_prescriptions, 

@@ -74,7 +74,7 @@ These fields are required in order to pass the validation:
      }
      \emph{Note that prescriptions marked as \code{"on-hold"}, \code{"cancelled"}, 
      \code{"draft"}, \code{"entered-in-error"}, or \code{"unknown"} will not 
-     count towards antibiotic consumption estimates.}}
+     count towards therapy episodes or antibiotic consumption estimates.}}
      \item{\code{dose}}{a numeric vector of dosage quantities}
      \item{\code{unit}}{a character vector of dosage units}
      \item{\code{route}}{the route of administration value natively assigned by system}

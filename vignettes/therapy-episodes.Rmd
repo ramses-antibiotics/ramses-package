@@ -272,7 +272,7 @@ file.remove("ramses-db.sqlite")
 Ramses links prescriptions together if:
 
 - prescriptions share the same `antiinfective_type`: antibacterials are linked with antibacterials, antifungals with antifungals, etc.
-- `prescription_status` is *not* `'cancelled'`,  `'draft'`, or `'entered-in-error'`.
+- `prescription_status` is *not* `"draft"`, `"entered-in-error"`,  `"cancelled"`, or `"unknown"`.
 
 `Ramses` links prescriptions into episodes and combinations in two instances:
 

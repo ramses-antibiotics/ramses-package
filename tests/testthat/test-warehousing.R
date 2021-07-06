@@ -135,9 +135,9 @@ test_that("Ramses on SQLite 2", {
     dplyr::tibble(
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
+      antiinfective_type = "antibacterial",
       therapy_start = "2016-08-01 11:15:19+01:00",
-      therapy_end = "2016-08-03 11:15:19+01:00",
-      antiinfective_type = "antibacterial"
+      therapy_end = "2016-08-03 11:15:19+01:00"
     )
   )
   
@@ -158,9 +158,9 @@ test_that("Ramses on SQLite 2", {
     dplyr::tibble(
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
+      antiinfective_type = "antibacterial",
       therapy_start = "2016-08-01 11:15:19+01:00",
-      therapy_end = "2016-08-03 11:15:19+01:00",
-      antiinfective_type = "antibacterial"
+      therapy_end = "2016-08-03 11:15:19+01:00"
     )
     )
   
@@ -903,9 +903,9 @@ test_that("Ramses on PosgreSQL", {
     dplyr::tibble(
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
+      antiinfective_type = "antibacterial",
       therapy_start = as.POSIXct("2016-08-01 11:15:19", tz = "Europe/London"),
-      therapy_end = as.POSIXct("2016-08-03 11:15:19", tz = "Europe/London"),
-      antiinfective_type = "antibacterial"
+      therapy_end = as.POSIXct("2016-08-03 11:15:19", tz = "Europe/London")
     )
   )
   
@@ -1053,9 +1053,9 @@ test_that("Ramses on PosgreSQL", {
     dplyr::tibble(
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
+      antiinfective_type = "antibacterial",
       therapy_start = as.POSIXct("2016-08-01 11:15:19", tz = "Europe/London"),
-      therapy_end = as.POSIXct("2016-08-03 11:15:19", tz = "Europe/London"),
-      antiinfective_type = "antibacterial"
+      therapy_end = as.POSIXct("2016-08-03 11:15:19", tz = "Europe/London")
     )
   )
   

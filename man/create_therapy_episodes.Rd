@@ -44,6 +44,15 @@ prescriptions authored in a given hospital admission to ascertain such
 links between prescriptions. This involves looking at patterns of 
 overlap and succession of prescriptions, and using a graph theory method 
 known as 'transitive closure'.
+
+Ramses links prescriptions together if:
+\itemize{
+  \item{prescriptions share the same \code{antiinfective_type}: 
+  antibacterials are linked with antibacterials, antifungals with 
+  antifungals, etc.}
+  \item{\code{prescription_status} is *not* \code{'cancelled'},  
+  \code{'draft'}, \code{'entered-in-error'}, or \code{'unknown'}.}
+}
 }
 
 \section{Operations}{
