@@ -45,7 +45,7 @@ For the purposes of this vignette, one may use on a small \href{https://www.sqli
 ramses_db <- connect_local_database("ramses-db.sqlite")
 ```
 
-Alternatively, one may use a dedicated PostgreSQL server (other SQL database are not currently supported). In this case, we use the DBI and RPostgres packages to initiate the connection:
+Alternatively, one may use a dedicated PostgreSQL server (other SQL databases are not currently supported). In this case, we use the DBI and RPostgres packages to initiate the connection:
 
 ```{r Postgres_init, eval=FALSE}
 ramses_db <- DBI::dbConnect(

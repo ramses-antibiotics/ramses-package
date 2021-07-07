@@ -30,7 +30,7 @@ ICD-10-CM versions.
 }
 \examples{
 mock_icd_data <- data.frame(
-   list(icd10_code = c("J44", "J44X", "J440")), 
+   list(icd10_code = c("J15", "J15X", "J150")), 
    stringsAsFactors = FALSE)
 mock_icd_data <- map_infections_abx_indications(
   mock_icd_data, "icd10_code")
