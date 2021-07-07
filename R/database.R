@@ -1652,7 +1652,6 @@ collect_ramses_tbl <- function(tbl) {
 #'    \code{drug_therapy_episodes} based on matching patient identifiers 
 #'    and a time overlap between therapy episodes and hospital stays.}
 #' } 
-#' \code{inpatient_episodes}
 #' @return \code{TRUE} if tables were successfully created
 #' @name bridge_tables
 #' @export

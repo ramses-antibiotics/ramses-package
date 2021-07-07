@@ -8,7 +8,7 @@
 A data frame.
 }
 \source{
-LOINC Table File Version 2.68. Released 2020-06-17. \url{http://loinc.org}
+LOINC Table File Version 2.70. Released 2021-06-10. \url{http://loinc.org}
 }
 \usage{
 reference_loinc
@@ -20,8 +20,8 @@ and observations that are relevant to modelling antibiotic prescribing decisions
 }
 \details{
 This material contains content from LOINC (\url{http://loinc.org}). 
-LOINC is copyright © 1995-2020, Regenstrief Institute, Inc. and the 
-Logical Observation Identifiers Names and Codes(LOINC) Committee and 
+LOINC is copyright © 1995-2021, Regenstrief Institute, Inc. and the 
+Logical Observation Identifiers Names and Codes (LOINC) Committee and 
 is available at no cost under the license at \url{http://loinc.org/license}.
 LOINC® is a registered United States trademark of Regenstrief Institute, Inc.
 }

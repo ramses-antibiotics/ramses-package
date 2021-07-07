@@ -56,6 +56,5 @@ Prescriptions with status \code{"entered-in-error"}, \code{"draft"},
    table is the natural join of \code{inpatient_episodes} and 
    \code{drug_therapy_episodes} based on matching patient identifiers 
    and a time overlap between therapy episodes and hospital stays.}
-} 
-\code{inpatient_episodes}
+}
 }
