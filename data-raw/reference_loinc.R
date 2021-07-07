@@ -92,7 +92,17 @@ reference_loinc <- filter(
     "59408-5",  # Oxygen saturation in Arterial blood by Pulse oximetry
     "3150-0", 	# Inhaled oxygen concentration
     "3151-8",	  # Inhaled oxygen flow rate
-    "50982-8"  # Horowitz index in Blood
+    "50982-8",  # Horowitz index in Blood
+    "51487-7",  # Leukocytes [#/volume] in Urine by Automated count
+    "51481-0",  # Yeast [#/volume] in Urine by Automated count
+    "35383-9",  # Galactomannan Ag [Units/volume] in Serum or Plasma
+    "42176-8",  # 1,3 beta glucan [Mass/volume] in Serum"
+    "4043-6",   # Teicoplanin [Mass/volume] in Serum or Plasma
+    "38370-3",  # Voriconazole [Mass/volume] in Serum or Plasma
+    "53731-6",  # Posaconazole [Mass/volume] in Serum or Plasma
+    "3639-2",   # 5-Fluorocytosine [Mass/volume] in Serum or Plasma
+    "20578-1",  # Vancomycin [Mass/volume] in Serum or Plasma
+    "35668-3"   # Gentamicin [Mass/volume] in Serum or Plasma
   )) %>% 
   arrange(CLASS, SYSTEM, LOINC_NUM)
 
