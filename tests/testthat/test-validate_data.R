@@ -146,6 +146,39 @@ test_that("validate_inpatient_spells()/validate_inpatient_episodes() on data.fra
                                 episodes = healthy_episodes)
   )
   
+  expect_error(
+    validate_inpatient_episodes(patients = dplyr::tibble(patient_id = "1"),
+                                episodes = healthy_episodes[, -3])
+  )
+  
+  expect_equal(
+    validate_inpatient_episodes(patients = dplyr::tibble(patient_id = "1"),
+                                episodes = healthy_episodes,
+                                wards = dplyr::tibble(
+                                  patient_id = "1",
+                                  spell_id = 2,
+                                  ward_start = date1,
+                                  ward_end = date1 + 3*3600,
+                                  ward_code = "3E",
+                                  ward_display_name = "3 East",
+                                  ward_description = "3 East"
+                                )),
+    TRUE
+  )
+  
+  expect_error(
+    validate_inpatient_episodes(patients = dplyr::tibble(patient_id = "1"),
+                                episodes = healthy_episodes,
+                                wards = dplyr::tibble(
+                                  patient_id = "1",
+                                  spell_id = 2,
+                                  ward_start = date1,
+                                  ward_end = date1 + 3*3600,
+                                  ward_code = "3E",
+                                  ward_description = "3 East"
+                                ))
+  )
+  
   overlap_episode <- data.frame(list(
     patient_id = 1,
     spell_id = 2,
@@ -312,6 +345,48 @@ test_that("validate_inpatient_spells()/validate_inpatient_episodes() on data.tab
     main_specialty_code = "100"
   )
   
+  episode_dates_inverted <- data.table::data.table( 
+    patient_id = 1,
+    spell_id = 2,
+    admission_date = date1,
+    discharge_date = date1 + 4*3600,
+    episode_number = 1:3,
+    last_episode_in_spell = 2,
+    episode_start = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600),
+    episode_end = c(date1, date1 + 3600, date1 + 2*3600),
+    admission_method = "2",
+    consultant_code = "CXXXXXX",
+    main_specialty_code = "100"
+  )
+  
+  spell_dates_inverted <- data.table::data.table( 
+    patient_id = 1,
+    spell_id = 2,
+    admission_date = date1 + 4*3600,
+    discharge_date = date1,
+    episode_number = 1:3,
+    last_episode_in_spell = 2,
+    episode_start = c(date1, date1 + 3600, date1 + 2*3600),
+    episode_end = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600),
+    admission_method = "2",
+    consultant_code = "CXXXXXX",
+    main_specialty_code = "100"
+  )
+  
+  episode_spilling_out_of_spell <- data.table::data.table( 
+    patient_id = 1,
+    spell_id = 2,
+    admission_date = date1,
+    discharge_date = date1 + 4*3600,
+    episode_number = 1:3,
+    last_episode_in_spell = 2,
+    episode_start = c(date1, date1 + 3600, date1 + 2*3600),
+    episode_end = c(date1 + 3600, date1 + 2*3600, date1 + 5*3600),
+    admission_method = "2",
+    consultant_code = "CXXXXXX",
+    main_specialty_code = "100"
+  )
+  
   expect_true(expect_warning(validate_inpatient_episodes(data.table::data.table(patient_id = 1),
                                                          missing_first_episode)))
   expect_true(expect_warning(validate_inpatient_episodes(data.table::data.table(patient_id = 1),
@@ -320,7 +395,12 @@ test_that("validate_inpatient_spells()/validate_inpatient_episodes() on data.tab
                                                          missing_final_episode)))
   expect_false(expect_warning(validate_inpatient_episodes(data.table::data.table(patient_id = 1),
                                                           overlap_episode)))
-  
+  expect_false(expect_warning(validate_inpatient_episodes(data.table::data.table(patient_id = 1),
+                                             episode_dates_inverted)))
+  expect_false(expect_warning(validate_inpatient_episodes(data.table::data.table(patient_id = 1),
+                                             spell_dates_inverted)))
+  expect_false(expect_warning(validate_inpatient_episodes(data.table::data.table(patient_id = 1),
+                                             episode_spilling_out_of_spell)))
 })
 
 
@@ -360,6 +440,9 @@ test_that("validate_inpatient_diagnoses() on data.frame", {
     validate_inpatient_diagnoses(diagnoses_data = test_diagnoses[4,], 
                                  diagnoses_lookup = test_lookup)
   ))
+  expect_error(
+    validate_inpatient_diagnoses(diagnoses_data = test_diagnoses[3,-2], 
+                                 diagnoses_lookup = test_lookup))
   
 })
 
@@ -404,6 +487,33 @@ test_that("validate_inpatient_diagnoses() on data.table", {
 
 test_that("validate_prescriptions() on data.frame", {
   
+  expect_null(
+    validate_prescriptions(
+      data.frame(list(
+        patient_id = "5593245762", 
+        prescription_id = "6025e96e1cc750dc6ec7fb9aadca0dbd", 
+        prescription_text = "Flucloxacillin IV 2g 3 days", 
+        drug_code = "FLC", drug_name = "Flucloxacillin", 
+        drug_display_name = "Flucloxacillin", 
+        drug_group = "Beta-lactams/penicillins", 
+        antiinfective_type = c("antibacterial"),
+        ATC_code = "J01CF05",
+        ATC_route = "P",
+        authoring_date = structure(1421048831, 
+                                   class = c("POSIXct", "POSIXt"), 
+                                   tzone = ""), 
+        prescription_start = structure(1421051891, 
+                                       class = c("POSIXct", "POSIXt"), 
+                                       tzone = ""), 
+        prescription_end = structure(1421311091, 
+                                     class = c("POSIXct", "POSIXt"), 
+                                     tzone = ""), 
+        prescription_status = "completed", 
+        prescription_context = "inpatient", 
+        dose = 2, unit = "g", route = "IV", frequency = "6H", 
+        daily_frequency = 4, DDD = 4), stringsAsFactors = F)
+    )
+  )
   expect_error(validate_prescriptions(
     data.frame(list(
       prescription_id = "6025e96e1cc750dc6ec7fb9aadca0dbd", 
@@ -427,6 +537,58 @@ test_that("validate_prescriptions() on data.frame", {
       prescription_context = "inpatient", 
       dose = 2, unit = "g", route = "IV", frequency = "6H", 
       daily_frequency = 4, DDD = 4), stringsAsFactors = F)
+  ))
+  
+  expect_error(validate_prescriptions(
+    data.frame(list(
+      patient_id = "5593245762", 
+      prescription_id = "6025e96e1cc750dc6ec7fb9aadca0dbd", 
+      prescription_text = "Flucloxacillin IV 2g 3 days", 
+      drug_code = "FLC", drug_name = "Flucloxacillin", 
+      drug_display_name = "Flucloxacillin", 
+      drug_group = "Beta-lactams/penicillins", 
+      antiinfective_type = c("antibacterial"),
+      ATC_code = "J01CF05",
+      ATC_route = "P",
+      authoring_date = structure(1421048831, 
+                                 class = c("POSIXct", "POSIXt"), 
+                                 tzone = ""), 
+      prescription_start = structure(1421051891, 
+                                     class = c("POSIXct", "POSIXt"), 
+                                     tzone = ""), 
+      prescription_end = structure(1421311091, 
+                                   class = c("POSIXct", "POSIXt"), 
+                                   tzone = ""), 
+      prescription_status = "biduletrucc'estleurtruc", 
+      prescription_context = "inpatient", 
+      dose = 2, unit = "g", route = "IV", frequency = "6H", 
+      daily_frequency = 4, DDD = 4), stringsAsFactors = F)
+  ))
+  
+  expect_error(validate_prescriptions(
+    data.frame(list(
+      patient_id = "5593245762", 
+      prescription_id = "6025e96e1cc750dc6ec7fb9aadca0dbd", 
+      prescription_text = "Flucloxacillin IV 2g 3 days", 
+      drug_code = "FLC", drug_name = "Flucloxacillin", 
+      drug_display_name = "Flucloxacillin", 
+      drug_group = "Beta-lactams/penicillins", 
+      antiinfective_type = c("antibacterial"),
+      ATC_code = "J01CF05",
+      ATC_route = "P",
+      authoring_date = structure(1421048831, 
+                                 class = c("POSIXct", "POSIXt"), 
+                                 tzone = ""), 
+      prescription_start = structure(1421051891, 
+                                     class = c("POSIXct", "POSIXt"), 
+                                     tzone = ""), 
+      prescription_end = structure(1421311091, 
+                                   class = c("POSIXct", "POSIXt"), 
+                                   tzone = ""), 
+      prescription_status = "completed", 
+      prescription_context = "inpatient", 
+      dose = 2, unit = "g", route = "IV", frequency = "6H", 
+      daily_frequency = 400, DDD = 4), stringsAsFactors = F)
   ))
   
   expect_error(validate_prescriptions(
@@ -769,6 +931,39 @@ test_that("validate_prescriptions() on data.table", {
       daily_frequency = c(4, 4), DDD = c( 4,  4))
   ))
   
+})
+
+
+
+# validate_administrations ------------------------------------------------
+
+test_that("validate_administrations", {
+  test_admin <- data.frame(list(
+    patient_id = "3462786743", 
+    administration_id = c("644", "645", "646"), 
+    prescription_id = "a094fad22985020999e6a1773dfc87e3", 
+    administration_text = "Meropenem IV 1g", 
+    drug_code = "MEM", drug_name = "Meropenem", drug_display_name = "Meropenem", 
+    drug_group = "Carbapenems", 
+    antiinfective_type = "antibacterial", 
+    ATC_code = "J01DH02", ATC_route = "P", 
+    dose = 1, unit = "g", 
+    route = "IV", 
+    administration_date = structure(
+      c(1491142845, 1491142846, 1491142845), 
+      tzone = "Europe/London", 
+      class = c("POSIXct", "POSIXt")
+    ), 
+    administration_status = "completed", 
+    DDD = 0.333333333333333
+  ))
+  
+  expect_null(validate_administrations(test_admin[1,]))
+  expect_null(validate_administrations(test_admin[1:2,]))
+  expect_warning(
+    expect_null(
+      expect_null(validate_administrations(test_admin[1:3,])))
+  )
 })
 
 # arrange_variables -------------------------------------------------------
