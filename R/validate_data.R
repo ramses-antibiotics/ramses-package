@@ -770,8 +770,8 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'        (eg doxicycline 200mg followed by 100mg). Unless provided, 
 #'        such identifiers will be created by \code{Ramses} using 
 #'        transitive closure.}
-#'   \item{\code{DDD}}{the number of prescribed defined daily doses, 
-#'        see \code{\link{compute_DDDs}()}}
+#'   \item{\code{DDD}}{the prescribed daily dose (dose x freq. administrations/day)
+#'   expressed in defined daily doses, see \code{\link{compute_DDDs}()}}
 #'   \item{\code{...}}{any other field, as desired, can be loaded into the database}
 #' }
 #' @return NULL if the \code{data} passes the validation. The function will trigger 
@@ -946,7 +946,7 @@ validate_prescriptions <- function(data) {
 #' }}}
 #' @section Optional fields:
 #' \describe{
-#'      \item{\code{DDD}}{the number of defined daily doses (as administered),
+#'      \item{\code{DDD}}{the administered dose expressed in defined daily doses,
 #'       see \code{\link{compute_DDDs}()}}
 #'      \item{\code{...}}{any other field, as desired, can be loaded into the database.}}
 #' @return NULL if the \code{data} passes the validation. The function will trigger 

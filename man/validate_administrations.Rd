@@ -69,7 +69,7 @@ optional requirements on drug administrations data.
 \section{Optional fields}{
 
 \describe{
-     \item{\code{DDD}}{the number of defined daily doses (as administered),
+     \item{\code{DDD}}{the administered dose expressed in defined daily doses,
       see \code{\link{compute_DDDs}()}}
      \item{\code{...}}{any other field, as desired, can be loaded into the database.}}
 }

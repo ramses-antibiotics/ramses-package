@@ -95,8 +95,8 @@ These fields are required in order to pass the validation:
        (eg doxicycline 200mg followed by 100mg). Unless provided, 
        such identifiers will be created by \code{Ramses} using 
        transitive closure.}
-  \item{\code{DDD}}{the number of prescribed defined daily doses, 
-       see \code{\link{compute_DDDs}()}}
+  \item{\code{DDD}}{the prescribed daily dose (dose x freq. administrations/day)
+  expressed in defined daily doses, see \code{\link{compute_DDDs}()}}
   \item{\code{...}}{any other field, as desired, can be loaded into the database}
 }
 }
