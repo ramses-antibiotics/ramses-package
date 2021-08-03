@@ -18,4 +18,11 @@ be administered per day based on the prescription frequency abbreviation
 Example: BD stands for \emph{bis die}, meaning twice a day. The 
 corresponding \code{daily_frequency} value is 2.
 }
+\examples{
+data("reference_drug_frequency")
+head(reference_drug_frequency)
+}
+\seealso{
+\href{https://en.wikipedia.org/wiki/List_of_medical_abbreviations:_Latin_abbreviations}{Latin medical abbreviations}
+}
 \keyword{datasets}

@@ -131,6 +131,10 @@
 #' @format A data frame with 64 abbreviations and their corresponding daily frequency value.
 #' @docType data
 #' @name reference_drug_frequency
+#' @seealso \href{https://en.wikipedia.org/wiki/List_of_medical_abbreviations:_Latin_abbreviations}{Latin medical abbreviations}
+#' @examples 
+#' data("reference_drug_frequency")
+#' head(reference_drug_frequency)
 "reference_drug_frequency"
 
 #' LOINC codes for clinical investigations and observations

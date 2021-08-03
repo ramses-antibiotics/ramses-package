@@ -704,9 +704,10 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'      \item{\code{prescription_id}}{a prescription identifier with no missing value}
 #'      \item{\code{prescription_text}}{a character string summarising the prescription 
 #'      (to be displayed in user interfaces, eg: \code{'Amoxicillin oral 500mg BDS'})}
-#'      \item{\code{drug_code}}{identifier of the drug (from a dictionary such as SNOMED CT or
-#'       from \code{\link[AMR]{as.ab}()})}
-#'      \item{\code{drug_name}}{preferred name of the drug in the drug dictionary}
+#'      \item{\code{drug_code}}{identifier of the drug (for antibacterials/antifungals, 
+#'      use \code{\link[AMR]{as.ab}()})}
+#'      \item{\code{drug_name}}{preferred name of the drug in the drug dictionary
+#'      (see \code{\link[AMR]{ab_name}()})}
 #'      \item{\code{drug_display_name}}{drug name to display in reports and user interfaces
 #'      (can be the same as \code{drug_name})}
 #'      \item{\code{drug_group}}{the antimicrobial class see \code{\link[AMR]{ab_group}()}}
@@ -756,8 +757,12 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'      \item{\code{dose}}{a numeric vector of dosage quantities}
 #'      \item{\code{unit}}{a character vector of dosage units}
 #'      \item{\code{route}}{the route of administration value natively assigned by system}
-#'      \item{\code{daily_frequency}}{a numeric value indicating the number of times the drug 
-#'      is to be administered per day. The following values are considered valid:
+#'      \item{\code{frequency}}{a character vector of frequencies of administrations
+#'       (eg: "BDS" or "Twice a day")}. See also: \code{\link{reference_drug_frequency}}
+#'      \item{\code{daily_frequency}}{a numeric translation of variable \code{frequency}
+#'      indicating the number of times the drug is to be administered per day. 
+#'      Values can be lower than 1, when the drug is to be administered less than daily.
+#'      Values must be strictly positive, except for the following codes:
 #'      \itemize{ 
 #'         \item -1 for a single one-off administration
 #'         \item -9 for 'as required' (\emph{Pro Re Nata}) prescriptions
@@ -770,7 +775,7 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'        (eg doxicycline 200mg followed by 100mg). Unless provided, 
 #'        such identifiers will be created by \code{Ramses} using 
 #'        transitive closure.}
-#'   \item{\code{DDD}}{the prescribed daily dose (dose x freq. administrations/day)
+#'   \item{\code{DDD}}{the prescribed daily dose (dose x \code{daily_frequency})
 #'   expressed in defined daily doses, see \code{\link{compute_DDDs}()}}
 #'   \item{\code{...}}{any other field, as desired, can be loaded into the database}
 #' }
@@ -907,9 +912,10 @@ validate_prescriptions <- function(data) {
 #'      \item{\code{administration_id}}{an administration identifier with no missing value}
 #'      \item{\code{administration_text}}{a character string summarising the drug to administer 
 #'      (to be displayed in user interfaces, eg: \code{'Amoxicillin oral 500mg'})}
-#'      \item{\code{drug_code}}{identifier of the drug (from a dictionary such as SNOMED CT or
-#'       from \code{\link[AMR]{as.ab}()})}
-#'      \item{\code{drug_name}}{preferred name of the drug in the drug dictionary}
+#'      \item{\code{drug_code}}{identifier of the drug (for antibacterials/antifungals, 
+#'      use \code{\link[AMR]{as.ab}()})}
+#'      \item{\code{drug_name}}{preferred name of the drug in the drug dictionary
+#'      (see \code{\link[AMR]{ab_name}()})}
 #'      \item{\code{drug_display_name}}{drug name to display in reports and user interfaces
 #'      (can be the same as \code{drug_name})}
 #'      \item{\code{drug_group}}{the antimicrobial class see \code{\link[AMR]{ab_group}()}}

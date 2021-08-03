@@ -1,4 +1,12 @@
 
+# Ramses 0.4.1
+
+*30 July 2021*
+
+## Improvements
+
+* clarifications and corrections to `vignette("load-data")`.
+
 
 # Ramses 0.4.0
 

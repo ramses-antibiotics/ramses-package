@@ -27,9 +27,10 @@ optional requirements on drug administrations data.
      \item{\code{administration_id}}{an administration identifier with no missing value}
      \item{\code{administration_text}}{a character string summarising the drug to administer 
      (to be displayed in user interfaces, eg: \code{'Amoxicillin oral 500mg'})}
-     \item{\code{drug_code}}{identifier of the drug (from a dictionary such as SNOMED CT or
-      from \code{\link[AMR]{as.ab}()})}
-     \item{\code{drug_name}}{preferred name of the drug in the drug dictionary}
+     \item{\code{drug_code}}{identifier of the drug (for antibacterials/antifungals, 
+     use \code{\link[AMR]{as.ab}()})}
+     \item{\code{drug_name}}{preferred name of the drug in the drug dictionary
+     (see \code{\link[AMR]{ab_name}()})}
      \item{\code{drug_display_name}}{drug name to display in reports and user interfaces
      (can be the same as \code{drug_name})}
      \item{\code{drug_group}}{the antimicrobial class see \code{\link[AMR]{ab_group}()}}
