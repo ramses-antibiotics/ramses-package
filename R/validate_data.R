@@ -434,7 +434,7 @@ validate_inpatient_episodes <- function(patients,
 #' @importFrom data.table data.table
 #' @return A logical value indicating success
 #' @noRd
-..validate_inpatient_spells <- function(data) {
+.validate_inpatient_spells <- function(data) {
   
   validation_result <- TRUE
   
