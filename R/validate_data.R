@@ -211,21 +211,24 @@
 #' @param episodes data frame containing one row per episode of care
 #' @param wards (optional) data frame containing one row per ward stay. 
 #'   Default is `NULL`.
-#' @section Patient variables:
+#' @section Patient mandatory variables:
 #' \describe{
 #'   \item{\code{patient_id}}{a patient identifier with no missing value}
-#'   \item{\code{forename}}{[optional] the patient's forename}
-#'   \item{\code{surname}}{[optional] the patient's surname}
-#'   \item{\code{date_of_birth}}{[optional] a \code{Date} for the birth date}
-#'   \item{\code{date_of_death}}{[optional] a missing value or a \code{Date} of death}
-#'   \item{\code{sex}}{[optional] the following values are valid: \itemize{
+#'   }
+#' @section Patient optional variables:
+#' \describe{
+#'   \item{\code{forename}}{the patient's forename}
+#'   \item{\code{surname}}{the patient's surname}
+#'   \item{\code{date_of_birth}}{a \code{Date} for the birth date}
+#'   \item{\code{date_of_death}}{a missing value or a \code{Date} of death}
+#'   \item{\code{sex}}{the following values are valid: \itemize{
 #'        \item \code{"male"}  
 #'        \item \code{"female"}  
 #'        \item \code{"other"}
 #'        \item \code{"unknown"}
 #'    }
 #'   Must not be missing.}
-#'   \item{\code{ethnic_category_UK}}{[optional] reserved for UK users for \code{Ramses} to compute
+#'   \item{\code{ethnic_category_UK}}{reserved for UK users for \code{Ramses} to compute
 #'   the empirical glomerular filtration rate (eGFR). The following codes are valid:
 #'   
 #'   White \itemize{
@@ -370,9 +373,9 @@ validate_inpatient_episodes <- function(patients,
     stop("All patients in `episodes` must exist in `patients`")
   }
   
-  validation_result <- validate_inpatient_spells(episodes)
+  validation_result <- .validate_inpatient_spells(episodes)
   validation_result <- append(
-    validate_inpatient_episode_dates(data = episodes,
+    .validate_inpatient_episode_dates(data = episodes,
                                      type = "episodes"), 
     validation_result)
   
@@ -420,7 +423,7 @@ validate_inpatient_episodes <- function(patients,
                     discharge_date), 
     all.x = TRUE)
   
-  validate_inpatient_episode_dates(data = wards,
+  .validate_inpatient_episode_dates(data = wards,
                                    type = "wards")
 }
 
@@ -430,7 +433,8 @@ validate_inpatient_episodes <- function(patients,
 #' @param data a data frame object
 #' @importFrom data.table data.table
 #' @return A logical value indicating success
-validate_inpatient_spells <- function(data) {
+#' @noRd
+..validate_inpatient_spells <- function(data) {
   
   validation_result <- TRUE
   
@@ -481,7 +485,8 @@ validate_inpatient_spells <- function(data) {
 #' either \code{"wards"} for ward stays or \code{"episodes"} for inpatient episodes.
 #' @importFrom data.table data.table := 
 #' @return A logical value indicating success
-validate_inpatient_episode_dates <- function(data, type = "episodes") {
+#' @noRd
+.validate_inpatient_episode_dates <- function(data, type = "episodes") {
   
   if(type == "episodes") {
     data$start <- data[["episode_start"]]

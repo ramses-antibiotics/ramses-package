@@ -23,22 +23,28 @@ optional requirements on episodes of care records. The data definitions
 closely follow those of the  
 \href{https://datadictionary.nhs.uk/data_sets/cds_v6-2/cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds.html#dataset_cds_v6-2_type_130_-_admitted_patient_care_-_finished_general_episode_cds}{English NHS Admitted Patient Care Commissioning Datasets}.
 }
-\section{Patient variables}{
+\section{Patient mandatory variables}{
 
 \describe{
   \item{\code{patient_id}}{a patient identifier with no missing value}
-  \item{\code{forename}}{[optional] the patient's forename}
-  \item{\code{surname}}{[optional] the patient's surname}
-  \item{\code{date_of_birth}}{[optional] a \code{Date} for the birth date}
-  \item{\code{date_of_death}}{[optional] a missing value or a \code{Date} of death}
-  \item{\code{sex}}{[optional] the following values are valid: \itemize{
+  }
+}
+
+\section{Patient optional variables}{
+
+\describe{
+  \item{\code{forename}}{the patient's forename}
+  \item{\code{surname}}{the patient's surname}
+  \item{\code{date_of_birth}}{a \code{Date} for the birth date}
+  \item{\code{date_of_death}}{a missing value or a \code{Date} of death}
+  \item{\code{sex}}{the following values are valid: \itemize{
        \item \code{"male"}  
        \item \code{"female"}  
        \item \code{"other"}
        \item \code{"unknown"}
    }
   Must not be missing.}
-  \item{\code{ethnic_category_UK}}{[optional] reserved for UK users for \code{Ramses} to compute
+  \item{\code{ethnic_category_UK}}{reserved for UK users for \code{Ramses} to compute
   the empirical glomerular filtration rate (eGFR). The following codes are valid:
   
   White \itemize{
