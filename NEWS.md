@@ -1,11 +1,12 @@
 
 # Ramses 0.4.1
 
-*30 July 2021*
+*10 August 2021*
 
 ## Improvements
 
-* clarifications and corrections to `vignette("load-data")`.
+* clarifications on `vignette("load-data")`
+* corrections to `antibiotic_icd_indications`
 
 
 # Ramses 0.4.0
