@@ -1,4 +1,13 @@
 
+# Ramses 0.4.1
+
+*5 August 2021*
+
+## Improvements
+
+* clarifications on `vignette("load-data")`
+* corrections to `antibiotic_icd_indications`
+
 
 # Ramses 0.4.0
 

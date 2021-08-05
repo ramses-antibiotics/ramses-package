@@ -1562,7 +1562,7 @@ create_mock_database <- function(file,
 #' @description This wrapper function for \link[dplyr]{collect} will convert
 #' relevant character columns to \code{Date} and \code{POSIXct} type when collecting 
 #' SQLite tables. This addresses the absence of date and time data types
-#' in SQLite. Tables from other relational database systems are note affected.
+#' in SQLite. Tables from other relational database systems are not affected.
 #' @param tbl a `tbl_sql` object
 #' @return a `tbl_df` object
 #' @seealso \url{https://www.sqlite.org/datatype3.html#date_and_time_datatype}

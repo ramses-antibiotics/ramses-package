@@ -102,9 +102,9 @@ test_that(".validate_variable_no_missing() on data.table", {
 
 
 
-# validate_inpatient_spells/validate_inpatient_episodes -------------------
+# .validate_inpatient_spells/validate_inpatient_episodes -------------------
 
-test_that("validate_inpatient_spells()/validate_inpatient_episodes() on data.frame", {
+test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.frame", {
 
   faulty_spells <- data.frame(list(
     patient_id = c(1, 2, 2),
@@ -115,8 +115,8 @@ test_that("validate_inpatient_spells()/validate_inpatient_episodes() on data.fra
                        date1 + 6*3600)
   ))
   
-  expect_false(expect_warning(validate_inpatient_spells(faulty_spells[1, ])))
-  expect_false(expect_warning(validate_inpatient_spells(faulty_spells[-1, ])))
+  expect_false(expect_warning(.validate_inpatient_spells(faulty_spells[1, ])))
+  expect_false(expect_warning(.validate_inpatient_spells(faulty_spells[-1, ])))
   
   healthy_episodes <- data.frame(list(
     patient_id = "1",
@@ -247,7 +247,7 @@ test_that("validate_inpatient_spells()/validate_inpatient_episodes() on data.fra
 })
 
 
-test_that("validate_inpatient_spells()/validate_inpatient_episodes() on data.table", {
+test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.table", {
   
   faulty_spells <- data.table::data.table(
     patient_id = c(1, 2, 2),
@@ -258,8 +258,8 @@ test_that("validate_inpatient_spells()/validate_inpatient_episodes() on data.tab
                        date1 + 6*3600)
   )
   
-  expect_false(expect_warning(validate_inpatient_spells(faulty_spells[1, ])))
-  expect_false(expect_warning(validate_inpatient_spells(faulty_spells[-1, ])))
+  expect_false(expect_warning(.validate_inpatient_spells(faulty_spells[1, ])))
+  expect_false(expect_warning(.validate_inpatient_spells(faulty_spells[-1, ])))
   
   healthy_episodes <- data.table::data.table(
     patient_id = "1",

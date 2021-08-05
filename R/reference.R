@@ -1,3 +1,30 @@
+#' Common infections and indications for antimicrobial therapy
+#' 
+#' @description Look up table of common infections and whether 
+#' they are commonly treated with antibiotics.
+#' @format Data frame of 276 rows describing ICD-10 codes with 6 columns:
+#' \describe{
+#' \item{\code{icd_root}}{character vector of 3- to 4-character ICD-10 codes}
+#' \item{\code{infection_group1_label}}{character vector referencing 17 infection groups}
+#' \item{\code{infection_group2_label}}{character vector referencing 74 infections}
+#' \item{\code{antibiotics_indicated}}{character vector indicating whether antibiotics
+#' are indicated ("potentially", "rarely", "usually")}
+#' \item{\code{infection_group1_code}}{character vector containing 3-character short codes
+#' for infection groups}
+#' \item{\code{infection_group2_code}}{character vector containing 5-character short codes
+#' for infections}
+#' }
+#' @docType data
+#' @name antibiotic_icd_indications
+#' @source Adapted from Supplementary Table S1 in \insertCite{Hashimoto2020}{Ramses}.
+#' @references
+#'   \insertAllCited{}
+#' @examples 
+#' data("antibiotic_icd_indications")
+#' head(antibiotic_icd_indications)
+"antibiotic_icd_indications"
+
+
 #' English Adaptation of the WHO AWaRe Index
 #'
 #' @description This `AWaRe Index' is a classification by the World Health
@@ -44,6 +71,9 @@
 #' Therapeutic Moiety equivalents from the NHS Dictionary of Medicines (dm+d)
 #' \insertCite{SNOMEDDrugUK2020}{Ramses}.
 #' @references{\insertAllCited{}}
+#' @examples 
+#' data("reference_aware")
+#' head(reference_aware)
 "reference_aware"
 
 #' Clinical Classifications Software (CCS): map to 4-character ICD codes
@@ -89,6 +119,9 @@
 #' @source Adapted from \insertCite{HCUP-CCS}{Ramses} for 4-character ICD-10 codes.
 #' @references
 #'   \insertAllCited{}
+#' @examples 
+#' data("ccs")
+#' head(ccs)
 "ccs"
 
 
@@ -118,6 +151,9 @@
 #' 4-character ICD-10 codes.
 #' @references
 #'   \insertAllCited{}
+#' @examples 
+#' data("ccsr")
+#' head(ccsr)
 "ccsr"
 
 #' Prescription frequency abbreviations
@@ -131,6 +167,10 @@
 #' @format A data frame with 64 abbreviations and their corresponding daily frequency value.
 #' @docType data
 #' @name reference_drug_frequency
+#' @seealso \href{https://en.wikipedia.org/wiki/List_of_medical_abbreviations:_Latin_abbreviations}{Latin medical abbreviations}
+#' @examples 
+#' data("reference_drug_frequency")
+#' head(reference_drug_frequency)
 "reference_drug_frequency"
 
 #' LOINC codes for clinical investigations and observations
@@ -170,4 +210,7 @@
 #' @format A data frame.
 #' @docType data
 #' @name reference_specimen_type
+#' @examples 
+#' data("reference_specimen_type")
+#' head(reference_specimen_type)
 "reference_specimen_type"

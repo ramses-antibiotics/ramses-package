@@ -53,6 +53,10 @@ used in combination with other antibacterials that do not cover anaerobic
 organisms, but is not present in the Anatomical Therapeutic Chemical (ATC) 
 classification.
 }
+\examples{
+data("reference_aware")
+head(reference_aware)
+}
 \references{
 {\insertAllCited{}}
 }
