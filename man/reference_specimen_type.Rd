@@ -28,6 +28,10 @@ This data frame contains 5 variables:
     \item{\code{snomed_release_version}}{SNOMED CT RF2 release date}
 }
 }
+\examples{
+data("reference_specimen_type")
+head(reference_specimen_type)
+}
 \seealso{
 \url{https://snomedizer.web.app}
 }

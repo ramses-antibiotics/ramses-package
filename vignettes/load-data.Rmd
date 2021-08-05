@@ -90,8 +90,8 @@ This involves three steps:
 
 ## Drug prescriptions
 
-We begin with prescription records (but you can choose to start with
-other records if you prefer).
+We begin with prescription records (you may choose to start with
+other records).
 
 ```{r print_prescriptions}
 str(drug_prescriptions)
@@ -100,10 +100,10 @@ str(drug_prescriptions)
 Prescriptions records must conform to data validation requirements
 listed in the documentation for `validate_prescriptions()`
 
-We first map drug concepts thanks to the `as.ab()` function provided by
-the AMR package. This function takes a character variable as input and
+We first map drug concepts using the `as.ab()` function provided by
+the [AMR package](https://cran.r-project.org/package=AMR). This function takes a character variable as input and
 returns a three-letter code identifying antifungals and antibacterials.
-Using the AMR package's antibiotic codes gives access to its wide range
+These give access to the AMR package's wide range
 of analytical methods. Although the AMR package does not currently
 provide equivalent mapping for antiparasitic and antiviral drugs, these
 can be mapped to any substance-level terminology of your choice. RxNorm
@@ -155,11 +155,11 @@ drug_prescriptions <- mutate(drug_prescriptions,
 
 ```
 
-With the AMR package, it is possible to infer important properties of an
-antibacterial/antifungal drug:
+Using the AMR package, it is possible to infer important properties of
+antibacterial/antifungal drugs:
 
--   its ATC class and group, which can be useful for instance in order
-    to identify antifungals (group 'Antifungals/antimycotics')
+-   ATC classes and groups, which can be useful for instance in order
+    to identify antifungals (group 'Antimycotics for systemic use')
 -   Defined Daily Doses (DDDs), which are commonly used to measure drug
     consumption.
 
@@ -167,7 +167,7 @@ antibacterial/antifungal drug:
 # extracting the ATC code (eg J01CR02) group (eg Beta-lactam antibacterials, penicillins)
 drug_prescriptions$ATC_code <- AMR::ab_atc(drug_prescriptions$drug_code)
 drug_prescriptions$ATC_group <- AMR::ab_atc_group1(drug_prescriptions$drug_code)
-# removing antifungal drug, if applicable
+# removing antifungal drugs, if applicable
 drug_prescriptions <- filter(drug_prescriptions, 
                              ATC_group != "Antimycotics for systemic use")
 ```
@@ -227,9 +227,7 @@ drug_prescriptions <- drug_prescriptions %>%
                                      basis_of_strength))
 ```
 
-Another look-up table `reference_drug_frequency` available within Ramses
-is also used to convert the `frequency` character variable into a
-numeric variable indicating the daily frequency of administration.
+Ramses provides another look-up table `Ramses::reference_drug_frequency` to help convert the `frequency` character variable into a numeric variable indicating the daily frequency of administration.
 
 ```{r daily_freq}
 drug_prescriptions <- merge(drug_prescriptions, 
@@ -490,16 +488,11 @@ inpatient_diagnoses <- filter(inpatient_diagnoses, !is.na(icd_code))
 validate_inpatient_diagnoses(inpatient_diagnoses, icd10cm)
 ```
 
-Next, we classify the reference look up table to other classifications:
+Next, we classify the reference look-up table to other classifications:
 
--   \link[common infections and indications]{antibiotic_icd_indications}
-
-    for antibiotic prescribing
-
+-   common infections and indications for antibiotic prescribing (see `Ramses::antibiotic_icd_indications`)
 -   Charlson Comorbidity Index weights
-
 -   Clinical Classifications Software (CCS)
-
 -   Clinical Classifications Software Refined (CCSR)
 
 Although this is done automatically when loading diagnoses into the
@@ -585,7 +578,7 @@ As for specimen types (eg bood, bronchoalveolar lavage fluid, etc.),
 they must be coded using [SNOMED CT specimen
 concepts](https://snowstorm.ihtsdotools.org/?perspective=full&conceptId1=123038009&edition=MAIN/2020-07-31&release=&languages=en).
 A complete list of concepts from the SNOMED CT International Edition can
-be found in `reference_specimen_type`.
+be found in `Ramses::reference_specimen_type`.
 
 Susceptibility testing results in the example dataset are already
 interpreted as Resistant/Increased exposure/Susceptible (RSI). Where
@@ -664,7 +657,7 @@ microbiology_data$susceptibilities <- microbiology_data$raw %>%
 
 An optional step is to classify isolates by multidrug resistance
 phenotype [@Magiorakos2012]. The AMR package function
-\code{\link[AMR]{mdro}()} provides classification based on:
+`AMR::mdro()` provides classification based on:
 
 -   international guidelines on microorganism intrinsic resistance
 -   records of susceptibility testing (RSI).

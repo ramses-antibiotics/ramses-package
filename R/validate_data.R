@@ -763,10 +763,10 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'      \item{\code{unit}}{a character vector of dosage units}
 #'      \item{\code{route}}{the route of administration value natively assigned by system}
 #'      \item{\code{frequency}}{a character vector of frequencies of administrations
-#'       (eg: "BDS" or "Twice a day")}. See also: \code{\link{reference_drug_frequency}}
+#'       (eg: "BDS" or "Twice a day"). See also: \code{\link{reference_drug_frequency}}}
 #'      \item{\code{daily_frequency}}{a numeric translation of variable \code{frequency}
 #'      indicating the number of times the drug is to be administered per day. 
-#'      Values can be lower than 1, when the drug is to be administered less than daily.
+#'      Values can be lower than 1 for prescriptions administered less than daily.
 #'      Values must be strictly positive, except for the following codes:
 #'      \itemize{ 
 #'         \item -1 for a single one-off administration

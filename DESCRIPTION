@@ -1,7 +1,7 @@
 Package: Ramses
 Type: Package
 Title: R Package for Antimicrobial Stewardship & Surveillance 
-Version: 0.4.0
+Version: 0.4.1
 Authors@R: c(
     person(given = "Peter",
            family = "Dutey-Magni",
@@ -63,7 +63,6 @@ RoxygenNote: 7.1.1
 VignetteBuilder: knitr,rmarkdown
 Collate: 
     'Ramses-package.R'
-    'antibiotic_icd_indications.R'
     'objects.R'
     'clinical_features.R'
     'database.R'

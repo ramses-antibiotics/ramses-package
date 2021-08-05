@@ -48,6 +48,10 @@ The Clinical Classifications Software (CCS) is a database developed as part
   clinical diagnosis codes and other applications that require mutually-exclusive categories 
   (eg tasks involving data aggregation).
 }
+\examples{
+data("ccs")
+head(ccs)
+}
 \references{
 \insertAllCited{}
 }

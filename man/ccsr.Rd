@@ -31,6 +31,10 @@ categories. Unlike the pre-existing \code{\link{ccs}}:
     \item CCSR categories are organised into 21 body systems
 }
 }
+\examples{
+data("ccsr")
+head(ccsr)
+}
 \references{
 \insertAllCited{}
 }
