@@ -7,14 +7,13 @@ pool:
 steps:
 - task: CmdLine@2
   inputs:
-     targetType: 'inline'
-     script: '"C:\Program Files\R\R-4.0.3\bin\R.exe" -e  'devtools::load_all(); options("testthat.output_file" = "test-results.xml"); devtools::test(reporter = JunitReporter$new());''
-     failOnStderr: true
+    script: '"C:\Program Files\R\R-4.0.3\bin\R.exe" -e ''getwd'''
+    failOnStderr: true
 
-- task: PublishTestResults@2
-  inputs:
-    testResultsFormat: 'JUnit'
-    testResultsFiles: '**/test-*.xml'
-    testRunTitle: 'non-CI testhat plan'
-    buildPlatform: 'x86_64-w64-mingw32/x64'
-    buildConfiguration: 'R4.0.3'
+# - task: PublishTestResults@2
+#   inputs:
+#     testResultsFormat: 'JUnit'
+#     testResultsFiles: '**/test-*.xml'
+#     testRunTitle: 'non-CI testhat plan'
+#     buildPlatform: 'x86_64-w64-mingw32/x64'
+#     buildConfiguration: 'R4.0.3'
