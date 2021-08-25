@@ -7,7 +7,7 @@ pool:
 steps:
 - task: CmdLine@2
   inputs:
-    script: '"C:\Program Files\R\R-4.0.3\bin\R.exe" -e ''getwd'''
+    script: '"C:\Program Files\R\R-4.0.3\bin\R.exe" -e ''getwd()'''
     failOnStderr: true
 
 # - task: PublishTestResults@2
