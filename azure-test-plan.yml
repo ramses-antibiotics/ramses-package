@@ -13,7 +13,7 @@ steps:
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'JUnit'
-    testResultsFiles: '**/test-*.xml'
+    testResultsFiles: '$(System.DefaultWorkingDirectory)/test-results.xml'
     testRunTitle: 'non-CI testhat plan'
     buildPlatform: 'x86_64-w64-mingw32/x64'
     buildConfiguration: 'R4.0.3'
