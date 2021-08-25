@@ -8,15 +8,13 @@ steps:
 - task: CmdLine@2
   inputs:
      targetType: 'inline'
-     script: '"C:\Program Files\R\R-4.0.3\bin\R.exe" -e  ''devtools::load_all(); options("testthat.output_file" = "test-results.xml"); devtools::test(reporter = JunitReporter$new());'''
-     workingDirectory: $(ramses_path)
+     script: '"C:\Program Files\R\R-4.0.3\bin\R.exe" -e  'devtools::load_all(); options("testthat.output_file" = "test-results.xml"); devtools::test(reporter = JunitReporter$new());'
      failOnStderr: true
 
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'JUnit'
     testResultsFiles: '**/test-*.xml'
-    searchFolder: $(ramses_path)
     testRunTitle: 'non-CI testhat plan'
     buildPlatform: 'x86_64-w64-mingw32/x64'
     buildConfiguration: 'R4.0.3'
