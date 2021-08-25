@@ -7,7 +7,7 @@ pool:
 steps:
 - task: CmdLine@2
   inputs:
-    script: '"C:\Program Files\R\R-4.0.3\bin\R.exe" --no-save azuretest.R'
+    script: '"C:\Program Files\R\R-4.0.3\bin\Rscript.exe" --no-save azuretest.R'
     failOnStderr: true
 
 - task: PublishTestResults@2
