@@ -8,7 +8,7 @@ steps:
 - task: CmdLine@2
   inputs:
     script: '"C:\Program Files\R\R-4.0.3\bin\Rscript.exe" --no-save azuretest.R'
-    failOnStderr: true
+    failOnStderr: false
 
 - task: PublishTestResults@2
   inputs:
