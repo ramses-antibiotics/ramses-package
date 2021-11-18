@@ -1690,6 +1690,7 @@ bridge_episode_prescription_overlap <- function(conn,
                                   "cancelled",
                                   "unknown")
     )
+  DDD_present <- "DDD" %in% colnames(tblz_prescriptions)
   
   tblz_bridge_episode_prescriptions_overlap <- tblz_episodes %>% 
     dplyr::inner_join(tblz_prescriptions, 
@@ -1706,12 +1707,21 @@ bridge_episode_prescription_overlap <- function(conn,
       DOT = dplyr::sql(
         "(strftime('%s', min(prescription_end, episode_end)) -
         strftime('%s', max(prescription_start, episode_start)))/(3600.0*24.0)"
-      ),
-      DDD_prescribed = dplyr::sql(
-        "(strftime('%s', min(prescription_end, episode_end)) -
+      )
+    )
+    
+    if( DDD_present ) {
+      tblz_bridge_episode_prescriptions_overlap <- dplyr::mutate(
+        tblz_bridge_episode_prescriptions_overlap,
+        DDD_prescribed = dplyr::sql(
+          "(strftime('%s', min(prescription_end, episode_end)) -
         strftime('%s', max(prescription_start, episode_start)))
          / (3600.0*24.0) * DDD"
-      ))
+        )
+      )
+    }
+    
+    
   } else if( is(conn, "PqConnection") ) {
     tblz_bridge_episode_prescriptions_overlap <- dplyr::mutate(
       tblz_bridge_episode_prescriptions_overlap,
@@ -1720,27 +1730,45 @@ bridge_episode_prescription_overlap <- function(conn,
            LEAST(prescription_end::TIMESTAMP, episode_end::TIMESTAMP) -
            GREATEST(prescription_start::TIMESTAMP, episode_start::TIMESTAMP) ))
          / ( 3600.0 * 24.0 )"
-      ),
-      DDD_prescribed = dplyr::sql(
-        "EXTRACT(EPOCH FROM (
+      )
+    )
+    
+    if ( DDD_present ) {
+      tblz_bridge_episode_prescriptions_overlap <- dplyr::mutate(
+        tblz_bridge_episode_prescriptions_overlap,
+        DDD_prescribed = dplyr::sql(
+          "EXTRACT(EPOCH FROM (
            LEAST(prescription_end::TIMESTAMP, episode_end::TIMESTAMP) -
            GREATEST(prescription_start::TIMESTAMP, episode_start::TIMESTAMP) ))
          / ( 3600.0 * 24.0 ) * \"DDD\""
-      ))
+        )
+      )
+    }
+      
   } else {
     .throw_error_method_not_implemented("bridge_episode_prescription_overlap()",
                                         class(conn))
   }
-  
-  tblz_bridge_episode_prescriptions_overlap <- dplyr::transmute(
-    tblz_bridge_episode_prescriptions_overlap,
-    patient_id,
-    spell_id,
-    episode_number,
-    prescription_id,
-    DOT,
-    DDD_prescribed
-  )
+  if ( DDD_present ) {
+    tblz_bridge_episode_prescriptions_overlap <- dplyr::transmute(
+      tblz_bridge_episode_prescriptions_overlap,
+      patient_id,
+      spell_id,
+      episode_number,
+      prescription_id,
+      DOT,
+      DDD_prescribed
+    )
+  } else {
+    tblz_bridge_episode_prescriptions_overlap <- dplyr::transmute(
+      tblz_bridge_episode_prescriptions_overlap,
+      patient_id,
+      spell_id,
+      episode_number,
+      prescription_id,
+      DOT
+    )
+  }
   
   if (overwrite) {
     if(DBI::dbExistsTable(conn, "bridge_episode_prescription_overlap")) {
@@ -1771,6 +1799,7 @@ bridge_episode_prescription_initiation <- function(conn,
                                   "cancelled",
                                   "unknown")
     )
+  DDD_present <- "DDD" %in% colnames(tblz_prescriptions)
   
   tblz_bridge_episode_prescription_initiation <- tblz_episodes %>% 
     dplyr::inner_join(tblz_prescriptions, 
@@ -1786,12 +1815,19 @@ bridge_episode_prescription_initiation <- function(conn,
         "(strftime('%s', prescription_end) -
         strftime('%s', prescription_start))
         / (3600.0 * 24.0)"
-      ),
-      DDD_prescribed = dplyr::sql(
-        "(strftime('%s', prescription_end) -
+      )
+    )
+    
+    if ( DDD_present ) {
+      tblz_bridge_episode_prescription_initiation <- dplyr::mutate(
+        tblz_bridge_episode_prescription_initiation,
+        DDD_prescribed = dplyr::sql(
+          "(strftime('%s', prescription_end) -
         strftime('%s', prescription_start))
          / (3600.0 * 24.0) * DDD")
-    )
+      )
+    }
+    
   } else if( is(conn, "PqConnection") ) {
     tblz_bridge_episode_prescription_initiation <- dplyr::mutate(
       tblz_bridge_episode_prescription_initiation,
@@ -1800,27 +1836,45 @@ bridge_episode_prescription_initiation <- function(conn,
            prescription_end::TIMESTAMP -
            prescription_start::TIMESTAMP ))
          / ( 3600.0 * 24.0 )"
-      ),
-      DDD_prescribed = dplyr::sql(
-        "EXTRACT(EPOCH FROM (
+      )
+    )
+    
+    if ( DDD_present ) {
+      tblz_bridge_episode_prescription_initiation <- dplyr::mutate(
+        tblz_bridge_episode_prescription_initiation,
+        DDD_prescribed = dplyr::sql(
+          "EXTRACT(EPOCH FROM (
            prescription_end::TIMESTAMP -
            prescription_start::TIMESTAMP ))
          / ( 3600.0 * 24.0 ) * \"DDD\"")
-    )
+      )
+    }
+    
   } else {
     .throw_error_method_not_implemented("bridge_episode_prescription_initiation()",
                                         class(conn))
   }
   
-  tblz_bridge_episode_prescription_initiation <- dplyr::transmute(
-    tblz_bridge_episode_prescription_initiation,
-    patient_id,
-    spell_id,
-    episode_number,
-    prescription_id,
-    DOT,
-    DDD_prescribed
-  )
+  if ( DDD_present ) {
+    tblz_bridge_episode_prescription_initiation <- dplyr::transmute(
+      tblz_bridge_episode_prescription_initiation,
+      patient_id,
+      spell_id,
+      episode_number,
+      prescription_id,
+      DOT,
+      DDD_prescribed
+    )
+  } else {
+    tblz_bridge_episode_prescription_initiation <- dplyr::transmute(
+      tblz_bridge_episode_prescription_initiation,
+      patient_id,
+      spell_id,
+      episode_number,
+      prescription_id,
+      DOT
+    )
+  }
   
   if (overwrite) {
     if(DBI::dbExistsTable(conn, "bridge_episode_prescription_initiation")) {
