@@ -116,7 +116,7 @@ MedicationRequest <- function(conn, id) {
     stop("`id` must be character")
   }
   if (is.character(id) & id_data_type !="character") {
-    stop(paste("`id` must be character", id_data_type))
+    stop(paste("`id` must be", id_data_type))
   }
   
   record <- dplyr::filter(tbl(conn, "drug_prescriptions"),
