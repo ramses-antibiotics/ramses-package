@@ -109,7 +109,8 @@ jobs:
 
       - name: Build pkgdown
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release'
-        run: Rscript ./pkgdown/build.R
+        run: pkgdown::build_site(new_process = TRUE)
+        shell: Rscript {0}
 
       - name: Deploy to Firebase
         if: github.ref == 'refs/heads/master' && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release'

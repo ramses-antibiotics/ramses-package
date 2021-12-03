@@ -14,10 +14,18 @@ url: https://ramses-antibiotics.web.app/
 figures:
   fig.align: 'center'
 
+footer:
+  structure: 
+    left:
+    right: built_with
+    
 authors:
+    sidebar:
+      roles: [aut, ctb, cre, res, rth, cph]
     University College London:
       href: "https://www.ucl.ac.uk"
       html: "<img src='https://ramses-antibiotics.web.app/reference/figures/partner-logos/UCL.png' height=28>"
+
 navbar:
   right:
     - text: "Source"

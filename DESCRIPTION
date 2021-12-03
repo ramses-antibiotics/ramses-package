@@ -52,7 +52,7 @@ Suggests:
     DiagrammeRsvg,
     htmltools,
     timevis,
-    pkgdown,
+    pkgdown (>= 2.0.0),
     R.utils,
     comorbidity,
     RPostgres
