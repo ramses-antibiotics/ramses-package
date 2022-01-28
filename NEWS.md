@@ -5,8 +5,10 @@
 
 ## Improvements
 
-* Upgrade dependency on `AMR` package version >= 1.8.0
-* Better error messages in `clinical_feature_*()` functions #80
+* upgrade dependency on `AMR` package version >= 1.8.0
+* better error messages in `clinical_feature_*()` functions #80
+* `spell_id` is no longer required by `validate_investigations()` #77
+* 
 
 # Ramses 0.4.1
 

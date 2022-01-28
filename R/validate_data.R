@@ -1389,11 +1389,14 @@ validate_investigations <- function(investigations,
     dplyr::group_by(observation_code_system, observation_code) %>% 
     dplyr::summarise(n = dplyr::n()) %>% 
     dplyr::filter(n > 1)
-  units_mixed <- nrow(units_mixed) > 0
   
-  if( units_mixed ) {
-    stop("Every `observation_code` must adopt a unique `observation_unit`.\n",
-         "Please convert observations to a single unit.")
+  if( nrow(units_mixed) > 0 ) {
+    stop(
+      "\nEvery `observation_code` must only be associated with one `observation_unit`.\n",
+      "Please convert these observations to a single unit: \n\n ",
+      paste0(capture.output(data.frame(units_mixed[, 1:2])), collapse = "\n"), 
+      call. = FALSE
+    )
   }
   
   all(!not_exist, !missing_data, must_be_unique, units_validate)
