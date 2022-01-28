@@ -25,7 +25,7 @@ Encoding: UTF-8
 LazyData: true
 Depends: 
     R (>= 3.2.0),
-    AMR
+    AMR (>= 1.8.0)
 Imports: 
     RSQLite (>= 2.1.4),
     DBI,
