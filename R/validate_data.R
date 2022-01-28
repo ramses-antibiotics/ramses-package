@@ -1271,8 +1271,6 @@ validate_microbiology <- function(specimens, isolates, susceptibilities) {
 #' \describe{
 #'    \item{\code{"observation_id"}}{a unique identifier with no missing value}
 #'    \item{\code{"patient_id"}}{a patient identifier with no missing value}
-#'    \item{\code{"spell_id"}}{identifier of the hospital spell during which 
-#'    the investigation was performed (if observations are made during admission)}
 #'    \item{\code{"status"}}{Codes from the following value set 
 #'    \url{http://hl7.org/fhir/observation-status/} \itemize{
 #'   \item \code{"registered"}: The existence of the observation is registered, but there is no result yet available.
