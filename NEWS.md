@@ -8,7 +8,7 @@
 * upgrade dependency on `AMR` package version >= 1.8.0
 * better error messages in `clinical_feature_*()` functions [#80](https://github.com/ramses-antibiotics/ramses-package/issues/80)
 * `spell_id` is no longer required by `validate_investigations()` [#77](https://github.com/ramses-antibiotics/ramses-package/issues/78)
-* improve main vignette
+* improve `vignette("Ramses")`
 
 # Ramses 0.4.1
 

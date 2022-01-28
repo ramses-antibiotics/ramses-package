@@ -37,14 +37,14 @@
 ## Funders
 
 <div style="display: table-cell;">
-<a href="https://www.nihr.ac.uk/"><img height="60px!" style="vertical-align: bottom;" alt="National Institute of Health Research" src="man/figures/partner-logos/NIHR.svg" ></a> &nbsp;&nbsp;
-<a href="https://esrc.ukri.org/"><img height="50px!" style="vertical-align: bottom; bottom;margin-bottom: -5px;" alt="Economic and Social Research Council" src="man/figures/partner-logos/ESRC.svg" ></a> &nbsp;&nbsp;
-<a href="https://rosetreestrust.co.uk/"><img style="vertical-align: bottom;margin-bottom: -7px;" alt="Rosetree Trust" src="man/figures/partner-logos/rosetree.png" height="50px!"></a>
+<a href="https://www.nihr.ac.uk/"><img width="300px" style="vertical-align: bottom;" alt="National Institute of Health Research" src="man/figures/partner-logos/NIHR.svg" ></a> &nbsp;&nbsp;
+<a href="https://esrc.ukri.org/"><img width="250px" style="vertical-align: bottom; bottom;margin-bottom: -5px;" alt="Economic and Social Research Council" src="man/figures/partner-logos/ESRC.svg" ></a> &nbsp;&nbsp;
+<a href="https://rosetreestrust.co.uk/"><img width="250px" style="vertical-align: bottom;margin-bottom: -7px;" alt="Rosetree Trust" src="man/figures/partner-logos/rosetree.png"></a>
 </div>
 
 ## Licence 
 
-Copyright &copy; 2020 University College London
+Copyright &copy; 2022 University College London
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
 
