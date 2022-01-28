@@ -78,7 +78,7 @@ Ramses::drug_prescriptions \%>\%
               frequency == "6H" ~ 4
             )) \%>\% 
   mutate(DDD = compute_DDDs(
-    ATC_code = AMR::ab_atc(tr_DESC),
+    ATC_code = AMR::ab_atc(tr_DESC, only_first = TRUE),
     ATC_administration = if_else(route == "ORAL", "O", "P"),
     dose = dose * daily_frequency,
     unit = units))

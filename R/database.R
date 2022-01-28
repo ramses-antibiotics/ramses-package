@@ -1251,7 +1251,7 @@ create_mock_database <- function(file,
     ))
   
   ## compute_ddd
-  drug_rx$ATC_code <- AMR::ab_atc(drug_rx$drug_code)
+  drug_rx$ATC_code <- AMR::ab_atc(drug_rx$drug_code, only_first = TRUE)
   
   # prepare DDD extraction
   compound_strength_lookup <- data.frame(list(
@@ -1274,7 +1274,7 @@ create_mock_database <- function(file,
   # computing the prescription DDD the reference DDD from the ATC
   drug_rx <- drug_rx %>% 
     dplyr::mutate(DDD = compute_DDDs(
-      ATC_code = AMR::ab_atc(basis_of_strength),
+      ATC_code = AMR::ab_atc(basis_of_strength, only_first = TRUE),
       ATC_administration = ATC_route,
       dose = strength * daily_frequency,
       unit = units, 
@@ -1341,7 +1341,7 @@ create_mock_database <- function(file,
       route %in% c("PV") ~ "V", 
       TRUE ~ "NA_character_"
     ))
-  drug_admins$ATC_code <- AMR::ab_atc(drug_admins$drug_code)
+  drug_admins$ATC_code <- AMR::ab_atc(drug_admins$drug_code, only_first = TRUE)
   
   drug_admins <- merge(drug_admins, compound_strength_lookup, all.x = T)
   drug_admins <- drug_admins %>% 
@@ -1353,7 +1353,7 @@ create_mock_database <- function(file,
   drug_admins <- drug_admins %>% 
     dplyr::mutate(
       DDD = compute_DDDs(
-      ATC_code = AMR::ab_atc(basis_of_strength),
+      ATC_code = AMR::ab_atc(basis_of_strength, only_first = TRUE),
       ATC_administration = ATC_route,
       dose = dose,
       unit = units,

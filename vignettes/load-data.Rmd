@@ -165,7 +165,7 @@ antibacterial/antifungal drugs:
 
 ```{r get_atc_code}
 # extracting the ATC code (eg J01CR02) group (eg Beta-lactam antibacterials, penicillins)
-drug_prescriptions$ATC_code <- AMR::ab_atc(drug_prescriptions$drug_code)
+drug_prescriptions$ATC_code <- AMR::ab_atc(drug_prescriptions$drug_code, only_first = TRUE)
 drug_prescriptions$ATC_group <- AMR::ab_atc_group1(drug_prescriptions$drug_code)
 # removing antifungal drugs, if applicable
 drug_prescriptions <- filter(drug_prescriptions, 
@@ -241,7 +241,7 @@ and the daily frequency of administration:
 drug_prescriptions <- drug_prescriptions %>% 
   mutate(daily_dose = strength * daily_frequency) %>% 
   mutate(DDD = compute_DDDs(
-    ATC_code = AMR::ab_atc(basis_of_strength),
+    ATC_code = AMR::ab_atc(basis_of_strength, only_first = TRUE),
     ATC_administration = ATC_route,
     dose = daily_dose,
     unit = units)) %>% 
@@ -323,7 +323,7 @@ drug_administrations <- mutate(drug_administrations,
       route %in% c("PV") ~ "V", 
       TRUE ~ "NA_character_"
     ))
-drug_administrations$ATC_code <- AMR::ab_atc(drug_administrations$drug_code)
+drug_administrations$ATC_code <- AMR::ab_atc(drug_administrations$drug_code, only_first = TRUE)
 drug_administrations <- filter(drug_administrations, 
                                drug_group != "Antifungals/antimycotics")
 
@@ -336,7 +336,7 @@ drug_administrations <- drug_administrations %>%
 
 drug_administrations <- drug_administrations %>% 
   mutate(DDD = compute_DDDs(
-    ATC_code = AMR::ab_atc(basis_of_strength),
+    ATC_code = AMR::ab_atc(basis_of_strength, only_first = TRUE),
     ATC_administration = ATC_route,
     dose = dose,
     unit = units 

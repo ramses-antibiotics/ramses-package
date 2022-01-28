@@ -1,4 +1,13 @@
 
+# Ramses 0.4.2
+
+*1 February 2022*
+
+## Improvements
+
+* Upgrade dependency on `AMR` package version >= 1.8.0
+* Better error messages in `clinical_feature_*()` functions #80
+
 # Ramses 0.4.1
 
 *5 August 2021*

@@ -18,7 +18,7 @@
 ) {
   
   if ( !is.null(observation_code_system) & length(observation_code_system) != 1) {
-    stop("`observation_code_system` must be a string of length 1.")
+    stop("`observation_code_system` must be a string of length 1.", call. = FALSE)
   }
   if ( !is.null(observation_code_system) ) {
   db_observation_codes <- dplyr::filter(
@@ -46,7 +46,7 @@
       paste(db_observation_codes[db_observation_codes[["n"]] > 1, 
                                  "observation_code"], collapse = "', '"), "'\n",
       "Please use the `observation_code_system` option to avoid ambiguity."
-    ))
+    ), call. = FALSE)
   } 
   
   if ( any(!observation_code %in% db_observation_codes[["observation_code"]]) ) {
@@ -56,7 +56,7 @@
         observation_code[which(!observation_code %in% 
                                  db_observation_codes[["observation_code"]])],
         collapse = "', '"), "'"
-    ))
+    ), call. = FALSE)
   }
 }
 
@@ -107,7 +107,8 @@
       dplyr::collect()
   }
   if( nrow(parameter_name) == 0 ) {
-    stop("`observation_code` ", observation_code, " not found in database.")
+    stop(paste0("`observation_code` ", observation_code, " not found in database."), 
+         call. = FALSE)
   }
   parameter_name <- parameter_name[["observation_display"]]
   parameter_name <- gsub("[[:punct:]]", "", tolower(unique(parameter_name)))
@@ -245,7 +246,10 @@
 #' }
 setGeneric(
   "clinical_feature_last", 
-  function(x, observation_code, hours, observation_code_system = NULL, compute = TRUE) standardGeneric("clinical_feature_last"), 
+  function(x, observation_code, hours, observation_code_system = NULL, compute = TRUE) {
+    tryCatch(x)
+    standardGeneric("clinical_feature_last")
+  }, 
   signature = "x")
 
 
@@ -357,7 +361,10 @@ setMethod(
 #' }
 setGeneric(
   "clinical_feature_mean", 
-  function(x, observation_code, hours, observation_code_system = NULL, compute = TRUE) standardGeneric("clinical_feature_mean"), 
+  function(x, observation_code, hours, observation_code_system = NULL, compute = TRUE) {
+    tryCatch(x)
+    standardGeneric("clinical_feature_mean")
+  }, 
   signature = "x")
 
 
@@ -521,7 +528,10 @@ setMethod(
 #' }
 setGeneric(
   "clinical_feature_ols_trend", 
-  function(x, observation_code, hours, observation_code_system = NULL, compute = TRUE) standardGeneric("clinical_feature_ols_trend"), 
+  function(x, observation_code, hours, observation_code_system = NULL, compute = TRUE) {
+    tryCatch(x)
+    standardGeneric("clinical_feature_ols_trend")
+  }, 
   signature = "x")
 
 
@@ -701,7 +711,10 @@ setMethod(
 #' @include objects.R
 setGeneric(
   "clinical_feature_interval", 
-  function(x, observation_intervals, hours, observation_code_system = NULL, compute = TRUE) standardGeneric("clinical_feature_interval"), 
+  function(x, observation_intervals, hours, observation_code_system = NULL, compute = TRUE) {
+    tryCatch(x)
+    standardGeneric("clinical_feature_interval")
+  }, 
   signature = "x")
 
 
