@@ -1,14 +1,14 @@
 
 # Ramses 0.4.2
 
-*1 February 2022*
+*28 January 2022*
 
 ## Improvements
 
 * upgrade dependency on `AMR` package version >= 1.8.0
-* better error messages in `clinical_feature_*()` functions #80
-* `spell_id` is no longer required by `validate_investigations()` #77
-* 
+* better error messages in `clinical_feature_*()` functions [#80](https://github.com/ramses-antibiotics/ramses-package/issues/80)
+* `spell_id` is no longer required by `validate_investigations()` [#77](https://github.com/ramses-antibiotics/ramses-package/issues/78)
+* improve main vignette
 
 # Ramses 0.4.1
 

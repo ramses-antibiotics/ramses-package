@@ -140,20 +140,25 @@ study_pop <- tbl(ramses_db, "inpatient_episodes") %>%
   mutate(calendar_year = year(discharge_date),
          calendar_month = month(discharge_date))  
 
-consumption_episodes <- study_pop %>% 
+consumption_num <- study_pop %>% 
   left_join(tbl(ramses_db, "bridge_episode_prescription_overlap")) %>% 
   group_by(calendar_year, calendar_month, main_specialty_code) %>% 
-  summarise(DOT_prescribed = sum(ifNull(DOT, 0.0)),
-            DDD_prescribed = sum(ifNULL(DDD_prescribed, 0.0)),
-            bed_days = sum(ifNull(ramses_bed_days, 0.0))) %>% 
-  collect()  %>% 
+  summarise(DOT_prescribed = sum(coalesce(DOT, 0.0)),
+            DDD_prescribed = sum(coalesce(DDD_prescribed, 0.0))) 
+
+consumption_denom <- study_pop %>% 
+  group_by(calendar_year, calendar_month, main_specialty_code) %>% 
+  summarise(bed_days = sum(ramses_bed_days))
+
+consumption_rates <- full_join(consumption_denom, consumption_num) %>% 
+  collect() %>% 
   mutate(month_starting = as.Date(paste0(calendar_year, "/", calendar_month, "/01")))
 
-head(consumption_episodes)
+head(consumption_rates)
 ```
 
 ```{r plot_AC1,  width = 10}
-ggplot(consumption_episodes, 
+ggplot(consumption_rates, 
        aes(x = month_starting,
            y = DOT_prescribed/bed_days*1000, 
            group = main_specialty_code,
@@ -171,18 +176,26 @@ Alternatively, consumption can be attributed to the episode when prescriptions a
  
 
 ```{r AC2}
-consumption_initiation <- study_pop %>% 
+consumption_num_init <- study_pop %>% 
   left_join(tbl(ramses_db, "bridge_episode_prescription_initiation")) %>% 
   group_by(calendar_year, calendar_month, main_specialty_code) %>% 
-  summarise(DOT_prescribed = sum(ifNull(DOT, 0.0)),
-            DDD_prescribed = sum(ifNULL(DDD_prescribed, 0.0)),
-            total_admissions = n_distinct(paste0(patient_id, spell_id))) %>% 
-  collect()  %>% 
+  summarise(DOT_prescribed = sum(coalesce(DOT, 0.0)),
+            DDD_prescribed = sum(coalesce(DDD_prescribed, 0.0))) 
+
+consumption_denom_init <- study_pop %>% 
+  group_by(calendar_year, calendar_month, main_specialty_code) %>% 
+  summarise(
+    bed_days = sum(ramses_bed_days),
+    total_admissions = n_distinct(paste0(patient_id, spell_id))
+  )
+
+consumption_rates_init <- full_join(consumption_denom_init, consumption_num_init) %>% 
+  collect() %>% 
   mutate(month_starting = as.Date(paste0(calendar_year, "/", calendar_month, "/01")))
 ```
 
 ```{r plot_AC2}
-ggplot(consumption_initiation, 
+ggplot(consumption_rates_init, 
        aes(x = month_starting,
            y = DOT_prescribed/total_admissions*1000, 
            group = main_specialty_code,
@@ -251,18 +264,17 @@ consumption_aware_episodes_num <- tbl(ramses_db, "drug_prescriptions") %>%
   left_join(tbl(ramses_db, "bridge_episode_prescription_overlap")) %>% 
   inner_join(study_pop) %>% 
   group_by(calendar_year, calendar_month, aware_category) %>% 
-  summarise(DOT_prescribed = sum(ifNull(DOT, 0.0))) %>% 
-  collect()
+  summarise(DOT_prescribed = sum(coalesce(DOT, 0.0))) 
  
 consumption_aware_episodes_denom <- study_pop %>% 
   group_by(calendar_year, calendar_month) %>% 
-  summarise(bed_days =  sum(ifNull(ramses_bed_days, 0.0))) %>% 
-  collect()
+  summarise(bed_days =  sum(coalesce(ramses_bed_days, 0.0))) 
 
 consumption_aware_episodes <- left_join(
   consumption_aware_episodes_denom,
   consumption_aware_episodes_num
 ) %>% 
+  collect() %>% 
   mutate(month_starting = as.Date(paste0(calendar_year, "/", calendar_month, "/01")),
          aware_category = factor(aware_category, 
                                     levels = c("Access", "Watch", "Reserve")))
