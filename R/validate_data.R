@@ -1394,7 +1394,7 @@ validate_investigations <- function(investigations,
     stop(
       "\nEvery `observation_code` must only be associated with one `observation_unit`.\n",
       "Please convert these observations to a single unit: \n\n ",
-      paste0(capture.output(data.frame(units_mixed[, 1:2])), collapse = "\n"), 
+      paste0(utils::capture.output(data.frame(units_mixed[, 1:2])), collapse = "\n"), 
       call. = FALSE
     )
   }
