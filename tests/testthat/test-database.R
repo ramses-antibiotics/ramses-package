@@ -21,7 +21,7 @@ test_that("Batch SQL scripts get split", {
 
 
 test_that("bridge_episode_prescription_overlap", {
-  emptydatabase <- dbConnect(RSQLite::SQLite(), ":memory:")
+  emptydatabase <- dbConnect(RSQLite::SQLite(), ":memory:", extended_types = TRUE)
   expect_error(bridge_episode_prescription_overlap(
     conn = "not_a_connection", overwrite = TRUE))
   expect_error(bridge_episode_prescription_overlap(
@@ -32,7 +32,7 @@ test_that("bridge_episode_prescription_overlap", {
 })
 
 test_that("bridge_episode_prescription_initiation", {
-  emptydatabase <- dbConnect(RSQLite::SQLite(), ":memory:")
+  emptydatabase <- dbConnect(RSQLite::SQLite(), ":memory:", extended_types = TRUE)
   expect_error(bridge_episode_prescription_initiation(
     conn = "not_a_connection", overwrite = TRUE))
   expect_error(bridge_episode_prescription_initiation(
@@ -43,7 +43,7 @@ test_that("bridge_episode_prescription_initiation", {
 })
 
 test_that("bridge_spell_therapy_overlap", {
-  emptydatabase <- dbConnect(RSQLite::SQLite(), ":memory:")
+  emptydatabase <- dbConnect(RSQLite::SQLite(), ":memory:", extended_types = TRUE)
   expect_error(bridge_spell_therapy_overlap(
     conn = "not_a_connection", overwrite = TRUE))
   expect_error(bridge_spell_therapy_overlap(
@@ -54,7 +54,7 @@ test_that("bridge_spell_therapy_overlap", {
 })
 
 test_that(".compute_bed_days.SQLiteConnection", {
-  temp_db <- dbConnect(RSQLite::SQLite(), ":memory:")
+  temp_db <- dbConnect(RSQLite::SQLite(), ":memory:", extended_types = TRUE)
   dplyr::copy_to(
     dest = temp_db,
     df = data.frame(
@@ -83,7 +83,7 @@ test_that(".format_id_as_character", {
 })
 
 test_that(".sql_data_type", {
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:", extended_types = TRUE)
   dplyr::copy_to(dest = fake_db_conn,
                  df = dplyr::tibble(patient_id = "99999999999", 
                                     int_var = 1L,

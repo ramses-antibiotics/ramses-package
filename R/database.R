@@ -59,7 +59,6 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
       "icd_code",
       "diagnosis_position"
     ))
-  diagnoses_data <- .format_str_time_sqlite.tbl_df(conn, diagnoses_data)
 
   load_errors <- try({
     dplyr::copy_to(
@@ -120,8 +119,6 @@ load_inpatient_episodes <- function(conn,
     )
   ]
 
-  patients_data <- .format_str_time_sqlite.tbl_df(conn, patients_data)
-
   episodes_data <- dplyr::arrange(episodes_data, 
                                   patient_id, episode_start)
   first_column_names_episodes <- .inpatient_episodes_variables()[["variable_name"]]
@@ -131,8 +128,6 @@ load_inpatient_episodes <- function(conn,
   episodes_data <- arrange_variables(
     episodes_data, 
     first_column_names = first_column_names_episodes) 
-  
-  episodes_data <- .format_str_time_sqlite.tbl_df(conn, episodes_data)
   
   dplyr::copy_to(
     dest = conn, 
@@ -175,8 +170,6 @@ load_inpatient_episodes <- function(conn,
       wards_data, 
       first_column_names = first_column_names_wards)   
     
-    wards_data <- .format_str_time_sqlite.tbl_df(conn, wards_data)
-
     load_errors <- try({
       dplyr::copy_to(
         dest = conn, 
@@ -229,8 +222,6 @@ load_inpatient_investigations <- function(conn, investigations_data, overwrite =
   investigations_data <- arrange_variables(
     data = investigations_data,
     first_column_names = first_variables)
-  
-  investigations_data <- .format_str_time_sqlite.tbl_df(conn, investigations_data)
   
   load_errors <- try({
     dplyr::copy_to(
@@ -305,10 +296,6 @@ load_inpatient_microbiology <- function(conn,
   susceptibilities <- arrange_variables(
     data = susceptibilities,
     first_column_names = first_variables$susceptibilities)
-  
-  specimens <- .format_str_time_sqlite.tbl_df(conn, specimens)
-  isolates <- .format_str_time_sqlite.tbl_df(conn, isolates)
-  susceptibilities <- .format_str_time_sqlite.tbl_df(conn, susceptibilities)
 
   load_errors <- try({
     dplyr::copy_to(
@@ -455,18 +442,15 @@ load_medications <- function(
   
   prescriptions <- dplyr::arrange(prescriptions, patient_id, prescription_start)
   prescriptions$id <- seq_len(nrow(prescriptions))
-  prescriptions <- .format_str_time_sqlite.tbl_df(conn, prescriptions)
-  
-  if (is(conn, "PqConnection")) {
-    if( !is(prescriptions$authoring_date, "POSIXct") ){
-      stop("prescriptions$authoring_date must be of class POSIXct")
-    }
-    if( !is(prescriptions$prescription_start, "POSIXct") ){
-      stop("prescriptions$prescription_start must be of class POSIXct")
-    }
-    if( !is(prescriptions$prescription_end, "POSIXct") ){
-      stop("prescriptions$prescription_end must be of class POSIXct")
-    }
+
+  if( !is(prescriptions$authoring_date, "POSIXct") ){
+    stop("prescriptions$authoring_date must be of class POSIXct")
+  }
+  if( !is(prescriptions$prescription_start, "POSIXct") ){
+    stop("prescriptions$prescription_start must be of class POSIXct")
+  }
+  if( !is(prescriptions$prescription_end, "POSIXct") ){
+    stop("prescriptions$prescription_end must be of class POSIXct")
   }
   
   prescriptions$therapy_rank <- NA_integer_
@@ -654,13 +638,28 @@ load_medications <- function(
   
   .remove_db_tables(conn = conn, "drug_therapy_episodes")
   
-  forget <- tbl(conn, "drug_prescriptions") %>%
-    dplyr::filter(!is.na(therapy_id)) %>% 
-    dplyr::group_by(patient_id, therapy_id, antiinfective_type) %>% 
-    dplyr::summarise(therapy_start = min(prescription_start, na.rm = TRUE),
-                     therapy_end = max(prescription_end, na.rm = TRUE)) %>% 
-    dplyr::compute(name = "drug_therapy_episodes", temporary = FALSE)
-  
+  if ( is(conn, "SQLiteConnection") ) {
+    drug_therapy_episodes <- tbl(conn, "drug_prescriptions") %>%
+      dplyr::collect() %>% 
+      dplyr::filter(!is.na(therapy_id)) %>% 
+      dplyr::group_by(patient_id, therapy_id, antiinfective_type) %>% 
+      dplyr::summarise(therapy_start = min(prescription_start, na.rm = TRUE),
+                       therapy_end = max(prescription_end, na.rm = TRUE))
+    dplyr::copy_to(
+      dest = conn,
+      df = drug_therapy_episodes,
+      name = "drug_therapy_episodes",
+      temporary = FALSE
+    )
+  } else {
+    forget <- tbl(conn, "drug_prescriptions") %>%
+      dplyr::filter(!is.na(therapy_id)) %>% 
+      dplyr::group_by(patient_id, therapy_id, antiinfective_type) %>% 
+      dplyr::summarise(therapy_start = min(prescription_start, na.rm = TRUE),
+                       therapy_end = max(prescription_end, na.rm = TRUE)) %>% 
+      dplyr::compute(name = "drug_therapy_episodes", temporary = FALSE)
+  }
+
   .create_sql_primary_key(
     conn = conn,
     table = "drug_therapy_episodes",
@@ -676,7 +675,6 @@ load_medications <- function(
       "antiinfective_type"
     )
   )
- 
 }
 
 
@@ -774,30 +772,46 @@ create_therapy_episodes <- function(
         therapy_rank
       )
     ) %>% 
-    dplyr::compute()
-  
-  new_drug_prescriptions_tbl <- new_drug_prescriptions_tbl %>% 
     dplyr::select(-combination_id) %>%
-    dplyr::left_join(therapy_combination_ids, by = "id") %>% 
-    dplyr::compute()
+    dplyr::left_join(therapy_combination_ids, by = "id")
   
   first_column_names <- .drug_prescriptions_variables()[["variable_name"]]
   first_column_names <- c(
     "id",
     first_column_names[first_column_names %in% colnames(new_drug_prescriptions_tbl)]
   )
-  new_drug_prescriptions_tbl <- arrange_variables(
-    new_drug_prescriptions_tbl, 
-    first_column_names = first_column_names)  %>% 
-    compute(name = "drug_prescriptions_new", temporary = FALSE)
+  
+  if ( is(conn, "SQLiteConnection") ) {
+    # Necessary to preserve dates and datetime fields from
+    # conversion to integers
+    new_drug_prescriptions_tbl <- new_drug_prescriptions_tbl %>% 
+      dplyr::collect() %>% 
+      arrange_variables(first_column_names = first_column_names)
+    
+    dplyr::copy_to(
+      dest = conn,
+      df = new_drug_prescriptions_tbl,
+      name = "drug_prescriptions",
+      overwrite = TRUE,
+      temporary = FALSE
+    )
+    
+  } else {
+    new_drug_prescriptions_tbl <- arrange_variables(
+      new_drug_prescriptions_tbl, 
+      first_column_names = first_column_names)  %>% 
+      dplyr::compute(name = "drug_prescriptions_new", temporary = FALSE)
+    
+    .remove_db_tables(conn = conn, table_names = "drug_prescriptions")
+    
+    DBI::dbExecute(
+      conn = conn, 
+      "ALTER TABLE drug_prescriptions_new RENAME TO drug_prescriptions;"
+    )
+  }
   
   .remove_db_tables(conn = conn, c("ramses_tc_combination", 
-                                   "ramses_tc_therapy",
-                                   "drug_prescriptions"))
-  DBI::dbExecute(
-    conn = conn, 
-    "ALTER TABLE drug_prescriptions_new RENAME TO drug_prescriptions;"
-  )
+                                   "ramses_tc_therapy"))
   
   .create_table_drug_therapy_episodes(conn = conn)
 }
@@ -822,8 +836,7 @@ create_therapy_episodes <- function(
     administrations, 
     first_column_names = first_column_names
   ) 
-  administrations <- .format_str_time_sqlite.tbl_df(conn, administrations)
-  
+
   load_output <- try({
     dplyr::copy_to(
       dest = conn,
@@ -899,12 +912,12 @@ create_therapy_episodes <- function(
 #'     file.remove("ramses-db.sqlite")
 connect_local_database <- function(file) {
   if(!file.exists(file)){
-    con <- DBI::dbConnect(RSQLite::SQLite(), file)
+    con <- DBI::dbConnect(RSQLite::SQLite(), file, extended_types = TRUE)
     .build_tally_table(con)
     message(paste0("SQLite database created in \n", con@dbname, 
                    "\nPlease do not use real patient data."))
   } else {
-    con <- DBI::dbConnect(RSQLite::SQLite(), file)
+    con <- DBI::dbConnect(RSQLite::SQLite(), file, extended_types = TRUE)
     message(paste0("Connected to ", con@dbname, 
                    "\nPlease do not use real patient data."))
   }
@@ -940,7 +953,7 @@ create_mock_database <- function(file,
       total = 8)
     progress_bar$tick(0)
   }
-  mock_db <- DBI::dbConnect(RSQLite::SQLite(), file)
+  mock_db <- DBI::dbConnect(RSQLite::SQLite(), file, extended_types = TRUE)
   
   .build_tally_table(mock_db)
   dplyr::copy_to(
@@ -952,31 +965,29 @@ create_mock_database <- function(file,
   )
   if(!silent) progress_bar$tick()
   
-  drug_data <- .prepare_example_drug_records()
-  inpatient_data <- .prepare_example_inpatient_records()
   icd10cm <- download_icd10cm(silent = TRUE)
   if(!silent) progress_bar$tick()
   
   load_medications(
     conn = mock_db, 
-    prescriptions = drug_data$drug_rx,
-    administrations = drug_data$drug_admins,
+    prescriptions = .ramses_mock_dataset$drug_rx,
+    administrations = .ramses_mock_dataset$drug_admins,
     overwrite = TRUE, 
     silent = TRUE
   )
   if(!silent) progress_bar$tick()
   load_inpatient_episodes(
     conn = mock_db, 
-    patients_data = inpatient_data$patients,
-    episodes_data = inpatient_data$episodes,
-    wards_data = inpatient_data$ward_movements,
+    patients_data = .ramses_mock_dataset$patients,
+    episodes_data = .ramses_mock_dataset$episodes,
+    wards_data = Ramses::inpatient_wards,
     overwrite = TRUE
   ) 
   if(!silent) progress_bar$tick()
   suppressWarnings(
     load_inpatient_diagnoses(
       conn = mock_db,
-      diagnoses_data = inpatient_data$diagnoses,
+      diagnoses_data = .ramses_mock_dataset$diagnoses,
       diagnoses_lookup = icd10cm,
       overwrite = TRUE
     )
@@ -984,15 +995,15 @@ create_mock_database <- function(file,
   if(!silent) progress_bar$tick()
   load_inpatient_investigations(
     conn = mock_db,
-    investigations_data = inpatient_data$investigations,
+    investigations_data = Ramses::inpatient_investigations,
     overwrite = TRUE
   )
   if(!silent) progress_bar$tick()
   load_inpatient_microbiology(
     conn = mock_db,
-    specimens = inpatient_data$micro$specimens, 
-    isolates = inpatient_data$micro$isolates,
-    susceptibilities = inpatient_data$micro$susceptibilities,
+    specimens = .ramses_mock_dataset$micro$specimens, 
+    isolates = .ramses_mock_dataset$micro$isolates,
+    susceptibilities = .ramses_mock_dataset$micro$susceptibilities,
     overwrite = TRUE
   )
   if(!silent) progress_bar$tick()
@@ -1220,320 +1231,6 @@ create_mock_database <- function(file,
   )
 }
 
-
-.prepare_example_drug_records <- function() {
-  
-  drug_rx <- Ramses::drug_prescriptions
-  drug_admins <- Ramses::drug_administrations
-  
-  drug_rx$antiinfective_type <- "antibacterial"
-  drug_admins$antiinfective_type <- "antibacterial"
-  drug_rx$drug_code <- gsub("Vancomycin protocol", "Vancomycin", drug_rx$tr_DESC)
-  drug_rx$drug_code <- as.character(AMR::as.ab(drug_rx$drug_code))
-  drug_rx$drug_name <- AMR::ab_name(drug_rx$drug_code)
-  drug_rx$drug_group <- AMR::ab_group(drug_rx$drug_code)
-  ## recoding route of administration
-  drug_rx <- dplyr::mutate(
-    drug_rx, 
-    ATC_route = dplyr::case_when(
-      route %in% c(NULL) ~ "Implant", 
-      route %in% c("NEB", "INHAL") ~ "Inhal", 
-      route %in% c("TOP", "EYE", "EYEL", "EYER", "EYEB", 
-                   "EAR", "EARL", "EARR", "EARB") ~ "Instill", 
-      route %in% c("NASAL", "NOST", "NOSTL", "NOSTR", "NOSTB") ~ "N", 
-      route %in% c("ORAL", "NAS", "PEG") ~ "O", 
-      route %in% c("IV", "IVB", "IVI", "IMI", "IT", "IVT") ~ "P", 
-      route %in% c("PR") ~ "R", 
-      route %in% c("BUCC", "SB", "OROM", "SUBL") ~ "SL", 
-      route %in% c("SC", "ID") ~ "TD", 
-      route %in% c("PV") ~ "V", 
-      TRUE ~ "NA_character_"
-    ))
-  
-  ## compute_ddd
-  drug_rx$ATC_code <- AMR::ab_atc(drug_rx$drug_code, only_first = TRUE)
-  
-  # prepare DDD extraction
-  compound_strength_lookup <- data.frame(list(
-    drug_code = c("AMC", "AMC", "TZP", "SMX"),
-    route = c("oral", "oral", "oral", "oral"),
-    dose = c(625, 1.2, 4.5, 480),
-    units = c("mg", "g", "g", "mg"),
-    strength = c(500, 1, 4, 400),
-    basis_of_strength = c("AMX", "AMX", "PIP", "SMX")
-  ), stringsAsFactors = F)
-  
-  drug_rx <- merge(drug_rx, compound_strength_lookup, all.x = T)
-  drug_rx <- drug_rx %>% 
-    dplyr::mutate(strength = dplyr::if_else(is.na(strength), dose, strength),  
-           basis_of_strength = dplyr::if_else(is.na(basis_of_strength),
-                                       as.character(drug_code), basis_of_strength))
-  
-  drug_rx <- merge(drug_rx, reference_drug_frequency, by = "frequency", all.x = T)
-  
-  # computing the prescription DDD the reference DDD from the ATC
-  drug_rx <- drug_rx %>% 
-    dplyr::mutate(DDD = compute_DDDs(
-      ATC_code = AMR::ab_atc(basis_of_strength, only_first = TRUE),
-      ATC_administration = ATC_route,
-      dose = strength * daily_frequency,
-      unit = units, 
-      silent = TRUE),
-      duration_days = dplyr::if_else(
-        daily_frequency == -1,
-        "one-off", 
-        dplyr::if_else(
-          round(difftime(prescription_end, 
-                         prescription_start, 
-                         units = "days")) == 1,
-          "1 day", 
-          paste(round(difftime(prescription_end, 
-                               prescription_start, 
-                               units = "days")),
-                "days")
-          )
-        )) %>% 
-    dplyr::transmute(patient_id,
-              prescription_id,
-              prescription_text = paste0(
-                drug_name, " ", route, " ", dose, units,
-                " ",  duration_days),
-              drug_code,
-              drug_name = drug_name,
-              drug_display_name = drug_name,
-              drug_group,
-              ATC_code,
-              ATC_route,
-              antiinfective_type,
-              authoring_date,
-              prescription_start,
-              prescription_end,
-              prescription_status = "completed",
-              prescription_context = "inpatient",
-              dose,
-              unit = units,
-              route,
-              frequency,
-              daily_frequency,
-              DDD)
-  
-  
-  ## prepare_drug_admin
-  drug_admins$drug_code <- gsub("Vancomycin protocol", "Vancomycin", drug_admins$tr_DESC)
-  drug_admins$drug_code <- as.character(AMR::as.ab(drug_admins$drug_code))
-  drug_admins$drug_name <- AMR::ab_name(drug_admins$drug_code)
-  drug_admins$drug_group <- AMR::ab_group(drug_admins$drug_code)
-  
-  # recoding route of administration
-  drug_admins <- dplyr::mutate(
-    drug_admins, 
-    ATC_route = dplyr::case_when(
-      route %in% c(NULL) ~ "Implant", 
-      route %in% c("NEB", "INHAL") ~ "Inhal", 
-      route %in% c("TOP", "EYE", "EYEL", "EYER", "EYEB", 
-                   "EAR", "EARL", "EARR", "EARB") ~ "Instill", 
-      route %in% c("NASAL", "NOST", "NOSTL", "NOSTR", "NOSTB") ~ "N", 
-      route %in% c("ORAL", "NAS", "PEG") ~ "O", 
-      route %in% c("IV", "IVB", "IVI", "IMI", "IT", "IVT") ~ "P", 
-      route %in% c("PR") ~ "R", 
-      route %in% c("BUCC", "SB", "OROM", "SUBL") ~ "SL", 
-      route %in% c("SC", "ID") ~ "TD", 
-      route %in% c("PV") ~ "V", 
-      TRUE ~ "NA_character_"
-    ))
-  drug_admins$ATC_code <- AMR::ab_atc(drug_admins$drug_code, only_first = TRUE)
-  
-  drug_admins <- merge(drug_admins, compound_strength_lookup, all.x = T)
-  drug_admins <- drug_admins %>% 
-    dplyr::mutate(
-      strength = dplyr::if_else(is.na(strength), dose, strength),
-      basis_of_strength = dplyr::if_else(is.na(basis_of_strength),
-                                  as.character(drug_code), basis_of_strength))
-  
-  drug_admins <- drug_admins %>% 
-    dplyr::mutate(
-      DDD = compute_DDDs(
-      ATC_code = AMR::ab_atc(basis_of_strength, only_first = TRUE),
-      ATC_administration = ATC_route,
-      dose = dose,
-      unit = units,
-      silent = TRUE
-    ))
-  
-  if ( utils::packageVersion("dplyr") >= "1.0.0" ) {
-    drug_admins <- drug_admins %>% 
-      dplyr::group_by(
-        patient_id,
-        drug_code,
-        route,
-        dose,
-        units,
-        administration_date) %>% 
-      dplyr::mutate(administration_id = dplyr::cur_group_id()) %>% 
-      dplyr::ungroup()
-  } else {
-    drug_admins <- drug_admins %>% 
-      dplyr::group_by(
-        patient_id,
-        drug_code,
-        route,
-        dose,
-        units,
-        administration_date) %>% 
-      dplyr::mutate(administration_id = dplyr::group_indices()) %>% 
-      dplyr::ungroup()
-  }
-  
-  drug_admins <- dplyr::transmute(drug_admins,
-      patient_id,
-      administration_id = as.character(administration_id),
-      prescription_id,
-      administration_text = paste0(
-          drug_name, " ", route, " ", dose, units),
-      drug_code,
-      drug_name,
-      drug_display_name = drug_name,
-      drug_group,
-      antiinfective_type,
-      ATC_code,
-      ATC_route,
-      dose,
-      unit = units,
-      route,
-      administration_date,
-      administration_status = "completed",
-      DDD
-    )
-  
-  return(list(
-    drug_rx = drug_rx,
-    drug_admins = drug_admins
-  ))
-  
-}
-
-.prepare_example_inpatient_records <- function() {
-  
-  ip_patients <- Ramses::patients
-  ip_diagnoses <- Ramses::inpatient_diagnoses
-  ip_diagnoses <- dplyr::filter(ip_diagnoses, !is.na(icd_code))
-  
-  ip_episodes <- Ramses::inpatient_episodes
-  ip_episodes <- ip_episodes %>% 
-    dplyr::filter(!is.na(spell_id)) %>% 
-    dplyr::group_by(spell_id) %>% 
-    dplyr::mutate(last_episode_in_spell_indicator = dplyr::if_else(
-      episode_number == max(episode_number),
-      1, 2)) %>% 
-    dplyr::ungroup()
-  
-  micro <- list()
-  micro$raw <- Ramses::inpatient_microbiology
-  micro$raw <- micro$raw %>% 
-    dplyr::mutate(
-      organism_code = AMR::as.mo(dplyr::if_else(
-        organism_display_name == "No growth",
-        NA_character_,
-        organism_display_name)),
-      agent_code = AMR::as.ab(agent_display_name)
-    ) %>% 
-    dplyr::mutate(organism_name = AMR::mo_name(organism_code),
-                  agent_name = AMR::ab_name(agent_code))
-  micro$raw <- micro$raw %>% 
-    dplyr::mutate(specimen_type_code = dplyr::case_when(
-      specimen_type_display == "Blood Culture" ~ 
-        "446131002", # Blood specimen obtained for blood culture
-      specimen_type_display == "Faeces" ~ 
-        "119339001", # Stool specimen
-      specimen_type_display == "MRSA Screen" ~ 
-        "697989009", # Anterior nares swab 
-      specimen_type_display == "Urine" ~ 
-        "122575003", # Urine specimen
-      TRUE ~ NA_character_
-    )) %>% 
-    dplyr::left_join(
-      dplyr::transmute(reference_specimen_type,
-                       specimen_type_code = conceptId,
-                       specimen_type_name = pt_term),
-      by = "specimen_type_code"
-    )
-  micro$specimens <- micro$raw %>% 
-    dplyr::transmute(specimen_id,
-              patient_id,
-              status = "available",
-              specimen_datetime,
-              specimen_type_code,
-              specimen_type_name,
-              specimen_type_display) %>% 
-    dplyr::distinct() # Removing duplicates created by multiple isolates and susceptibility testing
-  
-  micro$isolates <- micro$raw %>% 
-    dplyr::transmute(isolate_id,
-              specimen_id,
-              patient_id,
-              organism_code,
-              organism_name,
-              organism_display_name,
-              isolation_datetime) %>% 
-    dplyr::distinct() # Removing duplicates created by susceptibility testing
-  
-  micro$susceptibilities <- micro$raw %>% 
-    dplyr::filter(!is.na(organism_code)) %>%  # Remove no growth
-    dplyr::transmute(isolate_id,
-              specimen_id,
-              patient_id,
-              organism_code,
-              organism_name,
-              organism_display_name,
-              agent_code,
-              agent_name,
-              agent_display_name,
-              rsi_code,
-              concept_code = NA_character_) %>% 
-    dplyr::distinct()
-  micro$raw <- NULL
-  list(
-    patients = ip_patients,
-    episodes = ip_episodes,
-    diagnoses = ip_diagnoses,
-    ward_movements = Ramses::inpatient_wards,
-    investigations = Ramses::inpatient_investigations,
-    micro = micro
-  )
-}
-
-
-#' Format datetime and time fields as character according to SQLite specification
-#'
-#' @description SQLite requires a specific format for datetime strings. This 
-#' function transforms all POSIXct fields of a data frame into the correct
-#' character format.
-#' @param conn a database connection
-#' @param data_frame a data frame to format
-#' @return a formatted data frame
-#' @noRd
-#' @seealso https://www.sqlite.org/lang_datefunc.html#time_values
-.format_str_time_sqlite.tbl_df <- function(conn, data_frame) {
-  if ( is(conn, "SQLiteConnection" )) {
-    for(i in which(vapply(data_frame, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
-      data_frame[[i]] <- .format_str_time_sqlite.POSIXct(data_frame[[i]])
-    }
-    for(i in which(vapply(data_frame, is, class2 = "Date", FUN.VALUE = logical(1)))) {
-      data_frame[[i]] <- as.character(data_frame[[i]])
-    }
-  }
-  
-  data_frame
-}
-
-.format_str_time_sqlite.POSIXct <- function(x) {
-  paste0(
-    as.character(x, format = "%Y-%m-%d %H:%M:%S"),
-    substr(as.character(x, format = "%z"), 0, 3),
-    ":",
-    substr(as.character(x, format = "%z"), 4, 5)
-  )
-}
 
 .format_id_as_character <- function(x) {
   

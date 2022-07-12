@@ -46,29 +46,27 @@ test_that("Ramses on SQLite 2", {
 
   # > validate functions --------------------------------------------------
   
-  drug_data <- Ramses:::.prepare_example_drug_records()
-  inpatient_data <- Ramses:::.prepare_example_inpatient_records()
   icd10cm <- download_icd10cm()
   conSQLite <- suppressWarnings(connect_local_database("test.sqlite"))
   
-  expect_null(validate_prescriptions(drug_data$drug_rx))
-  expect_null(validate_administrations(drug_data$drug_admins))
+  expect_null(validate_prescriptions(.ramses_mock_dataset$drug_rx))
+  expect_null(validate_administrations(.ramses_mock_dataset$drug_admins))
   
   expect_warning(
     validate_inpatient_diagnoses(
-      diagnoses_data = inpatient_data$diagnoses,
+      diagnoses_data = .ramses_mock_dataset$diagnoses,
       diagnoses_lookup = icd10cm))
-  expect_true(validate_investigations(inpatient_data$investigations))
+  expect_true(validate_investigations(inpatient_investigations))
   expect_true(validate_microbiology(
-    inpatient_data$micro$specimens,
-    inpatient_data$micro$isolates,
-    inpatient_data$micro$susceptibilities
+    .ramses_mock_dataset$micro$specimens,
+    .ramses_mock_dataset$micro$isolates,
+    .ramses_mock_dataset$micro$susceptibilities
     ))
-  expect_true(validate_inpatient_episodes(inpatient_data$patients,
-                                          inpatient_data$episodes))
-  expect_true(validate_inpatient_episodes(patients = inpatient_data$patients,
-                                          episodes = inpatient_data$episodes,
-                                          wards = inpatient_data$ward_movements))
+  expect_true(validate_inpatient_episodes(.ramses_mock_dataset$patients,
+                                          .ramses_mock_dataset$episodes))
+  expect_true(validate_inpatient_episodes(patients = .ramses_mock_dataset$patients,
+                                          episodes = .ramses_mock_dataset$episodes,
+                                          wards = inpatient_wards))
   
   # > database loading functions ------------------------------------------
   
@@ -713,31 +711,6 @@ test_that("SQLite does transitive closure", {
   file.remove("test.sqlite")  
 })
 
-
-# > .format_str_time_sqlite ----------------------------------------------------
-
-test_that(".format_str_time_sqlite.tbl_df", {
-  
-  conSQLite <- suppressWarnings(connect_local_database("test.sqlite"))
-  test_posixct <- dplyr::tibble(t_start = as.POSIXct("2017-07-02 01:15:46", 
-                                                     tz = "Europe/London"))
-  test_posixct <- .format_str_time_sqlite.tbl_df(conSQLite, test_posixct)
-  expect_equal(
-    test_posixct,
-    dplyr::tibble(t_start = "2017-07-02 01:15:46+01:00")
-  )
-  dplyr::copy_to(conSQLite, 
-                 test_posixct,
-                 overwrite = TRUE)
-  expect_equal(
-    collect_ramses_tbl(tbl(conSQLite, "test_posixct")),
-    dplyr::tibble(t_start = structure(1498954546, class = c("POSIXct", "POSIXt"), tzone = ""))
-  )
-  
-  DBI::dbDisconnect(conSQLite)
-  file.remove("test.sqlite")  
-})
-
 # > edge classification  --------------------------------------------------
 
 test_that("SQLite drug_prescriptions_edges", {
@@ -834,43 +807,41 @@ test_that("Ramses on PosgreSQL", {
          DBI::dbRemoveTable, 
          conn = conPostgreSQL)
 
-  drug_data <- Ramses:::.prepare_example_drug_records()
-  inpatient_data <- Ramses:::.prepare_example_inpatient_records()
   icd10cm <- download_icd10cm()
   
   expect_invisible(
     load_medications(conn = conPostgreSQL, 
-                     prescriptions = drug_data$drug_rx,
-                     administrations = drug_data$drug_admins,
+                     prescriptions = .ramses_mock_dataset$drug_rx,
+                     administrations = .ramses_mock_dataset$drug_admins,
                      overwrite = TRUE)
   )
   
   
   expect_invisible(
     load_inpatient_episodes(conn = conPostgreSQL,
-                            patients_data = inpatient_data$patients,
-                            episodes_data = inpatient_data$episodes,
-                            wards_data = inpatient_data$ward_movements,
+                            patients_data = .ramses_mock_dataset$patients,
+                            episodes_data = .ramses_mock_dataset$episodes,
+                            wards_data = inpatient_wards,
                             overwrite = TRUE)
   )
   expect_invisible(
     expect_warning(
       load_inpatient_diagnoses(conn = conPostgreSQL,
-                               diagnoses_data = inpatient_data$diagnoses,
+                               diagnoses_data = .ramses_mock_dataset$diagnoses,
                                diagnoses_lookup = icd10cm,
                                overwrite = TRUE)))
   expect_invisible(
     load_inpatient_investigations(
       conn = conPostgreSQL,
-      investigations_data = inpatient_data$investigations,
+      investigations_data = inpatient_investigations,
       overwrite = TRUE
     ))
   expect_invisible(
     load_inpatient_microbiology(
       conn = conPostgreSQL,
-      inpatient_data$micro$specimens,
-      inpatient_data$micro$isolates,
-      inpatient_data$micro$susceptibilities,
+      .ramses_mock_dataset$micro$specimens,
+      .ramses_mock_dataset$micro$isolates,
+      .ramses_mock_dataset$micro$susceptibilities,
       overwrite = TRUE
     )
   )

@@ -15,13 +15,13 @@ FROM (
                     WHEN
                             ([relation_type] IN ('1', '5', '6')
                                 AND
-                             (STRFTIME('%s', [to_start]) - STRFTIME('%s', [from_start])) / 3600 BETWEEN 0 AND @max_combination_start_gap
-                                AND ABS(STRFTIME('%s', [to_authoring]) - STRFTIME('%s', [from_authoring])) / 3600 <
+                             ([to_start] - [from_start]) / 3600 BETWEEN 0 AND @max_combination_start_gap
+                                AND ABS([to_authoring] - [from_authoring]) / 3600 <
                                     @max_combination_authoring_gap)
                             OR ([relation_type] = '2'
                             AND
-                                (STRFTIME('%s', [to_start]) - STRFTIME('%s', [from_start])) / 3600 BETWEEN 0 AND @max_combination_start_gap
-                            AND ABS(STRFTIME('%s', [to_authoring]) - STRFTIME('%s', [from_authoring])) / 3600 <
+                                ([to_start] - [from_start]) / 3600 BETWEEN 0 AND @max_combination_start_gap
+                            AND ABS([to_authoring] - [from_authoring]) / 3600 <
                                 @max_combination_authoring_gap
                             AND [from_drug] = [to_drug])
                         THEN 'combination'
@@ -30,7 +30,7 @@ FROM (
                             OR
                             ([relation_type] IN ('1', '2', '3', '7')
                                 AND
-                             ABS(STRFTIME('%s', [to_start]) - STRFTIME('%s', [from_end])) / 3600 <
+                             ABS([to_start] - [from_end]) / 3600 <
                              @max_continuation_gap)
                         THEN 'continuation'
                     ELSE NULL
@@ -54,17 +54,17 @@ FROM (
                              WHEN (a.[daily_frequency] = -1) and (b.[daily_frequency] = -1) THEN '1'
                              WHEN (a.[daily_frequency] = -1) and (b.[daily_frequency] <> -1) THEN '2'
                              WHEN (a.[daily_frequency] <> -1) and (b.[daily_frequency] = -1) and
-                                  (DATETIME(a.[prescription_end]) < DATETIME(b.[prescription_start])) THEN '3'
+                                  (a.[prescription_end] < b.[prescription_start]) THEN '3'
                              WHEN (a.[daily_frequency] <> -1) and (b.[daily_frequency] = -1) and
-                                  (DATETIME(a.[prescription_end]) >= DATETIME(b.[prescription_start])) THEN '4'
+                                  (a.[prescription_end] >= b.[prescription_start]) THEN '4'
                              WHEN (a.[daily_frequency] <> -1) and (b.[daily_frequency] <> -1) and
-                                  (DATETIME(a.[prescription_end]) >= DATETIME(b.[prescription_end])) THEN '5'
+                                  (a.[prescription_end] >= b.[prescription_end]) THEN '5'
                              WHEN (a.[daily_frequency] <> -1) and (b.[daily_frequency] <> -1) and
-                                  (DATETIME(a.[prescription_end]) >= DATETIME(b.[prescription_start])) and
-                                  (DATETIME(a.[prescription_end]) < DATETIME(b.[prescription_end]))
+                                  (a.[prescription_end] >= b.[prescription_start]) and
+                                  (a.[prescription_end] < b.[prescription_end])
                                  THEN '6'
                              WHEN (a.[daily_frequency] <> -1) and (b.[daily_frequency] <> -1) and
-                                  (DATETIME(a.[prescription_end]) < DATETIME(b.[prescription_start])) THEN '7'
+                                  (a.[prescription_end] < b.[prescription_start]) THEN '7'
                              ELSE NULL
                       END                                                                         AS [relation_type]
                        , CASE WHEN a.[ATC_route] = 'P' and b.[ATC_route] <> 'P' THEN 1 ELSE 0 END AS switch_oral
@@ -74,7 +74,7 @@ FROM (
                        ON a.[patient_id] = b.[patient_id]
                            and a.[prescription_id] <> b.[prescription_id]
                            and a.[antiinfective_type] = b.[antiinfective_type]
-                           and DATETIME(a.[prescription_start]) <= DATETIME(b.[prescription_start])
+                           and a.[prescription_start] <= b.[prescription_start]
               ) rx_edges
      ) final
 
