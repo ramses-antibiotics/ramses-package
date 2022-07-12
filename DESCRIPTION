@@ -27,7 +27,7 @@ Depends:
     R (>= 3.2.0),
     AMR (>= 1.8.0)
 Imports: 
-    RSQLite (>= 2.2.12),
+    duckdb (>= 0.4.0),
     DBI,
     dplyr (>= 0.8.3),
     dbplyr (>= 1.4.2),

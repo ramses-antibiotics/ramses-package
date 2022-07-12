@@ -18,7 +18,7 @@ An object of class \code{SQLiteConnection}.
 }
 \description{
 Create a local database on disk using 
-\code{\link[RSQLite]{SQLite}()} and load synthetic data ready for analysis.
+\code{\link[duckdb]{duckdb}()} and load synthetic data ready for analysis.
 }
 \details{
 This function creates a database on disk at the desired path. 

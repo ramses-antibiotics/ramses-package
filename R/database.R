@@ -534,8 +534,9 @@ load_medications <- function(
   .remove_db_tables(conn, "drug_prescriptions_edges")
   
   if( is(conn, "SQLiteConnection") ) {
+    # TODO DEPRECATE
     statement_edges <- .read_sql_syntax("drug_prescriptions_edges_SQLite.sql")
-  } else if ( is(conn, "PqConnection") ) {
+  } else if ( is(conn, "PqConnection") | is(conn, "duckdb_connection") ) {
     statement_edges <- .read_sql_syntax("drug_prescriptions_edges_PostgreSQL.sql")
   } else {
     .throw_error_method_not_implemented(".create_table_drug_prescriptions_edges()", class(conn))
@@ -876,49 +877,56 @@ create_therapy_episodes <- function(
 # Database management -----------------------------------------------------
 
 
-#' Create or connect to a local SQLite database
+#' Create or connect to a local DuckDB database
 #'
-#' @description Create a local database in memory or on disk using \code{\link[RSQLite]{SQLite}()}. 
-#' This is the ideal method to experiment on a small scale or for testing purposes.
+#' @description Create a local database in memory or on disk using \code{\link[duckdb]{duckdb}()}. 
+#' This is the ideal method to experiment on a small scale or for testing purposes. \code{duckdb} 
+#' is a relational database similar to SQLite, with full support for date and datetime data.
 #'
-#' @details This function creates a database on disk at the desired path. The database and
-#' its content will persist after it is disconnected.
+#' @details This function creates a database on disk at the desired path. 
+#' The database and its content will persist after it is disconnected.
 #'     
 #' @section Warning:     
 #' This method does not provide any encryption or password protection. You should only use this
 #' method with mock data unless you operate within a secure data enclave.
 #'
-#' @param file A file path to an existing or new database file with a \code{.sqlite} extension.
-#' @return A database connection object of class \code{SQLiteConnection}.
-#' @seealso The dbplyr website provides excellent guidance on how to connect to databases: 
-#' \url{https://db.rstudio.com/getting-started/connect-to-database}
+#' @param file A file path to an existing or new database file with a
+#'  ".duckdb" extension.
+#' @return A database connection object of class \code{duckdb_connection}.
+#' @seealso The \code{duckdb} website provides excellent guidance on how to
+#' connect to databases: 
+#' \url{https://duckdb.org/docs/api/r}
 #' @importFrom DBI dbConnect dbDisconnect
 #' @export
 #'
 #' @examples
 #'     # Create database and load data
-#'     con <- connect_local_database("ramses-db.sqlite")
+#'     con <- connect_local_database("ramses-db.duckdb")
 #'     
 #'     dplyr::copy_to(dest = con, df = reference_aware, name = "reference_aware", 
 #'                    overwrite = FALSE, temporary = FALSE)      
 #'     
 #'     # Close connection to database
-#'     DBI::dbDisconnect(con)
+#'     DBI::dbDisconnect(con, shutdown=TRUE)
 #'     
 #'     # Connect to the database again and show data
-#'     con <- connect_local_database("ramses-db.sqlite")
+#'     con <- connect_local_database("ramses-db.duckdb")
 #'     dplyr::tbl(con, "reference_aware")
-#'     DBI::dbDisconnect(con)
-#'     file.remove("ramses-db.sqlite")
+#'     DBI::dbDisconnect(con, shutdown=TRUE)
+#'     file.remove("ramses-db.duckdb")
 connect_local_database <- function(file) {
   if(!file.exists(file)){
-    con <- DBI::dbConnect(RSQLite::SQLite(), file, extended_types = TRUE)
+    con <- DBI::dbConnect(duckdb::duckdb(), 
+                          dbdir = file, 
+                          timezone_out = Sys.timezone())
     .build_tally_table(con)
-    message(paste0("SQLite database created in \n", con@dbname, 
+    message(paste0("DuckDB database created in \n", con@driver@dbdir,
                    "\nPlease do not use real patient data."))
   } else {
-    con <- DBI::dbConnect(RSQLite::SQLite(), file, extended_types = TRUE)
-    message(paste0("Connected to ", con@dbname, 
+    con <- DBI::dbConnect(duckdb::duckdb(), 
+                          dbdir = file, 
+                          timezone_out = Sys.timezone())
+    message(paste0("Connected to local DuckDB database ", con@driver@dbdir,
                    "\nPlease do not use real patient data."))
   }
   
@@ -926,11 +934,10 @@ connect_local_database <- function(file) {
 }
 
 
-
 #' Create a mock database for training/demonstration purposes
 #'
 #' @description Create a local database on disk using 
-#' \code{\link[RSQLite]{SQLite}()} and load synthetic data ready for analysis.
+#' \code{\link[duckdb]{duckdb}()} and load synthetic data ready for analysis.
 #' @details This function creates a database on disk at the desired path. 
 #' The database and its content will persist after it is disconnected.
 #'
@@ -953,7 +960,9 @@ create_mock_database <- function(file,
       total = 8)
     progress_bar$tick(0)
   }
-  mock_db <- DBI::dbConnect(RSQLite::SQLite(), file, extended_types = TRUE)
+  mock_db <- DBI::dbConnect(duckdb::duckdb(), 
+                            dirdb = file, 
+                            timezone_out = Sys.timezone())
   
   .build_tally_table(mock_db)
   dplyr::copy_to(
