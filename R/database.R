@@ -1158,25 +1158,6 @@ create_mock_database <- function(file,
 }
 
 
-.create_ramses_tc_graphs <- function(conn){
-  UseMethod(".create_ramses_tc_graphs")
-}
-
-.create_ramses_tc_graphs.SQLiteConnection <- function(conn){
-  .remove_db_tables(conn, "ramses_tc_group")
-  job <- .split_sql_batch(.read_sql_syntax("create_ramses_tc_group_SQLite.sql"))
-  for(i in seq_along(job)) {
-    DBI::dbExecute(conn, job[i])
-  }
-}
-
-.create_ramses_tc_graphs.PqConnection <- function(conn){
-  .remove_db_tables(conn, "ramses_tc_group")
-  job <- .split_sql_batch(.read_sql_syntax("create_ramses_tc_group_SQLite.sql"))
-  for(i in seq_along(job)) {
-    DBI::dbExecute(conn, job[i])
-  }
-}
 
 .nrow_sql_table <- function(conn, table){
   nrow <- tbl(conn, table) %>% 
