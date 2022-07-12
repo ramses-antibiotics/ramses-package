@@ -230,7 +230,8 @@ clinical_feature_last(
   x = example_sepsis,
   observation_code = "8310-5",
   hours = 6
-) %>% therapy_table(collect = TRUE) %>% 
+) %>% 
+  therapy_table(collect = TRUE) %>% 
   mutate(
     febrile = case_when(
       last_temperature_6h < 36 ~ "hypothermic",
