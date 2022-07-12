@@ -99,7 +99,6 @@ reference:
   - create_mock_database
   - starts_with("bridge_")
   - create_therapy_episodes
-  - collect_ramses_tbl
 - title: Index
   desc:  All functions in alphabetical order
   contents:

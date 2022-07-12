@@ -1251,64 +1251,6 @@ create_mock_database <- function(file,
   x
 }
 
-#' Collect SQL tibble with correct date-time specifications
-#' 
-#' @description This wrapper function for \link[dplyr]{collect} will convert
-#' relevant character columns to \code{Date} and \code{POSIXct} type when collecting 
-#' SQLite tables. This addresses the absence of date and time data types
-#' in SQLite. Tables from other relational database systems are not affected.
-#' @param tbl a `tbl_sql` object
-#' @return a `tbl_df` object
-#' @seealso \url{https://www.sqlite.org/datatype3.html#date_and_time_datatype}
-#' @export
-collect_ramses_tbl <- function(tbl) {
-  if(is(tbl, "tbl_SQLiteConnection")) {
-    tbl_df <- dplyr::collect(tbl)
-    DATETIME_FIELDS <- c(
-      "prescription_start",
-      "prescription_end",
-      "authoring_date",
-      "administration_date",
-      "therapy_start",
-      "therapy_end",
-      "admission_date",
-      "discharge_date",
-      "episode_start",
-      "episode_end",
-      "ward_start",
-      "ward_end",
-      "t_start",
-      "t_end",
-      "isolation_datetime", 
-      "specimen_datetime",
-      "start_time",
-      "end_time"
-    )
-    DATETIME_FIELDS <- DATETIME_FIELDS[
-      which(DATETIME_FIELDS %in% colnames(tbl_df))
-      ]
-    for(var in DATETIME_FIELDS){
-      tbl_df[[var]] <- gsub("[:]([0-9]{2})$", "\\1", tbl_df[[var]])
-      tbl_df[[var]] <- as.POSIXct(tbl_df[[var]], format = "%Y-%m-%d %H:%M:%S%z")
-    }
-    
-    DATE_FIELDS <- c(
-      "date_of_birth", 
-      "date_of_death"
-    )
-    DATE_FIELDS <- DATE_FIELDS[
-      which(DATE_FIELDS %in% colnames(tbl_df))
-      ]
-    for(var in DATE_FIELDS){
-      tbl_df[[var]] <- as.Date(tbl_df[[var]])
-    }
-    
-    return(tbl_df)
-  } else {
-    dplyr::collect(tbl)
-  }
-}
-
 
 #' Create database bridge tables
 #'

@@ -43,7 +43,7 @@ setMethod(
       dplyr::left_join(tbl(input_patient@conn, "drug_therapy_episodes"), 
                        by = c("patient_id", "therapy_id")) %>%
       dplyr::arrange(patient_id, prescription_start) %>% 
-      collect_ramses_tbl()
+      dplyr::collect()
     
     # Calculate the date range the timeline should display by default
     
@@ -120,7 +120,7 @@ setMethod(
       dplyr::left_join(tbl(input_patient@conn, "drug_therapy_episodes"), 
                        by = c("patient_id", "therapy_id")) %>%
       dplyr::arrange(patient_id, prescription_start) %>% 
-      collect_ramses_tbl()
+      collect()
     
     .therapy_timeline_create(
       medication_requests_df = medication_requests_inclusion,
@@ -233,7 +233,7 @@ setMethod(
                                     "Therapy episode: ", therapy_id, ", position: ", therapy_rank), 
                      start = prescription_start,
                      end = prescription_end,
-                     type = ifelse(daily_frequency < 0, 'point', 'range'),
+                     type = dplyr::if_else(daily_frequency < 0, 'point', 'range'),
                      group = 3,
                      subgroup = as.character(therapy_rank),
                      className = dplyr::case_when(
@@ -276,7 +276,7 @@ setMethod(
       tbl(input_patient@conn, "microbiology_isolates"),
       by = c("patient_id", "specimen_id")
     ) %>% 
-    collect_ramses_tbl()
+    dplyr::collect()
   
   if(nrow(micro) == 0){
     return(data.frame())
@@ -343,69 +343,43 @@ setMethod(
     dplyr::filter(patient_id == !!input_patient@id) %>% 
     dplyr::inner_join(tbl(input_patient@conn, "reference_icd_infections"), 
                by = c("icd_code")) %>%
-    dplyr::compute()
+    dplyr::collect()
   
   # If no infection diagnosis is present, return empty data frame.
   # It will get ignore when feeding into timevis
-  if(nrow(dplyr::collect(diag)) == 0){
+  if(nrow(diag) == 0){
     return(data.frame())
   } 
-  
-  if( is(diag, "tbl_SQLiteConnection") ) {
-    # combining episodes together for diagnoses that span several episodes
-    diag <- diag %>%
-      dplyr::mutate(
-        prim_diag = dplyr::if_else(diagnosis_position == 1, 1, 0),
-        grp = dplyr::sql("
-         CASE WHEN ABS(strftime('%s', LAG([episode_end], 1, 0)
-                       OVER(PARTITION BY patient_id, icd_code
-                            ORDER BY [episode_start]))
-                       - strftime('%s', [episode_start])) <= (6 * 3600) 
-         THEN NULL
-         ELSE ROW_NUMBER() OVER(ORDER BY [episode_start]) END")) %>% 
-      dplyr::mutate(grp = dplyr::sql(
-        "MAX(grp) 
-         OVER(PARTITION BY patient_id, icd_code, prim_diag
-         ORDER BY patient_id, [episode_start])"
-      )) 
-  } else if( is(diag, "tbl_PqConnection") ) {
-    # combining episodes together for diagnoses that span several episodes
-    diag <- diag %>%
-      dplyr::mutate(diagnosis_episode_end = dplyr::sql("
-      LAG(episode_end, 1)
-      OVER(PARTITION BY patient_id, icd_code
-           ORDER BY episode_start)")) %>% 
-      dplyr::mutate(
-        prim_diag = dplyr::if_else(diagnosis_position == 1, 1, 0),
-        grp = dplyr::sql("
-         CASE WHEN ABS( EXTRACT(EPOCH FROM( 
-               diagnosis_episode_end::TIMESTAMP
-                - episode_start::TIMESTAMP ))) <= (6 * 3600) 
-         THEN NULL
-         ELSE ROW_NUMBER() OVER(ORDER BY episode_start) END")) %>% 
-      dplyr::mutate(grp = dplyr::sql(
-        "MAX(grp) 
-         OVER(PARTITION BY patient_id, icd_code, prim_diag
-              ORDER BY patient_id, episode_start)"
-      )) %>% 
-      dplyr::select(-diagnosis_episode_end)
-  } else {
-    .throw_error_method_not_implemented(".therapy_timeline_get_diagnoses()", class(diag))
-  }
-  
+
+  # combining episodes together for diagnoses that span several episodes
   diag <- diag %>%
+    dplyr::group_by(.data$patient_id, .data$icd_code) %>% 
+    dplyr::mutate(diagnosis_episode_end = dplyr::lag(.data$episode_end, 
+                                                     n = 1, 
+                                                     order_by = .data$episode_start)) %>% 
+    dplyr::ungroup() %>% 
+    dplyr::mutate(
+      prim_diag = dplyr::if_else(.data$diagnosis_position == 1, 1, 0),
+      grp = dplyr::if_else(
+        abs(as.numeric(.data$diagnosis_episode_end - .data$episode_start, units = "secs")) <= (6 * 3600),
+        NA_integer_,
+        dplyr::row_number(.data$episode_start)
+      )
+    ) %>% 
+    dplyr::group_by(.data$patient_id, .data$icd_code, .data$prim_diag) %>% 
+    dplyr::mutate(grp = max(.data$grp)) %>% 
+    dplyr::select(-.data$diagnosis_episode_end) %>%
     dplyr::group_by(patient_id, icd_code, grp, prim_diag, 
                     infection_group1_code,
                     infection_group1_label,
                     infection_group2_code,
                     infection_group2_label) %>%
     dplyr::summarise(start_time = min(episode_start, na.rm = TRUE),
-                     end_time = max(episode_end, na.rm = TRUE)) %>%
-    dplyr::compute()
+                     end_time = max(episode_end, na.rm = TRUE)) 
   
-  diag <- diag %>%
-    dplyr::left_join(icd_lu, by = c('icd_code')) %>% 
-    collect_ramses_tbl() %>% 
+  diag <- dplyr::right_join(icd_lu, diag, 
+                            by = "icd_code", copy = TRUE) %>% 
+    dplyr::collect() %>% 
     data.table() %>% unique() %>%
     dplyr::mutate(icd_text = paste0(
       dplyr::if_else(prim_diag == 1, "<strong>", ""), 
@@ -442,10 +416,10 @@ setMethod(
   
   tbl(input_patient@conn, "inpatient_episodes") %>%
     dplyr::filter(patient_id == !!input_patient@id) %>% 
-    collect_ramses_tbl() %>% 
     dplyr::filter(!is.na(discharge_date)) %>%
     dplyr::distinct(admission_method, admission_date, discharge_date) %>%
     na.omit() %>% 
+    dplyr::collect() %>% 
     dplyr::transmute(
       id = NA_character_, 
       content =  dplyr::case_when(

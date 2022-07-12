@@ -515,7 +515,7 @@ setMethod("therapy_table", "TherapyEpisode", function(object, collect = FALSE) {
   stopifnot(is.logical(collect))
   .therapy_table_completeness_check(object, object@therapy_table)
   if( collect ) {
-    collect_ramses_tbl(object@therapy_table) %>% 
+    dplyr::collect(object@therapy_table) %>% 
       dplyr::arrange(therapy_id, t)
   } else {
     object@therapy_table
@@ -529,7 +529,7 @@ setMethod("therapy_table", "MedicationRequest", function(object, collect = FALSE
   object <- TherapyEpisode(object)
   .therapy_table_completeness_check(object, object@therapy_table)
   if( collect ) {
-    collect_ramses_tbl(object@therapy_table) %>% 
+    dplyr::collect(object@therapy_table) %>% 
       dplyr::arrange(therapy_id, t)
   } else {
     object@therapy_table
@@ -551,7 +551,7 @@ setMethod("show", "TherapyEpisode", function(object) {
   } else if( length(id) > 3 ) {
     cat(class(object), paste(as.character(object@id)[1:3], collapse = ", "), "...\n")
   }
-  record <- collect_ramses_tbl(object@record)
+  record <- dplyr::collect(object@record)
 
   if( nrow(record) == 0 ) {
     cat("Record is not available.\n")
@@ -590,7 +590,7 @@ setMethod("show", "TherapyEpisode", function(object) {
 
 setMethod("show", "MedicationRequest", function(object) {
   cat(class(object), as.character(object@id), "\n")
-  record <- collect_ramses_tbl(object@record)
+  record <- dplyr::collect(object@record)
   if( nrow(record) == 0 ) {
     cat("Record is not available.\n")
     cat("Please check object id is valid\n")
@@ -612,7 +612,7 @@ setMethod("show", "MedicationRequest", function(object) {
 # compute/collect methods -------------------------------------------------
 
 setMethod("collect", "RamsesObject", function(x) {
-  collect_ramses_tbl(x@record)
+  dplyr::collect(x@record)
 })
 
 setMethod("compute", "RamsesObject", function(x) {
@@ -622,7 +622,7 @@ setMethod("compute", "RamsesObject", function(x) {
 
 setMethod("collect", "TherapyEpisode", function(x) {
   .therapy_table_completeness_check(x, x@record)
-  collect_ramses_tbl(x@record)
+  dplyr::collect(x@record)
 })
 
 setMethod("compute", "TherapyEpisode", function(x) {

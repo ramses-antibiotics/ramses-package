@@ -206,7 +206,7 @@ test_that("Ramses on SQLite 2", {
 
   test_sqlite_date <- tbl(conSQLite, "inpatient_episodes") %>% 
     dplyr::filter(patient_id == "99999999999") %>% 
-    Ramses:::collect_ramses_tbl( )
+    dplyr::collect( )
   
   expect_is(test_sqlite_date$spell_id, "character")
   expect_is(test_sqlite_date$admission_date, "POSIXt")
