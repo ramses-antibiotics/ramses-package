@@ -46,7 +46,6 @@ test_that("Ramses on SQLite 2", {
 
   # > validate functions --------------------------------------------------
   
-  icd10cm <- download_icd10cm()
   conSQLite <- suppressWarnings(connect_local_database("test.sqlite"))
   
   expect_null(validate_prescriptions(.ramses_mock_dataset$drug_rx))
@@ -55,7 +54,7 @@ test_that("Ramses on SQLite 2", {
   expect_warning(
     validate_inpatient_diagnoses(
       diagnoses_data = .ramses_mock_dataset$diagnoses,
-      diagnoses_lookup = icd10cm))
+      diagnoses_lookup = .ramses_mock_dataset$icd10cm_2020))
   expect_true(validate_investigations(inpatient_investigations))
   expect_true(validate_microbiology(
     .ramses_mock_dataset$micro$specimens,
@@ -88,7 +87,7 @@ test_that("Ramses on SQLite 2", {
     expect_warning(
       load_inpatient_diagnoses(conn = conSQLite,
                            diagnoses_data = inpatient_data$diagnoses,
-                           diagnoses_lookup = icd10cm,
+                           diagnoses_lookup = .ramses_mock_dataset$icd10cm_2020,
                            overwrite = TRUE)))
   expect_invisible(
     load_inpatient_investigations(
@@ -806,8 +805,6 @@ test_that("Ramses on PosgreSQL", {
   lapply(DBI::dbListTables(conPostgreSQL), 
          DBI::dbRemoveTable, 
          conn = conPostgreSQL)
-
-  icd10cm <- download_icd10cm()
   
   expect_invisible(
     load_medications(conn = conPostgreSQL, 
@@ -828,7 +825,7 @@ test_that("Ramses on PosgreSQL", {
     expect_warning(
       load_inpatient_diagnoses(conn = conPostgreSQL,
                                diagnoses_data = .ramses_mock_dataset$diagnoses,
-                               diagnoses_lookup = icd10cm,
+                               diagnoses_lookup = .ramses_mock_dataset$icd10cm_2020,
                                overwrite = TRUE)))
   expect_invisible(
     load_inpatient_investigations(

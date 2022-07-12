@@ -965,9 +965,6 @@ create_mock_database <- function(file,
   )
   if(!silent) progress_bar$tick()
   
-  icd10cm <- download_icd10cm(silent = TRUE)
-  if(!silent) progress_bar$tick()
-  
   load_medications(
     conn = mock_db, 
     prescriptions = .ramses_mock_dataset$drug_rx,
@@ -988,7 +985,7 @@ create_mock_database <- function(file,
     load_inpatient_diagnoses(
       conn = mock_db,
       diagnoses_data = .ramses_mock_dataset$diagnoses,
-      diagnoses_lookup = icd10cm,
+      diagnoses_lookup = .ramses_mock_dataset$icd10cm_2020,
       overwrite = TRUE
     )
   )

@@ -287,7 +287,8 @@ micro$raw <- NULL
   diagnoses = ip_diagnoses,
   micro = micro,
   drug_rx = drug_rx,
-  drug_admins = drug_admins
+  drug_admins = drug_admins,
+  icd10cm_2020 = download_icd10cm()
 )
 
 usethis::use_data(.ramses_mock_dataset, 
