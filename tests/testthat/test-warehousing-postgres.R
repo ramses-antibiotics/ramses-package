@@ -1,0 +1,787 @@
+
+# PostgreSQL --------------------------------------------------------------
+
+test_that(".create_sql_primary_key on Postgres", {
+  
+  if (!identical(Sys.getenv("CI"), "true")) {
+    skip("Test only on Travis")
+  }
+  
+  db_con <- DBI::dbConnect(RPostgres::Postgres(),
+                           user = "user", 
+                           password = "password",
+                           host = "localhost", 
+                           dbname="RamsesDB",
+                           timezone = "Europe/London") 
+  DBI::dbWriteTable(conn = db_con, name = "test_table", value = data.frame(key = 1:10) )
+  .create_sql_primary_key(conn = db_con, field = "key", table = "test_table")
+  expect_error(
+    DBI::dbAppendTable(
+      conn = db_con, name = "test_table", value = data.frame(key = 1:10) 
+    )
+  )
+  DBI::dbDisconnect(db_con)
+})
+
+
+test_that(".run_transitive_closure on Postgres", {
+  
+  if (!identical(Sys.getenv("CI"), "true")) {
+    skip("Test only on Travis")
+  }
+  
+  test_edges <- dplyr::tibble(
+    from_id = as.integer(c(1,1,2,5,6,7)),
+    to_id = as.integer(c(2,3,4,6,7,8))
+  )
+  test_solution <- dplyr::tibble(
+    id =  as.integer(c(1,2,3,4,5,6,7,8)),
+    grp = as.integer(c(1,1,1,1,2,2,2,2))
+  )
+  
+  db_con <- DBI::dbConnect(RPostgres::Postgres(),
+                           user = "user", 
+                           password = "password",
+                           host = "localhost", 
+                           dbname="RamsesDB",
+                           timezone = "Europe/London")
+  dplyr::copy_to(
+    dest = db_con,
+    name = "ramses_test_edges",
+    df = test_edges,
+    temporary = FALSE,
+    overwrite = TRUE)
+  
+  test_output <- tbl(db_con,"ramses_test_edges") %>% 
+    Ramses:::.run_transitive_closure() %>% 
+    dplyr::collect()
+  
+  expect_equal(test_output,
+               test_solution)
+  
+  lapply(DBI::dbListTables(db_con), 
+         DBI::dbRemoveTable, 
+         conn = db_con)
+  DBI::dbDisconnect(db_con)
+})
+
+
+test_that("drug_prescriptions_edges on Postgres", {
+  
+  if (!identical(Sys.getenv("CI"), "true")) {
+    skip("Test only on Travis")
+  }
+  
+  db_con <- DBI::dbConnect(RPostgres::Postgres(),
+                           user = "user", 
+                           password = "password",
+                           host = "localhost", 
+                           dbname = "RamsesDB",
+                           timezone = "Europe/London")
+  
+  lapply(DBI::dbListTables(db_con), 
+         DBI::dbRemoveTable, 
+         conn = db_con)
+  
+  records_rx <- read.csv(system.file("test_cases", "prescription_linkage_prescriptions.csv", 
+                                     package = "Ramses"),
+                         colClasses = c("character", "numeric", "numeric", 
+                                        "POSIXct", "POSIXct", "POSIXct", "character", "character", 
+                                        "character", "character", "character", "character", "character"))
+  load_medications(db_con, records_rx, overwrite = T)
+  
+  output <- dplyr::distinct(tbl(db_con, "drug_prescriptions_edges"), 
+                            patient_id, edge_type, relation_type) %>% 
+    dplyr::arrange(patient_id) %>% 
+    dplyr::collect()
+  
+  records_edges <- read.csv(system.file("test_cases", "prescription_linkage_edges_classes.csv", 
+                                        package = "Ramses"),
+                            colClasses = c("character", "character")) %>% 
+    dplyr::filter(edge_type != "not an edge") %>% 
+    dplyr::mutate(relation_type = substr(patient_id, 0, 1)) %>% 
+    dplyr::tibble()
+  
+  expect_equal(output,  records_edges)
+  
+  lapply(DBI::dbListTables(db_con), 
+         DBI::dbRemoveTable, 
+         conn = db_con)
+  
+  DBI::dbDisconnect(db_con)
+})
+
+
+test_that("Ramses on PosgreSQL (system test)", {
+  
+  if (!identical(Sys.getenv("CI"), "true")) {
+    skip("Test only on Travis")
+  }
+
+  # database loading functions ------------------------------------------
+  
+  db_con <- DBI::dbConnect(RPostgres::Postgres(),
+                           user = "user", 
+                           password = "password",
+                           host = "localhost", 
+                           dbname="RamsesDB",
+                           timezone = "Europe/London")
+  
+  lapply(DBI::dbListTables(db_con), 
+         DBI::dbRemoveTable, 
+         conn = db_con)
+  
+  expect_invisible(
+    load_medications(conn = db_con, 
+                     prescriptions = .ramses_mock_dataset$drug_rx,
+                     administrations = .ramses_mock_dataset$drug_admins,
+                     overwrite = TRUE)
+  )
+  
+  
+  expect_invisible(
+    load_inpatient_episodes(conn = db_con,
+                            patients_data = .ramses_mock_dataset$patients,
+                            episodes_data = .ramses_mock_dataset$episodes,
+                            wards_data = inpatient_wards,
+                            overwrite = TRUE)
+  )
+  expect_invisible(
+    expect_warning(
+      load_inpatient_diagnoses(conn = db_con,
+                               diagnoses_data = .ramses_mock_dataset$diagnoses,
+                               diagnoses_lookup = .ramses_mock_dataset$icd10cm_2020,
+                               overwrite = TRUE)))
+  expect_invisible(
+    load_inpatient_investigations(
+      conn = db_con,
+      investigations_data = inpatient_investigations,
+      overwrite = TRUE
+    ))
+  expect_invisible(
+    load_inpatient_microbiology(
+      conn = db_con,
+      .ramses_mock_dataset$micro$specimens,
+      .ramses_mock_dataset$micro$isolates,
+      .ramses_mock_dataset$micro$susceptibilities,
+      overwrite = TRUE
+    )
+  )
+  
+  test_output <- tbl(db_con, "drug_prescriptions") %>% 
+    dplyr::filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", 
+                                         "89ac870bc1c1e4b2a37cec79d188cb08",
+                                         "0bf9ea7732dd6e904ab670a407382d95")) %>% 
+    dplyr::select(prescription_id, combination_id, therapy_id) %>% 
+    dplyr::arrange(therapy_id, prescription_id) %>% 
+    dplyr::collect()
+  expect_equal(
+    test_output, 
+    dplyr::tibble(prescription_id = c("592a738e4c2afcae6f625c01856151e0",
+                                      "0bf9ea7732dd6e904ab670a407382d95",
+                                      "89ac870bc1c1e4b2a37cec79d188cb08"),
+                  combination_id = c(NA_character_, 
+                                     "0bf9ea7732dd6e904ab670a407382d95", 
+                                     "0bf9ea7732dd6e904ab670a407382d95"),
+                  therapy_id = c("592a738e4c2afcae6f625c01856151e0", 
+                                 "89ac870bc1c1e4b2a37cec79d188cb08", 
+                                 "89ac870bc1c1e4b2a37cec79d188cb08")))
+
+  test_output <- tbl(db_con, "drug_therapy_episodes") %>% 
+    dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
+    dplyr::collect()
+  
+  expect_equal(
+    test_output, 
+    dplyr::tibble(
+      patient_id = "1555756339",
+      therapy_id = "592a738e4c2afcae6f625c01856151e0",
+      antiinfective_type = "antibacterial",
+      therapy_start = as.POSIXct("2016-08-01 11:15:19", tz = "Europe/London"),
+      therapy_end = as.POSIXct("2016-08-03 11:15:19", tz = "Europe/London")
+    )
+  )
+  
+  # recreate therapy episodes and combinations --------------------------------
+  
+  DBI::dbRemoveTable(db_con, "drug_prescriptions_edges")
+  DBI::dbRemoveTable(db_con, "drug_therapy_episodes")
+  
+  expect_silent(create_therapy_episodes(db_con, silent = TRUE))
+  
+  test_output <- tbl(db_con, "drug_therapy_episodes") %>% 
+    dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
+    dplyr::collect()
+  
+  expect_equal(
+    test_output, 
+    dplyr::tibble(
+      patient_id = "1555756339",
+      therapy_id = "592a738e4c2afcae6f625c01856151e0",
+      antiinfective_type = "antibacterial",
+      therapy_start = "2016-08-01 11:15:19+01:00",
+      therapy_end = "2016-08-03 11:15:19+01:00"
+    )
+  )
+  
+  # other database functions --------------------------------------------
+  
+  # bridge_episode_prescription_overlap
+  expect_true(bridge_episode_prescription_overlap(db_con))
+  expect_error(bridge_episode_prescription_overlap(db_con))
+  expect_true(bridge_episode_prescription_overlap(db_con, overwrite = TRUE))
+  test_bridge_overlap <- tbl(
+    db_con,
+    "bridge_episode_prescription_overlap") %>% 
+    dplyr::filter(patient_id == "99999999999" & 
+                    prescription_id == "89094c5dffaad0e56073adaddf286e73") %>% 
+    dplyr::collect()
+  expect_equal(round(sum(test_bridge_overlap$DOT), 1), 2.0)
+  expect_equal(round(sum(test_bridge_overlap$DDD_prescribed), 1), 1.3)
+  
+  # bridge_episode_prescription_initiation
+  expect_true(bridge_episode_prescription_initiation(db_con))
+  expect_error(bridge_episode_prescription_initiation(db_con))
+  expect_true(bridge_episode_prescription_initiation(db_con, overwrite = TRUE))
+  test_bridge_init <- tbl(db_con, "bridge_episode_prescription_initiation") %>% 
+    dplyr::filter(patient_id == "99999999999" & 
+                    prescription_id == "89094c5dffaad0e56073adaddf286e73") %>% 
+    dplyr::collect()
+  expect_equal(round(test_bridge_init$DOT, 1), 2.0)
+  expect_equal(round(test_bridge_init$DDD_prescribed, 1), 1.3)
+  
+  # bridge_spell_therapy_overlap
+  expect_true(bridge_spell_therapy_overlap(db_con))
+  expect_error(bridge_spell_therapy_overlap(db_con))
+  expect_true(bridge_spell_therapy_overlap(db_con, overwrite = TRUE))
+  test_bridge_th_overlap <- tbl(
+    db_con,
+    "bridge_spell_therapy_overlap") %>% 
+    dplyr::filter(patient_id == "99999999999" &
+                    therapy_id == "4d611fc8886c23ab047ad5f74e5080d7") %>% 
+    dplyr::collect()
+  expect_equal(round(sum(test_bridge_th_overlap$LOT), 1), 7.4)
+  
+  expect_true(bridge_tables(conn = db_con, overwrite = TRUE))
+
+  # date and datetime casting -----------------------------------------------
+  
+  test_date <- tbl(db_con, "inpatient_episodes") %>% 
+    dplyr::filter(patient_id == "99999999999") %>% 
+    dplyr::collect()
+  
+  expect_is(test_date$spell_id, "character")
+  expect_is(test_date$admission_date, "POSIXt")
+  expect_equal(test_date$date_of_birth[1], as.Date("1926-08-02"))
+  expect_equal(test_date$date_of_death[1], as.Date(NA))
+  
+
+  # TherapyEpisode ------------------------------------------------------------
+
+  # Single IVPO change pt 99999999999
+  
+  test_episode <- TherapyEpisode(db_con, "5528fc41106bb48eb4d48bc412e13e67")
+  test_output <- therapy_table(test_episode, collect = T)
+  test_expected_head <- dplyr::tibble(
+    t = 0:5,
+    patient_id = "99999999999",
+    therapy_id = "5528fc41106bb48eb4d48bc412e13e67",
+    therapy_start = as.POSIXct("2015-08-07 10:27:00", tz = "Europe/London"),
+    therapy_end = as.POSIXct("2015-08-17 12:20:00", tz = "Europe/London"),
+    t_start = as.POSIXct(
+      c("2015-08-07 10:27:00", "2015-08-07 11:27:00", "2015-08-07 12:27:00",
+        "2015-08-07 13:27:00", "2015-08-07 14:27:00", "2015-08-07 15:27:00"), tz = "Europe/London"),
+    t_end = as.POSIXct(
+      c("2015-08-07 11:27:00", "2015-08-07 12:27:00", "2015-08-07 13:27:00", 
+        "2015-08-07 14:27:00", "2015-08-07 15:27:00", "2015-08-07 16:27:00"), tz = "Europe/London"),
+    parenteral = 1L
+  )
+  test_expected_tail <- dplyr::tibble(
+    t = 236:241,
+    patient_id = "99999999999",
+    therapy_id = "5528fc41106bb48eb4d48bc412e13e67",
+    therapy_start = as.POSIXct("2015-08-07 10:27:00", tz = "Europe/London"),
+    therapy_end = as.POSIXct("2015-08-17 12:20:00", tz = "Europe/London"),
+    t_start = as.POSIXct(
+      c("2015-08-17 06:27:00", "2015-08-17 07:27:00", "2015-08-17 08:27:00", 
+        "2015-08-17 09:27:00", "2015-08-17 10:27:00", "2015-08-17 11:27:00"), tz = "Europe/London"),
+    t_end = as.POSIXct(
+      c("2015-08-17 07:27:00", "2015-08-17 08:27:00", "2015-08-17 09:27:00", "2015-08-17 10:27:00", 
+        "2015-08-17 11:27:00", "2015-08-17 12:20:00"), tz = "Europe/London"),
+    parenteral = 0L
+  )
+
+  expect_equal(head(test_output), test_expected_head)
+  expect_equal(tail(test_output), test_expected_tail)
+  expect_equal(
+    sum(difftime(test_output$t_end, test_output$t_start,units =  "hours")),
+    structure(241.883333333333, class = "difftime", units = "hours")
+  )
+  
+  test_medication_request <- MedicationRequest(db_con, "5528fc41106bb48eb4d48bc412e13e67")
+  expect_is(test_medication_request, "MedicationRequest")
+  expect_is(TherapyEpisode(test_medication_request), "TherapyEpisode")
+  expect_equal(head(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+                    test_expected_head)
+  expect_equal(tail(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+                    test_expected_tail)
+  expect_equal(head(therapy_table(test_medication_request, collect = TRUE)), 
+                    test_expected_head)
+  expect_equal(tail(therapy_table(test_medication_request, collect = TRUE)), 
+                    test_expected_tail)
+  
+  # 2+ TherapyEpisode -------------------------------------------------------
+  
+  test_episode <- TherapyEpisode(conn = db_con, 
+                                 id = c("f770855cf9d424c76fdfbc9786d508ac", 
+                                        "5528fc41106bb48eb4d48bc412e13e67"))
+  expect_is(test_episode, "TherapyEpisode")
+  
+  test_expected_tail_second_therapy_episode <- dplyr::tibble(
+    t = 117:122, 
+    patient_id = "8258333156", 
+    therapy_id = "f770855cf9d424c76fdfbc9786d508ac", 
+    therapy_start = structure(
+      c(1444239793, 1444239793, 1444239793, 1444239793, 
+        1444239793, 1444239793), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    therapy_end = structure(
+      c(1444681333, 1444681333, 1444681333, 1444681333, 
+        1444681333, 1444681333), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    t_start = structure(
+      c(1444660993, 1444664593, 1444668193, 1444671793, 
+        1444675393, 1444678993), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    t_end = structure(
+      c(1444664593, 1444668193, 1444671793, 1444675393, 
+        1444678993, 1444681333), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    parenteral = 0L
+  )
+  expect_equal(head(therapy_table(test_episode, collect = TRUE)), 
+               test_expected_head)
+  expect_equal(tail(therapy_table(test_episode, collect = TRUE)), 
+               test_expected_tail_second_therapy_episode)
+  
+  # .therapy_table_completeness_check -------------------------------------
+  
+  expect_true(
+    .therapy_table_completeness_check(
+      episode = TherapyEpisode(db_con, "592a738e4c2afcae6f625c01856151e0"),
+      tbl_object = TherapyEpisode(db_con, "592a738e4c2afcae6f625c01856151e0")@therapy_table,
+      silent = F
+    )
+  )
+  
+  expect_false(
+    expect_warning(
+      .therapy_table_completeness_check(
+        episode = TherapyEpisode(db_con, "592a738e4c2afcae6f625c01856151e0"),
+        tbl_object = TherapyEpisode(db_con, "89ac870bc1c1e4b2a37cec79d188cb08")@therapy_table,
+        silent = F
+      )
+    )
+  )
+  
+  #> IVPO ------------------------------------------------------------------
+  
+  expect_equal(parenteral_changes(TherapyEpisode(db_con, "5528fc41106bb48eb4d48bc412e13e67")), 
+               list("5528fc41106bb48eb4d48bc412e13e67" = list(c(0, 241, 6))))
+  expect_equal(parenteral_changes(TherapyEpisode(db_con, 
+                                                 c("f770855cf9d424c76fdfbc9786d508ac",
+                                                   "74e3f378b91c6d7121a0d637bd56c2fa"))), 
+               list("74e3f378b91c6d7121a0d637bd56c2fa" = list(c(0, 97, 49)),
+                    "f770855cf9d424c76fdfbc9786d508ac" = list(c(0, 122, 74))))
+  
+  # Three IVPO changes in pt 5726385525 with only one therapy episode
+  single_therapy <- dplyr::collect(dplyr::filter(tbl(db_con, "drug_prescriptions"), 
+                                                 patient_id == "5726385525"))
+  expect_true(all(single_therapy$therapy_id == "a028cf950c29ca73c01803b54642d513"))
+  expect_equal(
+    parenteral_changes(TherapyEpisode(db_con, "a028cf950c29ca73c01803b54642d513")),
+    list(
+      "a028cf950c29ca73c01803b54642d513" = list(c(0, 144, 97),
+                                                c(146, 316, 219),
+                                                c(318, 390,  NA))
+    )
+  )
+  
+  # recreate therapy episodes and combinations --------------------------------
+  
+  DBI::dbRemoveTable(db_con, "drug_prescriptions_edges")
+  DBI::dbRemoveTable(db_con, "drug_therapy_episodes")
+  
+  expect_silent(create_therapy_episodes(db_con, silent = TRUE))
+  
+  test_output <- tbl(db_con, "drug_therapy_episodes") %>% 
+    dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
+    dplyr::collect()
+
+  expect_equal(
+    test_output, 
+    dplyr::tibble(
+      patient_id = "1555756339",
+      therapy_id = "592a738e4c2afcae6f625c01856151e0",
+      antiinfective_type = "antibacterial",
+      therapy_start = as.POSIXct("2016-08-01 11:15:19", tz = "Europe/London"),
+      therapy_end = as.POSIXct("2016-08-03 11:15:19", tz = "Europe/London")
+    )
+  )
+  
+  # other database functions --------------------------------------------
+  
+  # bridge_episode_prescription_overlap
+  expect_true(bridge_episode_prescription_overlap(db_con))
+  expect_error(bridge_episode_prescription_overlap(db_con))
+  expect_true(bridge_episode_prescription_overlap(db_con, overwrite = TRUE))
+  test_bridge_overlap <- tbl(
+    db_con,
+    "bridge_episode_prescription_overlap") %>% 
+    dplyr::filter(patient_id == "99999999999" & 
+                    prescription_id == "89094c5dffaad0e56073adaddf286e73") %>% 
+    dplyr::collect()
+  expect_equal(round(sum(test_bridge_overlap$DOT), 1), 2.0)
+  expect_equal(round(sum(test_bridge_overlap$DDD_prescribed), 1), 1.3)
+  
+  # bridge_episode_prescription_initiation
+  expect_true(bridge_episode_prescription_initiation(db_con))
+  expect_error(bridge_episode_prescription_initiation(db_con))
+  expect_true(bridge_episode_prescription_initiation(db_con, overwrite = TRUE))
+  test_bridge_init <- tbl(db_con, "bridge_episode_prescription_initiation") %>% 
+    dplyr::filter(patient_id == "99999999999" & 
+                    prescription_id == "89094c5dffaad0e56073adaddf286e73") %>% 
+    dplyr::collect()
+  expect_equal(round(test_bridge_init$DOT, 1), 2.0)
+  expect_equal(round(test_bridge_init$DDD_prescribed, 1), 1.3)
+  
+  # bridge_spell_therapy_overlap
+  expect_true(bridge_spell_therapy_overlap(db_con))
+  expect_error(bridge_spell_therapy_overlap(db_con))
+  expect_true(bridge_spell_therapy_overlap(db_con, overwrite = TRUE))
+  test_bridge_th_overlap <- tbl(
+    db_con,
+    "bridge_spell_therapy_overlap") %>% 
+    dplyr::filter(patient_id == "99999999999" &
+                    therapy_id == "4d611fc8886c23ab047ad5f74e5080d7") %>% 
+    dplyr::collect()
+  expect_equal(round(sum(test_bridge_th_overlap$LOT), 1), 7.4)
+  
+  expect_true(bridge_tables(conn = db_con, overwrite = TRUE))
+  
+  
+  # therapy timeline -------------------------------------------------
+  
+  expect_error(
+    therapy_timeline(Patient(conn = db_con, 
+                             id =  "I don't exist"))
+  )
+  expect_is(
+    therapy_timeline(Patient(conn = db_con, 
+                             id =  "99999999999")),
+    "timevis")
+  expect_error(
+    therapy_timeline(Patient(conn = db_con, 
+                             id =  "99999999999"),
+                     date1 = "2017-01-01",
+                     date2 = "2017-03-01")
+  )
+  expect_is(
+    therapy_timeline(Patient(conn = db_con, 
+                             id =  "99999999999"),
+                     date1 = as.Date("2017-01-01"),
+                     date2 = as.Date("2017-03-01")), 
+    "timevis")
+  expect_is(
+    therapy_timeline(Patient(conn = db_con, 
+                             id =  "99999999999"),
+                     date1 = as.Date("2017-01-01")),
+    "timevis")
+  expect_is(
+    therapy_timeline(Patient(conn = db_con, 
+                             id =  "99999999999"),
+                     date2 = as.Date("2017-03-01")), 
+    "timevis")
+  expect_is(
+    therapy_timeline(TherapyEpisode(conn = db_con,
+                                    id = "4d611fc8886c23ab047ad5f74e5080d7")), 
+    "timevis")
+  
+  expect_is(
+    expect_warning(
+      therapy_timeline(TherapyEpisode(conn = db_con,
+                                      id = c("4d611fc8886c23ab047ad5f74e5080d7",
+                                             "a028cf950c29ca73c01803b54642d513")))
+    ), 
+    "timevis")
+  
+  # clinical features --------------------------------------------------------
+  
+  # > last -------------------------------------------------------------------
+  
+  expect_error(
+    clinical_feature_last(
+      TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_code = "8310-5",
+      hours = 24,
+      observation_code_system = "doesnotexist"
+    )
+  )
+  last_temp <- clinical_feature_last(
+    TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_code = "8310-5",
+    hours = 24
+  ) %>% 
+    therapy_table(collect = T)
+  
+  expect_equal(
+    last_temp$last_temperature_24h[1:5],
+    c(36.9, 36.9, 36.8, 36.8, 36.8)
+  )
+  expect_equal(
+    last_temp$last_temperature_24h[174:178],
+    c(35.8, 35.8, 36.0, 36.0, 36.0)
+  )
+  rm(last_temp)
+  
+  last_temp_2therapies <- clinical_feature_last(
+    TherapyEpisode(db_con, c("4d611fc8886c23ab047ad5f74e5080d7",
+                                    "a028cf950c29ca73c01803b54642d513")),
+    observation_code = "8310-5",
+    hours = 24
+  ) %>% 
+    therapy_table(collect = T)
+  
+  expect_equal(
+    dplyr::filter(last_temp_2therapies, 
+                  therapy_id == "4d611fc8886c23ab047ad5f74e5080d7")$last_temperature_24h[1:5],
+    c(36.9, 36.9, 36.8, 36.8, 36.8)
+  )
+  expect_equal(
+    dplyr::filter(last_temp_2therapies, 
+                  therapy_id == "4d611fc8886c23ab047ad5f74e5080d7" & 
+                    t %in% 173:177)$last_temperature_24h,
+    c(35.8, 35.8, 36.0, 36.0, 36.0)
+  )
+  rm(last_temp_2therapies)
+  
+  last_temp <- clinical_feature_last(
+    TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_code = c("8310-5", "2160-0"),
+    hours = 32
+  ) %>% 
+    therapy_table(collect = T)
+  expect_equal(
+    last_temp$last_temperature_32h[1:5],
+    c(36.9, 36.9, 36.8, 36.8, 36.8)
+  )
+  expect_equal(
+    last_temp$last_temperature_32h[174:178],
+    c(35.8, 35.8, 36.0, 36.0, 36.0)
+  )
+  expect_equal(
+    last_temp$last_creatinine_32h[1:5],
+    c(116, 116, 116, 135, 135)
+  )
+  expect_equal(
+    last_temp$last_creatinine_32h[174:178],
+    c(109, 109, 109, NA, NA)
+  )
+  rm(last_temp)
+  
+  # > OLS -------------------------------------------------------------------
+  
+  example_therapy <-  TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7")
+  example_therapy_record <- collect(example_therapy)
+  
+  expect_error(
+    clinical_feature_ols_trend(
+      example_therapy,
+      observation_code = "8310-5",
+      hours = 24, 
+      observation_code_system = "doesnotexist"
+    )
+  )
+  
+  ols_temp <- therapy_table(clinical_feature_ols_trend(
+    example_therapy,
+    observation_code = "8310-5",
+    hours = 24
+  ), collect = T)
+  
+  expect_equal(
+    ols_temp$ols_temperature_24h_intercept[1:10],
+    c(37.0910412742301, 37.5548549668735, 37.2275037202613, 37.0472923111899, 
+      37.1741173337574, 37.075394573336, 36.9776345962514, 37.0335604592393, 
+      36.6369479184972, 36.6346852329661)
+  )
+  expect_equal(
+    ols_temp$ols_temperature_24h_intercept[169:178],
+    c(35.9561283858803, 35.2034714186531, 35.6407220017662, 35.6068191357815, 
+      35.5729162697968, 35.5390134038121, 35.5051105378274, 35.9753406349546, 
+      35.9970238977037, 36.0187071604529)
+  )
+  expect_equal(
+    ols_temp$ols_temperature_24h_slope[1:10],
+    c(0.463813692637874, 0.463813692637874, 0.229966638232132, 0.126825022566752, 
+      0.126825022566752, 0.0859028479069017, 0.0559258629877923, 0.0559258629877923, 
+      -0.00226268553081795, -0.00226268553081795)
+  )
+  expect_equal(
+    ols_temp$ols_temperature_24h_slope[169:178],
+    c(0.00775828995026235, -0.0647998148577262, -0.0339028659846864, 
+      -0.0339028659846864, -0.0339028659846864, -0.0339028659846864, 
+      -0.0339028659846864, 0.0216832627491193, 0.0216832627491193, 
+      0.0216832627491193)
+  )
+  
+  # > interval ------------------------------------------------------------------
+  
+  expect_error(
+    clinical_feature_interval(
+      TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_intervals = list("8310-5" = c(36, 38)),
+      hours = 24,
+      observation_code_system = "doesnotexist"
+    )
+  )
+  
+  temperature_check <- therapy_table(clinical_feature_interval(
+    TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_intervals = list("8310-5" = c(36, 38)),
+    hours = 24), collect = TRUE)
+  
+  expect_equal(temperature_check$range_temperature36_38_24h_in_range[1:5],
+               c(3, 3, 4, 5, 5))
+  expect_equal(temperature_check$range_temperature36_38_24h_in_range[174:178],
+               c(1, 1, 1, 1, 1))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_under[1:5],
+               c(0, 0, 0, 0, 0))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_under[174:178],
+               c(2, 2, 2, 2, 2))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_over[1:5],
+               c(0, 0, 0, 0, 0))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_over[174:178],
+               c(0, 0, 0, 0, 0))
+  
+  expect_error(
+    therapy_table(clinical_feature_interval(
+      TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_intervals = list("8310-5" = c(NA, 38)),
+      hours = 24), collect = TRUE)
+  )
+  
+  temperature_check <- therapy_table(clinical_feature_interval(
+    TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_intervals = list("8310-5" = c(38)),
+    hours = 24), collect = TRUE)
+  expect_equal(temperature_check$threshold_temperature38_24h_under[1:5],
+               c(3, 3, 4, 5, 5))
+  expect_equal(temperature_check$threshold_temperature38_24h_strictly_over[1:5],
+               c(0, 0, 0, 0, 0))
+  expect_equal(temperature_check$threshold_temperature38_24h_under[174:178],
+               c(3, 3, 3, 3, 3))
+  expect_equal(temperature_check$threshold_temperature38_24h_strictly_over[174:178],
+               c(0, 0, 0, 0, 0))
+  
+  temperature_check <- therapy_table(clinical_feature_interval(
+    TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+    observation_intervals = list("8310-5" = c(36)),
+    hours = 24), collect = TRUE)
+  expect_equal(temperature_check$threshold_temperature36_24h_under[1:5],
+               c(1, 1, 1, 1, 1))
+  expect_equal(temperature_check$threshold_temperature36_24h_strictly_over[1:5],
+               c(2, 2, 3, 4, 4))
+  expect_equal(temperature_check$threshold_temperature36_24h_under[174:178],
+               c(2, 2, 3, 3, 3))
+  expect_equal(temperature_check$threshold_temperature36_24h_strictly_over[174:178],
+               c(1, 1, 0, 0, 0))
+  
+  # > mean ------------------------------------------------------------------
+  
+  expect_error(
+    clinical_feature_mean(
+      TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_code = "8310-5",
+      hours = 2, 
+      observation_code_system = "doesnotexist")
+  )
+  
+  temperature_check <- therapy_table(
+    clinical_feature_mean(
+      TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+      observation_code = "8310-5",
+      hours = 2),
+    collect = TRUE
+  )
+  expect_equal(temperature_check$mean_temperature_2h[1:4],
+               c(36.9, 36.9, 36.8, 36.8))
+  expect_equal(temperature_check$mean_temperature_2h[174:178],
+               c(NA, NA, 36.0, 36.0, NA))
+  
+  # show methods ----------------------------------------------------------
+  
+  # TherapyEpisode
+  expect_equal(utils::capture.output(TherapyEpisode(db_con, "89ac870bc1c1e4b2a37cec79d188cb08"))[1:8],
+               c("TherapyEpisode 89ac870bc1c1e4b2a37cec79d188cb08 ", "Patient:   1555756339 ", 
+                 "Start:     2017-07-02 01:15:46 BST ", "End:       2017-07-06 01:35:46 BST ", 
+                 "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
+                 "  > Clarithromycin ORAL 500mg 4 days"))
+  expect_equal(utils::capture.output(TherapyEpisode(db_con, "fa179f4bcf3efa1e21225ab207ab40c4"))[1:11],
+               c("TherapyEpisode fa179f4bcf3efa1e21225ab207ab40c4 ", "Patient:   3422481921 ", 
+                 "Start:     2017-11-15 15:33:36 GMT ", "End:       2017-12-01 21:11:36 GMT ", 
+                 "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
+                 "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  > Piperacillin/tazobactam IV 4.5g 4 days", 
+                 "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  ... (2 additional medication requests)"
+               ))
+  expect_equal(
+    utils::capture.output(TherapyEpisode(db_con, "biduletruc"))[1:5],
+    c("TherapyEpisode biduletruc ", "Record is not available.", "Please check object id is valid", 
+      "", "Database connection:")
+  )
+  expect_equal(
+    utils::capture.output(
+      TherapyEpisode(conn = db_con, 
+                     id = c("f770855cf9d424c76fdfbc9786d508ac", 
+                            "5528fc41106bb48eb4d48bc412e13e67")))[1:3],
+      c("TherapyEpisode 5528fc41106bb48eb4d48bc412e13e67, f770855cf9d424c76fdfbc9786d508ac ", 
+        "[total of 2 therapy episodes]",
+        "Patient(s):   99999999999, 8258333156 ")
+  )
+  
+  # MedicationRequest
+  expect_equal(
+    utils::capture.output(MedicationRequest(db_con, "5528fc41106bb48eb4d48bc412e13e67"))[1:8],
+    c("MedicationRequest 5528fc41106bb48eb4d48bc412e13e67 ", "Clarithromycin IV 500mg 0 days ", 
+      "Patient:     99999999999 ", "Start:        2015-08-07 10:27:00 BST ", 
+      "End:          2015-08-07 15:59:00 BST ", "Therapy:      5528fc41106bb48eb4d48bc412e13e67 ", 
+      "", "Database connection:") 
+  )
+  expect_equal(
+    utils::capture.output(MedicationRequest(db_con, "1ab55e515af6b86dde76abbe0bffbd3f"))[1:9],
+    c("MedicationRequest 1ab55e515af6b86dde76abbe0bffbd3f ", "Clarithromycin ORAL 500mg 4 days ", 
+      "Patient:     3894468747 ", "Start:        2015-10-01 21:38:55 BST ", 
+      "End:          2015-10-05 21:38:55 BST ", "Combination:  1ab55e515af6b86dde76abbe0bffbd3f ", 
+      "Therapy:      1ab55e515af6b86dde76abbe0bffbd3f ", "", "Database connection:"
+    )
+  )
+  expect_equal(
+    utils::capture.output(MedicationRequest(db_con, "biduletruc"))[1:5],
+    c("MedicationRequest biduletruc ", "Record is not available.", "Please check object id is valid", 
+      "", "Database connection:")
+  )
+  
+
+  # other consistency checks ----------------------------------------------------
+  
+  # check that therapy id is the one of the first prescription
+  invalid_therapy_ids <- tbl(db_con, "drug_prescriptions") %>% 
+    dplyr::filter(therapy_rank == 1 & therapy_id != prescription_id) %>% 
+    dplyr::collect()
+  expect_true(nrow(invalid_therapy_ids) == 0)
+  
+  # close connection ----------------------------------------------------
+  
+  lapply(DBI::dbListTables(db_con), 
+         DBI::dbRemoveTable, 
+         conn = db_con)
+  
+  DBI::dbDisconnect(db_con)
+})
+

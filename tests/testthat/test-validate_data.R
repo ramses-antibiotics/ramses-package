@@ -104,6 +104,15 @@ test_that(".validate_variable_no_missing() on data.table", {
 
 # .validate_inpatient_spells/validate_inpatient_episodes -------------------
 
+test_that("validate_inpatient_episodes on test dataset", {
+  expect_true(validate_inpatient_episodes(.ramses_mock_dataset$patients,
+                                          .ramses_mock_dataset$episodes))
+  
+  expect_true(validate_inpatient_episodes(patients = .ramses_mock_dataset$patients,
+                                          episodes = .ramses_mock_dataset$episodes,
+                                          wards = inpatient_wards))
+})
+
 test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.frame", {
 
   faulty_spells <- data.frame(list(
@@ -406,6 +415,13 @@ test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.ta
 
 # validate_inpatient_diagnoses --------------------------------------------
 
+test_that("validate_inpatient_diagnoses on test dataset", {
+  expect_warning(
+    validate_inpatient_diagnoses(
+      diagnoses_data = .ramses_mock_dataset$diagnoses,
+      diagnoses_lookup = .ramses_mock_dataset$icd10cm_2020))
+})
+
 test_that("validate_inpatient_diagnoses() on data.frame", {
   test_diagnoses <- data.frame(list(
     patient_id = 1,
@@ -484,6 +500,10 @@ test_that("validate_inpatient_diagnoses() on data.table", {
 })
 
 # validate_prescriptions --------------------------------------------------
+
+test_that("validate_prescriptions on test dataset", {
+  expect_null(validate_prescriptions(.ramses_mock_dataset$drug_rx))
+})
 
 test_that("validate_prescriptions() on data.frame", {
   
@@ -933,9 +953,11 @@ test_that("validate_prescriptions() on data.table", {
   
 })
 
-
-
 # validate_administrations ------------------------------------------------
+
+test_that("validate_administrations on test dataset", {
+  expect_null(validate_administrations(.ramses_mock_dataset$drug_admins))
+})
 
 test_that("validate_administrations", {
   test_admin <- data.frame(list(
@@ -1026,6 +1048,14 @@ test_that(".validate_UCUM_codes()", {
 
 
 # validate_microbiology ---------------------------------------------------
+
+test_that("validate_microbiology on test dataset", {
+  expect_true(validate_microbiology(
+    .ramses_mock_dataset$micro$specimens,
+    .ramses_mock_dataset$micro$isolates,
+    .ramses_mock_dataset$micro$susceptibilities
+  ))
+})
 
 test_that("validate_microbiology on data.frame", {
   testdata = list(
@@ -1242,6 +1272,10 @@ test_that("validate_microbiology on data.table", {
 })
 
 # validate_investigations -------------------------------------------------
+
+test_that("validate_investigations on test dataset", {
+  expect_true(validate_investigations(inpatient_investigations))
+})
 
 test_that("validate_investigations", {
   example_data <- dplyr::tibble(

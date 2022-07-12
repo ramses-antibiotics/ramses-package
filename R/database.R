@@ -119,8 +119,10 @@ load_inpatient_episodes <- function(conn,
     )
   ]
 
-  episodes_data <- dplyr::arrange(episodes_data, 
-                                  patient_id, episode_start)
+  episodes_data <- episodes_data %>% 
+    dplyr::mutate(ramses_bed_days = NA_real_) %>% 
+    dplyr::arrange(patient_id, episode_start)
+  
   first_column_names_episodes <- .inpatient_episodes_variables()[["variable_name"]]
   first_column_names_episodes <- c(
     first_column_names_episodes[first_column_names_episodes %in% names(episodes_data)]
@@ -408,6 +410,7 @@ transitive_closure_control <- function(max_continuation_gap = 36,
 #' @rdname load_medications
 #' @seealso \code{\link[Ramses]{create_therapy_episodes}()}
 #' @export
+#' @importFrom rlang .data
 load_medications <- function(
   conn, prescriptions, administrations = NULL, overwrite = FALSE,
   transitive_closure_controls = transitive_closure_control(),
@@ -531,12 +534,8 @@ load_medications <- function(
 .create_table_drug_prescriptions_edges <- function(conn, 
                                                    transitive_closure_controls) {
   
-  .remove_db_tables(conn, "drug_prescriptions_edges")
-  
-  if( is(conn, "SQLiteConnection") ) {
-    # TODO DEPRECATE
-    statement_edges <- .read_sql_syntax("drug_prescriptions_edges_SQLite.sql")
-  } else if ( is(conn, "PqConnection") | is(conn, "duckdb_connection") ) {
+  if ( is(conn, "PqConnection") | is(conn, "duckdb_connection") ) {
+    .remove_db_tables(conn, "drug_prescriptions_edges")
     statement_edges <- .read_sql_syntax("drug_prescriptions_edges_PostgreSQL.sql")
   } else {
     .throw_error_method_not_implemented(".create_table_drug_prescriptions_edges()", class(conn))
@@ -961,7 +960,7 @@ create_mock_database <- function(file,
     progress_bar$tick(0)
   }
   mock_db <- DBI::dbConnect(duckdb::duckdb(), 
-                            dirdb = file, 
+                            dbdir = file, 
                             timezone_out = Sys.timezone())
   
   .build_tally_table(mock_db)
@@ -1022,11 +1021,15 @@ create_mock_database <- function(file,
 
 .build_tally_table <- function(conn) {
   # Build table to use in joins to create therapy tables
-  dplyr::copy_to(conn, 
-                 name = "ramses_tally",
-                 df = data.frame(t = 0:20000),
-                 temporary = FALSE,
-                 overwrite = TRUE)
+  DBI::dbExecute(
+    conn = conn, 
+    statement = "CREATE OR REPLACE TABLE ramses_tally(t INTEGER PRIMARY KEY);"
+  )
+  DBI::dbAppendTable(
+    conn = conn,
+    name = "ramses_tally",
+    value = data.frame(t = 0L:50000L)
+  )
 }
 
 
@@ -1119,25 +1122,42 @@ create_mock_database <- function(file,
 #' @param field a character field name
 #' @noRd
 .create_sql_primary_key <- function(conn, table, field, override_index_name = NULL) {
-  if (!is(conn, "SQLiteConnection")) {
-    
-    if(!is.null(override_index_name)) {
-      DBI::dbExecute(
-        conn,
-        paste0("alter table ", table,
-               " add constraint ", override_index_name,
-               " primary key (", field,");")
-      )
-    } else {
+  
+  if ( is(conn, "duckdb_connection") & !is.null(override_index_name) ) {
       DBI::dbExecute(
         conn,
         statement = paste0(
-          "alter table ", table,
-          " add constraint ", table, "_pk ",
-          "primary key (\"", field,"\");"
+          "CREATE UNIQUE INDEX ", override_index_name,
+          " ON ", table, " (", field, ");"
+        )
+      )
+    } else if ( is(conn, "duckdb_connection") & is.null(override_index_name) ) {
+      DBI::dbExecute(
+        conn,
+        statement = paste0(
+          "CREATE UNIQUE INDEX ", table, "_pk",
+          " ON ", table, " (", field, ");"
         ))
+    } else if( is(conn, "PqConnection") & !is.null(override_index_name) ) {
+    DBI::dbExecute(
+      conn,
+      statement = paste0(
+        "alter table ", table,
+        " add constraint ", override_index_name,
+        " primary key (", field,");"
+      )
+    )
+    } else if( is(conn, "PqConnection") & is.null(override_index_name) ) {
+      DBI::dbExecute(
+      conn,
+      statement = paste0(
+        "alter table ", table,
+        " add constraint ", table, "_pk ",
+        "primary key (\"", field,"\");"
+      ))
+    } else {
+      .throw_error_method_not_implemented(".create_sql_primary_key()", class_name = class(conn))
     }
-  }
 }
 
 
@@ -1306,7 +1326,7 @@ bridge_tables <- function(conn,
 bridge_episode_prescription_overlap <- function(conn, 
                                                 overwrite = FALSE) {
   stopifnot(is.logical(overwrite))
-  stopifnot(is(conn, "SQLiteConnection") | is(conn, "PqConnection"))
+  stopifnot(is(conn, "duckdb_connection") | is(conn, "PqConnection"))
 
   tblz_episodes <- tbl(conn, "inpatient_episodes")
   tblz_prescriptions <- tbl(conn, "drug_prescriptions") %>% 
@@ -1347,8 +1367,7 @@ bridge_episode_prescription_overlap <- function(conn,
       )
     }
     
-    
-  } else if( is(conn, "PqConnection") ) {
+  } else if( is(conn, "PqConnection") | is(conn, "duckdb_connection") ) {
     tblz_bridge_episode_prescriptions_overlap <- dplyr::mutate(
       tblz_bridge_episode_prescriptions_overlap,
       DOT = dplyr::sql(
@@ -1415,7 +1434,7 @@ bridge_episode_prescription_initiation <- function(conn,
                                                    overwrite = FALSE) {
   
   stopifnot(is.logical(overwrite))
-  stopifnot(is(conn, "SQLiteConnection") | is(conn, "PqConnection"))
+  stopifnot(is(conn, "duckdb_connection") | is(conn, "PqConnection"))
   
   tblz_episodes <- tbl(conn, "inpatient_episodes")
   tblz_prescriptions <- tbl(conn, "drug_prescriptions") %>% 
@@ -1454,7 +1473,7 @@ bridge_episode_prescription_initiation <- function(conn,
       )
     }
     
-  } else if( is(conn, "PqConnection") ) {
+  } else if( is(conn, "PqConnection") | is(conn, "duckdb_connection") ) {
     tblz_bridge_episode_prescription_initiation <- dplyr::mutate(
       tblz_bridge_episode_prescription_initiation,
       DOT = dplyr::sql(
@@ -1520,7 +1539,7 @@ bridge_episode_prescription_initiation <- function(conn,
 bridge_spell_therapy_overlap <- function(conn, 
                                          overwrite = FALSE) {
   stopifnot(is.logical(overwrite))
-  stopifnot(is(conn, "SQLiteConnection") | is(conn, "PqConnection"))
+  stopifnot(is(conn, "duckdb_connection") | is(conn, "PqConnection"))
   
   tblz_spells <- tbl(conn, "inpatient_episodes") %>% 
     dplyr::distinct(patient_id, spell_id, admission_date, discharge_date)
@@ -1543,7 +1562,7 @@ bridge_spell_therapy_overlap <- function(conn,
         strftime('%s', max(therapy_start, admission_date)))/(3600.0*24.0)"
       )
     )
-  } else if( is(conn, "PqConnection") ) {
+  } else if( is(conn, "PqConnection") | is(conn, "duckdb_connection") ) {
     tblz_bridge_spell_therapy_overlap <- dplyr::mutate(
       tblz_bridge_spell_therapy_overlap,
       LOT = dplyr::sql(
@@ -1586,31 +1605,15 @@ bridge_spell_therapy_overlap <- function(conn,
 #' @param conn a database connection
 #' @noRd
 .compute_bed_days <- function(conn){
-UseMethod(".compute_bed_days")
-}
-
-.compute_bed_days.SQLiteConnection <- function(conn) {
-  if( !("ramses_bed_days" %in% 
-        DBI::dbListFields(conn, "inpatient_episodes")) ) {
-    DBI::dbExecute(conn = conn,
-                   statement = "ALTER TABLE inpatient_episodes
-                           ADD COLUMN ramses_bed_days real;")
+  
+  if ( !is(conn, "PqConnection") & !is(conn, "duckdb_connection") ) {
+    .throw_error_method_not_implemented(function_name = ".compute_bed_days()", 
+                                        class_name =  class(conn))
   }
-  DBI::dbExecute(
-    conn = conn,
-    statement = "
-    UPDATE inpatient_episodes
-    SET ramses_bed_days = ( strftime('%s', episode_end) - 
-    strftime('%s', episode_start) ) / ( 24.0 * 3600.0 );"
-  )
-}
-
-.compute_bed_days.PqConnection <- function(conn) {
+  
   if( !("ramses_bed_days" %in% 
         DBI::dbListFields(conn, "inpatient_episodes")) ) {
-    DBI::dbExecute(conn = conn,
-                   statement = "ALTER TABLE inpatient_episodes
-                           ADD COLUMN ramses_bed_days real;")
+    stop("`ramses_bed_days` is not found in table `inpatient_episodes`")
   }
   DBI::dbExecute(
     conn = conn,

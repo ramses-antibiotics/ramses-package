@@ -128,14 +128,17 @@
                                                  hours,
                                                  observation_code_system) {
   
-  if(is(x@conn, "SQLiteConnection")) {
-    sql_condition_1 <- paste0("datetime(observation_datetime) < datetime(t_start) AND ",
-                              "datetime(observation_datetime) >= ", 
-                              "datetime(t_start, -", hours," || ' hours')")
-  } else if(is(x@conn, "PqConnection")) {
+  if(is(x@conn, "PqConnection") | is(x@conn, "duckdb_connection")) {
+    
+    ## TODO Handle the time zone problem
+    
+    # sql_condition_1 <- paste0(
+    #   "(t_start at time zone 'UTC') > (observation_datetime at time zone 'UTC' ) ",
+    #   "AND (t_start at time zone 'UTC') <= (observation_datetime at time zone 'UTC' + interval '", hours, "h' )"
+    #   )
     sql_condition_1 <- paste0(
-      "(t_start at time zone 'UTC') > (observation_datetime at time zone 'UTC' ) ",
-      "AND (t_start at time zone 'UTC') <= (observation_datetime at time zone 'UTC' + interval '", hours, "h' )"
+      "(t_start) > (observation_datetime) ",
+      "AND (t_start) <= (observation_datetime + interval '", hours, "h' )"
       )
   } else {
     .throw_error_method_not_implemented(".clinical_feature_threshold()",
@@ -419,14 +422,7 @@ setMethod(
     observation_code_system = observation_code_system
   )
   
-  if(is(x@conn, "SQLiteConnection")) {
-    observations_linked <- dplyr::mutate(
-      observations_linked,
-      observation_datetime_int = dplyr::sql(
-        "( strftime('%s', observation_datetime) - 
-           strftime('%s', t_start) ) / 3600.0")
-      )
-  } else if(is(x@conn, "PqConnection")) {
+  if(is(x@conn, "PqConnection") | is(x@conn, "duckdb_connection")) {
     observations_linked <- dplyr::mutate(
       observations_linked,
       observation_datetime_int = dplyr::sql(

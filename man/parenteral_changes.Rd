@@ -60,8 +60,8 @@ changes.
 \examples{
 \dontrun{
 library(dplyr)
-conSQLite <- create_mock_database("Ramses_mock_database_example.sqlite")
-example_therapy <- TherapyEpisode(conSQLite, "2a2b6da3b67f6f495f4cedafb029f631")
+ramses_db <- create_mock_database("Ramses_mock_database_example.duckdb")
+example_therapy <- TherapyEpisode(ramses_db, "2a2b6da3b67f6f495f4cedafb029f631")
 
 # Obtain the parenteral to oral sequence indexes
 therapy_sequence <- parenteral_changes(example_therapy)

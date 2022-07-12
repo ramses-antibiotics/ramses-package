@@ -3,7 +3,7 @@
 
 # Interface ---------------------------------------------------------------
 
-setOldClass(c("tbl_SQLiteConnection", "tbl_dbi", "tbl_sql", "tbl_lazy", "tbl"))
+setOldClass(c("tbl_duckdb_connection", "tbl_dbi", "tbl_sql", "tbl_lazy", "tbl"))
 setOldClass(c("tbl_PqConnection", "tbl_dbi", "tbl_sql", "tbl_lazy", "tbl"))
 setGeneric("collect", function(x) standardGeneric("collect"))
 setGeneric("compute", function(x) standardGeneric("compute"))
@@ -17,7 +17,7 @@ setGeneric("compute", function(x) standardGeneric("compute"))
 #' @importFrom dplyr collect
 #' @importFrom dplyr compute
 #' @export
-#' @importClassesFrom RSQLite SQLiteConnection
+#' @importClassesFrom duckdb duckdb_connection
 setClass(
   "RamsesObject", 
   slots = c(
@@ -229,20 +229,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
   ) %>% 
     dplyr::select(patient_id, therapy_id, therapy_start, therapy_end)
 
-  if(is(conn, "SQLiteConnection")) {
-    tbl(conn, "ramses_tally") %>%
-      dplyr::full_join(therapy_table, by = character()) %>%
-      dplyr::mutate(t_start = dplyr::sql("datetime(therapy_start, (t || ' hours')) || '+00:00'")) %>% 
-      dplyr::filter( dplyr::sql("DATETIME(t_start) < DATETIME(therapy_end)")) %>% 
-      dplyr::mutate(t_end = dplyr::sql("datetime(therapy_start, ((t + 1) || ' hours')) || '+00:00'")) %>% 
-      dplyr::group_by(patient_id, therapy_id) %>% 
-      dplyr::mutate(t_end = dplyr::if_else(
-        t == max(t, na.rm = TRUE),
-        therapy_end,
-        t_end
-      )) %>% 
-      dplyr::ungroup()
-  } else if(is(conn, "PqConnection")) {
+  if(is(conn, "PqConnection") | is(conn, "duckdb_connection")) {
     tbl(conn, "ramses_tally") %>%
       dplyr::full_join(therapy_table, by = character()) %>%
       dplyr::mutate(t_start = dplyr::sql("therapy_start + interval '1h' * t "))%>% 
@@ -277,27 +264,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
     by = "therapy_id", copy = TRUE
   )
   
-  if (is(therapy_table$src$con, "SQLiteConnection")) {
-    therapy_table_meds_join <- dplyr::left_join(
-      therapy_table, 
-      medication_requests, 
-      by = c("patient_id", "therapy_id")) %>% 
-      dplyr::filter(
-        dplyr::sql(
-          "DATETIME(t_start) BETWEEN DATETIME(prescription_start) AND DATETIME(prescription_end) OR
-          DATETIME(prescription_start) BETWEEN DATETIME(t_start) AND DATETIME(t_end) OR
-          DATETIME(prescription_end) BETWEEN DATETIME(t_start) AND DATETIME(t_end)"
-          )
-      ) %>% 
-      dplyr::group_by(patient_id, therapy_id, t) %>%
-      dplyr::summarise(parenteral = dplyr::if_else(
-        mean(
-          dplyr::if_else(ATC_route == "P", 1.0, 0.0), 
-          na.rm = T) == 0.0,
-        0L,
-        1L
-      ))
-  } else if (is(therapy_table$src$con, "PqConnection")) {
+  if (is(therapy_table$src$con, "PqConnection") | is(therapy_table$src$con, "duckdb_connection") ) {
     therapy_table_meds_join <- dplyr::left_join(
       therapy_table, 
       medication_requests, 
@@ -377,8 +344,8 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' @examples 
 #' \dontrun{
 #' library(dplyr)
-#' conSQLite <- create_mock_database("Ramses_mock_database_example.sqlite")
-#' example_therapy <- TherapyEpisode(conSQLite, "2a2b6da3b67f6f495f4cedafb029f631")
+#' ramses_db <- create_mock_database("Ramses_mock_database_example.duckdb")
+#' example_therapy <- TherapyEpisode(ramses_db, "2a2b6da3b67f6f495f4cedafb029f631")
 #' 
 #' # Obtain the parenteral to oral sequence indexes
 #' therapy_sequence <- parenteral_changes(example_therapy)
@@ -629,29 +596,22 @@ setMethod("compute", "TherapyEpisode", function(x) {
   .therapy_table_completeness_check(x, x@record)
   x@record <- dplyr::compute(x@record)
   x@therapy_table <- dplyr::compute(x@therapy_table)
-  if (is(x@conn, "SQLiteConnection")) {
+  .create_sql_primary_key(
+    conn = x@conn,
+    table = x@therapy_table$ops$x$x,
+    field = "t, patient_id, therapy_id",
+    override_index_name = paste0("idx_pk_", x@therapy_table$ops$x$x)
+  )
+  if ( is(x@conn, "PqConnection") ) {
     .create_sql_index(
       conn = x@conn,
       table = x@therapy_table$ops$x$x,
-      fields = c(
-        "patient_id",
-        "therapy_id",
-        "t_start"
-      )
-    )
-  } else {
-    .create_sql_primary_key(
-      conn = x@conn,
-      table = x@therapy_table$ops$x$x,
-      field = "t, patient_id, therapy_id",
-      override_index_name = paste0("idx_pk_", x@therapy_table$ops$x$x)
-    )
-    .create_sql_index(
-      conn = x@conn,
-      table = x@therapy_table$ops$x$x,
-      fields = "patient_id, (t_start at time zone 'UTC')",
+      # TODO deal with tz problem
+      # fields = "patient_id, (t_start at time zone 'UTC')",
+      fields = "patient_id, t_start",
       override_index_name = paste0("idx_pt_time_", x@therapy_table$ops$x$x)
     )
   }
+  
   x
 })
