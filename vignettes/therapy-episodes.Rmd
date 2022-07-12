@@ -150,7 +150,7 @@ ramses_db <- create_mock_database("ramses-db.sqlite")
 
 tbl(ramses_db, "drug_prescriptions") %>% 
   filter(patient_id == "99999999998") %>% 
-  collect_ramses_tbl() %>% 
+  collect() %>% 
   select(patient_id, prescription_id, combination_id, 
          therapy_id, therapy_rank, prescription_text) %>% 
   glimpse()
