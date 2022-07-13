@@ -600,16 +600,14 @@ setMethod("compute", "TherapyEpisode", function(x) {
     field = "t, patient_id, therapy_id",
     override_index_name = paste0("idx_pk_", x@therapy_table$ops$x$x)
   )
-  if ( is(x@conn, "PqConnection") ) {
-    .create_sql_index(
-      conn = x@conn,
-      table = x@therapy_table$ops$x$x,
-      # TODO deal with tz problem
-      # fields = "patient_id, (t_start at time zone 'UTC')",
-      fields = "patient_id, t_start",
-      override_index_name = paste0("idx_pt_time_", x@therapy_table$ops$x$x)
-    )
-  }
+  .create_sql_index(
+    conn = x@conn,
+    table = x@therapy_table$ops$x$x,
+    # TODO deal with tz problem
+    # fields = "patient_id, (t_start at time zone 'UTC')",
+    fields = "patient_id, t_start",
+    override_index_name = paste0("idx_pt_time_", x@therapy_table$ops$x$x)
+  )
   
   x
 })

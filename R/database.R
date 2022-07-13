@@ -781,37 +781,20 @@ create_therapy_episodes <- function(
     first_column_names[first_column_names %in% colnames(new_drug_prescriptions_tbl)]
   )
   
-  if ( is(conn, "SQLiteConnection") ) {
-    # Necessary to preserve dates and datetime fields from
-    # conversion to integers
-    new_drug_prescriptions_tbl <- new_drug_prescriptions_tbl %>% 
-      dplyr::collect() %>% 
-      arrange_variables(first_column_names = first_column_names)
-    
-    dplyr::copy_to(
-      dest = conn,
-      df = new_drug_prescriptions_tbl,
-      name = "drug_prescriptions",
-      overwrite = TRUE,
-      temporary = FALSE
-    )
-    
-  } else {
-    new_drug_prescriptions_tbl <- arrange_variables(
-      new_drug_prescriptions_tbl, 
-      first_column_names = first_column_names)  %>% 
-      dplyr::compute(name = "drug_prescriptions_new", temporary = FALSE)
-    
-    .remove_db_tables(conn = conn, table_names = "drug_prescriptions")
-    
-    DBI::dbExecute(
-      conn = conn, 
-      "ALTER TABLE drug_prescriptions_new RENAME TO drug_prescriptions;"
-    )
-  }
+  new_drug_prescriptions_tbl <- arrange_variables(
+    new_drug_prescriptions_tbl, 
+    first_column_names = first_column_names)  %>% 
+    dplyr::compute()
+  
+  .remove_db_tables(conn = conn, table_names = "drug_prescriptions")
+  
+  dplyr::compute(new_drug_prescriptions_tbl,
+                 name = "drug_prescriptions",
+                 temporary = FALSE)
   
   .remove_db_tables(conn = conn, c("ramses_tc_combination", 
-                                   "ramses_tc_therapy"))
+                                   "ramses_tc_therapy",
+                                   "drug_prescriptions_new"))
   
   .create_table_drug_therapy_episodes(conn = conn)
 }
