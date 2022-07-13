@@ -224,14 +224,10 @@ Several functions can enhance therapy tables with variables characterising the c
 The example below demonstrates how to classify a patient as hypothermic/afebrile/febrile:
 
 ```{r classify_fever}
-example_sepsis <- TherapyEpisode(ramses_db, "4d611fc8886c23ab047ad5f74e5080d7")
+example_sepsis <- TherapyEpisode(ramses_db, "4d611fc8886c23ab047ad5f74e5080d7") %>% 
+  clinical_feature_last(observation_code = "8310-5", hours = 6) 
 
-clinical_feature_last(
-  x = example_sepsis,
-  observation_code = "8310-5",
-  hours = 6
-) %>% 
-  therapy_table(collect = TRUE) %>% 
+therapy_table(example_sepsis, collect = TRUE) %>% 
   mutate(
     febrile = case_when(
       last_temperature_6h < 36 ~ "hypothermic",
