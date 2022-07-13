@@ -29,6 +29,7 @@ Depends:
 Imports: 
     duckdb (>= 0.4.0),
     DBI,
+    rlang,
     dplyr (>= 0.8.3),
     dbplyr (>= 1.4.2),
     magrittr,

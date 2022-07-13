@@ -2,32 +2,87 @@
 # PostgreSQL --------------------------------------------------------------
 
 test_that(".create_sql_primary_key on Postgres", {
-  
   if (!identical(Sys.getenv("CI"), "true")) {
-    skip("Test only on Travis")
+    skip("Test only on GitHub Actions")
   }
   
-  db_con <- DBI::dbConnect(RPostgres::Postgres(),
+  pq_conn <- DBI::dbConnect(RPostgres::Postgres(),
                            user = "user", 
                            password = "password",
                            host = "localhost", 
-                           dbname="RamsesDB",
-                           timezone = "Europe/London") 
-  DBI::dbWriteTable(conn = db_con, name = "test_table", value = data.frame(key = 1:10) )
-  .create_sql_primary_key(conn = db_con, field = "key", table = "test_table")
+                           dbname="RamsesDB") 
+  on.exit({
+    .remove_db_tables(conn = pq_conn,
+                      DBI::dbListTables(pq_conn))
+    DBI::dbDisconnect(pq_conn)
+  })
+  DBI::dbWriteTable(conn = pq_conn, name = "test_table", 
+                    value = data.frame(key = 1:10) )
+  .create_sql_primary_key(conn = pq_conn, field = "key", table = "test_table")
   expect_error(
-    DBI::dbAppendTable(
-      conn = db_con, name = "test_table", value = data.frame(key = 1:10) 
+    DBI::dbWriteTable(
+      conn = pq_conn, name = "test_table", 
+      value = data.frame(key = 1:10), append = TRUE
     )
   )
-  DBI::dbDisconnect(db_con)
 })
 
+test_that(".create_sql_index on Postgres", {
+  if (!identical(Sys.getenv("CI"), "true")) {
+    skip("Test only on GitHub Actions")
+  }
+  
+  pq_conn <- DBI::dbConnect(RPostgres::Postgres(),
+                            user = "user", 
+                            password = "password",
+                            host = "localhost", 
+                            dbname="RamsesDB")
+  on.exit({
+    .remove_db_tables(conn = pq_conn,
+                      DBI::dbListTables(pq_conn))
+    DBI::dbDisconnect(pq_conn)
+  })
+  
+  DBI::dbWriteTable(conn = pq_conn, name = "test_table", value = data.frame(key = 1:10) )
+  .create_sql_index(conn = pq_conn, field = "key", table = "test_table")
+  expect_equal(
+    DBI::dbGetQuery(pq_conn, "SELECT * FROM pg_catalog.pg_indexes") %>% 
+      dplyr::filter(.data$tablename == "test_table") %>% 
+      dplyr::select(.data$tablename, .data$indexname) %>% 
+      dplyr::collect(),
+    data.frame(
+      tablename = "test_table",
+      indexname = "idx_test_table_key"
+    )
+  )
+})
+
+test_that(".build_tally_table on Postgres", {
+  if (!identical(Sys.getenv("CI"), "true")) {
+    skip("Test only on GitHub Actions")
+  }
+  
+  pq_conn <- DBI::dbConnect(RPostgres::Postgres(),
+                            user = "user", 
+                            password = "password",
+                            host = "localhost", 
+                            dbname="RamsesDB")
+  on.exit({
+    .remove_db_tables(conn = pq_conn,
+                      DBI::dbListTables(pq_conn))
+    DBI::dbDisconnect(pq_conn)
+  })
+  .build_tally_table(pq_conn)
+  expect_equal(
+    DBI::dbReadTable(pq_conn, "ramses_tally"),
+    data.frame(t = 0:50000)
+  )
+})
 
 test_that(".run_transitive_closure on Postgres", {
   
   if (!identical(Sys.getenv("CI"), "true")) {
-    skip("Test only on Travis")
+    skip("Test only on GitHub Actions")
   }
   
   test_edges <- dplyr::tibble(
@@ -39,58 +94,58 @@ test_that(".run_transitive_closure on Postgres", {
     grp = as.integer(c(1,1,1,1,2,2,2,2))
   )
   
-  db_con <- DBI::dbConnect(RPostgres::Postgres(),
+  pq_conn <- DBI::dbConnect(RPostgres::Postgres(),
                            user = "user", 
                            password = "password",
                            host = "localhost", 
-                           dbname="RamsesDB",
-                           timezone = "Europe/London")
+                           dbname="RamsesDB")
+  on.exit({
+    .remove_db_tables(conn = pq_conn,
+                      DBI::dbListTables(pq_conn))
+    DBI::dbDisconnect(pq_conn)
+  })
+  
   dplyr::copy_to(
-    dest = db_con,
+    dest = pq_conn,
     name = "ramses_test_edges",
     df = test_edges,
     temporary = FALSE,
     overwrite = TRUE)
   
-  test_output <- tbl(db_con,"ramses_test_edges") %>% 
+  test_output <- tbl(pq_conn,"ramses_test_edges") %>% 
     Ramses:::.run_transitive_closure() %>% 
     dplyr::collect()
   
   expect_equal(test_output,
                test_solution)
-  
-  lapply(DBI::dbListTables(db_con), 
-         DBI::dbRemoveTable, 
-         conn = db_con)
-  DBI::dbDisconnect(db_con)
 })
 
 
 test_that("drug_prescriptions_edges on Postgres", {
   
   if (!identical(Sys.getenv("CI"), "true")) {
-    skip("Test only on Travis")
+    skip("Test only on GitHub Actions")
   }
   
-  db_con <- DBI::dbConnect(RPostgres::Postgres(),
+  pq_conn <- DBI::dbConnect(RPostgres::Postgres(),
                            user = "user", 
                            password = "password",
                            host = "localhost", 
-                           dbname = "RamsesDB",
-                           timezone = "Europe/London")
-  
-  lapply(DBI::dbListTables(db_con), 
-         DBI::dbRemoveTable, 
-         conn = db_con)
+                           dbname = "RamsesDB")
+  on.exit({
+    .remove_db_tables(conn = pq_conn,
+                      DBI::dbListTables(pq_conn))
+    DBI::dbDisconnect(pq_conn)
+  })
   
   records_rx <- read.csv(system.file("test_cases", "prescription_linkage_prescriptions.csv", 
                                      package = "Ramses"),
                          colClasses = c("character", "numeric", "numeric", 
                                         "POSIXct", "POSIXct", "POSIXct", "character", "character", 
                                         "character", "character", "character", "character", "character"))
-  load_medications(db_con, records_rx, overwrite = T)
+  load_medications(pq_conn, records_rx, overwrite = T)
   
-  output <- dplyr::distinct(tbl(db_con, "drug_prescriptions_edges"), 
+  output <- dplyr::distinct(tbl(pq_conn, "drug_prescriptions_edges"), 
                             patient_id, edge_type, relation_type) %>% 
     dplyr::arrange(patient_id) %>% 
     dplyr::collect()
@@ -103,44 +158,47 @@ test_that("drug_prescriptions_edges on Postgres", {
     dplyr::tibble()
   
   expect_equal(output,  records_edges)
-  
-  lapply(DBI::dbListTables(db_con), 
-         DBI::dbRemoveTable, 
-         conn = db_con)
-  
-  DBI::dbDisconnect(db_con)
 })
 
 
 test_that("Ramses on PosgreSQL (system test)", {
   
   if (!identical(Sys.getenv("CI"), "true")) {
-    skip("Test only on Travis")
+    skip("Test only on GitHub Actions")
   }
 
-  # database loading functions ------------------------------------------
-  
-  db_con <- DBI::dbConnect(RPostgres::Postgres(),
+  pq_conn <- DBI::dbConnect(RPostgres::Postgres(),
                            user = "user", 
                            password = "password",
                            host = "localhost", 
-                           dbname="RamsesDB",
-                           timezone = "Europe/London")
+                           dbname="RamsesDB")
+  on.exit({
+    .remove_db_tables(conn = pq_conn,
+                      DBI::dbListTables(pq_conn))
+    DBI::dbDisconnect(pq_conn)
+  })
   
-  lapply(DBI::dbListTables(db_con), 
-         DBI::dbRemoveTable, 
-         conn = db_con)
+  # database loading functions ------------------------------------------
   
   expect_invisible(
-    load_medications(conn = db_con, 
+    load_medications(conn = pq_conn, 
                      prescriptions = .ramses_mock_dataset$drug_rx,
                      administrations = .ramses_mock_dataset$drug_admins,
                      overwrite = TRUE)
   )
   
+  test_tables <- tbl(pq_conn, dbplyr::in_schema("information_schema", "tables")) %>% 
+    dplyr::filter(table_type == "BASE TABLE" &
+                    table_schema == "public") %>% 
+    dplyr::collect()
+  expect_equal(
+    sort(test_tables$table_name),
+    c("drug_administrations", "drug_prescriptions", 
+      "drug_prescriptions_edges", "drug_therapy_episodes")
+  )
   
   expect_invisible(
-    load_inpatient_episodes(conn = db_con,
+    load_inpatient_episodes(conn = pq_conn,
                             patients_data = .ramses_mock_dataset$patients,
                             episodes_data = .ramses_mock_dataset$episodes,
                             wards_data = inpatient_wards,
@@ -148,19 +206,19 @@ test_that("Ramses on PosgreSQL (system test)", {
   )
   expect_invisible(
     expect_warning(
-      load_inpatient_diagnoses(conn = db_con,
+      load_inpatient_diagnoses(conn = pq_conn,
                                diagnoses_data = .ramses_mock_dataset$diagnoses,
                                diagnoses_lookup = .ramses_mock_dataset$icd10cm_2020,
                                overwrite = TRUE)))
   expect_invisible(
     load_inpatient_investigations(
-      conn = db_con,
+      conn = pq_conn,
       investigations_data = inpatient_investigations,
       overwrite = TRUE
     ))
   expect_invisible(
     load_inpatient_microbiology(
-      conn = db_con,
+      conn = pq_conn,
       .ramses_mock_dataset$micro$specimens,
       .ramses_mock_dataset$micro$isolates,
       .ramses_mock_dataset$micro$susceptibilities,
@@ -168,7 +226,7 @@ test_that("Ramses on PosgreSQL (system test)", {
     )
   )
   
-  test_output <- tbl(db_con, "drug_prescriptions") %>% 
+  test_output <- tbl(pq_conn, "drug_prescriptions") %>% 
     dplyr::filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", 
                                          "89ac870bc1c1e4b2a37cec79d188cb08",
                                          "0bf9ea7732dd6e904ab670a407382d95")) %>% 
@@ -187,7 +245,7 @@ test_that("Ramses on PosgreSQL (system test)", {
                                  "89ac870bc1c1e4b2a37cec79d188cb08", 
                                  "89ac870bc1c1e4b2a37cec79d188cb08")))
 
-  test_output <- tbl(db_con, "drug_therapy_episodes") %>% 
+  test_output <- tbl(pq_conn, "drug_therapy_episodes") %>% 
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
     dplyr::collect()
   
@@ -204,12 +262,12 @@ test_that("Ramses on PosgreSQL (system test)", {
   
   # recreate therapy episodes and combinations --------------------------------
   
-  DBI::dbRemoveTable(db_con, "drug_prescriptions_edges")
-  DBI::dbRemoveTable(db_con, "drug_therapy_episodes")
+  DBI::dbRemoveTable(pq_conn, "drug_prescriptions_edges")
+  DBI::dbRemoveTable(pq_conn, "drug_therapy_episodes")
   
-  expect_silent(create_therapy_episodes(db_con, silent = TRUE))
+  expect_silent(create_therapy_episodes(pq_conn, silent = TRUE))
   
-  test_output <- tbl(db_con, "drug_therapy_episodes") %>% 
+  test_output <- tbl(pq_conn, "drug_therapy_episodes") %>% 
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
     dplyr::collect()
   
@@ -227,11 +285,11 @@ test_that("Ramses on PosgreSQL (system test)", {
   # other database functions --------------------------------------------
   
   # bridge_episode_prescription_overlap
-  expect_true(bridge_episode_prescription_overlap(db_con))
-  expect_error(bridge_episode_prescription_overlap(db_con))
-  expect_true(bridge_episode_prescription_overlap(db_con, overwrite = TRUE))
+  expect_true(bridge_episode_prescription_overlap(pq_conn))
+  expect_error(bridge_episode_prescription_overlap(pq_conn))
+  expect_true(bridge_episode_prescription_overlap(pq_conn, overwrite = TRUE))
   test_bridge_overlap <- tbl(
-    db_con,
+    pq_conn,
     "bridge_episode_prescription_overlap") %>% 
     dplyr::filter(patient_id == "99999999999" & 
                     prescription_id == "89094c5dffaad0e56073adaddf286e73") %>% 
@@ -240,10 +298,10 @@ test_that("Ramses on PosgreSQL (system test)", {
   expect_equal(round(sum(test_bridge_overlap$DDD_prescribed), 1), 1.3)
   
   # bridge_episode_prescription_initiation
-  expect_true(bridge_episode_prescription_initiation(db_con))
-  expect_error(bridge_episode_prescription_initiation(db_con))
-  expect_true(bridge_episode_prescription_initiation(db_con, overwrite = TRUE))
-  test_bridge_init <- tbl(db_con, "bridge_episode_prescription_initiation") %>% 
+  expect_true(bridge_episode_prescription_initiation(pq_conn))
+  expect_error(bridge_episode_prescription_initiation(pq_conn))
+  expect_true(bridge_episode_prescription_initiation(pq_conn, overwrite = TRUE))
+  test_bridge_init <- tbl(pq_conn, "bridge_episode_prescription_initiation") %>% 
     dplyr::filter(patient_id == "99999999999" & 
                     prescription_id == "89094c5dffaad0e56073adaddf286e73") %>% 
     dplyr::collect()
@@ -251,22 +309,22 @@ test_that("Ramses on PosgreSQL (system test)", {
   expect_equal(round(test_bridge_init$DDD_prescribed, 1), 1.3)
   
   # bridge_spell_therapy_overlap
-  expect_true(bridge_spell_therapy_overlap(db_con))
-  expect_error(bridge_spell_therapy_overlap(db_con))
-  expect_true(bridge_spell_therapy_overlap(db_con, overwrite = TRUE))
+  expect_true(bridge_spell_therapy_overlap(pq_conn))
+  expect_error(bridge_spell_therapy_overlap(pq_conn))
+  expect_true(bridge_spell_therapy_overlap(pq_conn, overwrite = TRUE))
   test_bridge_th_overlap <- tbl(
-    db_con,
+    pq_conn,
     "bridge_spell_therapy_overlap") %>% 
     dplyr::filter(patient_id == "99999999999" &
                     therapy_id == "4d611fc8886c23ab047ad5f74e5080d7") %>% 
     dplyr::collect()
   expect_equal(round(sum(test_bridge_th_overlap$LOT), 1), 7.4)
   
-  expect_true(bridge_tables(conn = db_con, overwrite = TRUE))
+  expect_true(bridge_tables(conn = pq_conn, overwrite = TRUE))
 
   # date and datetime casting -----------------------------------------------
   
-  test_date <- tbl(db_con, "inpatient_episodes") %>% 
+  test_date <- tbl(pq_conn, "inpatient_episodes") %>% 
     dplyr::filter(patient_id == "99999999999") %>% 
     dplyr::collect()
   
@@ -280,7 +338,7 @@ test_that("Ramses on PosgreSQL (system test)", {
 
   # Single IVPO change pt 99999999999
   
-  test_episode <- TherapyEpisode(db_con, "5528fc41106bb48eb4d48bc412e13e67")
+  test_episode <- TherapyEpisode(pq_conn, "5528fc41106bb48eb4d48bc412e13e67")
   test_output <- therapy_table(test_episode, collect = T)
   test_expected_head <- dplyr::tibble(
     t = 0:5,
@@ -318,7 +376,7 @@ test_that("Ramses on PosgreSQL (system test)", {
     structure(241.883333333333, class = "difftime", units = "hours")
   )
   
-  test_medication_request <- MedicationRequest(db_con, "5528fc41106bb48eb4d48bc412e13e67")
+  test_medication_request <- MedicationRequest(pq_conn, "5528fc41106bb48eb4d48bc412e13e67")
   expect_is(test_medication_request, "MedicationRequest")
   expect_is(TherapyEpisode(test_medication_request), "TherapyEpisode")
   expect_equal(head(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
@@ -332,7 +390,7 @@ test_that("Ramses on PosgreSQL (system test)", {
   
   # 2+ TherapyEpisode -------------------------------------------------------
   
-  test_episode <- TherapyEpisode(conn = db_con, 
+  test_episode <- TherapyEpisode(conn = pq_conn, 
                                  id = c("f770855cf9d424c76fdfbc9786d508ac", 
                                         "5528fc41106bb48eb4d48bc412e13e67"))
   expect_is(test_episode, "TherapyEpisode")
@@ -364,8 +422,8 @@ test_that("Ramses on PosgreSQL (system test)", {
   
   expect_true(
     .therapy_table_completeness_check(
-      episode = TherapyEpisode(db_con, "592a738e4c2afcae6f625c01856151e0"),
-      tbl_object = TherapyEpisode(db_con, "592a738e4c2afcae6f625c01856151e0")@therapy_table,
+      episode = TherapyEpisode(pq_conn, "592a738e4c2afcae6f625c01856151e0"),
+      tbl_object = TherapyEpisode(pq_conn, "592a738e4c2afcae6f625c01856151e0")@therapy_table,
       silent = F
     )
   )
@@ -373,8 +431,8 @@ test_that("Ramses on PosgreSQL (system test)", {
   expect_false(
     expect_warning(
       .therapy_table_completeness_check(
-        episode = TherapyEpisode(db_con, "592a738e4c2afcae6f625c01856151e0"),
-        tbl_object = TherapyEpisode(db_con, "89ac870bc1c1e4b2a37cec79d188cb08")@therapy_table,
+        episode = TherapyEpisode(pq_conn, "592a738e4c2afcae6f625c01856151e0"),
+        tbl_object = TherapyEpisode(pq_conn, "89ac870bc1c1e4b2a37cec79d188cb08")@therapy_table,
         silent = F
       )
     )
@@ -382,20 +440,20 @@ test_that("Ramses on PosgreSQL (system test)", {
   
   #> IVPO ------------------------------------------------------------------
   
-  expect_equal(parenteral_changes(TherapyEpisode(db_con, "5528fc41106bb48eb4d48bc412e13e67")), 
+  expect_equal(parenteral_changes(TherapyEpisode(pq_conn, "5528fc41106bb48eb4d48bc412e13e67")), 
                list("5528fc41106bb48eb4d48bc412e13e67" = list(c(0, 241, 6))))
-  expect_equal(parenteral_changes(TherapyEpisode(db_con, 
+  expect_equal(parenteral_changes(TherapyEpisode(pq_conn, 
                                                  c("f770855cf9d424c76fdfbc9786d508ac",
                                                    "74e3f378b91c6d7121a0d637bd56c2fa"))), 
                list("74e3f378b91c6d7121a0d637bd56c2fa" = list(c(0, 97, 49)),
                     "f770855cf9d424c76fdfbc9786d508ac" = list(c(0, 122, 74))))
   
   # Three IVPO changes in pt 5726385525 with only one therapy episode
-  single_therapy <- dplyr::collect(dplyr::filter(tbl(db_con, "drug_prescriptions"), 
+  single_therapy <- dplyr::collect(dplyr::filter(tbl(pq_conn, "drug_prescriptions"), 
                                                  patient_id == "5726385525"))
   expect_true(all(single_therapy$therapy_id == "a028cf950c29ca73c01803b54642d513"))
   expect_equal(
-    parenteral_changes(TherapyEpisode(db_con, "a028cf950c29ca73c01803b54642d513")),
+    parenteral_changes(TherapyEpisode(pq_conn, "a028cf950c29ca73c01803b54642d513")),
     list(
       "a028cf950c29ca73c01803b54642d513" = list(c(0, 144, 97),
                                                 c(146, 316, 219),
@@ -405,12 +463,12 @@ test_that("Ramses on PosgreSQL (system test)", {
   
   # recreate therapy episodes and combinations --------------------------------
   
-  DBI::dbRemoveTable(db_con, "drug_prescriptions_edges")
-  DBI::dbRemoveTable(db_con, "drug_therapy_episodes")
+  DBI::dbRemoveTable(pq_conn, "drug_prescriptions_edges")
+  DBI::dbRemoveTable(pq_conn, "drug_therapy_episodes")
   
-  expect_silent(create_therapy_episodes(db_con, silent = TRUE))
+  expect_silent(create_therapy_episodes(pq_conn, silent = TRUE))
   
-  test_output <- tbl(db_con, "drug_therapy_episodes") %>% 
+  test_output <- tbl(pq_conn, "drug_therapy_episodes") %>% 
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
     dplyr::collect()
 
@@ -425,87 +483,46 @@ test_that("Ramses on PosgreSQL (system test)", {
     )
   )
   
-  # other database functions --------------------------------------------
-  
-  # bridge_episode_prescription_overlap
-  expect_true(bridge_episode_prescription_overlap(db_con))
-  expect_error(bridge_episode_prescription_overlap(db_con))
-  expect_true(bridge_episode_prescription_overlap(db_con, overwrite = TRUE))
-  test_bridge_overlap <- tbl(
-    db_con,
-    "bridge_episode_prescription_overlap") %>% 
-    dplyr::filter(patient_id == "99999999999" & 
-                    prescription_id == "89094c5dffaad0e56073adaddf286e73") %>% 
-    dplyr::collect()
-  expect_equal(round(sum(test_bridge_overlap$DOT), 1), 2.0)
-  expect_equal(round(sum(test_bridge_overlap$DDD_prescribed), 1), 1.3)
-  
-  # bridge_episode_prescription_initiation
-  expect_true(bridge_episode_prescription_initiation(db_con))
-  expect_error(bridge_episode_prescription_initiation(db_con))
-  expect_true(bridge_episode_prescription_initiation(db_con, overwrite = TRUE))
-  test_bridge_init <- tbl(db_con, "bridge_episode_prescription_initiation") %>% 
-    dplyr::filter(patient_id == "99999999999" & 
-                    prescription_id == "89094c5dffaad0e56073adaddf286e73") %>% 
-    dplyr::collect()
-  expect_equal(round(test_bridge_init$DOT, 1), 2.0)
-  expect_equal(round(test_bridge_init$DDD_prescribed, 1), 1.3)
-  
-  # bridge_spell_therapy_overlap
-  expect_true(bridge_spell_therapy_overlap(db_con))
-  expect_error(bridge_spell_therapy_overlap(db_con))
-  expect_true(bridge_spell_therapy_overlap(db_con, overwrite = TRUE))
-  test_bridge_th_overlap <- tbl(
-    db_con,
-    "bridge_spell_therapy_overlap") %>% 
-    dplyr::filter(patient_id == "99999999999" &
-                    therapy_id == "4d611fc8886c23ab047ad5f74e5080d7") %>% 
-    dplyr::collect()
-  expect_equal(round(sum(test_bridge_th_overlap$LOT), 1), 7.4)
-  
-  expect_true(bridge_tables(conn = db_con, overwrite = TRUE))
-  
-  
   # therapy timeline -------------------------------------------------
   
   expect_error(
-    therapy_timeline(Patient(conn = db_con, 
+    therapy_timeline(Patient(conn = pq_conn, 
                              id =  "I don't exist"))
   )
   expect_is(
-    therapy_timeline(Patient(conn = db_con, 
+    therapy_timeline(Patient(conn = pq_conn, 
                              id =  "99999999999")),
     "timevis")
   expect_error(
-    therapy_timeline(Patient(conn = db_con, 
+    therapy_timeline(Patient(conn = pq_conn, 
                              id =  "99999999999"),
                      date1 = "2017-01-01",
                      date2 = "2017-03-01")
   )
   expect_is(
-    therapy_timeline(Patient(conn = db_con, 
+    therapy_timeline(Patient(conn = pq_conn, 
                              id =  "99999999999"),
                      date1 = as.Date("2017-01-01"),
                      date2 = as.Date("2017-03-01")), 
     "timevis")
   expect_is(
-    therapy_timeline(Patient(conn = db_con, 
+    therapy_timeline(Patient(conn = pq_conn, 
                              id =  "99999999999"),
                      date1 = as.Date("2017-01-01")),
     "timevis")
   expect_is(
-    therapy_timeline(Patient(conn = db_con, 
+    therapy_timeline(Patient(conn = pq_conn, 
                              id =  "99999999999"),
                      date2 = as.Date("2017-03-01")), 
     "timevis")
   expect_is(
-    therapy_timeline(TherapyEpisode(conn = db_con,
+    therapy_timeline(TherapyEpisode(conn = pq_conn,
                                     id = "4d611fc8886c23ab047ad5f74e5080d7")), 
     "timevis")
   
   expect_is(
     expect_warning(
-      therapy_timeline(TherapyEpisode(conn = db_con,
+      therapy_timeline(TherapyEpisode(conn = pq_conn,
                                       id = c("4d611fc8886c23ab047ad5f74e5080d7",
                                              "a028cf950c29ca73c01803b54642d513")))
     ), 
@@ -517,14 +534,14 @@ test_that("Ramses on PosgreSQL (system test)", {
   
   expect_error(
     clinical_feature_last(
-      TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+      TherapyEpisode(pq_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
       observation_code = "8310-5",
       hours = 24,
       observation_code_system = "doesnotexist"
     )
   )
   last_temp <- clinical_feature_last(
-    TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+    TherapyEpisode(pq_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_code = "8310-5",
     hours = 24
   ) %>% 
@@ -541,7 +558,7 @@ test_that("Ramses on PosgreSQL (system test)", {
   rm(last_temp)
   
   last_temp_2therapies <- clinical_feature_last(
-    TherapyEpisode(db_con, c("4d611fc8886c23ab047ad5f74e5080d7",
+    TherapyEpisode(pq_conn, c("4d611fc8886c23ab047ad5f74e5080d7",
                                     "a028cf950c29ca73c01803b54642d513")),
     observation_code = "8310-5",
     hours = 24
@@ -562,7 +579,7 @@ test_that("Ramses on PosgreSQL (system test)", {
   rm(last_temp_2therapies)
   
   last_temp <- clinical_feature_last(
-    TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+    TherapyEpisode(pq_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_code = c("8310-5", "2160-0"),
     hours = 32
   ) %>% 
@@ -587,7 +604,7 @@ test_that("Ramses on PosgreSQL (system test)", {
   
   # > OLS -------------------------------------------------------------------
   
-  example_therapy <-  TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7")
+  example_therapy <-  TherapyEpisode(pq_conn, "4d611fc8886c23ab047ad5f74e5080d7")
   example_therapy_record <- collect(example_therapy)
   
   expect_error(
@@ -635,7 +652,7 @@ test_that("Ramses on PosgreSQL (system test)", {
   
   expect_error(
     clinical_feature_interval(
-      TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+      TherapyEpisode(pq_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
       observation_intervals = list("8310-5" = c(36, 38)),
       hours = 24,
       observation_code_system = "doesnotexist"
@@ -643,7 +660,7 @@ test_that("Ramses on PosgreSQL (system test)", {
   )
   
   temperature_check <- therapy_table(clinical_feature_interval(
-    TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+    TherapyEpisode(pq_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_intervals = list("8310-5" = c(36, 38)),
     hours = 24), collect = TRUE)
   
@@ -662,13 +679,13 @@ test_that("Ramses on PosgreSQL (system test)", {
   
   expect_error(
     therapy_table(clinical_feature_interval(
-      TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+      TherapyEpisode(pq_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
       observation_intervals = list("8310-5" = c(NA, 38)),
       hours = 24), collect = TRUE)
   )
   
   temperature_check <- therapy_table(clinical_feature_interval(
-    TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+    TherapyEpisode(pq_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_intervals = list("8310-5" = c(38)),
     hours = 24), collect = TRUE)
   expect_equal(temperature_check$threshold_temperature38_24h_under[1:5],
@@ -681,7 +698,7 @@ test_that("Ramses on PosgreSQL (system test)", {
                c(0, 0, 0, 0, 0))
   
   temperature_check <- therapy_table(clinical_feature_interval(
-    TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+    TherapyEpisode(pq_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_intervals = list("8310-5" = c(36)),
     hours = 24), collect = TRUE)
   expect_equal(temperature_check$threshold_temperature36_24h_under[1:5],
@@ -697,7 +714,7 @@ test_that("Ramses on PosgreSQL (system test)", {
   
   expect_error(
     clinical_feature_mean(
-      TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+      TherapyEpisode(pq_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
       observation_code = "8310-5",
       hours = 2, 
       observation_code_system = "doesnotexist")
@@ -705,7 +722,7 @@ test_that("Ramses on PosgreSQL (system test)", {
   
   temperature_check <- therapy_table(
     clinical_feature_mean(
-      TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+      TherapyEpisode(pq_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
       observation_code = "8310-5",
       hours = 2),
     collect = TRUE
@@ -718,12 +735,12 @@ test_that("Ramses on PosgreSQL (system test)", {
   # show methods ----------------------------------------------------------
   
   # TherapyEpisode
-  expect_equal(utils::capture.output(TherapyEpisode(db_con, "89ac870bc1c1e4b2a37cec79d188cb08"))[1:8],
+  expect_equal(utils::capture.output(TherapyEpisode(pq_conn, "89ac870bc1c1e4b2a37cec79d188cb08"))[1:8],
                c("TherapyEpisode 89ac870bc1c1e4b2a37cec79d188cb08 ", "Patient:   1555756339 ", 
                  "Start:     2017-07-02 01:15:46 BST ", "End:       2017-07-06 01:35:46 BST ", 
                  "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
                  "  > Clarithromycin ORAL 500mg 4 days"))
-  expect_equal(utils::capture.output(TherapyEpisode(db_con, "fa179f4bcf3efa1e21225ab207ab40c4"))[1:11],
+  expect_equal(utils::capture.output(TherapyEpisode(pq_conn, "fa179f4bcf3efa1e21225ab207ab40c4"))[1:11],
                c("TherapyEpisode fa179f4bcf3efa1e21225ab207ab40c4 ", "Patient:   3422481921 ", 
                  "Start:     2017-11-15 15:33:36 GMT ", "End:       2017-12-01 21:11:36 GMT ", 
                  "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
@@ -731,13 +748,13 @@ test_that("Ramses on PosgreSQL (system test)", {
                  "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  ... (2 additional medication requests)"
                ))
   expect_equal(
-    utils::capture.output(TherapyEpisode(db_con, "biduletruc"))[1:5],
+    utils::capture.output(TherapyEpisode(pq_conn, "biduletruc"))[1:5],
     c("TherapyEpisode biduletruc ", "Record is not available.", "Please check object id is valid", 
       "", "Database connection:")
   )
   expect_equal(
     utils::capture.output(
-      TherapyEpisode(conn = db_con, 
+      TherapyEpisode(conn = pq_conn, 
                      id = c("f770855cf9d424c76fdfbc9786d508ac", 
                             "5528fc41106bb48eb4d48bc412e13e67")))[1:3],
       c("TherapyEpisode 5528fc41106bb48eb4d48bc412e13e67, f770855cf9d424c76fdfbc9786d508ac ", 
@@ -747,14 +764,14 @@ test_that("Ramses on PosgreSQL (system test)", {
   
   # MedicationRequest
   expect_equal(
-    utils::capture.output(MedicationRequest(db_con, "5528fc41106bb48eb4d48bc412e13e67"))[1:8],
+    utils::capture.output(MedicationRequest(pq_conn, "5528fc41106bb48eb4d48bc412e13e67"))[1:8],
     c("MedicationRequest 5528fc41106bb48eb4d48bc412e13e67 ", "Clarithromycin IV 500mg 0 days ", 
       "Patient:     99999999999 ", "Start:        2015-08-07 10:27:00 BST ", 
       "End:          2015-08-07 15:59:00 BST ", "Therapy:      5528fc41106bb48eb4d48bc412e13e67 ", 
       "", "Database connection:") 
   )
   expect_equal(
-    utils::capture.output(MedicationRequest(db_con, "1ab55e515af6b86dde76abbe0bffbd3f"))[1:9],
+    utils::capture.output(MedicationRequest(pq_conn, "1ab55e515af6b86dde76abbe0bffbd3f"))[1:9],
     c("MedicationRequest 1ab55e515af6b86dde76abbe0bffbd3f ", "Clarithromycin ORAL 500mg 4 days ", 
       "Patient:     3894468747 ", "Start:        2015-10-01 21:38:55 BST ", 
       "End:          2015-10-05 21:38:55 BST ", "Combination:  1ab55e515af6b86dde76abbe0bffbd3f ", 
@@ -762,26 +779,19 @@ test_that("Ramses on PosgreSQL (system test)", {
     )
   )
   expect_equal(
-    utils::capture.output(MedicationRequest(db_con, "biduletruc"))[1:5],
+    utils::capture.output(MedicationRequest(pq_conn, "biduletruc"))[1:5],
     c("MedicationRequest biduletruc ", "Record is not available.", "Please check object id is valid", 
       "", "Database connection:")
   )
   
-
   # other consistency checks ----------------------------------------------------
   
   # check that therapy id is the one of the first prescription
-  invalid_therapy_ids <- tbl(db_con, "drug_prescriptions") %>% 
+  invalid_therapy_ids <- tbl(pq_conn, "drug_prescriptions") %>% 
     dplyr::filter(therapy_rank == 1 & therapy_id != prescription_id) %>% 
     dplyr::collect()
   expect_true(nrow(invalid_therapy_ids) == 0)
   
-  # close connection ----------------------------------------------------
   
-  lapply(DBI::dbListTables(db_con), 
-         DBI::dbRemoveTable, 
-         conn = db_con)
-  
-  DBI::dbDisconnect(db_con)
 })
 

@@ -146,7 +146,7 @@ The diagrams below illustrates how to characterise prescribing events using Rams
 ```{r create_db, message=FALSE, warning=FALSE}
 library(Ramses)
 library(dplyr)
-ramses_db <- create_mock_database("ramses-db.sqlite")
+ramses_db <- create_mock_database("ramses-db.duckdb")
 
 tbl(ramses_db, "drug_prescriptions") %>% 
   filter(patient_id == "99999999998") %>% 
@@ -261,8 +261,8 @@ Note that the intercept is defined for $t$ = `t_start`. In other words, its valu
 We can see that, at the time of therapy initiation, the neutrophil count was increasing by an average 0.09 per nanoliter every hour (neutrophilia). After 80 hours (day 3), we find first evidence of the neutrophil count going down at a rate of 0.09 per nanoliter every hour, returning to a normal range (2--7.5 10<sup>9</sup>/L). Depending on the patient's other vitals, this could indicate the infection is under control.
 
 ```{r dbDisconnect, include=FALSE}
-DBI::dbDisconnect(ramses_db)
-file.remove("ramses-db.sqlite")
+DBI::dbDisconnect(ramses_db, shutdown = TRUE)
+file.remove("ramses-db.duckdb")
 ```
 
 

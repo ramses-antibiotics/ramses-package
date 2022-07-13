@@ -2,19 +2,47 @@
 # DuckDB ------------------------------------------------------------------
 
 test_that(".create_sql_primary_key on DuckDB", {
-  
-  con_duck <- connect_local_database(file = "test.duckdb")
-  DBI::dbWriteTable(conn = con_duck, name = "test_table", value = data.frame(key = 1:10) )
-  DBI::dbListObjects(con_duck)
-  .create_sql_primary_key(conn = con_duck, field = "key", table = "test_table")
+  db_conn <- connect_local_database(file = "test.duckdb")
+  DBI::dbWriteTable(conn = db_conn, name = "test_table", value = data.frame(key = 1:10) )
+  DBI::dbListObjects(db_conn)
+  .create_sql_primary_key(conn = db_conn, field = "key", table = "test_table")
   expect_error(
-    DBI::dbAppendTable(
-      conn = con_duck, name = "test_table", value = data.frame(key = 1:10) 
+    DBI::dbWriteTable(
+      conn = db_conn, name = "test_table", 
+      value = data.frame(key = 1:10), append = TRUE
     )
   )
-  DBI::dbDisconnect(con_duck, shutdown = TRUE)
+  DBI::dbDisconnect(db_conn, shutdown = TRUE)
   file.remove("test.duckdb")
-  
+})
+
+test_that(".create_sql_index on DuckDB", {
+  db_conn <- connect_local_database(file = "test.duckdb")
+  DBI::dbWriteTable(conn = db_conn, name = "test_table", value = data.frame(key = 1:10) )
+  .create_sql_index(conn = db_conn, field = "key", table = "test_table")
+  expect_equal(
+    DBI::dbGetQuery(db_conn, "SELECT * FROM pg_catalog.pg_indexes") %>% 
+      dplyr::filter(.data$tablename == "test_table") %>% 
+      dplyr::select(.data$tablename, .data$indexname) %>% 
+      dplyr::collect(),
+    data.frame(
+      tablename = "test_table",
+      indexname = "idx_test_table_key"
+    )
+  )
+  DBI::dbDisconnect(db_conn, shutdown = TRUE)
+  file.remove("test.duckdb")
+})
+
+test_that(".build_tally_table on DuckDB", {
+  db_conn <- DBI::dbConnect(duckdb::duckdb(), dbdir = "test.duckdb")
+  .build_tally_table(db_conn)
+  expect_equal(
+    DBI::dbReadTable(db_conn, "ramses_tally"),
+    data.frame(t = 0:50000)
+  )
+  DBI::dbDisconnect(db_conn, shutdown = TRUE)
+  file.remove("test.duckdb")
 })
 
 test_that(".run_transitive_closure on DuckDB", {
@@ -76,9 +104,10 @@ test_that("drug_prescriptions_edges on DuckDB", {
 
 test_that("create_mock_database on DuckDB", {
 
-  db_con <- create_mock_database(file = "test.duckdb", silent = TRUE)
-  expect_true(is(db_con, "duckdb_connection"))
-  test_output <- tbl(db_con, "drug_prescriptions") %>% 
+  db_conn <- create_mock_database(file = "test.duckdb", silent = TRUE)
+  expect_true(is(db_conn, "duckdb_connection"))
+
+  test_output <- tbl(db_conn, "drug_prescriptions") %>% 
     dplyr::filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", 
                                          "89ac870bc1c1e4b2a37cec79d188cb08",
                                          "0bf9ea7732dd6e904ab670a407382d95")) %>% 
@@ -96,8 +125,8 @@ test_that("create_mock_database on DuckDB", {
                   therapy_id = c("592a738e4c2afcae6f625c01856151e0", 
                                  "89ac870bc1c1e4b2a37cec79d188cb08", 
                                  "89ac870bc1c1e4b2a37cec79d188cb08")))
-  expect_equal(.nrow_sql_table(db_con, "ramses_tally"), 50001)
-  DBI::dbDisconnect(db_con, shutdown = TRUE)
+  expect_equal(.nrow_sql_table(db_conn, "ramses_tally"), 50001)
+  DBI::dbDisconnect(db_conn, shutdown = TRUE)
   file.remove("test.duckdb")
   
 })
@@ -108,19 +137,34 @@ test_that("Ramses on DuckDB (system test)", {
   if (!identical(Sys.getenv("CI"), "true")) {
     skip("Test only on Travis")
   }
-  db_con <- suppressWarnings(connect_local_database("test.duckdb"))
+  db_conn <- suppressWarnings(connect_local_database("test.duckdb"))
+  on.exit({
+    DBI::dbDisconnect(db_conn, shutdown = TRUE)
+    file.remove("test.duckdb")
+  })
   
   # database loading functions ------------------------------------------
   
   expect_invisible(
-    load_medications(conn = db_con, 
+    load_medications(conn = db_conn, 
                      prescriptions = .ramses_mock_dataset$drug_rx,
                      administrations = .ramses_mock_dataset$drug_admins,
                      overwrite = TRUE)
   )
 
+  test_tables <- DBI::dbGetQuery(db_conn, "SELECT * FROM information_schema.tables") %>% 
+    dplyr::filter(table_type == "BASE TABLE" &
+                    table_schema == "main") %>%
+    dplyr::collect()
+  expect_equal(
+    sort(test_tables$table_name),
+    c("drug_administrations", "drug_prescriptions", 
+      "drug_prescriptions_edges", "drug_therapy_episodes", 
+      "ramses_tally")
+  )
+  
   expect_invisible(
-    load_inpatient_episodes(conn = db_con,
+    load_inpatient_episodes(conn = db_conn,
                             patients_data = .ramses_mock_dataset$patients,
                             episodes_data = .ramses_mock_dataset$episodes,
                             wards_data = inpatient_wards,
@@ -128,26 +172,26 @@ test_that("Ramses on DuckDB (system test)", {
   )
   expect_invisible(
     expect_warning(
-      load_inpatient_diagnoses(conn = db_con,
+      load_inpatient_diagnoses(conn = db_conn,
                            diagnoses_data = .ramses_mock_dataset$diagnoses,
                            diagnoses_lookup = .ramses_mock_dataset$icd10cm_2020,
                            overwrite = TRUE)))
   expect_invisible(
     load_inpatient_investigations(
-      conn = db_con,
+      conn = db_conn,
       investigations_data = inpatient_investigations,
       overwrite = TRUE
     ))
   expect_invisible(
     load_inpatient_microbiology(
-      conn = db_con,
+      conn = db_conn,
       .ramses_mock_dataset$micro$specimens,
       .ramses_mock_dataset$micro$isolates,
       .ramses_mock_dataset$micro$susceptibilities,
       overwrite = TRUE
     )
   )
-  test_output <- tbl(db_con, "drug_prescriptions") %>% 
+  test_output <- tbl(db_conn, "drug_prescriptions") %>% 
     dplyr::filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", 
                                          "89ac870bc1c1e4b2a37cec79d188cb08",
                                          "0bf9ea7732dd6e904ab670a407382d95")) %>% 
@@ -166,7 +210,7 @@ test_that("Ramses on DuckDB (system test)", {
                                  "89ac870bc1c1e4b2a37cec79d188cb08", 
                                  "89ac870bc1c1e4b2a37cec79d188cb08")))
 
-  test_output <- tbl(db_con, "drug_therapy_episodes") %>% 
+  test_output <- tbl(db_conn, "drug_therapy_episodes") %>% 
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
     dplyr::collect() 
   
@@ -183,12 +227,12 @@ test_that("Ramses on DuckDB (system test)", {
   
   # recreate therapy episodes and combinations --------------------------------
   
-  DBI::dbRemoveTable(db_con, "drug_prescriptions_edges")
-  DBI::dbRemoveTable(db_con, "drug_therapy_episodes")
+  DBI::dbRemoveTable(db_conn, "drug_prescriptions_edges")
+  DBI::dbRemoveTable(db_conn, "drug_therapy_episodes")
   
-  expect_silent(create_therapy_episodes(db_con, silent = TRUE))
+  expect_silent(create_therapy_episodes(db_conn, silent = TRUE))
   
-  test_output <- tbl(db_con, "drug_therapy_episodes") %>% 
+  test_output <- tbl(db_conn, "drug_therapy_episodes") %>% 
     dplyr::filter(therapy_id == "592a738e4c2afcae6f625c01856151e0") %>% 
     dplyr::collect()
   
@@ -205,12 +249,12 @@ test_that("Ramses on DuckDB (system test)", {
   
   # other database functions --------------------------------------------
   
-     # bridge_episode_prescription_overlap
-  expect_true(bridge_episode_prescription_overlap(db_con))
-  expect_error(bridge_episode_prescription_overlap(db_con))
-  expect_true(bridge_episode_prescription_overlap(db_con, overwrite = TRUE))
+  # bridge_episode_prescription_overlap
+  expect_true(bridge_episode_prescription_overlap(db_conn))
+  expect_error(bridge_episode_prescription_overlap(db_conn))
+  expect_true(bridge_episode_prescription_overlap(db_conn, overwrite = TRUE))
   test_bridge_overlap <- tbl(
-    db_con,
+    db_conn,
     "bridge_episode_prescription_overlap") %>% 
     dplyr::filter(patient_id == "99999999999" & 
                     prescription_id == "89094c5dffaad0e56073adaddf286e73") %>% 
@@ -218,11 +262,11 @@ test_that("Ramses on DuckDB (system test)", {
   expect_equal(round(sum(test_bridge_overlap$DOT), 1), 2.0)
   expect_equal(round(sum(test_bridge_overlap$DDD_prescribed), 1), 1.3)
   
-    # bridge_episode_prescription_initiation
-  expect_true(bridge_episode_prescription_initiation(db_con))
-  expect_error(bridge_episode_prescription_initiation(db_con))
-  expect_true(bridge_episode_prescription_initiation(db_con, overwrite = TRUE))
-  test_bridge_init <- tbl(db_con, "bridge_episode_prescription_initiation") %>% 
+  # bridge_episode_prescription_initiation
+  expect_true(bridge_episode_prescription_initiation(db_conn))
+  expect_error(bridge_episode_prescription_initiation(db_conn))
+  expect_true(bridge_episode_prescription_initiation(db_conn, overwrite = TRUE))
+  test_bridge_init <- tbl(db_conn, "bridge_episode_prescription_initiation") %>% 
     dplyr::filter(patient_id == "99999999999" & 
                     prescription_id == "89094c5dffaad0e56073adaddf286e73") %>% 
     dplyr::collect()
@@ -230,22 +274,22 @@ test_that("Ramses on DuckDB (system test)", {
   expect_equal(round(test_bridge_init$DDD_prescribed, 1), 1.3)
   
   # bridge_spell_therapy_overlap
-  expect_true(bridge_spell_therapy_overlap(db_con))
-  expect_error(bridge_spell_therapy_overlap(db_con))
-  expect_true(bridge_spell_therapy_overlap(db_con, overwrite = TRUE))
+  expect_true(bridge_spell_therapy_overlap(db_conn))
+  expect_error(bridge_spell_therapy_overlap(db_conn))
+  expect_true(bridge_spell_therapy_overlap(db_conn, overwrite = TRUE))
   test_bridge_th_overlap <- tbl(
-    db_con,
+    db_conn,
     "bridge_spell_therapy_overlap") %>% 
     dplyr::filter(patient_id == "99999999999" &
                     therapy_id == "4d611fc8886c23ab047ad5f74e5080d7") %>% 
     dplyr::collect()
   expect_equal(round(sum(test_bridge_th_overlap$LOT), 1), 7.4)
   
-  expect_true(bridge_tables(conn = db_con, overwrite = TRUE))
+  expect_true(bridge_tables(conn = db_conn, overwrite = TRUE))
   
   # date and datetime casting -----------------------------------------------
   
-  test_date <- tbl(db_con, "inpatient_episodes") %>% 
+  test_date <- tbl(db_conn, "inpatient_episodes") %>% 
     dplyr::filter(patient_id == "99999999999") %>% 
     dplyr::collect( )
   
@@ -257,7 +301,7 @@ test_that("Ramses on DuckDB (system test)", {
   # TherapyEpisode ------------------------------------------------------------
   
   # Single IVPO change pt 99999999999
-  test_episode <- TherapyEpisode(db_con, "5528fc41106bb48eb4d48bc412e13e67")
+  test_episode <- TherapyEpisode(db_conn, "5528fc41106bb48eb4d48bc412e13e67")
   test_output <- therapy_table(test_episode, collect = T)
   test_expected_head <- dplyr::tibble(
     t = 0:5,
@@ -293,7 +337,7 @@ test_that("Ramses on DuckDB (system test)", {
     structure(241.883333333333, class = "difftime", units = "hours")
   )
   
-  test_medication_request <- MedicationRequest(db_con, "5528fc41106bb48eb4d48bc412e13e67")
+  test_medication_request <- MedicationRequest(db_conn, "5528fc41106bb48eb4d48bc412e13e67")
   expect_is(test_medication_request, "MedicationRequest")
   expect_is(TherapyEpisode(test_medication_request), "TherapyEpisode")
   expect_equal(head(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
@@ -307,7 +351,7 @@ test_that("Ramses on DuckDB (system test)", {
   
   # 2+ TherapyEpisode -------------------------------------------------------
   
-  test_episode <- TherapyEpisode(conn = db_con, 
+  test_episode <- TherapyEpisode(conn = db_conn, 
                                  id = c("f770855cf9d424c76fdfbc9786d508ac", 
                                         "5528fc41106bb48eb4d48bc412e13e67"))
   expect_is(test_episode, "TherapyEpisode")
@@ -340,8 +384,8 @@ test_that("Ramses on DuckDB (system test)", {
   
   expect_true(
     .therapy_table_completeness_check(
-      episode = TherapyEpisode(db_con, "592a738e4c2afcae6f625c01856151e0"),
-      tbl_object = TherapyEpisode(db_con, "592a738e4c2afcae6f625c01856151e0")@therapy_table,
+      episode = TherapyEpisode(db_conn, "592a738e4c2afcae6f625c01856151e0"),
+      tbl_object = TherapyEpisode(db_conn, "592a738e4c2afcae6f625c01856151e0")@therapy_table,
       silent = F
     )
   )
@@ -349,8 +393,8 @@ test_that("Ramses on DuckDB (system test)", {
   expect_false(
     expect_warning(
       .therapy_table_completeness_check(
-        episode = TherapyEpisode(db_con, "592a738e4c2afcae6f625c01856151e0"),
-        tbl_object = TherapyEpisode(db_con, "89ac870bc1c1e4b2a37cec79d188cb08")@therapy_table,
+        episode = TherapyEpisode(db_conn, "592a738e4c2afcae6f625c01856151e0"),
+        tbl_object = TherapyEpisode(db_conn, "89ac870bc1c1e4b2a37cec79d188cb08")@therapy_table,
         silent = F
       )
     )
@@ -358,20 +402,20 @@ test_that("Ramses on DuckDB (system test)", {
   
   # IVPO ------------------------------------------------------------------
   
-  expect_equal(parenteral_changes(TherapyEpisode(db_con, "5528fc41106bb48eb4d48bc412e13e67")), 
+  expect_equal(parenteral_changes(TherapyEpisode(db_conn, "5528fc41106bb48eb4d48bc412e13e67")), 
                list("5528fc41106bb48eb4d48bc412e13e67" = list(c(0, 241, 6))))
-  expect_equal(parenteral_changes(TherapyEpisode(db_con, 
+  expect_equal(parenteral_changes(TherapyEpisode(db_conn, 
                                                  c("f770855cf9d424c76fdfbc9786d508ac",
                                                    "74e3f378b91c6d7121a0d637bd56c2fa"))), 
                list("74e3f378b91c6d7121a0d637bd56c2fa" = list(c(0, 97, 49)),
                     "f770855cf9d424c76fdfbc9786d508ac" = list(c(0, 122, 74))))
   
   # Three IVPO changes in pt 5726385525 with only one therapy episode
-  single_therapy <- dplyr::collect(dplyr::filter(tbl(db_con, "drug_prescriptions"), 
+  single_therapy <- dplyr::collect(dplyr::filter(tbl(db_conn, "drug_prescriptions"), 
                                                  patient_id == "5726385525"))
   expect_true(all(single_therapy$therapy_id == "a028cf950c29ca73c01803b54642d513"))
   expect_equal(
-    parenteral_changes(TherapyEpisode(db_con, "a028cf950c29ca73c01803b54642d513")),
+    parenteral_changes(TherapyEpisode(db_conn, "a028cf950c29ca73c01803b54642d513")),
     list(
       "a028cf950c29ca73c01803b54642d513" = list(c(0, 144, 97),
                                                 c(146, 316, 219),
@@ -382,43 +426,43 @@ test_that("Ramses on DuckDB (system test)", {
   # therapy timeline -------------------------------------------------
   
   expect_error(
-    therapy_timeline(Patient(conn = db_con, 
+    therapy_timeline(Patient(conn = db_conn, 
                              id =  "I don't exist"))
   )
   expect_is(
-    therapy_timeline(Patient(conn = db_con, 
+    therapy_timeline(Patient(conn = db_conn, 
                              id =  "99999999999")),
     "timevis")
   expect_error(
-    therapy_timeline(Patient(conn = db_con, 
+    therapy_timeline(Patient(conn = db_conn, 
                              id =  "99999999999"),
                      date1 = "2017-01-01",
                      date2 = "2017-03-01")
   )
   expect_is(
-    therapy_timeline(Patient(conn = db_con, 
+    therapy_timeline(Patient(conn = db_conn, 
                              id =  "99999999999"),
                      date1 = as.Date("2017-01-01"),
                      date2 = as.Date("2017-03-01")), 
     "timevis")
   expect_is(
-    therapy_timeline(Patient(conn = db_con, 
+    therapy_timeline(Patient(conn = db_conn, 
                              id =  "99999999999"),
                      date1 = as.Date("2017-01-01")),
     "timevis")
   expect_is(
-    therapy_timeline(Patient(conn = db_con, 
+    therapy_timeline(Patient(conn = db_conn, 
                              id =  "99999999999"),
                      date2 = as.Date("2017-03-01")), 
     "timevis")
   expect_is(
-    therapy_timeline(TherapyEpisode(conn = db_con,
+    therapy_timeline(TherapyEpisode(conn = db_conn,
                                     id = "4d611fc8886c23ab047ad5f74e5080d7")), 
     "timevis")
   
   expect_is(
     expect_warning(
-      therapy_timeline(TherapyEpisode(conn = db_con,
+      therapy_timeline(TherapyEpisode(conn = db_conn,
                                       id = c("4d611fc8886c23ab047ad5f74e5080d7",
                                              "a028cf950c29ca73c01803b54642d513")))
     ), 
@@ -431,14 +475,14 @@ test_that("Ramses on DuckDB (system test)", {
   
   expect_error(
     clinical_feature_last(
-      TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+      TherapyEpisode(db_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
       observation_code = "8310-5",
       hours = 24,
       observation_code_system = "doesnotexist"
     )
   )
   last_temp <- clinical_feature_last(
-    TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+    TherapyEpisode(db_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_code = "8310-5",
     hours = 24
   ) %>% 
@@ -455,7 +499,7 @@ test_that("Ramses on DuckDB (system test)", {
   rm(last_temp)
   
   last_temp_2therapies <- clinical_feature_last(
-    TherapyEpisode(db_con, c("4d611fc8886c23ab047ad5f74e5080d7",
+    TherapyEpisode(db_conn, c("4d611fc8886c23ab047ad5f74e5080d7",
                                 "a028cf950c29ca73c01803b54642d513")),
     observation_code = "8310-5",
     hours = 24
@@ -476,7 +520,7 @@ test_that("Ramses on DuckDB (system test)", {
   rm(last_temp_2therapies)
   
   last_temp <- clinical_feature_last(
-    TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+    TherapyEpisode(db_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_code = c("8310-5", "2160-0"),
     hours = 32
   ) %>% 
@@ -502,7 +546,7 @@ test_that("Ramses on DuckDB (system test)", {
   
   # > OLS -------------------------------------------------------------------
 
-  example_therapy <-  TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7")
+  example_therapy <-  TherapyEpisode(db_conn, "4d611fc8886c23ab047ad5f74e5080d7")
   example_therapy_record <- collect(example_therapy)
   
   expect_error(
@@ -550,7 +594,7 @@ test_that("Ramses on DuckDB (system test)", {
   
   expect_error(
     clinical_feature_interval(
-      TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+      TherapyEpisode(db_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
       observation_intervals = list("8310-5" = c(36, 38)),
       hours = 24,
       observation_code_system = "doesnotexist"
@@ -558,7 +602,7 @@ test_that("Ramses on DuckDB (system test)", {
   )
   
   temperature_check <- therapy_table(clinical_feature_interval(
-    TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+    TherapyEpisode(db_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_intervals = list("8310-5" = c(36, 38)),
     hours = 24), collect = TRUE)
   
@@ -577,13 +621,13 @@ test_that("Ramses on DuckDB (system test)", {
   
   expect_error(
     therapy_table(clinical_feature_interval(
-      TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+      TherapyEpisode(db_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
       observation_intervals = list("8310-5" = c(NA, 38)),
       hours = 24), collect = TRUE)
   )
 
   temperature_check <- therapy_table(clinical_feature_interval(
-    TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+    TherapyEpisode(db_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_intervals = list("8310-5" = c(38)),
     hours = 24), collect = TRUE)
   expect_equal(temperature_check$threshold_temperature38_24h_under[1:5],
@@ -596,7 +640,7 @@ test_that("Ramses on DuckDB (system test)", {
                c(0, 0, 0, 0, 0))
   
   temperature_check <- therapy_table(clinical_feature_interval(
-    TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+    TherapyEpisode(db_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_intervals = list("8310-5" = c(36)),
     hours = 24), collect = TRUE)
   expect_equal(temperature_check$threshold_temperature36_24h_under[1:5],
@@ -612,7 +656,7 @@ test_that("Ramses on DuckDB (system test)", {
   
   expect_error(
     clinical_feature_mean(
-      TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+      TherapyEpisode(db_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
       observation_code = "8310-5",
       hours = 2, 
       observation_code_system = "doesnotexist")
@@ -620,7 +664,7 @@ test_that("Ramses on DuckDB (system test)", {
   
   temperature_check <- therapy_table(
     clinical_feature_mean(
-      TherapyEpisode(db_con, "4d611fc8886c23ab047ad5f74e5080d7"),
+      TherapyEpisode(db_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
       observation_code = "8310-5",
       hours = 2),
     collect = TRUE
@@ -634,7 +678,7 @@ test_that("Ramses on DuckDB (system test)", {
   
   # TherapyEpisode
   expect_equal(
-    utils::capture.output(TherapyEpisode(db_con, "89ac870bc1c1e4b2a37cec79d188cb08"))[1:8],
+    utils::capture.output(TherapyEpisode(db_conn, "89ac870bc1c1e4b2a37cec79d188cb08"))[1:8],
     c("TherapyEpisode 89ac870bc1c1e4b2a37cec79d188cb08 ", "Patient:   1555756339 ", 
       paste0("Start:     ",
              as.character(as.POSIXct("2017-07-02 01:15:46", tz = "Europe/London"), tz = Sys.timezone(), format = "%Y-%m-%d %H:%M:%S %Z"),
@@ -645,7 +689,7 @@ test_that("Ramses on DuckDB (system test)", {
       "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
       "  > Clarithromycin ORAL 500mg 4 days"))
   expect_equal(
-    utils::capture.output(TherapyEpisode(db_con, "fa179f4bcf3efa1e21225ab207ab40c4"))[1:11],
+    utils::capture.output(TherapyEpisode(db_conn, "fa179f4bcf3efa1e21225ab207ab40c4"))[1:11],
     c("TherapyEpisode fa179f4bcf3efa1e21225ab207ab40c4 ", "Patient:   3422481921 ", 
       paste0("Start:     ", 
              as.character(as.POSIXct("2017-11-15 15:33:36", tz = "Europe/London"), tz = Sys.timezone(), format = "%Y-%m-%d %H:%M:%S %Z"),
@@ -657,13 +701,13 @@ test_that("Ramses on DuckDB (system test)", {
       "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  > Piperacillin/tazobactam IV 4.5g 4 days", 
       "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  ... (2 additional medication requests)"))
   expect_equal(
-    utils::capture.output(TherapyEpisode(db_con, "biduletruc"))[1:5],
+    utils::capture.output(TherapyEpisode(db_conn, "biduletruc"))[1:5],
     c("TherapyEpisode biduletruc ", "Record is not available.", "Please check object id is valid", 
       "", "Database connection:")
   )
   expect_equal(
     utils::capture.output(
-      TherapyEpisode(conn = db_con, 
+      TherapyEpisode(conn = db_conn, 
                      id = c("f770855cf9d424c76fdfbc9786d508ac", 
                             "5528fc41106bb48eb4d48bc412e13e67")))[1:3],
     c("TherapyEpisode 5528fc41106bb48eb4d48bc412e13e67, f770855cf9d424c76fdfbc9786d508ac ", 
@@ -674,7 +718,7 @@ test_that("Ramses on DuckDB (system test)", {
   # MedicationRequest
   
   expect_equal(
-    utils::capture.output(MedicationRequest(db_con, "5528fc41106bb48eb4d48bc412e13e67"))[1:8],
+    utils::capture.output(MedicationRequest(db_conn, "5528fc41106bb48eb4d48bc412e13e67"))[1:8],
     c("MedicationRequest 5528fc41106bb48eb4d48bc412e13e67 ", "Clarithromycin IV 500mg 0 days ", 
       "Patient:     99999999999 ", 
       paste0("Start:        ", 
@@ -686,7 +730,7 @@ test_that("Ramses on DuckDB (system test)", {
       "Therapy:      5528fc41106bb48eb4d48bc412e13e67 ", 
       "", "Database connection:"))
   expect_equal(
-    utils::capture.output(MedicationRequest(db_con, "1ab55e515af6b86dde76abbe0bffbd3f"))[1:9],
+    utils::capture.output(MedicationRequest(db_conn, "1ab55e515af6b86dde76abbe0bffbd3f"))[1:9],
     c("MedicationRequest 1ab55e515af6b86dde76abbe0bffbd3f ", "Clarithromycin ORAL 500mg 4 days ", 
       "Patient:     3894468747 ", 
       paste0("Start:        ", 
@@ -699,7 +743,7 @@ test_that("Ramses on DuckDB (system test)", {
       "Therapy:      1ab55e515af6b86dde76abbe0bffbd3f ", "", "Database connection:"
     ))
   expect_equal(
-    utils::capture.output(MedicationRequest(db_con, "biduletruc"))[1:5],
+    utils::capture.output(MedicationRequest(db_conn, "biduletruc"))[1:5],
     c("MedicationRequest biduletruc ", "Record is not available.", "Please check object id is valid", 
       "", "Database connection:")
   )
@@ -707,14 +751,10 @@ test_that("Ramses on DuckDB (system test)", {
   # other consistency checks ----------------------------------------------
   
   # check that therapy id is the one of the first prescription
-  invalid_therapy_ids <- tbl(db_con, "drug_prescriptions") %>% 
+  invalid_therapy_ids <- tbl(db_conn, "drug_prescriptions") %>% 
     dplyr::filter(therapy_rank == 1 & therapy_id != prescription_id) %>% 
     dplyr::collect()
   expect_true(nrow(invalid_therapy_ids) == 0)
-
-  # close connection ----------------------------------------------------
-  DBI::dbDisconnect(db_con, shutdown = TRUE)
-  file.remove("test.duckdb")
   
 })
 

@@ -38,19 +38,18 @@ First, packages must be loaded.
 ```{r setup, warning=F, message=F}
 library(Ramses)
 library(dplyr)    # to facilitate data manipulations
-library(magrittr) # for the pipe operator `%>%`
 ```
 
 Second, a relational database server is needed.
 
-For the purposes of this vignette, one may use on a small [SQLite
-3](https://www.sqlite.org) database on the local hard drive. This
+For the purposes of this vignette, one may use on a small [DuckDB](https://duckdb.org/)
+database on the local hard drive. This
 database will behave in a similar way as a dedicated relational database
 server. This method should only be used for training with simulated data
 as it is not a secure method of handling actual patient data.
 
-```{r SQLite_init}
-ramses_db <- connect_local_database("ramses-db.sqlite")
+```{r DuckDB_init}
+ramses_db <- connect_local_database("ramses-db.duckdb")
 ```
 
 Alternatively, one may use a dedicated PostgreSQL server (other SQL
@@ -68,7 +67,8 @@ ramses_db <- DBI::dbConnect(
   # Do not forget to specify a time zone to correctly collect datetime records
   timezone = "Europe/London")
 
-# Specify the name of an schema Ramses should use on the database
+# Specify the name of the schema Ramses should use on the database 
+# (if not, Ramses will use 'public' by default)
 DBI::dbExecute(ramses_db, "SET search_path = ramses_schema, public;")
 ```
 
@@ -786,11 +786,11 @@ The main vignette (getting started) demonstrates how to use it.
 Always remember close database connections when you are finished.
 
 ```{r}
-DBI::dbDisconnect(ramses_db)
+DBI::dbDisconnect(ramses_db, shutdown = TRUE)
 ```
 
 ```{r include=FALSE}
-file.remove("ramses-db.sqlite")
+file.remove("ramses-db.duckdb")
 ```
 
 # References

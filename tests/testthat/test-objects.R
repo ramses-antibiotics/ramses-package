@@ -23,7 +23,7 @@ test_that("Patient..constructor", {
   DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
   patients <- dplyr::tibble(patient_id = 999L)
-    fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
   dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
   expect_error(Patient(fake_db_conn, "999"))
   expect_s4_class(Patient(fake_db_conn, 999), "Patient")
@@ -40,7 +40,7 @@ test_that("Patient..show", {
   DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
   patients <- dplyr::tibble(patient_id = 99999999999)
-    fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
   dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
   expect_equal(capture.output(Patient(fake_db_conn, 99999999999))[1],
                "Patient 99999999999 ")
@@ -87,7 +87,7 @@ test_that(".process_io_parenteral_vector", {
 
 
 test_that("MedicationRequest..constructor", {
-    fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(prescription_id = "999999"),
                  "drug_prescriptions", 
@@ -101,7 +101,7 @@ test_that("MedicationRequest..constructor", {
   DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
   # works with integer/numeric
-    fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(prescription_id = 999L),
                  "drug_prescriptions", 
@@ -111,7 +111,7 @@ test_that("MedicationRequest..constructor", {
   expect_s4_class(MedicationRequest(fake_db_conn, 999L), "MedicationRequest")
   DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
-    fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(prescription_id = 999),
                  "drug_prescriptions", 
@@ -125,7 +125,7 @@ test_that("MedicationRequest..constructor", {
 
 
 test_that("TherapyEpisode..constructor", {
-    fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(therapy_id = "999999"),
                  "drug_therapy_episodes", 
@@ -137,7 +137,7 @@ test_that("TherapyEpisode..constructor", {
   DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
   # works with integer/numeric
-    fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(therapy_id = 999999L),
                  "drug_therapy_episodes", 
@@ -145,7 +145,7 @@ test_that("TherapyEpisode..constructor", {
   expect_error(TherapyEpisode(fake_db_conn, "999999"))
   DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
-    fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(therapy_id = 999999),
                  "drug_therapy_episodes", 

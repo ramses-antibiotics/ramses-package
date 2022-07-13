@@ -80,14 +80,14 @@ devtools::install_github("ramses-antibiotics/ramses-package")
 ```
 
 `Ramses` comes with synthetic data for testing and training purposes.
-You can use it to create a demonstration SQLite database fully loaded with 
-synthetic electronic health records. 
+You can use it to create a demonstration DuckDB database fully loaded with 
+synthetic electronic health records on a local drive. No need for a database server. 
 
 ```{r setup_mock_db, warning=FALSE, message=FALSE}
 library(Ramses)
 library(ggplot2)
 library(dplyr)
-ramses_db <- create_mock_database("ramses-db.sqlite")
+ramses_db <- create_mock_database("ramses-db.duckdb")
 ```
 
 ## Visualisation
@@ -307,12 +307,12 @@ ggplot(consumption_aware_episodes,
 Always remember close database connections when you are finished.
 
 ```{r dbDisconnect}
-DBI::dbDisconnect(ramses_db)
+DBI::dbDisconnect(ramses_db, shutdown = TRUE)
 ```
 
 
 ```{r include=FALSE}
-file.remove("ramses-db.sqlite")
+file.remove("ramses-db.duckdb")
 ```
 
 

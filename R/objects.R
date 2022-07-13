@@ -218,9 +218,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' @noRd
 .therapy_table_create <- function(conn, id) {
 
-  if( !DBI::dbExistsTable(conn, "ramses_tally") ){
-    .build_tally_table(conn)
-  }
+  .build_tally_table(conn)
   
   therapy_table <- dplyr::inner_join(
     tbl(conn, "drug_therapy_episodes"), 

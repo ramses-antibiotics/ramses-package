@@ -1021,15 +1021,18 @@ create_mock_database <- function(file,
 
 .build_tally_table <- function(conn) {
   # Build table to use in joins to create therapy tables
-  DBI::dbExecute(
-    conn = conn, 
-    statement = "CREATE OR REPLACE TABLE ramses_tally(t INTEGER PRIMARY KEY);"
-  )
-  DBI::dbAppendTable(
-    conn = conn,
-    name = "ramses_tally",
-    value = data.frame(t = 0L:50000L)
-  )
+  if ( !DBI::dbExistsTable(conn, "ramses_tally") ) {
+    DBI::dbExecute(
+      conn = conn, 
+      statement = "CREATE TABLE ramses_tally(t INTEGER PRIMARY KEY);"
+    )
+    DBI::dbWriteTable(
+      conn = conn,
+      name = "ramses_tally",
+      value = data.frame(t = 0L:50000L), 
+      append = TRUE
+    )
+  }
 }
 
 
