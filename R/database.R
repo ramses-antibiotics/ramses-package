@@ -1380,7 +1380,7 @@ create_mock_database <- function(file,
         dose,
         units,
         administration_date) %>% 
-      dplyr::mutate(administration_id = dplyr::group_indices()) %>% 
+      dplyr::mutate(administration_id = dplyr::cur_group_id()) %>% 
       dplyr::ungroup()
   }
   
