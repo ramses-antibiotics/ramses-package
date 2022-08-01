@@ -345,14 +345,11 @@ drug_administrations <- drug_administrations %>%
 # Create an identifier
 # Note: An alternative is encryption using openssl::sha256()
       
-drug_administrations$administration_id <- drug_administrations %>%
-  dplyr::group_indices(
-    patient_id,
-    drug_code,
-    route,
-    dose,
-    units,
-    administration_date)
+drug_administrations <- drug_administrations %>%
+  group_by(patient_id, drug_code, route,
+           dose, units, administration_date) %>% 
+  mutate(administration_id = dplyr::cur_group_id()) %>% 
+  ungroup()
 
 drug_administrations <- drug_administrations %>% 
     transmute(
