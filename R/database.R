@@ -1137,7 +1137,7 @@ create_mock_database <- function(file,
       conn,
       paste0("create index ", override_index_name,  
              " on ", table, " (", fields, ");")
-    )
+    ) %>% DBI::dbClearResult()
   } else {
     for (i in fields) {
       DBI::dbExecute(

@@ -632,7 +632,7 @@ setMethod("compute", "TherapyEpisode", function(x) {
   if (is(x@conn, "SQLiteConnection")) {
     .create_sql_index(
       conn = x@conn,
-      table = x@therapy_table$ops$x$x,
+      table = x@therapy_table$lazy_query$x,
       fields = c(
         "patient_id",
         "therapy_id",
