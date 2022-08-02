@@ -1,7 +1,7 @@
 Package: Ramses
 Type: Package
 Title: R Package for Antimicrobial Stewardship & Surveillance 
-Version: 0.4.2
+Version: 0.4.3
 Authors@R: c(
     person(given = "Peter",
            family = "Dutey-Magni",
@@ -59,7 +59,7 @@ Suggests:
 Remotes: 
     ramses-antibiotics/snomedizer
 RdMacros: Rdpack    
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.0
 VignetteBuilder: knitr,rmarkdown
 Collate: 
     'Ramses-package.R'
