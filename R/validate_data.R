@@ -29,9 +29,10 @@
   if( any(duplicate_results) ){
     stop(
       simpleError(paste(
-        "The following variables must have unique values:",
+        "The following variables must have unique values",
+        "in the", substitute(data), "dataset:\n",
         paste(paste0("`", 
-                     must_be_unique[duplicate_results],
+                     names(duplicate_results),
                      "`"), collapse = ", "))
       )
     )
@@ -372,6 +373,13 @@ validate_inpatient_episodes <- function(patients,
   if( !all(unique(episodes$patient_id) %in% unique(patients$patient_id)) ) {
     stop("All patients in `episodes` must exist in `patients`")
   }
+  
+  variable_uniqueness <- .validate_values_unique(
+    data = patients,
+    col_names = patient_schema[
+      patient_schema$must_be_unique, 
+      "variable_name"]
+  )
   
   validation_result <- .validate_inpatient_spells(episodes)
   validation_result <- append(
@@ -1394,7 +1402,7 @@ validate_investigations <- function(investigations,
     stop(
       "\nEvery `observation_code` must only be associated with one `observation_unit`.\n",
       "Please convert these observations to a single unit: \n\n ",
-      paste0(capture.output(data.frame(units_mixed[, 1:2])), collapse = "\n"), 
+      paste0(utils::capture.output(data.frame(units_mixed[, 1:2])), collapse = "\n"), 
       call. = FALSE
     )
   }

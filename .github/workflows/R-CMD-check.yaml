@@ -4,6 +4,7 @@ on:
       - master
       - develop
       - 'feature/**'
+      - 'bug_fix/**'
   pull_request:
     branches:
       - master
