@@ -31,20 +31,97 @@ test_that("Patient..constructor", {
   DBI::dbDisconnect(fake_db_conn)
 })
 
-test_that("Patient..show", {
+test_that("Patient..interface_methods SQLite", {
   patients <- dplyr::tibble(patient_id = "99999999999")
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-  dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
-  expect_equal(capture.output(Patient(fake_db_conn, "3422481921"))[1],
+  conSQLite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(conSQLite, patients, temporary = FALSE)
+  
+  # SHOW
+  expect_equal(capture.output(Patient(conSQLite, "3422481921"))[1],
                "Patient 3422481921 ")
-  DBI::dbDisconnect(fake_db_conn)
+  DBI::dbDisconnect(conSQLite)
   
   patients <- dplyr::tibble(patient_id = 99999999999)
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-  dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
-  expect_equal(capture.output(Patient(fake_db_conn, 99999999999))[1],
+  conSQLite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(conSQLite, patients, temporary = FALSE)
+  
+  patient_object <- Patient(conSQLite, 99999999999)
+  # CLASS
+  expect_equal(
+    class(patient_object),
+    structure("Patient", package = "Ramses")
+  )
+  
+  # SHOW
+  expect_equal(capture.output(patient_object)[1],
                "Patient 99999999999 ")
-  DBI::dbDisconnect(fake_db_conn)
+  # COMPUTE 
+  expect_equal(
+    patient_object@record$lazy_query$x$x,
+    structure("patients", class = c("ident", "character"))
+  )
+  patient_object_computed <- compute(patient_object)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            patient_object_computed@record$lazy_query$x
+          ))
+  )
+  
+  # COLLECT
+  expect_equal(
+    collect(patient_object),
+    patients
+  )
+  DBI::dbDisconnect(conSQLite)
+})
+
+
+test_that("Patient..interface_methods Postgres", {
+  
+  if (!identical(Sys.getenv("CI"), "true")) {
+    skip("Test only on Travis")
+  }
+  
+  conPostgreSQL <- DBI::dbConnect(RPostgres::Postgres(),
+                                  user = "user", 
+                                  password = "password",
+                                  host = "localhost", 
+                                  dbname="RamsesDB")
+  patients <- dplyr::tibble(patient_id = 99999999999)
+  dplyr::copy_to(conPostgreSQL, patients, temporary = FALSE)
+  
+  patient_object <- Patient(conPostgreSQL, 99999999999)
+  # CLASS
+  expect_equal(
+    class(patient_object),
+    structure("Patient", package = "Ramses")
+  )
+  
+  # SHOW
+  expect_equal(capture.output(patient_object)[1],
+               "Patient 99999999999 ")
+  # COMPUTE 
+  expect_equal(
+    patient_object@record$lazy_query$x$x,
+    structure("patients", class = c("ident", "character"))
+  )
+  patient_object_computed <- compute(patient_object)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            patient_object_computed@record$lazy_query$x
+          ))
+  )
+  
+  # COLLECT
+  expect_equal(
+    collect(patient_object),
+    patients
+  )
+  
+  .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
+  DBI::dbDisconnect(conPostgreSQL)
 })
 
 test_that(".process_io_parenteral_vector", {
@@ -123,6 +200,179 @@ test_that("MedicationRequest..constructor", {
 })
 
 
+test_that("MedicationRequest..interface_methods SQLite", {
+  conSQLite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  
+  fake_prescription <- data.frame(
+    patient_id = "5124578766",
+    prescription_id = 111,
+    prescription_text = "Piperacillin / Tazobactam IVI 4.5 g TDS",
+    authoring_date = structure(1438690036,
+                               class = c("POSIXct", "POSIXt"),
+                               tzone = "Europe/London"),
+    prescription_start = structure(1438695916,
+                                   class = c("POSIXct", "POSIXt"),
+                                   tzone = "Europe/London"),
+    prescription_end = structure(1438955116,
+                                 class = c("POSIXct", "POSIXt"),
+                                 tzone = "Europe/London"),
+    drug_code = "TZP",
+    drug_name = "Piperacillin + Tazobactam",
+    drug_display_name = "Piperacillin + Tazobactam",
+    drug_group = "Beta-lactams/penicillins",
+    prescription_status = "completed",
+    route = "IV",
+    ATC_route = "P",
+    ATC_code = "J01CR05",
+    prescription_context = "inpatient",
+    dose = 4.5,
+    unit = "g",
+    frequency = "TDS",
+    daily_frequency = 3,
+    duration = 3,
+    antiinfective_type = "antibacterial"
+  )
+  load_medications(conn = conSQLite,
+                   prescriptions = fake_prescription,
+                   overwrite = TRUE)
+  med_req_object <- MedicationRequest(conSQLite, 111)
+  
+  # CLASS
+  expect_equal(
+    class(med_req_object),
+    structure("MedicationRequest", package = "Ramses")
+  )
+  
+  # SHOW
+  expect_equal(
+    capture.output(med_req_object)[1:2],
+    c("MedicationRequest 111 ", "Piperacillin / Tazobactam IVI 4.5 g TDS ")
+  )
+  
+  # COMPUTE 
+  expect_equal(
+    med_req_object@record$lazy_query$x$x,
+    structure("drug_prescriptions", class = c("ident", "character"))
+  )
+  med_req_object_computed <- compute(med_req_object)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            med_req_object_computed@record$lazy_query$x
+          ))
+  )
+  
+  # COLLECT
+  expect_equal(
+    collect(med_req_object),
+    dplyr::tibble(id = 1L, patient_id = "5124578766", prescription_id = 111,
+               combination_id = NA, therapy_id = 111, therapy_rank = NA,
+               prescription_text = "Piperacillin / Tazobactam IVI 4.5 g TDS",
+               drug_code = "TZP", drug_name = "Piperacillin + Tazobactam",
+               drug_display_name = "Piperacillin + Tazobactam", drug_group = "Beta-lactams/penicillins",
+               antiinfective_type = "antibacterial", ATC_code = "J01CR05",
+               ATC_route = "P", dose = 4.5, unit = "g", route = "IV", frequency = "TDS",
+               authoring_date = structure(1438690036, class = c("POSIXct", "POSIXt"), tzone = ""), 
+               prescription_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = ""), 
+               prescription_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = ""),
+               prescription_context = "inpatient",
+               prescription_status = "completed", daily_frequency = 3, duration = 3)
+  )
+  
+  DBI::dbDisconnect(conSQLite)
+})
+
+test_that("MedicationRequest..interface_methods Postgres", {
+  
+  if (!identical(Sys.getenv("CI"), "true")) {
+    skip("Test only on Travis")
+  }
+  
+  conPostgreSQL <- DBI::dbConnect(RPostgres::Postgres(),
+                                  user = "user", 
+                                  password = "password",
+                                  host = "localhost", 
+                                  dbname="RamsesDB")
+  
+  fake_prescription <- data.frame(
+    patient_id = "5124578766",
+    prescription_id = 111,
+    prescription_text = "Piperacillin / Tazobactam IVI 4.5 g TDS",
+    authoring_date = structure(1438690036,
+                               class = c("POSIXct", "POSIXt"),
+                               tzone = "Europe/London"),
+    prescription_start = structure(1438695916,
+                                   class = c("POSIXct", "POSIXt"),
+                                   tzone = "Europe/London"),
+    prescription_end = structure(1438955116,
+                                 class = c("POSIXct", "POSIXt"),
+                                 tzone = "Europe/London"),
+    drug_code = "TZP",
+    drug_name = "Piperacillin + Tazobactam",
+    drug_display_name = "Piperacillin + Tazobactam",
+    drug_group = "Beta-lactams/penicillins",
+    prescription_status = "completed",
+    route = "IV",
+    ATC_route = "P",
+    ATC_code = "J01CR05",
+    prescription_context = "inpatient",
+    dose = 4.5,
+    unit = "g",
+    frequency = "TDS",
+    daily_frequency = 3,
+    duration = 3,
+    antiinfective_type = "antibacterial"
+  )
+  load_medications(conn = conPostgreSQL,
+                   prescriptions = fake_prescription,
+                   overwrite = TRUE)
+  med_req_object <- MedicationRequest(conPostgreSQL, 111)
+  
+  # CLASS
+  expect_equal(
+    class(med_req_object),
+    structure("MedicationRequest", package = "Ramses")
+  )
+  
+  # SHOW
+  expect_equal(
+    capture.output(med_req_object)[1:2],
+    c("MedicationRequest 111 ", "Piperacillin / Tazobactam IVI 4.5 g TDS ")
+  )
+  
+  # COMPUTE 
+  expect_equal(
+    med_req_object@record$lazy_query$x$x,
+    structure("drug_prescriptions", class = c("ident", "character"))
+  )
+  med_req_object_computed <- compute(med_req_object)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            med_req_object_computed@record$lazy_query$x
+          ))
+  )
+  
+  # COLLECT
+  expect_equal(
+    collect(med_req_object),
+    dplyr::tibble(id = 1L, patient_id = "5124578766", prescription_id = 111,
+                  combination_id = NA_real_, therapy_id = 111, therapy_rank = NA,
+                  prescription_text = "Piperacillin / Tazobactam IVI 4.5 g TDS",
+                  drug_code = "TZP", drug_name = "Piperacillin + Tazobactam",
+                  drug_display_name = "Piperacillin + Tazobactam", drug_group = "Beta-lactams/penicillins",
+                  antiinfective_type = "antibacterial", ATC_code = "J01CR05",
+                  ATC_route = "P", dose = 4.5, unit = "g", route = "IV", frequency = "TDS",
+                  authoring_date = structure(1438690036, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+                  prescription_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+                  prescription_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC"),
+                  prescription_context = "inpatient",
+                  prescription_status = "completed", daily_frequency = 3, duration = 3)
+  )
+  
+  .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
+  DBI::dbDisconnect(conPostgreSQL)
+})
 
 test_that("TherapyEpisode..constructor", {
   fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
@@ -153,3 +403,201 @@ test_that("TherapyEpisode..constructor", {
   expect_error(TherapyEpisode(fake_db_conn, "999999"))
   DBI::dbDisconnect(fake_db_conn)
 })
+
+
+test_that("TherapyEpisode..interface_methods SQLite", {
+  conSQLite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  
+  fake_prescription <- data.frame(
+    patient_id = "5124578766",
+    prescription_id = 111,
+    prescription_text = "Piperacillin / Tazobactam IVI 4.5 g TDS",
+    authoring_date = structure(1438690036,
+                               class = c("POSIXct", "POSIXt"),
+                               tzone = "Europe/London"),
+    prescription_start = structure(1438695916,
+                                   class = c("POSIXct", "POSIXt"),
+                                   tzone = "Europe/London"),
+    prescription_end = structure(1438955116,
+                                 class = c("POSIXct", "POSIXt"),
+                                 tzone = "Europe/London"),
+    drug_code = "TZP",
+    drug_name = "Piperacillin + Tazobactam",
+    drug_display_name = "Piperacillin + Tazobactam",
+    drug_group = "Beta-lactams/penicillins",
+    prescription_status = "completed",
+    route = "IV",
+    ATC_route = "P",
+    ATC_code = "J01CR05",
+    prescription_context = "inpatient",
+    dose = 4.5,
+    unit = "g",
+    frequency = "TDS",
+    daily_frequency = 3,
+    duration = 3,
+    antiinfective_type = "antibacterial"
+  )
+  load_medications(conn = conSQLite,
+                   prescriptions = fake_prescription,
+                   overwrite = TRUE)
+  therapy_object <- TherapyEpisode(conSQLite, 111)
+  
+  # CLASS
+  expect_equal(
+    class(therapy_object),
+    structure("TherapyEpisode", package = "Ramses")
+  )
+  
+  # SHOW
+  expect_equal(
+    capture.output(therapy_object)[1:2],
+    c("TherapyEpisode 111 ", "Patient:   5124578766 ")
+  )
+  
+  # COMPUTE 
+  expect_equal(
+    therapy_object@record$lazy_query$x$x,
+    structure("drug_therapy_episodes", class = c("ident", "character"))
+  )
+  therapy_object_computed <- compute(therapy_object)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            therapy_object_computed@record$lazy_query$x
+          ))
+  )
+  
+  # COLLECT
+  expect_equal(
+    collect(therapy_object),
+    dplyr::tibble(
+      patient_id = "5124578766", 
+      therapy_id = 111, 
+      antiinfective_type = "antibacterial", 
+      therapy_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = ""),
+      therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "")
+    )
+  )
+  
+  DBI::dbDisconnect(conSQLite)
+})
+
+test_that("TherapyEpisode..interface_methods Postgres", {
+  
+  if (!identical(Sys.getenv("CI"), "true")) {
+    skip("Test only on Travis")
+  }
+  
+  conPostgreSQL <- DBI::dbConnect(RPostgres::Postgres(),
+                                  user = "user", 
+                                  password = "password",
+                                  host = "localhost", 
+                                  dbname="RamsesDB")
+  
+  fake_prescription <- data.frame(
+    patient_id = "5124578766",
+    prescription_id = 111,
+    prescription_text = "Piperacillin / Tazobactam IVI 4.5 g TDS",
+    authoring_date = structure(1438690036,
+                               class = c("POSIXct", "POSIXt"),
+                               tzone = "Europe/London"),
+    prescription_start = structure(1438695916,
+                                   class = c("POSIXct", "POSIXt"),
+                                   tzone = "Europe/London"),
+    prescription_end = structure(1438955116,
+                                 class = c("POSIXct", "POSIXt"),
+                                 tzone = "Europe/London"),
+    drug_code = "TZP",
+    drug_name = "Piperacillin + Tazobactam",
+    drug_display_name = "Piperacillin + Tazobactam",
+    drug_group = "Beta-lactams/penicillins",
+    prescription_status = "completed",
+    route = "IV",
+    ATC_route = "P",
+    ATC_code = "J01CR05",
+    prescription_context = "inpatient",
+    dose = 4.5,
+    unit = "g",
+    frequency = "TDS",
+    daily_frequency = 3,
+    duration = 3,
+    antiinfective_type = "antibacterial"
+  )
+  load_medications(conn = conPostgreSQL,
+                   prescriptions = fake_prescription,
+                   overwrite = TRUE)
+  therapy_object <- TherapyEpisode(conPostgreSQL, 111)
+  
+  # CLASS
+  expect_equal(
+    class(therapy_object),
+    structure("TherapyEpisode", package = "Ramses")
+  )
+  
+  # SHOW
+  expect_equal(
+    capture.output(therapy_object)[1:2],
+    c("TherapyEpisode 111 ", "Patient:   5124578766 ")
+  )
+  
+  # COMPUTE 
+  expect_equal(
+    therapy_object@record$lazy_query$x$x,
+    structure("drug_therapy_episodes", class = c("ident", "character"))
+  )
+  therapy_object_computed <- compute(therapy_object)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            therapy_object_computed@record$lazy_query$x
+          ))
+  )
+  
+  # COLLECT
+  expect_equal(
+    collect(therapy_object),
+    dplyr::tibble(
+      patient_id = "5124578766", 
+      therapy_id = 111, 
+      antiinfective_type = "antibacterial", 
+      therapy_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = "UTC"),
+      therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC")
+    )
+  )
+  
+  .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
+  DBI::dbDisconnect(conPostgreSQL)
+})
+
+test_that("TherapyEpisode..constructor", {
+  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(fake_db_conn, 
+                 dplyr::tibble(therapy_id = "999999"),
+                 "drug_therapy_episodes", 
+                 temporary = FALSE)
+  expect_error(TherapyEpisode(fake_db_conn, NA))
+  expect_error(TherapyEpisode(fake_db_conn, c()))
+  expect_error(TherapyEpisode(fake_db_conn, 999999))
+  expect_error(TherapyEpisode(fake_db_conn, 999999L))
+  DBI::dbDisconnect(fake_db_conn)
+  
+  # works with integer/numeric
+  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(fake_db_conn, 
+                 dplyr::tibble(therapy_id = 999999L),
+                 "drug_therapy_episodes", 
+                 temporary = FALSE)
+  expect_error(TherapyEpisode(fake_db_conn, "999999"))
+  DBI::dbDisconnect(fake_db_conn)
+  
+  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(fake_db_conn, 
+                 dplyr::tibble(therapy_id = 999999),
+                 "drug_therapy_episodes", 
+                 temporary = FALSE)
+  expect_error(TherapyEpisode(fake_db_conn, "999999"))
+  DBI::dbDisconnect(fake_db_conn)
+})
+
+
+
