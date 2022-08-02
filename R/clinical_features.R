@@ -40,7 +40,7 @@
     dplyr::summarise(n = dplyr::n()) %>% 
     dplyr::collect() 
 
-  if ( any(db_observation_codes[["n"]] > 1) ) {
+  if ( any(as.numeric(db_observation_codes[["n"]]) > 1) ) {
     stop(paste0(
       "Some codes are ambiguous (exist in multiple code systems): '",
       paste(db_observation_codes[db_observation_codes[["n"]] > 1, 
