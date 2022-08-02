@@ -632,7 +632,7 @@ setMethod("compute", "TherapyEpisode", function(x) {
   if (is(x@conn, "SQLiteConnection")) {
     .create_sql_index(
       conn = x@conn,
-      table = x@therapy_table$lazy_query$x,
+      table = dbplyr::remote_name(x@therapy_table),
       fields = c(
         "patient_id",
         "therapy_id",
@@ -642,15 +642,15 @@ setMethod("compute", "TherapyEpisode", function(x) {
   } else {
     .create_sql_primary_key(
       conn = x@conn,
-      table = x@therapy_table$ops$x$x,
+      table = dbplyr::remote_name(x@therapy_table),
       field = "t, patient_id, therapy_id",
-      override_index_name = paste0("idx_pk_", x@therapy_table$ops$x$x)
+      override_index_name = paste0("idx_pk_", dbplyr::remote_name(x@therapy_table))
     )
     .create_sql_index(
       conn = x@conn,
-      table = x@therapy_table$ops$x$x,
+      table = dbplyr::remote_name(x@therapy_table),
       fields = "patient_id, (t_start at time zone 'UTC')",
-      override_index_name = paste0("idx_pt_time_", x@therapy_table$ops$x$x)
+      override_index_name = paste0("idx_pt_time_", dbplyr::remote_name(x@therapy_table))
     )
   }
   x

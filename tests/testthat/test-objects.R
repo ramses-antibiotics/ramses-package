@@ -31,21 +31,21 @@ test_that("Patient..constructor", {
   DBI::dbDisconnect(fake_db_conn)
 })
 
-test_that("Patient..interface_methods", {
+test_that("Patient..interface_methods SQLite", {
   patients <- dplyr::tibble(patient_id = "99999999999")
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-  dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
+  conSQLite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(conSQLite, patients, temporary = FALSE)
   
   # SHOW
-  expect_equal(capture.output(Patient(fake_db_conn, "3422481921"))[1],
+  expect_equal(capture.output(Patient(conSQLite, "3422481921"))[1],
                "Patient 3422481921 ")
-  DBI::dbDisconnect(fake_db_conn)
+  DBI::dbDisconnect(conSQLite)
   
   patients <- dplyr::tibble(patient_id = 99999999999)
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-  dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
+  conSQLite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  dplyr::copy_to(conSQLite, patients, temporary = FALSE)
   
-  patient_object <- Patient(fake_db_conn, 99999999999)
+  patient_object <- Patient(conSQLite, 99999999999)
   # CLASS
   expect_equal(
     class(patient_object),
@@ -73,7 +73,55 @@ test_that("Patient..interface_methods", {
     collect(patient_object),
     patients
   )
-  DBI::dbDisconnect(fake_db_conn)
+  DBI::dbDisconnect(conSQLite)
+})
+
+
+test_that("Patient..interface_methods Postgres", {
+  
+  if (!identical(Sys.getenv("CI"), "true")) {
+    skip("Test only on Travis")
+  }
+  
+  conPostgreSQL <- DBI::dbConnect(RPostgres::Postgres(),
+                                  user = "user", 
+                                  password = "password",
+                                  host = "localhost", 
+                                  dbname="RamsesDB")
+  patients <- dplyr::tibble(patient_id = 99999999999)
+  dplyr::copy_to(conPostgreSQL, patients, temporary = FALSE)
+  
+  patient_object <- Patient(conPostgreSQL, 99999999999)
+  # CLASS
+  expect_equal(
+    class(patient_object),
+    structure("Patient", package = "Ramses")
+  )
+  
+  # SHOW
+  expect_equal(capture.output(patient_object)[1],
+               "Patient 99999999999 ")
+  # COMPUTE 
+  expect_equal(
+    patient_object@record$lazy_query$x$x,
+    structure("patients", class = c("ident", "character"))
+  )
+  patient_object_computed <- compute(patient_object)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            patient_object_computed@record$lazy_query$x
+          ))
+  )
+  
+  # COLLECT
+  expect_equal(
+    collect(patient_object),
+    patients
+  )
+  
+  .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
+  DBI::dbDisconnect(conPostgreSQL)
 })
 
 test_that(".process_io_parenteral_vector", {
@@ -197,12 +245,8 @@ test_that("MedicationRequest..interface_methods SQLite", {
   
   # SHOW
   expect_equal(
-    capture.output(med_req_object),
-    c("MedicationRequest 111 ", "Piperacillin / Tazobactam IVI 4.5 g TDS ",
-      "Patient:     5124578766 ", "Start:        2015-08-04 14:45:16 BST ",
-      "End:          2015-08-07 14:45:16 BST ", "Therapy:      111 ",
-      "", "Database connection:", "<SQLiteConnection>", "  Path: :memory:",
-      "  Extensions: TRUE")
+    capture.output(med_req_object)[1:2],
+    c("MedicationRequest 111 ", "Piperacillin / Tazobactam IVI 4.5 g TDS ")
   )
   
   # COMPUTE 
@@ -248,8 +292,7 @@ test_that("MedicationRequest..interface_methods Postgres", {
                                   user = "user", 
                                   password = "password",
                                   host = "localhost", 
-                                  dbname="RamsesDB",
-                                  timezone = "Europe/London")
+                                  dbname="RamsesDB")
   
   fake_prescription <- data.frame(
     patient_id = "5124578766",
@@ -293,12 +336,8 @@ test_that("MedicationRequest..interface_methods Postgres", {
   
   # SHOW
   expect_equal(
-    capture.output(med_req_object),
-    c("MedicationRequest 111 ", "Piperacillin / Tazobactam IVI 4.5 g TDS ",
-      "Patient:     5124578766 ", "Start:        2015-08-04 14:45:16 BST ",
-      "End:          2015-08-07 14:45:16 BST ", "Therapy:      111 ",
-      "", "Database connection:", "<SQLiteConnection>", "  Path: :memory:",
-      "  Extensions: TRUE")
+    capture.output(med_req_object)[1:2],
+    c("MedicationRequest 111 ", "Piperacillin / Tazobactam IVI 4.5 g TDS ")
   )
   
   # COMPUTE 
@@ -318,19 +357,20 @@ test_that("MedicationRequest..interface_methods Postgres", {
   expect_equal(
     collect(med_req_object),
     dplyr::tibble(id = 1L, patient_id = "5124578766", prescription_id = 111,
-                  combination_id = NA, therapy_id = 111, therapy_rank = NA,
+                  combination_id = NA_real_, therapy_id = 111, therapy_rank = NA,
                   prescription_text = "Piperacillin / Tazobactam IVI 4.5 g TDS",
                   drug_code = "TZP", drug_name = "Piperacillin + Tazobactam",
                   drug_display_name = "Piperacillin + Tazobactam", drug_group = "Beta-lactams/penicillins",
                   antiinfective_type = "antibacterial", ATC_code = "J01CR05",
                   ATC_route = "P", dose = 4.5, unit = "g", route = "IV", frequency = "TDS",
-                  authoring_date = structure(1438690036, class = c("POSIXct", "POSIXt"), tzone = ""), 
-                  prescription_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = ""), 
-                  prescription_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = ""),
+                  authoring_date = structure(1438690036, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+                  prescription_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+                  prescription_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC"),
                   prescription_context = "inpatient",
                   prescription_status = "completed", daily_frequency = 3, duration = 3)
   )
   
+  .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
   DBI::dbDisconnect(conPostgreSQL)
 })
 
@@ -452,8 +492,7 @@ test_that("TherapyEpisode..interface_methods Postgres", {
                                   user = "user", 
                                   password = "password",
                                   host = "localhost", 
-                                  dbname="RamsesDB",
-                                  timezone = "Europe/London")
+                                  dbname="RamsesDB")
   
   fake_prescription <- data.frame(
     patient_id = "5124578766",
@@ -521,11 +560,12 @@ test_that("TherapyEpisode..interface_methods Postgres", {
       patient_id = "5124578766", 
       therapy_id = 111, 
       antiinfective_type = "antibacterial", 
-      therapy_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = ""),
-      therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "")
+      therapy_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = "UTC"),
+      therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC")
     )
   )
   
+  .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
   DBI::dbDisconnect(conPostgreSQL)
 })
 
