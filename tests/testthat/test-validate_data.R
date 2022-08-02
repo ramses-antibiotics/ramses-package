@@ -1314,3 +1314,38 @@ test_that("validate_investigations", {
   expect_true(validate_investigations(example_datatable[1,]))
   expect_error(validate_investigations(example_datatable))
 })
+
+
+
+# Bug 85 ------------------------------------------------------------------
+
+test_that("Bug 85 - uniqueness of patient_id in patient dataset", {
+  
+  expect_error(
+    validate_inpatient_episodes(
+      patients = data.frame(
+        patient_id = c("1253675584", "1253675584"), 
+        NHS_number = c("5632763868", "5632763868"),
+        forename = c("jflmnfcjnc", "jflmnfcjnc"), 
+        surname = c("mljkaigaji", "mljkaigaji"), 
+        sex = c("1", "1"), ethnic_category_UK = c("A", "A"), 
+        date_of_birth = c("1999-11-21", "1999-11-21"),
+        date_of_death = c(NA_character_, NA_character_)
+      ),
+      episodes = data.frame(
+        patient_id = "1253675584", spell_id = "8751633817", 
+        admission_method = "2", 
+        admission_date = as.POSIXct("2015-02-26 18:30:55"), 
+        discharge_date = as.POSIXct("2015-03-17 17:23:49"), 
+        episode_number = 1L, last_episode_in_spell = "2",
+        episode_start = as.POSIXct("2015-02-26 18:30:55"), 
+        episode_end = as.POSIXct("2015-03-17 17:23:49"), 
+        consultant_code = "C1000002", 
+        main_specialty_code = "100", 
+        last_episode_in_spell_indicator = 2, 
+        ramses_bed_days = 1.72303240740741
+      )
+    )
+  )
+  
+})

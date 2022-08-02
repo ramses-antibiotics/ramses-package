@@ -189,7 +189,7 @@ map_charlson_comorbidities <- function(df, icd_column){
     icd_column <- names(df)[icd_column]
   }
 
-  icd <- unique(df[, icd_column])
+  icd <- unique(df[[icd_column]])
   loc <- lapply(charlson_regex, grep, icd, value = TRUE)
   loc <- utils::stack(loc)
   names(loc)[1] <- "icd_code"

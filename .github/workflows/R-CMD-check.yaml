@@ -4,10 +4,7 @@ on:
       - master
       - develop
       - 'feature/**'
-  pull_request:
-    branches:
-      - master
-      - develop
+      - 'bug_fix/**'
 
 name: R-CMD-check
 

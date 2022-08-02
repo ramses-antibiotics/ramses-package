@@ -594,19 +594,20 @@ setMethod("compute", "TherapyEpisode", function(x) {
   .therapy_table_completeness_check(x, x@record)
   x@record <- dplyr::compute(x@record)
   x@therapy_table <- dplyr::compute(x@therapy_table)
+
   .create_sql_primary_key(
     conn = x@conn,
-    table = x@therapy_table$ops$x$x,
+    table = dbplyr::remote_name(x@therapy_table),
     field = "t, patient_id, therapy_id",
-    override_index_name = paste0("idx_pk_", x@therapy_table$ops$x$x)
+    override_index_name = paste0("idx_pk_", dbplyr::remote_name(x@therapy_table))
   )
   .create_sql_index(
     conn = x@conn,
-    table = x@therapy_table$ops$x$x,
+    table = dbplyr::remote_name(x@therapy_table),
     # TODO deal with tz problem
     # fields = "patient_id, (t_start at time zone 'UTC')",
     fields = "patient_id, t_start",
-    override_index_name = paste0("idx_pt_time_", x@therapy_table$ops$x$x)
+    override_index_name = paste0("idx_pt_time_", dbplyr::remote_name(x@therapy_table))
   )
   
   x

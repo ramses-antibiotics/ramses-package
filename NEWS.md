@@ -1,4 +1,20 @@
 
+# Ramses 0.4.3
+
+*2 August 2022*
+
+## Improvements
+
+* upgrade dependency on packages `dplyr` version >= 1.0.1 and `dbplyr` version >= 2.1.0
+* improve `validate_inpatient_episodes()` [#85](https://github.com/ramses-antibiotics/ramses-package/issues/85)
+
+## Bug fixes
+
+* fix bug in `map_charlson_comorbidities()` with `tbl_df` objects  [#84](https://github.com/ramses-antibiotics/ramses-package/issues/84)
+* fix bug in `compute()` with `TherapyEpisode` objects  [#83](https://github.com/ramses-antibiotics/ramses-package/issues/83)
+* fix uncommon bug in `clinical_feature_*()` functions with PostgreSQL [#88](https://github.com/ramses-antibiotics/ramses-package/issues/88)
+
+
 # Ramses 0.4.2
 
 *28 January 2022*

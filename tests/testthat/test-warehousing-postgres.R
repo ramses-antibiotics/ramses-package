@@ -7,10 +7,11 @@ test_that(".create_sql_primary_key on Postgres", {
   }
   
   pq_conn <- DBI::dbConnect(RPostgres::Postgres(),
-                           user = "user", 
-                           password = "password",
-                           host = "localhost", 
-                           dbname="RamsesDB") 
+                            user = "user", 
+                            password = "password",
+                            host = "localhost", 
+                            dbname="RamsesDB",
+                            timezone = "Europe/London") 
   on.exit({
     .remove_db_tables(conn = pq_conn,
                       DBI::dbListTables(pq_conn))
@@ -36,7 +37,8 @@ test_that(".create_sql_index on Postgres", {
                             user = "user", 
                             password = "password",
                             host = "localhost", 
-                            dbname="RamsesDB")
+                            dbname="RamsesDB",
+                            timezone = "Europe/London")
   on.exit({
     .remove_db_tables(conn = pq_conn,
                       DBI::dbListTables(pq_conn))
@@ -66,7 +68,8 @@ test_that(".build_tally_table on Postgres", {
                             user = "user", 
                             password = "password",
                             host = "localhost", 
-                            dbname="RamsesDB")
+                            dbname="RamsesDB",
+                            timezone = "Europe/London")
   on.exit({
     .remove_db_tables(conn = pq_conn,
                       DBI::dbListTables(pq_conn))
@@ -95,10 +98,11 @@ test_that(".run_transitive_closure on Postgres", {
   )
   
   pq_conn <- DBI::dbConnect(RPostgres::Postgres(),
-                           user = "user", 
-                           password = "password",
-                           host = "localhost", 
-                           dbname="RamsesDB")
+                            user = "user", 
+                            password = "password",
+                            host = "localhost", 
+                            dbname="RamsesDB",
+                            timezone = "Europe/London")
   on.exit({
     .remove_db_tables(conn = pq_conn,
                       DBI::dbListTables(pq_conn))
@@ -128,10 +132,11 @@ test_that("drug_prescriptions_edges on Postgres", {
   }
   
   pq_conn <- DBI::dbConnect(RPostgres::Postgres(),
-                           user = "user", 
-                           password = "password",
-                           host = "localhost", 
-                           dbname = "RamsesDB")
+                            user = "user", 
+                            password = "password",
+                            host = "localhost", 
+                            dbname = "RamsesDB",
+                            timezone = "Europe/London")
   on.exit({
     .remove_db_tables(conn = pq_conn,
                       DBI::dbListTables(pq_conn))
@@ -168,10 +173,11 @@ test_that("Ramses on PosgreSQL (system test)", {
   }
 
   pq_conn <- DBI::dbConnect(RPostgres::Postgres(),
-                           user = "user", 
-                           password = "password",
-                           host = "localhost", 
-                           dbname="RamsesDB")
+                            user = "user", 
+                            password = "password",
+                            host = "localhost", 
+                            dbname="RamsesDB",
+                            timezone = "Europe/London")
   on.exit({
     .remove_db_tables(conn = pq_conn,
                       DBI::dbListTables(pq_conn))
@@ -277,8 +283,8 @@ test_that("Ramses on PosgreSQL (system test)", {
       patient_id = "1555756339",
       therapy_id = "592a738e4c2afcae6f625c01856151e0",
       antiinfective_type = "antibacterial",
-      therapy_start = "2016-08-01 11:15:19+01:00",
-      therapy_end = "2016-08-03 11:15:19+01:00"
+      therapy_start = as.POSIXct("2016-08-01 11:15:19", tz = "Europe/London", origin = "1960-01-01"),
+      therapy_end = as.POSIXct("2016-08-03 11:15:19", tz = "Europe/London", origin = "1960-01-01")
     )
   )
   
