@@ -4,11 +4,14 @@
 \alias{connect_local_database}
 \title{Create or connect to a local DuckDB database}
 \usage{
-connect_local_database(file)
+connect_local_database(file, timezone = Sys.timezone())
 }
 \arguments{
 \item{file}{A file path to an existing or new database file with a
 ".duckdb" extension.}
+
+\item{timezone}{A string for the time zone in which to return data to 
+R from the database. By default, it is set to \code{\link{Sys.timezone}()}.}
 }
 \value{
 A database connection object of class \code{duckdb_connection}.

@@ -534,7 +534,7 @@ load_medications <- function(
 .create_table_drug_prescriptions_edges <- function(conn, 
                                                    transitive_closure_controls) {
   
-  if ( is(conn, "PqConnection") | is(conn, "duckdb_connection") ) {
+  if ( is(conn, "PqConnection") || is(conn, "duckdb_connection") ) {
     .remove_db_tables(conn, "drug_prescriptions_edges")
     statement_edges <- .read_sql_syntax("drug_prescriptions_edges_PostgreSQL.sql")
   } else {
@@ -638,7 +638,7 @@ load_medications <- function(
   
   .remove_db_tables(conn = conn, "drug_therapy_episodes")
   
-  if ( is(conn, "SQLiteConnection") ) {
+  if (is(conn, "duckdb_connection") || is(conn, "PqConnection")) {
     drug_therapy_episodes <- tbl(conn, "drug_prescriptions") %>%
       dplyr::collect() %>% 
       dplyr::filter(!is.na(therapy_id)) %>% 
@@ -652,12 +652,8 @@ load_medications <- function(
       temporary = FALSE
     )
   } else {
-    forget <- tbl(conn, "drug_prescriptions") %>%
-      dplyr::filter(!is.na(therapy_id)) %>% 
-      dplyr::group_by(patient_id, therapy_id, antiinfective_type) %>% 
-      dplyr::summarise(therapy_start = min(prescription_start, na.rm = TRUE),
-                       therapy_end = max(prescription_end, na.rm = TRUE)) %>% 
-      dplyr::compute(name = "drug_therapy_episodes", temporary = FALSE)
+    .throw_error_method_not_implemented(".create_table_drug_therapy_episodes()", 
+                                        class_name = class(conn))
   }
 
   .create_sql_primary_key(
@@ -874,6 +870,8 @@ create_therapy_episodes <- function(
 #'
 #' @param file A file path to an existing or new database file with a
 #'  ".duckdb" extension.
+#' @param timezone A string for the time zone in which to return data to 
+#' R from the database. By default, it is set to \code{\link{Sys.timezone}()}.
 #' @return A database connection object of class \code{duckdb_connection}.
 #' @seealso The \code{duckdb} website provides excellent guidance on how to
 #' connect to databases: 
@@ -896,11 +894,12 @@ create_therapy_episodes <- function(
 #'     dplyr::tbl(con, "reference_aware")
 #'     DBI::dbDisconnect(con, shutdown=TRUE)
 #'     file.remove("ramses-db.duckdb")
-connect_local_database <- function(file) {
+connect_local_database <- function(file, timezone = Sys.timezone()) {
   if(!file.exists(file)){
     con <- DBI::dbConnect(duckdb::duckdb(), 
                           dbdir = file, 
-                          timezone_out = Sys.timezone())
+                          timezone_out = timezone,
+                          tz_out_convert = "with")
     .build_tally_table(con)
     message(paste0("DuckDB database created in \n", con@driver@dbdir,
                    "\nPlease do not use real patient data."))
@@ -924,15 +923,18 @@ connect_local_database <- function(file) {
 #' The database and its content will persist after it is disconnected.
 #'
 #' @param file A file path to an existing or new database file with a
-#'  ".sqlite" extension.
+#'  ".duckdb" extension.
+#' @param timezone A string for the time zone in which to return data to 
+#' R from the database. By default, it is set to \code{\link{Sys.timezone}()}.
 #' @param silent if \code{TRUE}, the progress bar will be hidden. The default is 
 #' \code{FALSE}.
-#' @return An object of class \code{SQLiteConnection}.
+#' @return An object of class \code{duckdb_connection}.
 #' @seealso The dbplyr website provides excellent guidance on how to connect to databases: 
 #' \url{https://db.rstudio.com/getting-started/connect-to-database}
 #' @importFrom DBI dbConnect dbDisconnect
 #' @export
 create_mock_database <- function(file, 
+                                 timezone = Sys.timezone(),
                                  silent = FALSE) {
   
   stopifnot(is.logical(silent))
@@ -944,7 +946,8 @@ create_mock_database <- function(file,
   }
   mock_db <- DBI::dbConnect(duckdb::duckdb(), 
                             dbdir = file, 
-                            timezone_out = Sys.timezone())
+                            timezone_out = timezone,
+                            tz_out_convert = "with")
   
   .build_tally_table(mock_db)
   dplyr::copy_to(
@@ -1312,7 +1315,7 @@ bridge_tables <- function(conn,
 bridge_episode_prescription_overlap <- function(conn, 
                                                 overwrite = FALSE) {
   stopifnot(is.logical(overwrite))
-  stopifnot(is(conn, "duckdb_connection") | is(conn, "PqConnection"))
+  stopifnot(is(conn, "duckdb_connection") || is(conn, "PqConnection"))
 
   tblz_episodes <- tbl(conn, "inpatient_episodes")
   tblz_prescriptions <- tbl(conn, "drug_prescriptions") %>% 
@@ -1333,27 +1336,7 @@ bridge_episode_prescription_overlap <- function(conn,
         dplyr::between(episode_start, prescription_start, prescription_end)
     )
   
-  if( is(conn, "SQLiteConnection") ) {
-    tblz_bridge_episode_prescriptions_overlap <- dplyr::mutate(
-      tblz_bridge_episode_prescriptions_overlap,
-      DOT = dplyr::sql(
-        "(strftime('%s', min(prescription_end, episode_end)) -
-        strftime('%s', max(prescription_start, episode_start)))/(3600.0*24.0)"
-      )
-    )
-    
-    if( DDD_present ) {
-      tblz_bridge_episode_prescriptions_overlap <- dplyr::mutate(
-        tblz_bridge_episode_prescriptions_overlap,
-        DDD_prescribed = dplyr::sql(
-          "(strftime('%s', min(prescription_end, episode_end)) -
-        strftime('%s', max(prescription_start, episode_start)))
-         / (3600.0*24.0) * DDD"
-        )
-      )
-    }
-    
-  } else if( is(conn, "PqConnection") | is(conn, "duckdb_connection") ) {
+  if( is(conn, "PqConnection") || is(conn, "duckdb_connection") ) {
     tblz_bridge_episode_prescriptions_overlap <- dplyr::mutate(
       tblz_bridge_episode_prescriptions_overlap,
       DOT = dplyr::sql(
@@ -1420,7 +1403,7 @@ bridge_episode_prescription_initiation <- function(conn,
                                                    overwrite = FALSE) {
   
   stopifnot(is.logical(overwrite))
-  stopifnot(is(conn, "duckdb_connection") | is(conn, "PqConnection"))
+  stopifnot(is(conn, "duckdb_connection") || is(conn, "PqConnection"))
   
   tblz_episodes <- tbl(conn, "inpatient_episodes")
   tblz_prescriptions <- tbl(conn, "drug_prescriptions") %>% 
@@ -1439,27 +1422,7 @@ bridge_episode_prescription_initiation <- function(conn,
       dplyr::between(authoring_date, episode_start, episode_end) 
     )
   
-  if( is(conn, "SQLiteConnection") ) {
-    tblz_bridge_episode_prescription_initiation <- dplyr::mutate(
-      tblz_bridge_episode_prescription_initiation,
-      DOT = dplyr::sql(
-        "(strftime('%s', prescription_end) -
-        strftime('%s', prescription_start))
-        / (3600.0 * 24.0)"
-      )
-    )
-    
-    if ( DDD_present ) {
-      tblz_bridge_episode_prescription_initiation <- dplyr::mutate(
-        tblz_bridge_episode_prescription_initiation,
-        DDD_prescribed = dplyr::sql(
-          "(strftime('%s', prescription_end) -
-        strftime('%s', prescription_start))
-         / (3600.0 * 24.0) * DDD")
-      )
-    }
-    
-  } else if( is(conn, "PqConnection") | is(conn, "duckdb_connection") ) {
+  if( is(conn, "PqConnection") || is(conn, "duckdb_connection") ) {
     tblz_bridge_episode_prescription_initiation <- dplyr::mutate(
       tblz_bridge_episode_prescription_initiation,
       DOT = dplyr::sql(
@@ -1525,7 +1488,7 @@ bridge_episode_prescription_initiation <- function(conn,
 bridge_spell_therapy_overlap <- function(conn, 
                                          overwrite = FALSE) {
   stopifnot(is.logical(overwrite))
-  stopifnot(is(conn, "duckdb_connection") | is(conn, "PqConnection"))
+  stopifnot(is(conn, "duckdb_connection") || is(conn, "PqConnection"))
   
   tblz_spells <- tbl(conn, "inpatient_episodes") %>% 
     dplyr::distinct(patient_id, spell_id, admission_date, discharge_date)
@@ -1540,15 +1503,7 @@ bridge_spell_therapy_overlap <- function(conn,
         dplyr::between(admission_date, therapy_start, therapy_end)
     )
   
-  if( is(conn, "SQLiteConnection") ) {
-    tblz_bridge_spell_therapy_overlap <- dplyr::mutate(
-      tblz_bridge_spell_therapy_overlap,
-      LOT = dplyr::sql(
-        "(strftime('%s', min(therapy_end, discharge_date)) -
-        strftime('%s', max(therapy_start, admission_date)))/(3600.0*24.0)"
-      )
-    )
-  } else if( is(conn, "PqConnection") | is(conn, "duckdb_connection") ) {
+  if( is(conn, "PqConnection") || is(conn, "duckdb_connection") ) {
     tblz_bridge_spell_therapy_overlap <- dplyr::mutate(
       tblz_bridge_spell_therapy_overlap,
       LOT = dplyr::sql(

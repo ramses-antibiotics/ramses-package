@@ -9,7 +9,7 @@
 ^\.idea
 ^_pkgdown\.yml$
 ^pkgdown$
-^.*\.sqlite$
+^.*\.duckdb$
 ^travis$
 ^vignettes/Mechanics-of-entities\.Rmd$
 ^vignettes/.*\.R$

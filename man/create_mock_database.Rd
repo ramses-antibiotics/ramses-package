@@ -4,17 +4,20 @@
 \alias{create_mock_database}
 \title{Create a mock database for training/demonstration purposes}
 \usage{
-create_mock_database(file, silent = FALSE)
+create_mock_database(file, timezone = Sys.timezone(), silent = FALSE)
 }
 \arguments{
 \item{file}{A file path to an existing or new database file with a
-".sqlite" extension.}
+".duckdb" extension.}
+
+\item{timezone}{A string for the time zone in which to return data to 
+R from the database. By default, it is set to \code{\link{Sys.timezone}()}.}
 
 \item{silent}{if \code{TRUE}, the progress bar will be hidden. The default is 
 \code{FALSE}.}
 }
 \value{
-An object of class \code{SQLiteConnection}.
+An object of class \code{duckdb_connection}.
 }
 \description{
 Create a local database on disk using 
