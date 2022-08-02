@@ -3,6 +3,11 @@
 
 test_that(".create_sql_primary_key on DuckDB", {
   db_conn <- connect_local_database(file = "test.duckdb", timezone = "Europe/London")
+  on.exit({
+    DBI::dbDisconnect(db_conn, shutdown = TRUE)
+    file.remove("test.duckdb") 
+  })
+  
   DBI::dbWriteTable(conn = db_conn, name = "test_table", value = data.frame(key = 1:10) )
   DBI::dbListObjects(db_conn)
   .create_sql_primary_key(conn = db_conn, field = "key", table = "test_table")
@@ -12,12 +17,15 @@ test_that(".create_sql_primary_key on DuckDB", {
       value = data.frame(key = 1:10), append = TRUE
     )
   )
-  DBI::dbDisconnect(db_conn, shutdown = TRUE)
-  file.remove("test.duckdb")
 })
 
 test_that(".create_sql_index on DuckDB", {
-  db_conn <- connect_local_database(file = "test.duckdb")
+  db_conn <- connect_local_database(file = "test.duckdb", timezone = "Europe/London")
+  on.exit({
+    DBI::dbDisconnect(db_conn, shutdown = TRUE)
+    file.remove("test.duckdb") 
+  })
+  
   DBI::dbWriteTable(conn = db_conn, name = "test_table", value = data.frame(key = 1:10) )
   .create_sql_index(conn = db_conn, field = "key", table = "test_table")
   expect_equal(
@@ -30,19 +38,20 @@ test_that(".create_sql_index on DuckDB", {
       indexname = "idx_test_table_key"
     )
   )
-  DBI::dbDisconnect(db_conn, shutdown = TRUE)
-  file.remove("test.duckdb")
 })
 
 test_that(".build_tally_table on DuckDB", {
   db_conn <- DBI::dbConnect(duckdb::duckdb(), dbdir = "test.duckdb")
+  on.exit({
+    DBI::dbDisconnect(db_conn, shutdown = TRUE)
+    file.remove("test.duckdb") 
+  })
+  
   .build_tally_table(db_conn)
   expect_equal(
     DBI::dbReadTable(db_conn, "ramses_tally"),
     data.frame(t = 0:50000)
   )
-  DBI::dbDisconnect(db_conn, shutdown = TRUE)
-  file.remove("test.duckdb")
 })
 
 test_that(".run_transitive_closure on DuckDB", {
@@ -56,7 +65,11 @@ test_that(".run_transitive_closure on DuckDB", {
     grp = as.integer(c(1,1,1,1,2,2,2,2))
   )
   
-  db_conn <- suppressWarnings(connect_local_database("test.duckdb"))
+  db_conn <- suppressWarnings(connect_local_database("test.duckdb", timezone = "Europe/London"))
+  on.exit({
+    DBI::dbDisconnect(db_conn, shutdown = TRUE)
+    file.remove("test.duckdb") 
+  })
   
   dplyr::copy_to(
     dest = db_conn,
@@ -70,14 +83,17 @@ test_that(".run_transitive_closure on DuckDB", {
     dplyr::collect()
   
   expect_equal(test_output,
-               test_solution)
-  DBI::dbDisconnect(db_conn, shutdown = TRUE)
-  file.remove("test.duckdb")  
+               test_solution) 
 })
 
 test_that("drug_prescriptions_edges on DuckDB", {
   
-  db_conn <- suppressWarnings(connect_local_database("test.duckdb"))
+  db_conn <- suppressWarnings(connect_local_database("test.duckdb", timezone = "Europe/London"))
+  on.exit({
+    DBI::dbDisconnect(db_conn, shutdown = TRUE)
+    file.remove("test.duckdb") 
+  })
+  
   records_rx <- read.csv(system.file("test_cases", "prescription_linkage_prescriptions.csv", 
                                      package = "Ramses"),
                          colClasses = c("character", "character", "numeric", 
@@ -98,13 +114,16 @@ test_that("drug_prescriptions_edges on DuckDB", {
     dplyr::tibble()
   
   expect_equal(output,  records_edges)
-  DBI::dbDisconnect(db_conn, shutdown = TRUE)
-  file.remove("test.duckdb")
 })
 
 test_that("create_mock_database on DuckDB", {
 
   db_conn <- create_mock_database(file = "test.duckdb", silent = TRUE)
+  on.exit({
+    DBI::dbDisconnect(db_conn, shutdown = TRUE)
+    file.remove("test.duckdb") 
+  })
+  
   expect_true(is(db_conn, "duckdb_connection"))
 
   test_output <- tbl(db_conn, "drug_prescriptions") %>% 
@@ -126,9 +145,6 @@ test_that("create_mock_database on DuckDB", {
                                  "89ac870bc1c1e4b2a37cec79d188cb08", 
                                  "89ac870bc1c1e4b2a37cec79d188cb08")))
   expect_equal(.nrow_sql_table(db_conn, "ramses_tally"), 50001)
-  DBI::dbDisconnect(db_conn, shutdown = TRUE)
-  file.remove("test.duckdb")
-  
 })
 
 
@@ -137,7 +153,7 @@ test_that("Ramses on DuckDB (system test)", {
   if (!identical(Sys.getenv("CI"), "true")) {
     skip("Test only on Travis")
   }
-  db_conn <- suppressWarnings(connect_local_database("test.duckdb"))
+  db_conn <- suppressWarnings(connect_local_database("test.duckdb", timezone = "Europe/London"))
   on.exit({
     DBI::dbDisconnect(db_conn, shutdown = TRUE)
     file.remove("test.duckdb")
@@ -681,10 +697,10 @@ test_that("Ramses on DuckDB (system test)", {
     utils::capture.output(TherapyEpisode(db_conn, "89ac870bc1c1e4b2a37cec79d188cb08"))[1:8],
     c("TherapyEpisode 89ac870bc1c1e4b2a37cec79d188cb08 ", "Patient:   1555756339 ", 
       paste0("Start:     ",
-             as.character(as.POSIXct("2017-07-02 01:15:46", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
+             as.character(as.POSIXct("2017-07-02 01:15:46", tz = "Europe/London"), tz = Sys.timezone(), format = "%Y-%m-%d %H:%M:%S %Z"),
              " "), 
       paste0("End:       ",
-             as.character(as.POSIXct("2017-07-06 01:35:46", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
+             as.character(as.POSIXct("2017-07-06 01:35:46", tz = "Europe/London"), tz = Sys.timezone(), format = "%Y-%m-%d %H:%M:%S %Z"),
              " "), 
       "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
       "  > Clarithromycin ORAL 500mg 4 days"))
@@ -692,10 +708,10 @@ test_that("Ramses on DuckDB (system test)", {
     utils::capture.output(TherapyEpisode(db_conn, "fa179f4bcf3efa1e21225ab207ab40c4"))[1:11],
     c("TherapyEpisode fa179f4bcf3efa1e21225ab207ab40c4 ", "Patient:   3422481921 ", 
       paste0("Start:     ", 
-             as.character(as.POSIXct("2017-11-15 15:33:36", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
+             as.character(as.POSIXct("2017-11-15 15:33:36", tz = "Europe/London"), tz = Sys.timezone(), format = "%Y-%m-%d %H:%M:%S %Z"),
              " "),
       paste0("End:       ",
-             as.character(as.POSIXct("2017-12-01 21:11:36", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
+             as.character(as.POSIXct("2017-12-01 21:11:36", tz = "Europe/London"), tz = Sys.timezone(), format = "%Y-%m-%d %H:%M:%S %Z"),
              " "),
       "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
       "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  > Piperacillin/tazobactam IV 4.5g 4 days", 
@@ -722,10 +738,10 @@ test_that("Ramses on DuckDB (system test)", {
     c("MedicationRequest 5528fc41106bb48eb4d48bc412e13e67 ", "Clarithromycin IV 500mg 0 days ", 
       "Patient:     99999999999 ", 
       paste0("Start:        ", 
-             as.character(as.POSIXct("2015-08-07 10:27:00", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
+             as.character(as.POSIXct("2015-08-07 10:27:00", tz = "Europe/London"), tz = Sys.timezone(), format = "%Y-%m-%d %H:%M:%S %Z"),
              " "),
       paste0("End:          ", 
-             as.character(as.POSIXct("2015-08-07 15:59:00", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
+             as.character(as.POSIXct("2015-08-07 15:59:00", tz = "Europe/London"), tz = Sys.timezone(), format = "%Y-%m-%d %H:%M:%S %Z"),
              " "),
       "Therapy:      5528fc41106bb48eb4d48bc412e13e67 ", 
       "", "Database connection:"))
@@ -734,10 +750,10 @@ test_that("Ramses on DuckDB (system test)", {
     c("MedicationRequest 1ab55e515af6b86dde76abbe0bffbd3f ", "Clarithromycin ORAL 500mg 4 days ", 
       "Patient:     3894468747 ", 
       paste0("Start:        ", 
-             as.character(as.POSIXct("2015-10-01 21:38:55", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
+             as.character(as.POSIXct("2015-10-01 21:38:55", tz = "Europe/London"), tz = Sys.timezone(), format = "%Y-%m-%d %H:%M:%S %Z"),
              " "), 
       paste0("End:          ", 
-             as.character(as.POSIXct("2015-10-05 21:38:55", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
+             as.character(as.POSIXct("2015-10-05 21:38:55", tz = "Europe/London"), tz = Sys.timezone(), format = "%Y-%m-%d %H:%M:%S %Z"),
              " "),
       "Combination:  1ab55e515af6b86dde76abbe0bffbd3f ", 
       "Therapy:      1ab55e515af6b86dde76abbe0bffbd3f ", "", "Database connection:"
