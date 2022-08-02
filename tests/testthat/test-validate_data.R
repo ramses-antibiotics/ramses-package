@@ -1283,9 +1283,9 @@ test_that("validate_investigations", {
 
 
 
-# bug 85 ------------------------------------------------------------------
+# Bug 85 ------------------------------------------------------------------
 
-test_that("Bug 85", {
+test_that("Bug 85 - uniqueness of patient_id in patient dataset", {
   
   expect_error(
     validate_inpatient_episodes(
