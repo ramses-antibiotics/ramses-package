@@ -64,13 +64,13 @@ temperature_interval <- clinical_feature_interval(
    observation_intervals = list("8310-5" = c(36, 38)),
    hours = 24
    )
-str(therapy_table(temperature_interval, collect = TRUE))
+str(longitudinal_table(temperature_interval, collect = TRUE))
 
 temperature_threshold <- clinical_feature_interval(
    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
    observation_intervals = list("8310-5" = 38),
    hours = 24
    )
-str(therapy_table(temperature_threshold, collect = TRUE))
+str(longitudinal_table(temperature_threshold, collect = TRUE))
 }
 }

@@ -174,7 +174,7 @@
   if(compute) {
     x <- compute(x)
   }
-  TT <- x@therapy_table
+  TT <- x@longitudinal_table
   
   therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
@@ -200,7 +200,7 @@
                      t, 
                      {{field_name}} := observation_value_numeric)
   
-  x@therapy_table <- dplyr::left_join(
+  x@longitudinal_table <- dplyr::left_join(
     TT,
     observations_linked,
     by = c("patient_id", "t")
@@ -245,7 +245,7 @@
 #'    observation_code = "8310-5",
 #'    hours = 24
 #'    )
-#' str(therapy_table(temperature_check, collect = TRUE))
+#' str(longitudinal_table(temperature_check, collect = TRUE))
 #' }
 setGeneric(
   "clinical_feature_last", 
@@ -286,7 +286,7 @@ setMethod(
   if(compute) {
     x <- compute(x)
   }
-  TT <- x@therapy_table
+  TT <- x@longitudinal_table
   
   therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
@@ -311,7 +311,7 @@ setMethod(
       {{field_name_N}} := dplyr::n()
     )
   
-  x@therapy_table <- dplyr::left_join(
+  x@longitudinal_table <- dplyr::left_join(
     TT,
     observations_linked,
     by = c("patient_id", "t")
@@ -360,7 +360,7 @@ setMethod(
 #'    observation_code = "8310-5",
 #'    hours = 24
 #'    )
-#' str(therapy_table(temperature_check, collect = TRUE))
+#' str(longitudinal_table(temperature_check, collect = TRUE))
 #' }
 setGeneric(
   "clinical_feature_mean", 
@@ -400,7 +400,7 @@ setMethod(
   if(compute) {
     x <- compute(x)
   }
-  TT <- x@therapy_table
+  TT <- x@longitudinal_table
 
   therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
@@ -465,7 +465,7 @@ setMethod(
                      {{field_name_slope}} := final_slope,
                      {{field_name_N}} := regression_N)
   
-  x@therapy_table <- dplyr::left_join(
+  x@longitudinal_table <- dplyr::left_join(
     TT,
     observations_linked,
     by = c("patient_id", "t")
@@ -520,7 +520,7 @@ setMethod(
 #'    observation_code = "8310-5",
 #'    hours = 24
 #'    )
-#' str(therapy_table(temperature_check, collect = TRUE))
+#' str(longitudinal_table(temperature_check, collect = TRUE))
 #' }
 setGeneric(
   "clinical_feature_ols_trend", 
@@ -558,7 +558,7 @@ setMethod(
   if(compute) {
     x <- compute(x)
   }
-  TT <- x@therapy_table
+  TT <- x@longitudinal_table
   therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
       conn = x@conn, 
@@ -591,7 +591,7 @@ setMethod(
         dplyr::sql(sql_over) ~ 1L, TRUE ~ 0L
       ), na.rm = TRUE))
   
-  x@therapy_table <- dplyr::left_join(
+  x@longitudinal_table <- dplyr::left_join(
     TT,
     observations_linked,
     by = c("patient_id", "t")
@@ -609,7 +609,7 @@ setMethod(
   if(compute) {
     x <- compute(x)
   }
-  TT <- x@therapy_table
+  TT <- x@longitudinal_table
   therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
     conn = x@conn, 
@@ -646,7 +646,7 @@ setMethod(
         dplyr::sql(sql_over) ~ 1L, TRUE ~ 0L
       ), na.rm = TRUE))
   
-  x@therapy_table <- dplyr::left_join(
+  x@longitudinal_table <- dplyr::left_join(
       TT,
       observations_linked,
       by = c("patient_id", "t")
@@ -695,14 +695,14 @@ setMethod(
 #'    observation_intervals = list("8310-5" = c(36, 38)),
 #'    hours = 24
 #'    )
-#' str(therapy_table(temperature_interval, collect = TRUE))
+#' str(longitudinal_table(temperature_interval, collect = TRUE))
 #' 
 #' temperature_threshold <- clinical_feature_interval(
 #'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
 #'    observation_intervals = list("8310-5" = 38),
 #'    hours = 24
 #'    )
-#' str(therapy_table(temperature_threshold, collect = TRUE))
+#' str(longitudinal_table(temperature_threshold, collect = TRUE))
 #' }
 #' @include objects.R
 setGeneric(

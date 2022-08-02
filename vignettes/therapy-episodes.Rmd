@@ -176,15 +176,15 @@ For more information on S4 classes used in Ramses and their associated methods, 
 
 # Longitudinal analysis
 
-## Therapy tables
+## Longitudinal tables
 
-Therapy episodes can be studied by creating a longitudinal, hour-by-hour matrix called 'therapy table'.
+Therapy episodes can be studied by creating a longitudinal, hour-by-hour matrix called 'longitudinal table'.
 
-```{r therapy_table_code, eval=FALSE}
-therapy_table(uti_episode, collect = TRUE)
+```{r longitudinal_table_code, eval=FALSE}
+longitudinal_table(uti_episode, collect = TRUE)
 ```
-```{r therapy_table_output, echo=FALSE, paged.print=TRUE}
-therapy_table(uti_episode, collect = TRUE) %>% 
+```{r longitudinal_table_output, echo=FALSE, paged.print=TRUE}
+longitudinal_table(uti_episode, collect = TRUE) %>% 
   select(t, therapy_start, therapy_end, t_start, t_end, parenteral) %>% 
   rmarkdown::paged_table()
 ```
@@ -227,7 +227,7 @@ The example below demonstrates how to classify a patient as hypothermic/afebrile
 example_sepsis <- TherapyEpisode(ramses_db, "4d611fc8886c23ab047ad5f74e5080d7") %>% 
   clinical_feature_last(observation_code = "8310-5", hours = 6) 
 
-therapy_table(example_sepsis, collect = TRUE) %>% 
+longitudinal_table(example_sepsis, collect = TRUE) %>% 
   mutate(
     febrile = case_when(
       last_temperature_6h < 36 ~ "hypothermic",
@@ -247,7 +247,7 @@ clinical_feature_ols_trend(
   x = example_sepsis,
   observation_code = "751-8",
   hours = 48
-) %>% therapy_table(collect = TRUE) %>% 
+) %>% longitudinal_table(collect = TRUE) %>% 
   select(t, t_start, ols_neutrophils_48h_slope, ols_neutrophils_48h_intercept, ols_neutrophils_48h_N) %>%
   filter(between(t, 10, 14) | between(t, 80, 84))
 ```
