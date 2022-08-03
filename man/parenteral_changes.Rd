@@ -25,7 +25,7 @@ of three integers coding for the time \code{t}:
 }
 
 The integers are in direct correspondence with field \code{t} in the 
-therapy episode table (\code{\link{therapy_table}()}).
+therapy episode table (\code{\link{longitudinal_table}()}).
 }
 \description{
 Timely switch to oral therapy is a widely recommended
@@ -44,7 +44,7 @@ Antimicrobial drugs may be administered via oral or parenteral
 can tolerate them and infections are not deep seated. 
 
 This function analyses the \code{parenteral} field in a
-therapy table. By default, it returns positions of sequences of at least 
+longitudinal table. By default, it returns positions of sequences of at least 
 twelve "1" (= parenteral drug administration) followed by a 
 "0" (= oral administration) or a terminating sequence composed exclusively of "0".
 
@@ -67,13 +67,13 @@ example_therapy <- TherapyEpisode(ramses_db, "2a2b6da3b67f6f495f4cedafb029f631")
 therapy_sequence <- parenteral_changes(example_therapy)
 therapy_sequence
 
-# Look for the section of the therapy table where 0 <= t <= 267
-filter(therapy_table(example_therapy, collect = TRUE),
+# Look for the section of the longitudinal_table where 0 <= t <= 267
+filter(longitudinal_table(example_therapy, collect = TRUE),
        between(t,
                therapy_sequence[["2a2b6da3b67f6f495f4cedafb029f631"]][[1]][1],
                therapy_sequence[["2a2b6da3b67f6f495f4cedafb029f631"]][[1]][2])) \%>\% head()
-# Look for the section of the therapy table near conversion (t = 220)
-filter(therapy_table(example_therapy, collect = TRUE),
+# Look for the section of the longitudinal_table near conversion (t = 220)
+filter(longitudinal_table(example_therapy, collect = TRUE),
        between(t, 218, 223))
 }
 }

@@ -84,11 +84,11 @@ MedicationRequest [
 TherapyEpisode [
   width = 3.5
   label = "{TherapyEpisode|
-  - therapy_table: tbl_sql\l|
+  - longitudinal_table: tbl_sql\l|
   
   + TherapyEpisode(DBICon, id): TherapyEpisode\l
   + Patient(): Patient\l
-  + therapy_table(collect = T/F): tbl\l
+  + longitudinal_table(collect = T/F): tbl\l
   + therapy_timeline(): htmlwidgets\l
   + parenteral_changes(): list\l
   + clinical_feature_last(): TherapyEpisode\l
@@ -115,12 +115,6 @@ Clinician [
   + get_specialty(): character\l
   + get_lead_clinician: Clinician\l}"
 ]*/
-
-/*
-TherapyList [
-label = "{TherapyList|\l+ id: list\l+ type: \"therapy-list\"\l- TherapyTable: tbl\l+ lazy_status: boolean\l|+ fetch(): data.frame\l + therapy_table(): list\l}"
-]
-*/
 
 
 /*RamsesObject -> Prescription [dir=back]

@@ -52,7 +52,7 @@ reference:
   - Patient-class
   - MedicationRequest-class
   - TherapyEpisode-class
-  - therapy_table
+  - longitudinal_table
   - parenteral_changes
   - starts_with("clinical_feature_")
   - therapy_timeline

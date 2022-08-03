@@ -318,7 +318,7 @@ test_that("Ramses on DuckDB (system test)", {
   
   # Single IVPO change pt 99999999999
   test_episode <- TherapyEpisode(db_conn, "5528fc41106bb48eb4d48bc412e13e67")
-  test_output <- therapy_table(test_episode, collect = T)
+  test_output <- longitudinal_table(test_episode, collect = T)
   test_expected_head <- dplyr::tibble(
     t = 0:5,
     patient_id = "99999999999",
@@ -356,13 +356,13 @@ test_that("Ramses on DuckDB (system test)", {
   test_medication_request <- MedicationRequest(db_conn, "5528fc41106bb48eb4d48bc412e13e67")
   expect_is(test_medication_request, "MedicationRequest")
   expect_is(TherapyEpisode(test_medication_request), "TherapyEpisode")
-  expect_equal(head(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+  expect_equal(head(longitudinal_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_head)
-  expect_equal(tail(therapy_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
+  expect_equal(tail(longitudinal_table(TherapyEpisode(test_medication_request), collect = TRUE)), 
                     test_expected_tail)
-  expect_equal(head(therapy_table(test_medication_request, collect = TRUE)), 
+  expect_equal(head(longitudinal_table(test_medication_request, collect = TRUE)), 
                     test_expected_head)
-  expect_equal(tail(therapy_table(test_medication_request, collect = TRUE)), 
+  expect_equal(tail(longitudinal_table(test_medication_request, collect = TRUE)), 
                     test_expected_tail)
   
   # 2+ TherapyEpisode -------------------------------------------------------
@@ -390,27 +390,27 @@ test_that("Ramses on DuckDB (system test)", {
         1444678993, 1444681333), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
     parenteral = 0L
   )
-  expect_equal(head(therapy_table(test_episode, collect = TRUE)), 
+  expect_equal(head(longitudinal_table(test_episode, collect = TRUE)), 
                     test_expected_head)
   
-  expect_equal(tail(therapy_table(test_episode, collect = TRUE)), 
+  expect_equal(tail(longitudinal_table(test_episode, collect = TRUE)), 
                     test_expected_tail_second_therapy_episode)
   
-  # .therapy_table_completeness_check -------------------------------------
+  # .longitudinal_table_completeness_check -------------------------------------
   
   expect_true(
-    .therapy_table_completeness_check(
+    .longitudinal_table_completeness_check(
       episode = TherapyEpisode(db_conn, "592a738e4c2afcae6f625c01856151e0"),
-      tbl_object = TherapyEpisode(db_conn, "592a738e4c2afcae6f625c01856151e0")@therapy_table,
+      tbl_object = TherapyEpisode(db_conn, "592a738e4c2afcae6f625c01856151e0")@longitudinal_table,
       silent = F
     )
   )
   
   expect_false(
     expect_warning(
-      .therapy_table_completeness_check(
+      .longitudinal_table_completeness_check(
         episode = TherapyEpisode(db_conn, "592a738e4c2afcae6f625c01856151e0"),
-        tbl_object = TherapyEpisode(db_conn, "89ac870bc1c1e4b2a37cec79d188cb08")@therapy_table,
+        tbl_object = TherapyEpisode(db_conn, "89ac870bc1c1e4b2a37cec79d188cb08")@longitudinal_table,
         silent = F
       )
     )
@@ -502,7 +502,7 @@ test_that("Ramses on DuckDB (system test)", {
     observation_code = "8310-5",
     hours = 24
   ) %>% 
-    therapy_table(collect = T)
+    longitudinal_table(collect = T)
 
   expect_equal(
     last_temp$last_temperature_24h[1:5],
@@ -520,7 +520,7 @@ test_that("Ramses on DuckDB (system test)", {
     observation_code = "8310-5",
     hours = 24
   ) %>% 
-    therapy_table(collect = T)
+    longitudinal_table(collect = T)
   
   expect_equal(
     dplyr::filter(last_temp_2therapies, 
@@ -540,7 +540,7 @@ test_that("Ramses on DuckDB (system test)", {
     observation_code = c("8310-5", "2160-0"),
     hours = 32
   ) %>% 
-    therapy_table(collect = T)
+    longitudinal_table(collect = T)
     
   expect_equal(
     last_temp$last_temperature_32h[1:5],
@@ -574,7 +574,7 @@ test_that("Ramses on DuckDB (system test)", {
     )
   )
   
-  ols_temp <- therapy_table(clinical_feature_ols_trend(
+  ols_temp <- longitudinal_table(clinical_feature_ols_trend(
     example_therapy,
     observation_code = "8310-5",
     hours = 24
@@ -617,7 +617,7 @@ test_that("Ramses on DuckDB (system test)", {
       )
   )
   
-  temperature_check <- therapy_table(clinical_feature_interval(
+  temperature_check <- longitudinal_table(clinical_feature_interval(
     TherapyEpisode(db_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_intervals = list("8310-5" = c(36, 38)),
     hours = 24), collect = TRUE)
@@ -636,13 +636,13 @@ test_that("Ramses on DuckDB (system test)", {
                c(0, 0, 0, 0, 0))
   
   expect_error(
-    therapy_table(clinical_feature_interval(
+    longitudinal_table(clinical_feature_interval(
       TherapyEpisode(db_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
       observation_intervals = list("8310-5" = c(NA, 38)),
       hours = 24), collect = TRUE)
   )
 
-  temperature_check <- therapy_table(clinical_feature_interval(
+  temperature_check <- longitudinal_table(clinical_feature_interval(
     TherapyEpisode(db_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_intervals = list("8310-5" = c(38)),
     hours = 24), collect = TRUE)
@@ -655,7 +655,7 @@ test_that("Ramses on DuckDB (system test)", {
   expect_equal(temperature_check$threshold_temperature38_24h_strictly_over[174:178],
                c(0, 0, 0, 0, 0))
   
-  temperature_check <- therapy_table(clinical_feature_interval(
+  temperature_check <- longitudinal_table(clinical_feature_interval(
     TherapyEpisode(db_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_intervals = list("8310-5" = c(36)),
     hours = 24), collect = TRUE)
@@ -678,7 +678,7 @@ test_that("Ramses on DuckDB (system test)", {
       observation_code_system = "doesnotexist")
   )
   
-  temperature_check <- therapy_table(
+  temperature_check <- longitudinal_table(
     clinical_feature_mean(
       TherapyEpisode(db_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
       observation_code = "8310-5",

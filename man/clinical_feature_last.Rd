@@ -60,6 +60,6 @@ temperature_check <- clinical_feature_last(
    observation_code = "8310-5",
    hours = 24
    )
-str(therapy_table(temperature_check, collect = TRUE))
+str(longitudinal_table(temperature_check, collect = TRUE))
 }
 }

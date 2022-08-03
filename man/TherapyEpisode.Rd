@@ -39,6 +39,6 @@ An S4 class to represent therapy episodes
 
 \item{\code{record}}{a \code{tbl_sql} for the corresponding database record}
 
-\item{\code{therapy_table}}{a \code{tbl_sql} for the longitudinal therapy table}
+\item{\code{longitudinal_table}}{a \code{tbl_sql} for the longitudinal therapy table}
 }}
 
