@@ -32,7 +32,7 @@
 - measuring antibiotic consumption
 <!-- - measuring drug/bug match and rates of microbial culture sampling -->
 - integration with the [AMR package](https://msberends.github.io/AMR/) for classification/prediction of resistance phenotypes 
-- compatible with SQLite and PostgreSQL databases
+- compatible with [DuckDB](https://duckdb.org/) and PostgreSQL databases
 
 ## Funders
 

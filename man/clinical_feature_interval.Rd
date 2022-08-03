@@ -57,17 +57,17 @@ or \code{"amended"}.
 }
 \examples{
 \dontrun{
-conSQLite <- create_mock_database("example.sqlite")
+fake_db <- create_mock_database("example.duckdb")
 
 temperature_interval <- clinical_feature_interval(
-   TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+   TherapyEpisode(fake_db, "4d611fc8886c23ab047ad5f74e5080d7"),
    observation_intervals = list("8310-5" = c(36, 38)),
    hours = 24
    )
 str(longitudinal_table(temperature_interval, collect = TRUE))
 
 temperature_threshold <- clinical_feature_interval(
-   TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+   TherapyEpisode(fake_db, "4d611fc8886c23ab047ad5f74e5080d7"),
    observation_intervals = list("8310-5" = 38),
    hours = 24
    )

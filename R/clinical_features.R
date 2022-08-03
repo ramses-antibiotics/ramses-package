@@ -239,9 +239,9 @@
 #' @include objects.R
 #' @examples 
 #' \dontrun{
-#' conSQLite <- create_mock_database("example.sqlite")
+#' fake_db <- create_mock_database("example.duckdb")
 #' temperature_check <- clinical_feature_last(
-#'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+#'    TherapyEpisode(fake_db, "4d611fc8886c23ab047ad5f74e5080d7"),
 #'    observation_code = "8310-5",
 #'    hours = 24
 #'    )
@@ -354,9 +354,9 @@ setMethod(
 #' @include objects.R
 #' @examples 
 #' \dontrun{
-#' conSQLite <- create_mock_database("example.sqlite")
+#' fake_db <- create_mock_database("example.duckdb")
 #' temperature_check <- clinical_feature_mean(
-#'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+#'    TherapyEpisode(fake_db, "4d611fc8886c23ab047ad5f74e5080d7"),
 #'    observation_code = "8310-5",
 #'    hours = 24
 #'    )
@@ -514,9 +514,9 @@ setMethod(
 #' @include objects.R
 #' @examples 
 #' \dontrun{
-#' conSQLite <- create_mock_database("example.sqlite")
+#' fake_db <- create_mock_database("example.duckdb")
 #' temperature_check <- clinical_feature_ols_trend(
-#'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+#'    TherapyEpisode(fake_db, "4d611fc8886c23ab047ad5f74e5080d7"),
 #'    observation_code = "8310-5",
 #'    hours = 24
 #'    )
@@ -688,17 +688,17 @@ setMethod(
 #' @export
 #' @examples 
 #' \dontrun{
-#' conSQLite <- create_mock_database("example.sqlite")
+#' fake_db <- create_mock_database("example.duckdb")
 #' 
 #' temperature_interval <- clinical_feature_interval(
-#'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+#'    TherapyEpisode(fake_db, "4d611fc8886c23ab047ad5f74e5080d7"),
 #'    observation_intervals = list("8310-5" = c(36, 38)),
 #'    hours = 24
 #'    )
 #' str(longitudinal_table(temperature_interval, collect = TRUE))
 #' 
 #' temperature_threshold <- clinical_feature_interval(
-#'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+#'    TherapyEpisode(fake_db, "4d611fc8886c23ab047ad5f74e5080d7"),
 #'    observation_intervals = list("8310-5" = 38),
 #'    hours = 24
 #'    )

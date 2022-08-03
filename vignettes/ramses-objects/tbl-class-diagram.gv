@@ -17,7 +17,7 @@ dataframe [
   width = 1
 ]
 
-tbl_SQLiteConnection [
+tbl_duckdb_connection [
   width = 1.5
 ]
 
@@ -28,7 +28,7 @@ tbl_PqConnection [
 DBIConnection [
 ]
 
-SQLiteConnection [
+duckdb_connection [
   width = 1.2
 ]
 
@@ -39,13 +39,13 @@ PqConnection [
 tbl -> tbl_lazy [dir=back]
 tbl_lazy -> tbl_sql [dir=back]
 tbl_sql -> tbl_dbi [dir=back]
-tbl_dbi -> tbl_SQLiteConnection [dir=back]
+tbl_dbi -> tbl_duckdb_connection [dir=back]
 tbl_dbi -> tbl_PqConnection [dir=back]
 tbl -> tbl_df [dir=back]
 dataframe -> tbl_df [dir=back]
 
 DBIObject -> DBIConnection [dir=back]
-DBIConnection -> SQLiteConnection [dir=back]
+DBIConnection -> duckdb_connection [dir=back]
 DBIConnection -> PqConnection [dir=back]
 
 }

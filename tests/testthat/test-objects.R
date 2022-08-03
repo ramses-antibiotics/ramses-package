@@ -1,7 +1,7 @@
 
 test_that("Patient..constructor", {
   patients <- dplyr::tibble(patient_id = "99999999999")
-  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
   expect_error(Patient(fake_db_conn, NA))
   expect_error(Patient(fake_db_conn, c()))
@@ -15,7 +15,7 @@ test_that("Patient..constructor", {
   
   # works with integer/numeric
   patients <- dplyr::tibble(patient_id = 999)
-  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
   expect_error(Patient(fake_db_conn, "999"))
   expect_s4_class(Patient(fake_db_conn, 999), "Patient")
@@ -23,7 +23,7 @@ test_that("Patient..constructor", {
   DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
   patients <- dplyr::tibble(patient_id = 999L)
-  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
   expect_error(Patient(fake_db_conn, "999"))
   expect_s4_class(Patient(fake_db_conn, 999), "Patient")
@@ -34,7 +34,7 @@ test_that("Patient..constructor", {
 test_that("Patient..interface_methods DuckDB", {
   patients <- dplyr::tibble(patient_id = "99999999999")
 
-  conDuckDB <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  conDuckDB <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(conDuckDB, patients, temporary = FALSE)
   
   # SHOW
@@ -43,7 +43,7 @@ test_that("Patient..interface_methods DuckDB", {
   DBI::dbDisconnect(conDuckDB, shutdown = TRUE)
   
   patients <- dplyr::tibble(patient_id = 99999999999)
-  conDuckDB <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  conDuckDB <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(conDuckDB, patients, temporary = FALSE)
   
   patient_object <- Patient(conDuckDB, 99999999999)
@@ -88,7 +88,8 @@ test_that("Patient..interface_methods Postgres", {
                                   user = "user", 
                                   password = "password",
                                   host = "localhost", 
-                                  dbname="RamsesDB")
+                                  dbname="RamsesDB",
+                                  timezone = "UTC")
   patients <- dplyr::tibble(patient_id = 99999999999)
   dplyr::copy_to(conPostgreSQL, patients, temporary = FALSE)
   
@@ -165,7 +166,7 @@ test_that(".process_io_parenteral_vector", {
 
 
 test_that("MedicationRequest..constructor", {
-  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(prescription_id = "999999"),
                  "drug_prescriptions", 
@@ -179,7 +180,7 @@ test_that("MedicationRequest..constructor", {
   DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
   # works with integer/numeric
-  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(prescription_id = 999L),
                  "drug_prescriptions", 
@@ -189,7 +190,7 @@ test_that("MedicationRequest..constructor", {
   expect_s4_class(MedicationRequest(fake_db_conn, 999L), "MedicationRequest")
   DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
-  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(prescription_id = 999),
                  "drug_prescriptions", 
@@ -202,7 +203,7 @@ test_that("MedicationRequest..constructor", {
 
 
 test_that("MedicationRequest..interface_methods DuckDB", {
-  conDuckDB <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  conDuckDB <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   
   fake_prescription <- data.frame(
     patient_id = "5124578766",
@@ -293,7 +294,8 @@ test_that("MedicationRequest..interface_methods Postgres", {
                                   user = "user", 
                                   password = "password",
                                   host = "localhost", 
-                                  dbname="RamsesDB")
+                                  dbname="RamsesDB",
+                                  timezone = "UTC")
   
   fake_prescription <- data.frame(
     patient_id = "5124578766",
@@ -376,7 +378,7 @@ test_that("MedicationRequest..interface_methods Postgres", {
 })
 
 test_that("TherapyEpisode..constructor", {
-  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(therapy_id = "999999"),
                  "drug_therapy_episodes", 
@@ -388,7 +390,7 @@ test_that("TherapyEpisode..constructor", {
   DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
   # works with integer/numeric
-  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(therapy_id = 999999L),
                  "drug_therapy_episodes", 
@@ -396,7 +398,7 @@ test_that("TherapyEpisode..constructor", {
   expect_error(TherapyEpisode(fake_db_conn, "999999"))
   DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
-  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(therapy_id = 999999),
                  "drug_therapy_episodes", 
@@ -407,8 +409,8 @@ test_that("TherapyEpisode..constructor", {
 })
 
 
-test_that("TherapyEpisode..interface_methods SQLite", {
-  conDuckDB <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+test_that("TherapyEpisode..interface_methods DuckDB", {
+  conDuckDB <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   
   fake_prescription <- data.frame(
     patient_id = "5124578766",
@@ -494,7 +496,8 @@ test_that("TherapyEpisode..interface_methods Postgres", {
                                   user = "user", 
                                   password = "password",
                                   host = "localhost", 
-                                  dbname="RamsesDB")
+                                  dbname="RamsesDB",
+                                  timezone = "UTC")
   
   fake_prescription <- data.frame(
     patient_id = "5124578766",
@@ -572,7 +575,7 @@ test_that("TherapyEpisode..interface_methods Postgres", {
 })
 
 test_that("TherapyEpisode..constructor", {
-  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(therapy_id = "999999"),
                  "drug_therapy_episodes", 
@@ -584,7 +587,7 @@ test_that("TherapyEpisode..constructor", {
   DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
   # works with integer/numeric
-  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(therapy_id = 999999L),
                  "drug_therapy_episodes", 
@@ -592,7 +595,7 @@ test_that("TherapyEpisode..constructor", {
   expect_error(TherapyEpisode(fake_db_conn, "999999"))
   DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
-  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(therapy_id = 999999),
                  "drug_therapy_episodes", 
