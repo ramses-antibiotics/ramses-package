@@ -2,6 +2,8 @@
 test_that("Patient..constructor", {
   patients <- dplyr::tibble(patient_id = "99999999999")
   fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
+  on.exit({DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)})
+  
   dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
   expect_error(Patient(fake_db_conn, NA))
   expect_error(Patient(fake_db_conn, c()))
@@ -28,13 +30,14 @@ test_that("Patient..constructor", {
   expect_error(Patient(fake_db_conn, "999"))
   expect_s4_class(Patient(fake_db_conn, 999), "Patient")
   expect_s4_class(Patient(fake_db_conn, 999L), "Patient")
-  DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
 })
 
 test_that("Patient..interface_methods DuckDB", {
   patients <- dplyr::tibble(patient_id = "99999999999")
 
   conDuckDB <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
+  on.exit({DBI::dbDisconnect(conDuckDB, shutdown = TRUE)})
+  
   dplyr::copy_to(conDuckDB, patients, temporary = FALSE)
   
   # SHOW
@@ -74,7 +77,6 @@ test_that("Patient..interface_methods DuckDB", {
     collect(patient_object),
     patients
   )
-  DBI::dbDisconnect(conDuckDB, shutdown = TRUE)
 })
 
 
@@ -204,6 +206,7 @@ test_that("MedicationRequest..constructor", {
 
 test_that("MedicationRequest..interface_methods DuckDB", {
   conDuckDB <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
+  on.exit({DBI::dbDisconnect(conDuckDB, shutdown = TRUE)})
   
   fake_prescription <- data.frame(
     patient_id = "5124578766",
@@ -280,8 +283,6 @@ test_that("MedicationRequest..interface_methods DuckDB", {
                prescription_context = "inpatient",
                prescription_status = "completed", daily_frequency = 3, duration = 3)
   )
-  
-  DBI::dbDisconnect(conDuckDB, shutdown = TRUE)
 })
 
 test_that("MedicationRequest..interface_methods Postgres", {
@@ -411,6 +412,7 @@ test_that("TherapyEpisode..constructor", {
 
 test_that("TherapyEpisode..interface_methods DuckDB", {
   conDuckDB <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
+  on.exit({DBI::dbDisconnect(conDuckDB, shutdown = TRUE)})
   
   fake_prescription <- data.frame(
     patient_id = "5124578766",
@@ -482,8 +484,6 @@ test_that("TherapyEpisode..interface_methods DuckDB", {
       therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC")
     )
   )
-  
-  DBI::dbDisconnect(conDuckDB, shutdown = TRUE)
 })
 
 test_that("TherapyEpisode..interface_methods Postgres", {

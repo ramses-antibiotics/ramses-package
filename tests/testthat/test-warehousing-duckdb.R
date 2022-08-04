@@ -35,7 +35,8 @@ test_that(".create_sql_index on DuckDB", {
       dplyr::collect(),
     data.frame(
       tablename = "test_table",
-      indexname = "idx_test_table_key"
+      indexname = "idx_test_table_key",
+      stringsAsFactors = FALSE
     )
   )
 })
