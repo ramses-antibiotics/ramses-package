@@ -74,7 +74,101 @@ Patient <- function(conn, id) {
       record = record)
 }
 
- 
+
+# Encounter ---------------------------------------------------------------
+
+
+#' An S4 class to represent inpatient encounters
+#'
+#' @slot id an encounter identifier 
+#' @slot conn a database connection
+#' @slot record a \code{tbl_sql} for the corresponding database record
+#' @slot longitudinal_table a \code{tbl_sql} for the longitudinal encounter table
+#' @param id an encounter identifier 
+#' @param conn a database connection
+#' @rdname Encounter
+#' @export
+setClass(
+  "Encounter", 
+  slot = c(longitudinal_table = "tbl"),
+  contains = "RamsesObject"
+)
+
+#' @rdname Encounter
+#' @export
+Encounter <- function(conn, id) {
+  id <- sort(na.omit(unique(id)))
+  if ( is.null(id) | length(id) < 1) {
+    stop("`id` must contain at least one identifier")
+  }
+  id_data_type <- .sql_data_type(conn = conn,
+                                 table = "inpatient_episodes",
+                                 field = "encounter_id")
+  if (is.numeric(id) & id_data_type == "character") {
+    stop("`id` must be character")
+  }
+  if (is.character(id) & id_data_type !="character") {
+    stop(paste("`id` must be", id_data_type))
+  }
+  
+  record <- dplyr::inner_join(
+    tbl(conn, "inpatient_episodes"),
+    dplyr::tibble(encounter_id = id),
+    by = "encounter_id", copy = TRUE)
+  
+  longitudinal_table <- .longitudinal_table_create.Encounter(
+    conn = conn, 
+    id = id
+  )
+  
+  # TODO
+  # longitudinal_table <- .longitudinal_table_parenteral_indicator(
+  #   longitudinal_table)
+  
+  new("Encounter", 
+      id = id,
+      conn = conn,
+      record = record, 
+      longitudinal_table = longitudinal_table)
+}
+
+#' Create the therapy episode longitudinal table
+#'
+#' @param conn a database connection
+#' @param id a vector of encounter identifiers 
+#' @noRd
+.longitudinal_table_create.Encounter <- function(conn, id) {
+  
+  .build_tally_table(conn)
+  
+  longitudinal_table <- dplyr::inner_join(
+    tbl(conn, "inpatient_episodes"), 
+    dplyr::tibble(encounter_id = sort(unique(id))), 
+    by = "encounter_id", copy = TRUE
+  ) %>% 
+    dplyr::distinct(.data$patient_id, 
+                    .data$encounter_id, 
+                    .data$admission_date, 
+                    .data$discharge_date)
+  
+  if(is(conn, "PqConnection") | is(conn, "duckdb_connection")) {
+    tbl(conn, "ramses_tally") %>%
+      dplyr::full_join(longitudinal_table, by = character()) %>%
+      dplyr::mutate(t_start = dplyr::sql("admission_date + interval '1h' * t "))%>% 
+      dplyr::filter(.data$t_start < .data$discharge_date) %>% 
+      dplyr::mutate(t_end = dplyr::sql("admission_date + interval '1h' * (t + 1)")) %>% 
+      dplyr::group_by(.data$patient_id, .data$encounter_id) %>% 
+      dplyr::mutate(t_end = dplyr::if_else(
+        .data$t == max(.data$t, na.rm = TRUE),
+        .data$discharge_date,
+        .data$t_end
+      )) %>% 
+      dplyr::ungroup()
+  } else {
+    .throw_error_method_not_implemented(".longitudinal_table_create.Encounter()",
+                                        class(conn))
+  }
+}
 
 # MedicationRequest -------------------------------------------------------
 
@@ -181,7 +275,7 @@ TherapyEpisode.DBIConnection <- function(conn, id) {
     tbl(conn, "drug_therapy_episodes"),
     dplyr::tibble(therapy_id = id),
     by = "therapy_id", copy = TRUE)
-  longitudinal_table <- .longitudinal_table_create(conn = conn, 
+  longitudinal_table <- .longitudinal_table_create.TherapyEpisode(conn = conn, 
                                          id = id)
   longitudinal_table <- .longitudinal_table_parenteral_indicator(longitudinal_table)
   new("TherapyEpisode", 
@@ -216,7 +310,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #' @param id a vector of therapy episode character identifiers (by design, Ramses creates
 #' this as the identifier of the first prescription ordered in an episode)  
 #' @noRd
-.longitudinal_table_create <- function(conn, id) {
+.longitudinal_table_create.TherapyEpisode <- function(conn, id) {
 
   .build_tally_table(conn)
   
@@ -241,7 +335,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
       )) %>% 
       dplyr::ungroup()
   } else {
-    .throw_error_method_not_implemented(".create_longitudinal_table()",
+    .throw_error_method_not_implemented(".longitudinal_table_create.TherapyEpisode()",
                                         class(conn))
   }
 }
@@ -508,6 +602,37 @@ setMethod("show", "RamsesObject", function(object) {
   cat(class(object), as.character(object@id), "\n")
   cat("\nDatabase connection:\n")
   print(object@conn)
+})
+
+setMethod("show", "Encounter", function(object) {
+  if( length(object@id) == 1 ) {
+    cat("Encounter", paste(as.character(object@id), collapse = ", "), "\n")
+  } else if( length(object@id) <= 3 ) {
+    cat("Encounters", paste(as.character(object@id), collapse = ", "), "\n")
+  } else if( length(object@id) > 3 ) {
+    cat("Encounters", paste(as.character(object@id)[1:3], collapse = ", "), "...\n")
+  }
+  record <- dplyr::collect(object@record)
+  
+  if( nrow(record) == 0 ) {
+    cat("Record is not available.\n")
+    cat("Please check object id is valid\n")
+  } else if( length(object@id) == 1 ) {
+    cat("Patient:  ", unique(record$patient_id), "\n")
+    cat("Start:    ", as.character(unique(record$admission_date), format = "%Y-%m-%d %H:%M:%S %Z"), "\n")
+    cat("End:      ", as.character(unique(record$discharge_date), format = "%Y-%m-%d %H:%M:%S %Z"), "\n\n")
+  } else if( length(object@id) > 1 ) {
+    cat("[total of", length(object@id), "encounters]\n")
+    record <- dplyr::arrange(record, .data$encounter_id, .data$episode_number)
+    if (dplyr::n_distinct(record$patient_id) > 3) {
+      cat("Patients:  ", paste(as.character(unique(record$patient_id)[1:3]), collapse = ", "), ", ...\n")
+    } else {
+      cat("Patient(s):  ", paste(as.character(unique(record$patient_id)), collapse = ", "), "\n")
+    }
+  }
+  
+  cat("\nDatabase connection:\n")
+  show(object@conn)
 })
 
 setMethod("show", "TherapyEpisode", function(object) {
