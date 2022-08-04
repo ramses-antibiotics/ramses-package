@@ -81,7 +81,7 @@ global_vars <- c(
   "n",
   "admission_date",
   "discharge_date",
-  "spell_id",
+  "encounter_id",
   "ddd_value",
   "ddd_unit",
   "valid_ab",

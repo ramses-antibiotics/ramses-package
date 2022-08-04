@@ -1,4 +1,17 @@
 
+# Ramses 0.5.0
+
+
+## Improvements
+
+* Added new S3 class `Encounter`.
+
+## Breaking changes
+
+* `inpatient_episodes` contains 'encounters' rather than 'spells'. Variable `spell_id`
+is now known as `encounter_id`
+* 
+
 # Ramses 0.4.3
 
 *2 August 2022*

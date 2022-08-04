@@ -1,11 +1,11 @@
 position,variable_name,must_exist,must_be_nonmissing,must_be_unique
 1,patient_id,TRUE,TRUE,FALSE
-2,spell_id,TRUE,TRUE,FALSE
+2,encounter_id,TRUE,TRUE,FALSE
 3,admission_method,TRUE,TRUE,FALSE
 4,admission_date,TRUE,TRUE,FALSE
 5,discharge_date,TRUE,TRUE,FALSE
 6,episode_number,TRUE,TRUE,FALSE
-7,last_episode_in_spell,TRUE,TRUE,FALSE
+7,last_episode_in_encounter,TRUE,TRUE,FALSE
 8,episode_start,TRUE,TRUE,FALSE
 9,episode_end,TRUE,TRUE,FALSE
 10,source_of_admission_code,FALSE,FALSE,FALSE

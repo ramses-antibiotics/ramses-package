@@ -1,4 +1,4 @@
-observation_id,patient_id,spell_id,status,request_datetime,observation_datetime,observation_value_text,observation_value_numeric,observation_name,observation_display,observation_code_system,observation_code,observation_unit
+observation_id,patient_id,encounter_id,status,request_datetime,observation_datetime,observation_value_text,observation_value_numeric,observation_name,observation_display,observation_code_system,observation_code,observation_unit
 1427,99999999999,9278078393,final,2016-03-30 13:51:13,2016-03-30 13:51:45,,35.7,Body temperature,Temperature,http://loinc.org,8310-5,degree_Celsius
 1431,99999999999,9278078393,final,2016-03-30 13:51:13,2016-03-30 13:51:45,,154,Systolic blood pressure,Systolic BP,http://loinc.org,8480-6,mm_Hg
 1430,99999999999,9278078393,final,2016-03-30 13:51:13,2016-03-30 13:52:49,,2,SEWS score,SEWS score,http://snomed.info/sct,1104051000000101,

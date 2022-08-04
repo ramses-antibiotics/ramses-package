@@ -41,13 +41,13 @@ test_that("bridge_episode_prescription_initiation", {
   DBI::dbDisconnect(db_con, shutdown = TRUE)
 })
 
-test_that("bridge_spell_therapy_overlap", {
+test_that("bridge_encounter_therapy_overlap", {
   db_con <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
-  expect_error(bridge_spell_therapy_overlap(
+  expect_error(bridge_encounter_therapy_overlap(
     conn = "not_a_connection", overwrite = TRUE))
-  expect_error(bridge_spell_therapy_overlap(
+  expect_error(bridge_encounter_therapy_overlap(
     conn = db_con, overwrite = TRUE))
-  expect_error(bridge_spell_therapy_overlap(
+  expect_error(bridge_encounter_therapy_overlap(
     conn = db_con, overwrite = "TRUE"))
   DBI::dbDisconnect(db_con, shutdown = TRUE)
 })

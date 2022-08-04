@@ -8,7 +8,7 @@ validate_inpatient_diagnoses(diagnoses_data, diagnoses_lookup)
 }
 \arguments{
 \item{diagnoses_data}{a data frame containing clinical diagnoses, with, 
-at minimum, variables \code{patient_id}, \code{spell_id}, 
+at minimum, variables \code{patient_id}, \code{encounter_id}, 
 \code{episode_number}, \code{icd_code}, \code{diagnosis_position}}
 
 \item{diagnoses_lookup}{a data frame containing an ICD-10 reference look up 
@@ -27,7 +27,7 @@ looked up in an ICD-10 reference table
 
 \describe{
   \item{\code{patient_id}}{a patient identifier with no missing value}
-  \item{\code{spell_id}}{a hospital admission identifier with no missing value}
+  \item{\code{encounter_id}}{a hospital encounter identifier with no missing value}
   \item{\code{episode_number}}{a strictly positive integer indicating the
   number of the episode within an admission. Must not be missing.}
   \item{\code{icd_code}}{a code corresponding to the International Classification of Diseases

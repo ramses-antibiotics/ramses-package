@@ -1,4 +1,4 @@
-forename,surname,date_of_birth,date_of_death,sex,NHS_number,patient_id,ethnic_group,spell_id,admission_method,admission_date,discharge_date,age_on_admission,episode_number,last_episode_in_spell,episode_start,episode_end,consultant_code,main_specialty_code
+forename,surname,date_of_birth,date_of_death,sex,NHS_number,patient_id,ethnic_group,encounter_id,admission_method,admission_date,discharge_date,age_on_admission,episode_number,last_episode_in_encounter,episode_start,episode_end,consultant_code,main_specialty_code
 jmkjniicmg,chljfpmapf,1926-08-02,NA,2,4659076951,99999999999,M,8922372817,2,2017-03-12 18:35:00,2017-03-20 16:35:00,90,2,1,2017-03-13 17:10:00,2017-03-20 16:35:00,C0603588,430
 jmkjniicmg,chljfpmapf,1926-08-02,NA,2,4659076951,99999999999,M,8922372817,2,2017-03-12 18:35:00,2017-03-20 16:35:00,90,1,0,2017-03-12 18:35:00,2017-03-13 17:10:00,C1880449,430
 jmkjniicmg,chljfpmapf,1926-08-02,NA,2,4659076951,99999999999,M,3968305736,2,2017-02-13 10:42:00,2017-02-24 10:40:00,90,2,1,2017-02-14 16:00:00,2017-02-24 10:40:00,C0603588,430

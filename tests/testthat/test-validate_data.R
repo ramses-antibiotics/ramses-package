@@ -102,7 +102,7 @@ test_that(".validate_variable_no_missing() on data.table", {
 
 
 
-# .validate_inpatient_spells/validate_inpatient_episodes -------------------
+# .validate_inpatient_encounters/validate_inpatient_episodes -------------------
 
 test_that("validate_inpatient_episodes on test dataset", {
   expect_true(validate_inpatient_episodes(.ramses_mock_dataset$patients,
@@ -113,27 +113,27 @@ test_that("validate_inpatient_episodes on test dataset", {
                                           wards = inpatient_wards))
 })
 
-test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.frame", {
+test_that(".validate_inpatient_encounters()/validate_inpatient_episodes() on data.frame", {
 
-  faulty_spells <- data.frame(list(
+  faulty_encounters <- data.frame(list(
     patient_id = c(1, 2, 2),
-    spell_id = c(1, 2, 3),
+    encounter_id = c(1, 2, 3),
     admission_date = c(date1, date1, date1 + 3*3600),
     discharge_date = c(date1 - 12*3600, 
                        date1 + 6*3600,
                        date1 + 6*3600)
   ))
   
-  expect_false(expect_warning(.validate_inpatient_spells(faulty_spells[1, ])))
-  expect_false(expect_warning(.validate_inpatient_spells(faulty_spells[-1, ])))
+  expect_false(expect_warning(.validate_inpatient_encounters(faulty_encounters[1, ])))
+  expect_false(expect_warning(.validate_inpatient_encounters(faulty_encounters[-1, ])))
   
   healthy_episodes <- data.frame(list(
     patient_id = "1",
-    spell_id = 2,
+    encounter_id = 2,
     admission_date = date1,
     discharge_date = date1 + 3*3600,
     episode_number = 1:3,
-    last_episode_in_spell = 2,
+    last_episode_in_encounter = 2,
     episode_start = c(date1, date1 + 3600, date1 + 2*3600),
     episode_end = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600),
     admission_method = "2",
@@ -165,7 +165,7 @@ test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.fr
                                 episodes = healthy_episodes,
                                 wards = dplyr::tibble(
                                   patient_id = "1",
-                                  spell_id = 2,
+                                  encounter_id = 2,
                                   ward_start = date1,
                                   ward_end = date1 + 3*3600,
                                   ward_code = "3E",
@@ -180,7 +180,7 @@ test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.fr
                                 episodes = healthy_episodes,
                                 wards = dplyr::tibble(
                                   patient_id = "1",
-                                  spell_id = 2,
+                                  encounter_id = 2,
                                   ward_start = date1,
                                   ward_end = date1 + 3*3600,
                                   ward_code = "3E",
@@ -190,11 +190,11 @@ test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.fr
   
   overlap_episode <- data.frame(list(
     patient_id = 1,
-    spell_id = 2,
+    encounter_id = 2,
     admission_date = date1,
     discharge_date = date1 + 3*3600,
     episode_number = 1:3,
-    last_episode_in_spell = 2,
+    last_episode_in_encounter = 2,
     episode_start = c(date1, date1 + 0.5*3600, date1 + 2*3600),
     episode_end = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600),
     admission_method = "2",
@@ -204,11 +204,11 @@ test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.fr
   
   missing_first_episode <- data.frame(list(
     patient_id = 1,
-    spell_id = 2,
+    encounter_id = 2,
     admission_date = date1,
     discharge_date = date1 + 4*3600,
     episode_number = 2:4,
-    last_episode_in_spell = 2,
+    last_episode_in_encounter = 2,
     episode_start = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600),
     episode_end = c(date1 + 2*3600, date1 + 3*3600, date1 + 4*3600),
     admission_method = "2",
@@ -218,11 +218,11 @@ test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.fr
   
   missing_intermediate_episode <- data.frame(list(
     patient_id = 1,
-    spell_id = 2,
+    encounter_id = 2,
     admission_date = date1,
     discharge_date = date1 + 4*3600,
     episode_number = c(1, 3, 4),
-    last_episode_in_spell = 2,
+    last_episode_in_encounter = 2,
     episode_start = c(date1, date1 + 2*3600, date1 + 3*3600),
     episode_end = c(date1 + 3600, date1 + 3*3600, date1 + 4*3600),
     admission_method = "2",
@@ -232,11 +232,11 @@ test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.fr
   
   missing_final_episode <- data.frame(list( 
     patient_id = 1,
-    spell_id = 2,
+    encounter_id = 2,
     admission_date = date1,
     discharge_date = date1 + 4*3600,
     episode_number = 1:3,
-    last_episode_in_spell = 2,
+    last_episode_in_encounter = 2,
     episode_start = c(date1, date1 + 3600, date1 + 2*3600),
     episode_end = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600),
     admission_method = "2",
@@ -256,27 +256,27 @@ test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.fr
 })
 
 
-test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.table", {
+test_that(".validate_inpatient_encounters()/validate_inpatient_episodes() on data.table", {
   
-  faulty_spells <- data.table::data.table(
+  faulty_encounters <- data.table::data.table(
     patient_id = c(1, 2, 2),
-    spell_id = c(1, 2, 3),
+    encounter_id = c(1, 2, 3),
     admission_date = c(date1, date1, date1 + 3*3600),
     discharge_date = c(date1 - 12*3600, 
                        date1 + 6*3600,
                        date1 + 6*3600)
   )
   
-  expect_false(expect_warning(.validate_inpatient_spells(faulty_spells[1, ])))
-  expect_false(expect_warning(.validate_inpatient_spells(faulty_spells[-1, ])))
+  expect_false(expect_warning(.validate_inpatient_encounters(faulty_encounters[1, ])))
+  expect_false(expect_warning(.validate_inpatient_encounters(faulty_encounters[-1, ])))
   
   healthy_episodes <- data.table::data.table(
     patient_id = "1",
-    spell_id = 2,
+    encounter_id = 2,
     admission_date = date1,
     discharge_date = date1 + 3*3600,
     episode_number = 1:3,
-    last_episode_in_spell = 2,
+    last_episode_in_encounter = 2,
     episode_start = c(date1, date1 + 3600, date1 + 2*3600),
     episode_end = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600),
     admission_method = "2",
@@ -300,11 +300,11 @@ test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.ta
   
   overlap_episode <- data.table::data.table(
     patient_id = 1,
-    spell_id = 2,
+    encounter_id = 2,
     admission_date = date1,
     discharge_date = date1 + 3*3600,
     episode_number = 1:3,
-    last_episode_in_spell = 2,
+    last_episode_in_encounter = 2,
     episode_start = c(date1, date1 + 0.5*3600, date1 + 2*3600),
     episode_end = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600),
     admission_method = "2",
@@ -314,11 +314,11 @@ test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.ta
   
   missing_first_episode <- data.table::data.table(
     patient_id = 1,
-    spell_id = 2,
+    encounter_id = 2,
     admission_date = date1,
     discharge_date = date1 + 4*3600,
     episode_number = 2:4,
-    last_episode_in_spell = 2,
+    last_episode_in_encounter = 2,
     episode_start = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600),
     episode_end = c(date1 + 2*3600, date1 + 3*3600, date1 + 4*3600),
     admission_method = "2",
@@ -328,11 +328,11 @@ test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.ta
   
   missing_intermediate_episode <- data.table::data.table(
     patient_id = 1,
-    spell_id = 2,
+    encounter_id = 2,
     admission_date = date1,
     discharge_date = date1 + 4*3600,
     episode_number = c(1, 3, 4),
-    last_episode_in_spell = 2,
+    last_episode_in_encounter = 2,
     episode_start = c(date1, date1 + 2*3600, date1 + 3*3600),
     episode_end = c(date1 + 3600, date1 + 3*3600, date1 + 4*3600),
     admission_method = "2",
@@ -342,11 +342,11 @@ test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.ta
   
   missing_final_episode <- data.table::data.table( 
     patient_id = 1,
-    spell_id = 2,
+    encounter_id = 2,
     admission_date = date1,
     discharge_date = date1 + 4*3600,
     episode_number = 1:3,
-    last_episode_in_spell = 2,
+    last_episode_in_encounter = 2,
     episode_start = c(date1, date1 + 3600, date1 + 2*3600),
     episode_end = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600),
     admission_method = "2",
@@ -356,11 +356,11 @@ test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.ta
   
   episode_dates_inverted <- data.table::data.table( 
     patient_id = 1,
-    spell_id = 2,
+    encounter_id = 2,
     admission_date = date1,
     discharge_date = date1 + 4*3600,
     episode_number = 1:3,
-    last_episode_in_spell = 2,
+    last_episode_in_encounter = 2,
     episode_start = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600),
     episode_end = c(date1, date1 + 3600, date1 + 2*3600),
     admission_method = "2",
@@ -368,13 +368,13 @@ test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.ta
     main_specialty_code = "100"
   )
   
-  spell_dates_inverted <- data.table::data.table( 
+  encounter_dates_inverted <- data.table::data.table( 
     patient_id = 1,
-    spell_id = 2,
+    encounter_id = 2,
     admission_date = date1 + 4*3600,
     discharge_date = date1,
     episode_number = 1:3,
-    last_episode_in_spell = 2,
+    last_episode_in_encounter = 2,
     episode_start = c(date1, date1 + 3600, date1 + 2*3600),
     episode_end = c(date1 + 3600, date1 + 2*3600, date1 + 3*3600),
     admission_method = "2",
@@ -382,13 +382,13 @@ test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.ta
     main_specialty_code = "100"
   )
   
-  episode_spilling_out_of_spell <- data.table::data.table( 
+  episode_spilling_out_of_encounter <- data.table::data.table( 
     patient_id = 1,
-    spell_id = 2,
+    encounter_id = 2,
     admission_date = date1,
     discharge_date = date1 + 4*3600,
     episode_number = 1:3,
-    last_episode_in_spell = 2,
+    last_episode_in_encounter = 2,
     episode_start = c(date1, date1 + 3600, date1 + 2*3600),
     episode_end = c(date1 + 3600, date1 + 2*3600, date1 + 5*3600),
     admission_method = "2",
@@ -407,9 +407,9 @@ test_that(".validate_inpatient_spells()/validate_inpatient_episodes() on data.ta
   expect_false(expect_warning(validate_inpatient_episodes(data.table::data.table(patient_id = 1),
                                              episode_dates_inverted)))
   expect_false(expect_warning(validate_inpatient_episodes(data.table::data.table(patient_id = 1),
-                                             spell_dates_inverted)))
+                                             encounter_dates_inverted)))
   expect_false(expect_warning(validate_inpatient_episodes(data.table::data.table(patient_id = 1),
-                                             episode_spilling_out_of_spell)))
+                                             episode_spilling_out_of_encounter)))
 })
 
 
@@ -425,11 +425,11 @@ test_that("validate_inpatient_diagnoses on test dataset", {
 test_that("validate_inpatient_diagnoses() on data.frame", {
   test_diagnoses <- data.frame(list(
     patient_id = 1,
-    spell_id = 1,
+    encounter_id = 1,
     episode_number = 1,
     icd_code = c("J440", "N39", "N81", NA),
     diagnosis_position = 1,
-    last_episode_in_spell = "2"
+    last_episode_in_encounter = "2"
   ))
   test_lookup <- data.frame(list(
     icd_code = c("J44", "N39"),
@@ -465,11 +465,11 @@ test_that("validate_inpatient_diagnoses() on data.frame", {
 test_that("validate_inpatient_diagnoses() on data.table", {
   test_diagnoses <- data.table::data.table(
     patient_id = 1,
-    spell_id = 1,
+    encounter_id = 1,
     episode_number = 1,
     icd_code = c("J440", "N39", "N81", NA),
     diagnosis_position = 1,
-    last_episode_in_spell = "2"
+    last_episode_in_encounter = "2"
   )
   test_lookup <- data.table::data.table(
     icd_code = c("J44", "N39"),
@@ -993,23 +993,23 @@ test_that("validate_administrations", {
 test_that("arrange_variables", {
   testdf <- data.frame(list(
     misc = 3,
-    spell_id = 2,
+    encounter_id = 2,
     patient_id = 1
   ))
   testDT <- data.table::data.table(
     misc = 3,
-    spell_id = 2,
+    encounter_id = 2,
     patient_id = 1
   )
 
   expect_error(arrange_variables(testdf, "missing variable"))
   expect_equal(
-    colnames(arrange_variables(testdf, c("patient_id", "spell_id"))), 
-    c("patient_id", "spell_id", "misc"))
+    colnames(arrange_variables(testdf, c("patient_id", "encounter_id"))), 
+    c("patient_id", "encounter_id", "misc"))
   expect_error(arrange_variables(testDT, "missing variable"))
   expect_equal(
-    colnames(arrange_variables(testDT, c("patient_id", "spell_id"))), 
-    c("patient_id", "spell_id", "misc"))
+    colnames(arrange_variables(testDT, c("patient_id", "encounter_id"))), 
+    c("patient_id", "encounter_id", "misc"))
 })
 
 
@@ -1281,7 +1281,7 @@ test_that("validate_investigations", {
   example_data <- dplyr::tibble(
     observation_id = c("1", "2"), 
     patient_id = "99999999999", 
-    spell_id = "9278078393", status = "final", 
+    encounter_id = "9278078393", status = "final", 
     request_datetime = as.POSIXct("2016-03-30 13:51:13"), 
     observation_datetime = as.POSIXct("2016-03-30 13:51:45"), 
     observation_value_text = "", 
@@ -1296,7 +1296,7 @@ test_that("validate_investigations", {
   example_datatable <- data.table::data.table(
     observation_id = c("1", "2"), 
     patient_id = "99999999999", 
-    spell_id = "9278078393", status = "final", 
+    encounter_id = "9278078393", status = "final", 
     request_datetime = as.POSIXct("2016-03-30 13:51:13"), 
     observation_datetime = as.POSIXct("2016-03-30 13:51:45"), 
     observation_value_text = "", 
@@ -1333,16 +1333,16 @@ test_that("Bug 85 - uniqueness of patient_id in patient dataset", {
         date_of_death = c(NA_character_, NA_character_)
       ),
       episodes = data.frame(
-        patient_id = "1253675584", spell_id = "8751633817", 
+        patient_id = "1253675584", encounter_id = "8751633817", 
         admission_method = "2", 
         admission_date = as.POSIXct("2015-02-26 18:30:55"), 
         discharge_date = as.POSIXct("2015-03-17 17:23:49"), 
-        episode_number = 1L, last_episode_in_spell = "2",
+        episode_number = 1L, last_episode_in_encounter = "2",
         episode_start = as.POSIXct("2015-02-26 18:30:55"), 
         episode_end = as.POSIXct("2015-03-17 17:23:49"), 
         consultant_code = "C1000002", 
         main_specialty_code = "100", 
-        last_episode_in_spell_indicator = 2, 
+        last_episode_in_encounter = 2, 
         ramses_bed_days = 1.72303240740741
       )
     )

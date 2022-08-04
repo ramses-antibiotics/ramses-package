@@ -273,7 +273,8 @@
 #' @section Episode mandatory variables:
 #' \describe{
 #'   \item{\code{patient_id}}{a patient identifier with no missing value}
-#'   \item{\code{spell_id}}{a hospital spell identifier with no missing value}
+#'   \item{\code{encounter_id}}{a hospital encounter (admission or spell) 
+#'   identifier with no missing value}
 #'   \item{\code{admission_method}}{a non-missing character code: \itemize{
 #'        \item \code{"1"} elective admission
 #'        \item \code{"2"} emergency admission
@@ -290,10 +291,10 @@
 #'   the hospital discharge. Must not be missing.}
 #'   \item{\code{episode_number}}{a strictly positive integer indicating the
 #'   number of the episode within an admission. Must not be missing.}
-#'   \item{\code{last_episode_in_spell}}{a character indicating whether
+#'   \item{\code{last_episode_in_encounter}}{a character indicating whether
 #'   the patient is discharged at the end of the episode: \itemize{
-#'        \item \code{"1"} the episode is the last episode in the spell
-#'        \item \code{"2"} the episode is \strong{not} the last episode in the spell
+#'        \item \code{"1"} the episode is the last episode in the encounter
+#'        \item \code{"2"} the episode is \strong{not} the last episode in the encounter
 #'    }
 #'    Must not be missing.}
 #'   \item{\code{episode_start}}{a \code{POSIXct} timestamp for 
@@ -310,7 +311,7 @@
 #' @section Ward mandatory variables:
 #' \describe{
 #'   \item{\code{patient_id}}{a patient identifier with no missing value}
-#'   \item{\code{spell_id}}{a hospital spell identifier with no missing value}
+#'   \item{\code{encounter_id}}{a hospital encounter identifier with no missing value}
 #'   \item{\code{ward_code}}{character vector of ward codes}
 #'   \item{\code{ward_display_name}}{character vector of expanded ward designations}
 #'   \item{\code{ward_description}}{full text description of service/unit/specialty}
@@ -381,7 +382,7 @@ validate_inpatient_episodes <- function(patients,
       "variable_name"]
   )
   
-  validation_result <- .validate_inpatient_spells(episodes)
+  validation_result <- .validate_inpatient_encounters(episodes)
   validation_result <- append(
     .validate_inpatient_episode_dates(data = episodes,
                                      type = "episodes"), 
@@ -426,7 +427,7 @@ validate_inpatient_episodes <- function(patients,
     wards, 
     dplyr::distinct(episodes, 
                     patient_id, 
-                    spell_id, 
+                    encounter_id, 
                     admission_date, 
                     discharge_date), 
     all.x = TRUE)
@@ -442,7 +443,7 @@ validate_inpatient_episodes <- function(patients,
 #' @importFrom data.table data.table
 #' @return A logical value indicating success
 #' @noRd
-.validate_inpatient_spells <- function(data) {
+.validate_inpatient_encounters <- function(data) {
   
   validation_result <- TRUE
   
@@ -451,21 +452,21 @@ validate_inpatient_episodes <- function(patients,
     validation_result <- FALSE
   }
   
-  spells <- data[, c(
-    "patient_id", "spell_id",
+  encounters <- data[, c(
+    "patient_id", "encounter_id",
     "admission_date", "discharge_date"
   )]
   
-  spells <- unique(data.table::data.table(spells))
+  encounters <- unique(data.table::data.table(encounters))
   
   data_cross_prod <- merge(
-    spells, spells, 
+    encounters, encounters, 
     by = "patient_id",
     all = T,
     allow.cartesian = T
   )
   
-  data_cross_prod <- data_cross_prod[spell_id.x != spell_id.y]
+  data_cross_prod <- data_cross_prod[encounter_id.x != encounter_id.y]
 
   data_cross_prod <- data_cross_prod[
     data.table::between(admission_date.x, admission_date.y, discharge_date.y, incbounds = F) |
@@ -473,7 +474,7 @@ validate_inpatient_episodes <- function(patients,
     ]
   
   if (nrow(data_cross_prod) > 0) {
-    warning(simpleWarning("Hospital spells must not overlap."))
+    warning(simpleWarning("Hospital encounters must not overlap."))
     warning(simpleWarning(
       .print_and_capture(
         utils::head(data.table::setorderv(data_cross_prod, 
@@ -522,17 +523,17 @@ validate_inpatient_episodes <- function(patients,
     validation_result <- FALSE
   }
   
-  BD_spell <-  BD_episode <-  nextepistart <-  NULL
+  BD_encounter <-  BD_episode <-  nextepistart <-  NULL
   
   episodes <- data.table::as.data.table(data)
   
   bed_day_matching <- episodes[,
     list(BD_episode = sum(difftime(end, start, units = "secs"))), 
-    by = list(patient_id, spell_id, admission_date, discharge_date)
+    by = list(patient_id, encounter_id, admission_date, discharge_date)
     ]
-  bed_day_matching[, BD_spell := difftime(discharge_date, admission_date, units = "secs")]
+  bed_day_matching[, BD_encounter := difftime(discharge_date, admission_date, units = "secs")]
   
-  if (nrow(bed_day_matching[abs(BD_episode - BD_spell) > 5]) > 0) {
+  if (nrow(bed_day_matching[abs(BD_episode - BD_encounter) > 5]) > 0) {
     warning(simpleWarning(paste0(
       "Total bed days calculated from `", type,"` does not",
       "match admission duration.\n Bed days may be incorrect.")))
@@ -540,17 +541,17 @@ validate_inpatient_episodes <- function(patients,
   
   rm(bed_day_matching)
   
-  episodes <- episodes[, list(patient_id, spell_id, start, end)]
+  episodes <- episodes[, list(patient_id, encounter_id, start, end)]
   
   episodes <- data.table::setorderv(
-    episodes, c("patient_id", "spell_id", "start"))
+    episodes, c("patient_id", "encounter_id", "start"))
   
   episodes[ , `:=`(nextepistart =  data.table::shift(start, type = "lead")), 
-            by = list(patient_id, spell_id)]
+            by = list(patient_id, encounter_id)]
   
   if (nrow(episodes[!is.na(nextepistart) & nextepistart != end]) > 0) {
     warning(simpleWarning(paste0(
-      "Some hospital spells have gaps between `", type,"`.\n",
+      "Some hospital encounters have gaps between `", type,"`.\n",
       "Bed days may be underestimated.")))
   }
 
@@ -564,7 +565,7 @@ validate_inpatient_episodes <- function(patients,
   )
   
   data_cross_prod <- data_cross_prod[
-    !(spell_id.x == spell_id.y & 
+    !(encounter_id.x == encounter_id.y & 
         start.x == start.y & 
         end.x == end.y)
     ]
@@ -593,7 +594,7 @@ validate_inpatient_episodes <- function(patients,
 #' minimum variables are present, and that all \code{icd_code} values can be 
 #' looked up in an ICD-10 reference table
 #' @param diagnoses_data a data frame containing clinical diagnoses, with, 
-#' at minimum, variables \code{patient_id}, \code{spell_id}, 
+#' at minimum, variables \code{patient_id}, \code{encounter_id}, 
 #' \code{episode_number}, \code{icd_code}, \code{diagnosis_position}
 #' @param diagnoses_lookup a data frame containing an ICD-10 reference look up 
 #' table with, at minimum, variables \code{icd_description}, \code{icd_display}, 
@@ -601,7 +602,7 @@ validate_inpatient_episodes <- function(patients,
 #' @section Diagnoses set mandatory variables:
 #' \describe{
 #'   \item{\code{patient_id}}{a patient identifier with no missing value}
-#'   \item{\code{spell_id}}{a hospital admission identifier with no missing value}
+#'   \item{\code{encounter_id}}{a hospital encounter identifier with no missing value}
 #'   \item{\code{episode_number}}{a strictly positive integer indicating the
 #'   number of the episode within an admission. Must not be missing.}
 #'   \item{\code{icd_code}}{a code corresponding to the International Classification of Diseases
@@ -1092,7 +1093,7 @@ validate_administrations <- function(data) {
 #' 
 #' \strong{The following fields are optional:}
 #' \describe{
-#'    \item{\code{spell_id}}{a hospital spell identifier (if the specimen was 
+#'    \item{\code{encounter_id}}{a hospital encounter identifier (if the specimen was 
 #'    sampled during admission)}
 #'    \item{\code{test_display}}{free text description of test requested for 
 #'    display in user interfaces. For instance: "Mycobacteria culture" or 

@@ -25,7 +25,7 @@ This vignette demonstrates how to clean and validate hospital records
 and load them into a data warehouse.
 
 Ramses is provided simulated datasets consisting of records of
-`r formatC(length(unique(inpatient_episodes$spell_id)), big.mark = ",")`
+`r formatC(length(unique(inpatient_episodes$encounter_id)), big.mark = ",")`
 hospitalisations for
 `r formatC(length(unique(inpatient_episodes$patient_id)), big.mark = ",")`
 patients, complete with prescriptions, diagnoses and care episodes
@@ -393,21 +393,21 @@ load_medications(conn = ramses_db,
 ## Admissions
 
 We now turn to records of patient demographics, admissions, discharges
-and transfers. Ramses is designed around the notion of *hospital spells*
-identified by variable `spell_id`, which correspond to the window from
+and transfers. Ramses is designed around the notion of *hospital encounters*
+identified by variable `encounter_id`, which correspond to the window from
 the time a patient is admitted to the time a patient is discharged.
 
-In addition, Ramses use subdivisions of *hospital spells* called
+In addition, Ramses use subdivisions of *hospital encounters* called
 *episodes of care*, which designate a continuous period of inpatient
 care under the responsibility of a department, specialty, or clinical
 team. This corresponds to the 'finished consultant episode' in the UK
 NHS Admitted Patient Care data model [@Herbert2017]. All *hospital
-spells* consist of at least one *episode of care*. Episodes of care are
+encounters* consist of at least one *episode of care*. Episodes of care are
 used to calculate bed-days as well as rates of infection, prescribing
 and other stewardship metrics for individual specialties and teams of
 clinicians.
 
-Hospital spells and episodes of care are recorded in a single table in
+Hospital encounters and episodes of care are recorded in a single table in
 which every row corresponds to one episode of care.
 
 ```{r}

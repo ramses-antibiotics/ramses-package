@@ -4,7 +4,7 @@
 \alias{bridge_tables}
 \alias{bridge_episode_prescription_overlap}
 \alias{bridge_episode_prescription_initiation}
-\alias{bridge_spell_therapy_overlap}
+\alias{bridge_encounter_therapy_overlap}
 \title{Create database bridge tables}
 \usage{
 bridge_tables(conn, overwrite = FALSE, silent = FALSE)
@@ -13,7 +13,7 @@ bridge_episode_prescription_overlap(conn, overwrite = FALSE)
 
 bridge_episode_prescription_initiation(conn, overwrite = FALSE)
 
-bridge_spell_therapy_overlap(conn, overwrite = FALSE)
+bridge_encounter_therapy_overlap(conn, overwrite = FALSE)
 }
 \arguments{
 \item{conn}{a database connection}
@@ -29,7 +29,7 @@ database table. The default is \code{FALSE}}
 }
 \description{
 Create or re-create bridge tables to facilitate linking prescribing
-events with spells or episodes of care. Bridge tables are used when computing
+events with encounters or episodes of care. Bridge tables are used when computing
 rates of prescribing per admission or per 1,000 bed-days.
 }
 \details{
@@ -51,8 +51,8 @@ Prescriptions with status \code{"entered-in-error"}, \code{"draft"},
    \code{drug_prescriptions} based on matching patient identifiers 
    and the prescription authoring date being comprised between the episode 
    start and end dates.}
-   \item{\code{bridge_spell_therapy_overlap()}}{Links therapy episodes
-   with inpatient spells during which they were administered. The resulting 
+   \item{\code{bridge_encounter_therapy_overlap()}}{Links therapy episodes
+   with inpatient encounters during which they were administered. The resulting 
    table is the natural join of \code{inpatient_episodes} and 
    \code{drug_therapy_episodes} based on matching patient identifiers 
    and a time overlap between therapy episodes and hospital stays.}

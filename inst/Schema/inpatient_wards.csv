@@ -1,6 +1,6 @@
 position,variable_name,must_exist,must_be_nonmissing,must_be_unique
 1,patient_id,TRUE,TRUE,FALSE
-2,spell_id,TRUE,TRUE,FALSE
+2,encounter_id,TRUE,TRUE,FALSE
 3,ward_code,TRUE,TRUE,FALSE
 4,ward_display_name,TRUE,TRUE,FALSE
 5,ward_description,TRUE,FALSE,FALSE

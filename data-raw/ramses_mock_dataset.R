@@ -5,8 +5,13 @@ devtools::load_all(".")
 
 # charlson_regex ----------------------------------------------------------
 
-# Obtaining Charlson Comorbidity regular expressions from the comorbidity package
-charlson_regex <- comorbidity:::lofregex$charlson$icd10
+# Charlson Comorbidity regular expressions from the comorbidity package
+charlson_regex <- lapply(
+  comorbidity:::.maps$charlson_icd10_quan, 
+  function(X) { 
+    paste(paste0("^", X), collapse = "|")
+  }
+)
 
 # Prescriptions -----------------------------------------------------------
 
@@ -201,9 +206,9 @@ ip_diagnoses <- dplyr::filter(ip_diagnoses, !is.na(icd_code))
 
 ip_episodes <- Ramses::inpatient_episodes
 ip_episodes <- ip_episodes %>% 
-  dplyr::filter(!is.na(spell_id)) %>% 
-  dplyr::group_by(spell_id) %>% 
-  dplyr::mutate(last_episode_in_spell_indicator = dplyr::if_else(
+  dplyr::filter(!is.na(encounter_id)) %>% 
+  dplyr::group_by(encounter_id) %>% 
+  dplyr::mutate(last_episode_in_encounter = dplyr::if_else(
     episode_number == max(episode_number),
     1, 2)) %>% 
   dplyr::ungroup()

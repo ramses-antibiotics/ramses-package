@@ -53,7 +53,7 @@ Validate microbial isolates & susceptibility records
 
 \strong{The following fields are optional:}
 \describe{
-   \item{\code{spell_id}}{a hospital spell identifier (if the specimen was 
+   \item{\code{encounter_id}}{a hospital encounter identifier (if the specimen was 
    sampled during admission)}
    \item{\code{test_display}}{free text description of test requested for 
    display in user interfaces. For instance: "Mycobacteria culture" or 

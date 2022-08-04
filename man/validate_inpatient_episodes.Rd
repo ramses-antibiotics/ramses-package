@@ -91,7 +91,8 @@ closely follow those of the
 
 \describe{
   \item{\code{patient_id}}{a patient identifier with no missing value}
-  \item{\code{spell_id}}{a hospital spell identifier with no missing value}
+  \item{\code{encounter_id}}{a hospital encounter (admission or spell) 
+  identifier with no missing value}
   \item{\code{admission_method}}{a non-missing character code: \itemize{
        \item \code{"1"} elective admission
        \item \code{"2"} emergency admission
@@ -108,10 +109,10 @@ closely follow those of the
   the hospital discharge. Must not be missing.}
   \item{\code{episode_number}}{a strictly positive integer indicating the
   number of the episode within an admission. Must not be missing.}
-  \item{\code{last_episode_in_spell}}{a character indicating whether
+  \item{\code{last_episode_in_encounter}}{a character indicating whether
   the patient is discharged at the end of the episode: \itemize{
-       \item \code{"1"} the episode is the last episode in the spell
-       \item \code{"2"} the episode is \strong{not} the last episode in the spell
+       \item \code{"1"} the episode is the last episode in the encounter
+       \item \code{"2"} the episode is \strong{not} the last episode in the encounter
    }
    Must not be missing.}
   \item{\code{episode_start}}{a \code{POSIXct} timestamp for 
@@ -130,7 +131,7 @@ closely follow those of the
 
 \describe{
   \item{\code{patient_id}}{a patient identifier with no missing value}
-  \item{\code{spell_id}}{a hospital spell identifier with no missing value}
+  \item{\code{encounter_id}}{a hospital encounter identifier with no missing value}
   \item{\code{ward_code}}{character vector of ward codes}
   \item{\code{ward_display_name}}{character vector of expanded ward designations}
   \item{\code{ward_description}}{full text description of service/unit/specialty}

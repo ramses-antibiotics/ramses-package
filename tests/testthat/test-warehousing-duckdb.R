@@ -290,13 +290,13 @@ test_that("Ramses on DuckDB (system test)", {
   expect_equal(round(test_bridge_init$DOT, 1), 2.0)
   expect_equal(round(test_bridge_init$DDD_prescribed, 1), 1.3)
   
-  # bridge_spell_therapy_overlap
-  expect_true(bridge_spell_therapy_overlap(db_conn))
-  expect_error(bridge_spell_therapy_overlap(db_conn))
-  expect_true(bridge_spell_therapy_overlap(db_conn, overwrite = TRUE))
+  # bridge_encounter_therapy_overlap
+  expect_true(bridge_encounter_therapy_overlap(db_conn))
+  expect_error(bridge_encounter_therapy_overlap(db_conn))
+  expect_true(bridge_encounter_therapy_overlap(db_conn, overwrite = TRUE))
   test_bridge_th_overlap <- tbl(
     db_conn,
-    "bridge_spell_therapy_overlap") %>% 
+    "bridge_encounter_therapy_overlap") %>% 
     dplyr::filter(patient_id == "99999999999" &
                     therapy_id == "4d611fc8886c23ab047ad5f74e5080d7") %>% 
     dplyr::collect()
@@ -310,7 +310,7 @@ test_that("Ramses on DuckDB (system test)", {
     dplyr::filter(patient_id == "99999999999") %>% 
     dplyr::collect( )
   
-  expect_is(test_date$spell_id, "character")
+  expect_is(test_date$encounter_id, "character")
   expect_is(test_date$admission_date, "POSIXt")
   expect_equal(test_date$date_of_birth[1], as.Date("1926-08-02"))
   expect_equal(test_date$date_of_death[1], as.Date(NA))

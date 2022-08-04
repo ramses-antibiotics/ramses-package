@@ -54,7 +54,7 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
     data = diagnoses_data,
     first_column_names = c(
       "patient_id", 
-      "spell_id", 
+      "encounter_id", 
       "episode_number",
       "icd_code",
       "diagnosis_position"
@@ -64,7 +64,7 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
     dplyr::copy_to(
       dest = conn, name = "inpatient_diagnoses", 
       df = dplyr::tibble(diagnoses_data), overwrite = overwrite, temporary = FALSE,
-      indexes = list("patient_id", "spell_id", "episode_number", "icd_code"))
+      indexes = list("patient_id", "encounter_id", "episode_number", "icd_code"))
     dplyr::copy_to(
       dest = conn, name = "reference_icd", 
       df = dplyr::tibble(diagnoses_lookup), overwrite = overwrite, temporary = FALSE,
@@ -148,7 +148,7 @@ load_inpatient_episodes <- function(conn,
     overwrite = overwrite,
     indexes = list(
       "patient_id", 
-      "spell_id",
+      "encounter_id",
       "admission_date",
       "discharge_date",
       "episode_number",
@@ -190,7 +190,7 @@ load_inpatient_episodes <- function(conn,
         table = "inpatient_ward_movements",
         fields = c(
           "patient_id", 
-          "spell_id",
+          "encounter_id",
           "ward_code",
           "ward_start",
           "ward_end"
@@ -1232,7 +1232,7 @@ create_mock_database <- function(file,
   
   idvars <- c(
     "patient_id",
-    "spell_id",
+    "encounter_id",
     "observation_id",
     "specimen_id",
     "isolate_id",
@@ -1254,7 +1254,7 @@ create_mock_database <- function(file,
 #' Create database bridge tables
 #'
 #' @description Create or re-create bridge tables to facilitate linking prescribing
-#' events with spells or episodes of care. Bridge tables are used when computing
+#' events with encounters or episodes of care. Bridge tables are used when computing
 #' rates of prescribing per admission or per 1,000 bed-days.
 #' @param conn a database connection
 #' @param overwrite if \code{TRUE}, will overwrite any existing
@@ -1281,8 +1281,8 @@ create_mock_database <- function(file,
 #'    \code{drug_prescriptions} based on matching patient identifiers 
 #'    and the prescription authoring date being comprised between the episode 
 #'    start and end dates.}
-#'    \item{\code{bridge_spell_therapy_overlap()}}{Links therapy episodes
-#'    with inpatient spells during which they were administered. The resulting 
+#'    \item{\code{bridge_encounter_therapy_overlap()}}{Links therapy episodes
+#'    with inpatient encounters during which they were administered. The resulting 
 #'    table is the natural join of \code{inpatient_episodes} and 
 #'    \code{drug_therapy_episodes} based on matching patient identifiers 
 #'    and a time overlap between therapy episodes and hospital stays.}
@@ -1304,7 +1304,7 @@ bridge_tables <- function(conn,
   if( !silent ) progress_bar$tick()
   x[2] <- bridge_episode_prescription_initiation(conn, overwrite)
   if( !silent ) progress_bar$tick()
-  x[3] <- bridge_spell_therapy_overlap(conn, overwrite)
+  x[3] <- bridge_encounter_therapy_overlap(conn, overwrite)
   if( !silent ) progress_bar$tick()
   
   return(all(x))
@@ -1367,7 +1367,7 @@ bridge_episode_prescription_overlap <- function(conn,
     tblz_bridge_episode_prescriptions_overlap <- dplyr::transmute(
       tblz_bridge_episode_prescriptions_overlap,
       patient_id,
-      spell_id,
+      encounter_id,
       episode_number,
       prescription_id,
       DOT,
@@ -1377,7 +1377,7 @@ bridge_episode_prescription_overlap <- function(conn,
     tblz_bridge_episode_prescriptions_overlap <- dplyr::transmute(
       tblz_bridge_episode_prescriptions_overlap,
       patient_id,
-      spell_id,
+      encounter_id,
       episode_number,
       prescription_id,
       DOT
@@ -1453,7 +1453,7 @@ bridge_episode_prescription_initiation <- function(conn,
     tblz_bridge_episode_prescription_initiation <- dplyr::transmute(
       tblz_bridge_episode_prescription_initiation,
       patient_id,
-      spell_id,
+      encounter_id,
       episode_number,
       prescription_id,
       DOT,
@@ -1463,7 +1463,7 @@ bridge_episode_prescription_initiation <- function(conn,
     tblz_bridge_episode_prescription_initiation <- dplyr::transmute(
       tblz_bridge_episode_prescription_initiation,
       patient_id,
-      spell_id,
+      encounter_id,
       episode_number,
       prescription_id,
       DOT
@@ -1485,16 +1485,16 @@ bridge_episode_prescription_initiation <- function(conn,
 
 #' @name bridge_tables
 #' @export
-bridge_spell_therapy_overlap <- function(conn, 
+bridge_encounter_therapy_overlap <- function(conn, 
                                          overwrite = FALSE) {
   stopifnot(is.logical(overwrite))
   stopifnot(is(conn, "duckdb_connection") || is(conn, "PqConnection"))
   
-  tblz_spells <- tbl(conn, "inpatient_episodes") %>% 
-    dplyr::distinct(patient_id, spell_id, admission_date, discharge_date)
+  tblz_encounters <- tbl(conn, "inpatient_episodes") %>% 
+    dplyr::distinct(patient_id, encounter_id, admission_date, discharge_date)
   tblz_therapies <- tbl(conn, "drug_therapy_episodes")
   
-  tblz_bridge_spell_therapy_overlap <- tblz_spells %>% 
+  tblz_bridge_encounter_therapy_overlap <- tblz_encounters %>% 
     dplyr::inner_join(tblz_therapies, 
                       by = "patient_id") %>% 
     dplyr::filter(
@@ -1504,8 +1504,8 @@ bridge_spell_therapy_overlap <- function(conn,
     )
   
   if( is(conn, "PqConnection") || is(conn, "duckdb_connection") ) {
-    tblz_bridge_spell_therapy_overlap <- dplyr::mutate(
-      tblz_bridge_spell_therapy_overlap,
+    tblz_bridge_encounter_therapy_overlap <- dplyr::mutate(
+      tblz_bridge_encounter_therapy_overlap,
       LOT = dplyr::sql(
         "EXTRACT(EPOCH FROM (
            LEAST(therapy_end::TIMESTAMP, discharge_date::TIMESTAMP) -
@@ -1514,26 +1514,26 @@ bridge_spell_therapy_overlap <- function(conn,
       )
     )
   } else {
-    .throw_error_method_not_implemented("bridge_spell_therapy_overlap()",
+    .throw_error_method_not_implemented("bridge_encounter_therapy_overlap()",
                                         class(conn))
   }
   
-  tblz_bridge_spell_therapy_overlap <- dplyr::transmute(
-    tblz_bridge_spell_therapy_overlap,
+  tblz_bridge_encounter_therapy_overlap <- dplyr::transmute(
+    tblz_bridge_encounter_therapy_overlap,
     patient_id,
-    spell_id,
+    encounter_id,
     therapy_id,
     LOT
   )
   
   if (overwrite) {
-    if(DBI::dbExistsTable(conn, "bridge_spell_therapy_overlap")) {
-      DBI::dbRemoveTable(conn, "bridge_spell_therapy_overlap")
+    if(DBI::dbExistsTable(conn, "bridge_encounter_therapy_overlap")) {
+      DBI::dbRemoveTable(conn, "bridge_encounter_therapy_overlap")
     }
   }
   
-  silence <- dplyr::compute(tblz_bridge_spell_therapy_overlap, 
-                            name = "bridge_spell_therapy_overlap", 
+  silence <- dplyr::compute(tblz_bridge_encounter_therapy_overlap, 
+                            name = "bridge_encounter_therapy_overlap", 
                             temporary = FALSE)
   return(TRUE)
 }

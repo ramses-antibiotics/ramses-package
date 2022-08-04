@@ -202,8 +202,8 @@ map_charlson_comorbidities <- function(df, icd_column){
       TRUE ~ as.character(comorb)
     )) %>% 
     dplyr::mutate(charlson_weights = dplyr::case_when(
-      comorb %in% c("ami", "chf", "pvd", "cevd", "dementia",
-                    "copd", "rheumd", "pud", "mld", "diab") ~ 1L,
+      comorb %in% c("mi", "chf", "pvd", "cevd", "dementia",
+                    "cpd", "rheumd", "pud", "mld", "diab") ~ 1L,
       comorb %in% c("diabwc", "hp", "rend", "canc") ~ 2L,
       comorb %in% c("mlsd") ~ 3L,
       comorb %in% c("metacanc", "aids") ~ 6L,
