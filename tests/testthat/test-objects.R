@@ -235,7 +235,8 @@ test_that("MedicationRequest..interface_methods DuckDB", {
     frequency = "TDS",
     daily_frequency = 3,
     duration = 3,
-    antiinfective_type = "antibacterial"
+    antiinfective_type = "antibacterial",
+    stringsAsFactors = FALSE
   )
   load_medications(conn = conDuckDB,
                    prescriptions = fake_prescription,
@@ -325,7 +326,8 @@ test_that("MedicationRequest..interface_methods Postgres", {
     frequency = "TDS",
     daily_frequency = 3,
     duration = 3,
-    antiinfective_type = "antibacterial"
+    antiinfective_type = "antibacterial",
+    stringsAsFactors = FALSE
   )
   load_medications(conn = conPostgreSQL,
                    prescriptions = fake_prescription,
@@ -441,7 +443,8 @@ test_that("TherapyEpisode..interface_methods DuckDB", {
     frequency = "TDS",
     daily_frequency = 3,
     duration = 3,
-    antiinfective_type = "antibacterial"
+    antiinfective_type = "antibacterial",
+    stringsAsFactors = FALSE
   )
   load_medications(conn = conDuckDB,
                    prescriptions = fake_prescription,
@@ -526,7 +529,8 @@ test_that("TherapyEpisode..interface_methods Postgres", {
     frequency = "TDS",
     daily_frequency = 3,
     duration = 3,
-    antiinfective_type = "antibacterial"
+    antiinfective_type = "antibacterial",
+    stringsAsFactors = FALSE
   )
   load_medications(conn = conPostgreSQL,
                    prescriptions = fake_prescription,
