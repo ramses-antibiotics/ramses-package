@@ -33,3 +33,24 @@ therapy_table <- function(object, collect = FALSE) {
     collect = collect
   )
 }
+
+
+#' #' Create database bridge tables
+#'
+#' @param conn a database connection
+#' @param overwrite if \code{TRUE}, will overwrite any existing
+#' database table. The default is \code{FALSE}
+#' @rdname bridge_spell_therapy_overlap-deprecated
+#' @description This function is now deprecated. Please use
+#'  \code{\link{bridge_encounter_therapy_overlap}()}.
+#' @seealso \code{\link{bridge_tables}}, \code{\link{Ramses-deprecated}}
+#' @export
+bridge_spell_therapy_overlap <- function(conn, 
+                                         overwrite = FALSE) {
+  .Deprecated("bridge_encounter_therapy_overlap")
+  bridge_encounter_therapy_overlap(
+    object = object, 
+    collect = collect
+  )
+}
+  

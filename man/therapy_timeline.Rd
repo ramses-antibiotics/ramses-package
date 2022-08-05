@@ -3,6 +3,7 @@
 \name{therapy_timeline}
 \alias{therapy_timeline}
 \alias{therapy_timeline,Patient-method}
+\alias{therapy_timeline,Encounter-method}
 \alias{therapy_timeline,TherapyEpisode-method}
 \title{Display an HTML antimicrobial therapy timeline}
 \usage{
@@ -14,6 +15,8 @@ therapy_timeline(x, ...)
   date2 = NULL,
   load_timevis_dependencies = FALSE
 )
+
+\S4method{therapy_timeline}{Encounter}(x, load_timevis_dependencies = FALSE)
 
 \S4method{therapy_timeline}{TherapyEpisode}(x, load_timevis_dependencies = FALSE)
 }
