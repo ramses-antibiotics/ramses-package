@@ -3,6 +3,8 @@
 export(Encounter)
 export(MedicationRequest)
 export(Patient)
+export(Patient.DBIConnection)
+export(Patient.RamsesObject)
 export(TherapyEpisode)
 export(TherapyEpisode.DBIConnection)
 export(TherapyEpisode.RamsesObject)

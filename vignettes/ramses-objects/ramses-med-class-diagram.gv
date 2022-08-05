@@ -35,7 +35,8 @@ RamsesObject [
   + class(): character\l
   + show(): void\l
   + compute(): RamsesObject\l
-  + collect(): tbl_df\l}"
+  + collect(): tbl_df\l
+  + Patient(): Patient\l}"
 ]
 
 /*
@@ -73,7 +74,6 @@ MedicationRequest [
   \l|
   
   + MedicationRequest(DBICon, id)\l
-  + Patient(): Patient\l
   + TherapyEpisode(): TherapyEpisode\l
   + therapy_timeline(): htmlwidgets\l}"
   
@@ -87,7 +87,6 @@ TherapyEpisode [
   - longitudinal_table: tbl_sql\l|
   
   + TherapyEpisode(DBICon, id): TherapyEpisode\l
-  + Patient(): Patient\l
   + longitudinal_table(collect = T/F): tbl\l
   + therapy_timeline(): htmlwidgets\l
   + parenteral_changes(): list\l
@@ -107,13 +106,16 @@ Patient [
 ]
 
 Encounter [
-  width = 2.6
+  width = 3.5
   label = "{Encounter|
   - longitudinal_table: tbl_sql\l|
 
   + Encounter(DBICon, id): Encounter\l
-  + Patient(): Patient\l
   + longitudinal_table(collect = T/F): tbl\l
+  + clinical_feature_last(): Encounter\l
+  + clinical_feature_mean(): Encounter\l
+  + clinical_feature_ols_trend(): Encounter\l
+  + clinical_feature_interval(): Encounter\l
   + therapy_timeline(): htmlwidgets\l}"
 ]
 

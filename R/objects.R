@@ -39,6 +39,7 @@ setClass(
 #' @slot record a \code{tbl_sql} for the corresponding database record
 #' @param id a patient identifier 
 #' @param conn a database connection
+#' @param object an object inheriting class \link[Ramses]{RamsesObject}
 #' @rdname Patient
 #' @export
 setClass(
@@ -47,8 +48,15 @@ setClass(
 )
 
 #' @rdname Patient
+#' @param ... generic signature
 #' @export
-Patient <- function(conn, id) {
+Patient <- function(...) {
+  UseMethod("Patient")
+}
+
+#' @rdname Patient
+#' @export
+Patient.DBIConnection <- function(conn, id) {
   if ( is.null(id) | length(id) != 1 ) {
     stop("`id` must have length 1")
   }
@@ -73,6 +81,20 @@ Patient <- function(conn, id) {
       conn = conn,
       record = record)
 }
+
+#' @rdname Patient
+#' @export
+Patient.RamsesObject <- function(object) {
+  conn <- object@conn
+  record <- collect(object)
+  id <- unique(na.omit(record$patient_id)) 
+  
+  Patient.DBIConnection(conn = conn, id = id)
+}
+
+#' @export
+#' @noRd  
+setGeneric(name = "Patient", def = Patient)
 
 
 # Encounter ---------------------------------------------------------------
@@ -250,7 +272,7 @@ setClass(
 #' @rdname TherapyEpisode
 #' @param ... generic signature
 #' @export
-TherapyEpisode <- function(...){
+TherapyEpisode <- function(...) {
   UseMethod("TherapyEpisode")
 }
 

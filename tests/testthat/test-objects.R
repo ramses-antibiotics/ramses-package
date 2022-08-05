@@ -98,6 +98,11 @@ test_that("Patient..interface_methods Postgres", {
                                   host = "localhost", 
                                   dbname="RamsesDB",
                                   timezone = "UTC")
+  on.exit({
+    .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
+    DBI::dbDisconnect(conPostgreSQL)
+  })
+  
   patients <- dplyr::tibble(patient_id = 99999999999)
   dplyr::copy_to(conPostgreSQL, patients, temporary = FALSE)
   
@@ -129,9 +134,6 @@ test_that("Patient..interface_methods Postgres", {
     collect(patient_object),
     patients
   )
-  
-  .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
-  DBI::dbDisconnect(conPostgreSQL)
 })
 
 test_that(".process_io_parenteral_vector", {
@@ -250,6 +252,9 @@ test_that("MedicationRequest..interface_methods DuckDB", {
     antiinfective_type = "antibacterial",
     stringsAsFactors = FALSE
   )
+  
+  dplyr::copy_to(conDuckDB, df = dplyr::tibble(patient_id="5124578766"), 
+                 name = "patients", temporary = FALSE)
   load_medications(conn = conDuckDB,
                    prescriptions = fake_prescription,
                    overwrite = TRUE)
@@ -296,6 +301,12 @@ test_that("MedicationRequest..interface_methods DuckDB", {
                prescription_context = "inpatient",
                prescription_status = "completed", daily_frequency = 3, duration = 3)
   )
+  
+  # PATIENT
+  expect_s4_class(
+    Patient(med_req_object),
+    "Patient"
+  )
 })
 
 test_that("MedicationRequest..interface_methods Postgres", {
@@ -310,6 +321,10 @@ test_that("MedicationRequest..interface_methods Postgres", {
                                   host = "localhost", 
                                   dbname="RamsesDB",
                                   timezone = "UTC")
+  on.exit({
+    .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
+    DBI::dbDisconnect(conPostgreSQL)
+  })
   
   fake_prescription <- data.frame(
     patient_id = "5124578766",
@@ -341,6 +356,8 @@ test_that("MedicationRequest..interface_methods Postgres", {
     antiinfective_type = "antibacterial",
     stringsAsFactors = FALSE
   )
+  dplyr::copy_to(conPostgreSQL, df = dplyr::tibble(patient_id="5124578766"), 
+                 name = "patients", temporary = FALSE)
   load_medications(conn = conPostgreSQL,
                    prescriptions = fake_prescription,
                    overwrite = TRUE)
@@ -388,8 +405,11 @@ test_that("MedicationRequest..interface_methods Postgres", {
                   prescription_status = "completed", daily_frequency = 3, duration = 3)
   )
   
-  .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
-  DBI::dbDisconnect(conPostgreSQL)
+  # PATIENT
+  expect_s4_class(
+    Patient(med_req_object),
+    "Patient"
+  )
 })
 
 test_that("TherapyEpisode..constructor", {
@@ -467,6 +487,8 @@ test_that("TherapyEpisode..interface_methods DuckDB", {
     antiinfective_type = "antibacterial",
     stringsAsFactors = FALSE
   )
+  dplyr::copy_to(conDuckDB, df = dplyr::tibble(patient_id="5124578766"), 
+                 name = "patients", temporary = FALSE)
   load_medications(conn = conDuckDB,
                    prescriptions = fake_prescription,
                    overwrite = TRUE)
@@ -508,6 +530,12 @@ test_that("TherapyEpisode..interface_methods DuckDB", {
       therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC")
     )
   )
+  
+  # PATIENT
+  expect_s4_class(
+    Patient(therapy_object),
+    "Patient"
+  )
 })
 
 test_that("TherapyEpisode..interface_methods Postgres", {
@@ -522,6 +550,10 @@ test_that("TherapyEpisode..interface_methods Postgres", {
                                   host = "localhost", 
                                   dbname="RamsesDB",
                                   timezone = "UTC")
+  on.exit({
+    .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
+    DBI::dbDisconnect(conPostgreSQL)
+  })
   
   fake_prescription <- data.frame(
     patient_id = "5124578766",
@@ -553,6 +585,8 @@ test_that("TherapyEpisode..interface_methods Postgres", {
     antiinfective_type = "antibacterial",
     stringsAsFactors = FALSE
   )
+  dplyr::copy_to(conPostgreSQL, df = dplyr::tibble(patient_id="5124578766"), 
+                 name = "patients", temporary = FALSE)
   load_medications(conn = conPostgreSQL,
                    prescriptions = fake_prescription,
                    overwrite = TRUE)
@@ -595,8 +629,11 @@ test_that("TherapyEpisode..interface_methods Postgres", {
     )
   )
   
-  .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
-  DBI::dbDisconnect(conPostgreSQL)
+  # PATIENT
+  expect_s4_class(
+    Patient(therapy_object),
+    "Patient"
+  )
 })
 
 test_that("Encounter..constructor", {
@@ -673,6 +710,8 @@ test_that("Encounter..interface_methods DuckDB", {
     consultant_code = "C1000003", 
     main_specialty_code = "100"
   )
+  dplyr::copy_to(conDuckDB, df = dplyr::tibble(patient_id=6145252493), 
+                 name = "patients", temporary = FALSE)
   load_inpatient_episodes(
     conn = conDuckDB,
     patients_data = dplyr::tibble(patient_id = 6145252493),
@@ -734,6 +773,12 @@ test_that("Encounter..interface_methods DuckDB", {
       ramses_bed_days = 0.418969907407407
     )
   )
+  
+  # PATIENT
+  expect_s4_class(
+    Patient(encounter_object),
+    "Patient"
+  )
 })
 
 
@@ -750,6 +795,10 @@ test_that("Encounter..interface_methods Postgres", {
                                   host = "localhost", 
                                   dbname="RamsesDB",
                                   timezone = "UTC")
+  on.exit({
+    .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
+    DBI::dbDisconnect(conPostgreSQL)
+  })
   
   fake_encounters <- dplyr::tibble(
     patient_id = 6145252493, 
@@ -764,6 +813,8 @@ test_that("Encounter..interface_methods Postgres", {
     consultant_code = "C1000003", 
     main_specialty_code = "100"
   )
+  dplyr::copy_to(conPostgreSQL, df = dplyr::tibble(patient_id=6145252493), 
+                 name = "patients", temporary = FALSE)
   load_inpatient_episodes(
     conn = conPostgreSQL,
     patients_data = dplyr::tibble(patient_id = 6145252493),
@@ -824,5 +875,11 @@ test_that("Encounter..interface_methods Postgres", {
       main_specialty_code = "100", 
       ramses_bed_days = 0.418969907407407
     )
+  )
+  
+  # PATIENT
+  expect_s4_class(
+    Patient(encounter_object),
+    "Patient"
   )
 })
