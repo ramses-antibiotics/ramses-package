@@ -2,7 +2,7 @@
 % Please edit documentation in R/clinical_features.R
 \name{clinical_feature_mean}
 \alias{clinical_feature_mean}
-\alias{clinical_feature_mean,TherapyEpisode-method}
+\alias{clinical_feature_mean,RamsesObject-method}
 \title{Therapy table feature: running mean value of a clinical observation}
 \usage{
 clinical_feature_mean(
@@ -13,7 +13,7 @@ clinical_feature_mean(
   compute = TRUE
 )
 
-\S4method{clinical_feature_mean}{TherapyEpisode}(
+\S4method{clinical_feature_mean}{RamsesObject}(
   x,
   observation_code,
   hours,
@@ -22,7 +22,7 @@ clinical_feature_mean(
 )
 }
 \arguments{
-\item{x}{a \code{\link{TherapyEpisode}} object}
+\item{x}{an object of class \code{\link{TherapyEpisode}} or \code{\link{Encounter}}}
 
 \item{observation_code}{a character vector of clinical investigation codes
 matching the \code{observation_code} field in the \code{inpatient_investigation}

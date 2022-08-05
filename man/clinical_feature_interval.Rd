@@ -2,7 +2,7 @@
 % Please edit documentation in R/clinical_features.R
 \name{clinical_feature_interval}
 \alias{clinical_feature_interval}
-\alias{clinical_feature_interval,TherapyEpisode-method}
+\alias{clinical_feature_interval,RamsesObject-method}
 \title{Therapy table feature: number of clinical observations falling in an interval}
 \usage{
 clinical_feature_interval(
@@ -13,7 +13,7 @@ clinical_feature_interval(
   compute = TRUE
 )
 
-\S4method{clinical_feature_interval}{TherapyEpisode}(
+\S4method{clinical_feature_interval}{RamsesObject}(
   x,
   observation_intervals,
   hours,
@@ -22,7 +22,7 @@ clinical_feature_interval(
 )
 }
 \arguments{
-\item{x}{a \code{\link{TherapyEpisode}} object}
+\item{x}{an object of class \code{\link{TherapyEpisode}} or \code{\link{Encounter}}}
 
 \item{observation_intervals}{a named list of numeric vectors of length 1 
 (for a threshold) or 2 (for an interval). Names of vectors must match the
@@ -46,9 +46,9 @@ be computed on the remote server. This is generally faster.}
 an object of class \code{\link{TherapyEpisode}}
 }
 \description{
-Add clinical features (variables) to a therapy episode table 
-containing the number of observations falling (a) above/below a given threshold
-or (b) inside/outside a given interval.
+Add clinical features (variables) to a therapy episode or 
+encounter longitudinal table containing the number of observations falling 
+(a) above/below a given threshold or (b) inside/outside a given interval.
 }
 \details{
 The feature will be computed exclusively on numeric investigations 

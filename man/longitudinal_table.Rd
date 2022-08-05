@@ -4,6 +4,7 @@
 \alias{longitudinal_table}
 \alias{longitudinal_table,TherapyEpisode-method}
 \alias{longitudinal_table,MedicationRequest-method}
+\alias{longitudinal_table,Encounter-method}
 \title{Get the longitudinal_table}
 \usage{
 longitudinal_table(object, collect = FALSE)
@@ -11,6 +12,8 @@ longitudinal_table(object, collect = FALSE)
 \S4method{longitudinal_table}{TherapyEpisode}(object, collect = FALSE)
 
 \S4method{longitudinal_table}{MedicationRequest}(object, collect = FALSE)
+
+\S4method{longitudinal_table}{Encounter}(object, collect = FALSE)
 }
 \arguments{
 \item{object}{an object of class \code{TherapyEpisode}}

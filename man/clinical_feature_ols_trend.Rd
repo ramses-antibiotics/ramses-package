@@ -2,7 +2,7 @@
 % Please edit documentation in R/clinical_features.R
 \name{clinical_feature_ols_trend}
 \alias{clinical_feature_ols_trend}
-\alias{clinical_feature_ols_trend,TherapyEpisode-method}
+\alias{clinical_feature_ols_trend,RamsesObject-method}
 \title{Therapy table feature: temporal trend of clinical observations}
 \usage{
 clinical_feature_ols_trend(
@@ -13,7 +13,7 @@ clinical_feature_ols_trend(
   compute = TRUE
 )
 
-\S4method{clinical_feature_ols_trend}{TherapyEpisode}(
+\S4method{clinical_feature_ols_trend}{RamsesObject}(
   x,
   observation_code,
   hours,
@@ -22,7 +22,7 @@ clinical_feature_ols_trend(
 )
 }
 \arguments{
-\item{x}{a \code{\link{TherapyEpisode}} object}
+\item{x}{an object of class \code{\link{TherapyEpisode}} or \code{\link{Encounter}}}
 
 \item{observation_code}{a character vector of clinical investigation codes
 matching the \code{observation_code} field in the \code{inpatient_investigation}
@@ -45,9 +45,9 @@ be computed on the remote server. This is generally faster.}
 an object of class \code{\link{TherapyEpisode}}
 }
 \description{
-Add clinical feature (variables) to a therapy episode table 
-containing the Ordinary Least Squares (OLS) intercept and slope of clinical
-observations of interest
+Add clinical feature (variables) to a therapy episode or 
+encounter longitudinal table containing the Ordinary Least Squares (OLS) 
+intercept and slope of clinical observations of interest
 }
 \details{
 The feature will be computed exclusively on numeric investigations 

@@ -236,7 +236,7 @@ MedicationRequest <- function(conn, id) {
   }
   
   record <- dplyr::filter(tbl(conn, "drug_prescriptions"),
-                          prescription_id == !!id)
+                          .data$prescription_id == !!id)
   new("MedicationRequest", 
       id = id,
       conn = conn,
@@ -341,19 +341,22 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
     dplyr::tibble(therapy_id = sort(unique(id))), 
     by = "therapy_id", copy = TRUE
   ) %>% 
-    dplyr::select(patient_id, therapy_id, therapy_start, therapy_end)
+    dplyr::select(.data$patient_id, 
+                  .data$therapy_id, 
+                  .data$therapy_start, 
+                  .data$therapy_end)
 
   if(is(conn, "PqConnection") | is(conn, "duckdb_connection")) {
     tbl(conn, "ramses_tally") %>%
       dplyr::full_join(longitudinal_table, by = character()) %>%
       dplyr::mutate(t_start = dplyr::sql("therapy_start + interval '1h' * t "))%>% 
-      dplyr::filter(t_start < therapy_end) %>% 
+      dplyr::filter(.data$t_start < .data$therapy_end) %>% 
       dplyr::mutate(t_end = dplyr::sql("therapy_start + interval '1h' * (t + 1)")) %>% 
-      dplyr::group_by(patient_id, therapy_id) %>% 
+      dplyr::group_by(.data$patient_id, .data$therapy_id) %>% 
       dplyr::mutate(t_end = dplyr::if_else(
-        t == max(t, na.rm = TRUE),
-        therapy_end,
-        t_end
+        t == max(.data$t, na.rm = TRUE),
+        .data$therapy_end,
+        .data$t_end
       )) %>% 
       dplyr::ungroup()
   } else {
@@ -384,14 +387,14 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
       medication_requests, 
       by = c("patient_id", "therapy_id")) %>% 
       dplyr::filter(
-        dplyr::between(t_start, prescription_start, prescription_end) |
-          dplyr::between(prescription_start, t_start, t_end) | 
-          dplyr::between(prescription_end, t_start, t_end)
+        dplyr::between(.data$t_start, .data$prescription_start, .data$prescription_end) |
+          dplyr::between(.data$prescription_start, .data$t_start, .data$t_end) | 
+          dplyr::between(.data$prescription_end, .data$t_start, .data$t_end)
       ) %>% 
-      dplyr::group_by(patient_id, therapy_id, t) %>%
+      dplyr::group_by(.data$patient_id, .data$therapy_id, .data$t) %>%
       dplyr::summarise(parenteral = dplyr::if_else(
         mean(
-          dplyr::if_else(ATC_route == "P", 1.0, 0.0), 
+          dplyr::if_else(.data$ATC_route == "P", 1.0, 0.0), 
           na.rm = T) == 0.0,
         0L,
         1L
@@ -549,35 +552,46 @@ parenteral_changes <- function(therapy_episode, tolerance_hours = 12L) {
 }
 
 
+# longitudinal_table -------------------------------------------------------
 
 #' Verify that all therapy episodes are present in record
 #'
 #' @description To verify that a `tbl_objects` table contains 
-#' all therapy episodes referenced in the `episode@id` slot
-#' @param episode a `TherapyEpisode` object
+#' all therapy episodes referenced in the `object@id` slot
+#' @param object a `TherapyEpisode` or `Encounter` object
 #' @param tbl_object a `tbl_sql` or `tbl_df` containing a `therapy_id` column
 #' @param silent if `TRUE`, will not throw a warning if not all therapy 
 #' episodes are present#'
 #' @return a boolean (and throws a warning)
 #' @noRd
-.longitudinal_table_completeness_check <- function(episode, tbl_object, silent = FALSE) {
+.longitudinal_table_completeness_check <- function(object, tbl_object, silent = FALSE) {
+  if (is(object, "Encounter")) {
+    object_id_field <- "encounter_id"
+    warning_object_class <- "encounters"
+  } else if (is(object, "TherapyEpisode")) {
+    object_id_field <- "therapy_id"
+    warning_object_class <- "therapy episodes"
+  } else {
+    .throw_error_method_not_implemented(
+      function_name = ".longitudinal_table_completeness_check()",
+      class_name = class(object)
+    )
+  }
   
-  remote_ids <- dplyr::distinct(tbl_object, therapy_id) %>% 
+  remote_ids <- dplyr::distinct(tbl_object, .data[[object_id_field]]) %>% 
     dplyr::collect()
-  missing <- !episode@id %in% remote_ids$therapy_id
+  missing <- !object@id %in% remote_ids[[object_id_field]]
   
   if (any(missing)) {
     if (!silent) {
-      warning("Some therapy episodes were not found:\n",
-              paste(utils::head(episode@id[missing]), collapse = ", "),
+      warning("Some ", warning_object_class, " were not found:\n",
+              paste(utils::head(object@id[missing]), collapse = ", "),
               ifelse(sum(!missing) > 5, "...", ""), call. = FALSE)
     }
   }
   
   all(!missing)
 }
-
-# longitudinal_table -------------------------------------------------------
 
 
 #' Get the longitudinal_table
@@ -597,7 +611,7 @@ setMethod("longitudinal_table", "TherapyEpisode", function(object, collect = FAL
   .longitudinal_table_completeness_check(object, object@longitudinal_table)
   if( collect ) {
     dplyr::collect(object@longitudinal_table) %>% 
-      dplyr::arrange(therapy_id, t)
+      dplyr::arrange(.data$therapy_id, .data$t)
   } else {
     object@longitudinal_table
   }
@@ -611,7 +625,21 @@ setMethod("longitudinal_table", "MedicationRequest", function(object, collect = 
   .longitudinal_table_completeness_check(object, object@longitudinal_table)
   if( collect ) {
     dplyr::collect(object@longitudinal_table) %>% 
-      dplyr::arrange(therapy_id, t)
+      dplyr::arrange(.data$therapy_id, .data$t)
+  } else {
+    object@longitudinal_table
+  }
+})
+
+
+#' @rdname longitudinal_table
+#' @export
+setMethod("longitudinal_table", "Encounter", function(object, collect = FALSE) {
+  stopifnot(is.logical(collect))
+  .longitudinal_table_completeness_check(object, object@longitudinal_table)
+  if( collect ) {
+    dplyr::collect(object@longitudinal_table) %>% 
+      dplyr::arrange(.data$encounter_id, .data$t)
   } else {
     object@longitudinal_table
   }
@@ -670,10 +698,10 @@ setMethod("show", "TherapyEpisode", function(object) {
     cat("Please check object id is valid\n")
   } else if( length(object@id) == 1 ) {
     prescriptions <- tbl(object@conn, "drug_prescriptions") %>%
-      dplyr::filter(patient_id == !!record$patient_id &
-                      therapy_id == !!object@id) %>%
-      dplyr::arrange(therapy_rank) %>%
-      dplyr::select(prescription_text) %>%
+      dplyr::filter(.data$patient_id == !!record$patient_id &
+                      .data$therapy_id == !!object@id) %>%
+      dplyr::arrange(.data$therapy_rank) %>%
+      dplyr::select(.data$prescription_text) %>%
       dplyr::collect()
     cat("Patient:  ", record$patient_id, "\n")
     cat("Start:    ", as.character(record$therapy_start, format = "%Y-%m-%d %H:%M:%S %Z"), "\n")
@@ -687,7 +715,7 @@ setMethod("show", "TherapyEpisode", function(object) {
     }
   } else if( length(object@id) > 1 ) {
     cat("[total of", nrow(record), "therapy episodes]\n")
-    record <- dplyr::arrange(record, therapy_id)
+    record <- dplyr::arrange(record, .data$therapy_id)
     record <- record[order(object@id), ]
     if (length(unique(record$patient_id)) > 3) {
       cat("Patients:  ", paste(as.character(unique(record$patient_id)[1:3]), collapse = ", "), ", ...\n")

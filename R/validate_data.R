@@ -466,13 +466,15 @@ validate_inpatient_episodes <- function(patients,
     allow.cartesian = T
   )
   
-  data_cross_prod <- data_cross_prod[encounter_id.x != encounter_id.y]
+  data_cross_prod <- data_cross_prod %>% 
+    dplyr::filter(.data$encounter_id.x != .data$encounter_id.y) %>% 
+    dplyr::filter(
+      ( .data$admission_date.x > .data$admission_date.y &
+          .data$admission_date.x < .data$discharge_date.y ) | 
+        ( .data$discharge_date.x > .data$admission_date.y &
+            .data$discharge_date.x < .data$discharge_date.y )
+    ) 
 
-  data_cross_prod <- data_cross_prod[
-    data.table::between(admission_date.x, admission_date.y, discharge_date.y, incbounds = F) |
-      data.table::between(discharge_date.x, admission_date.y, discharge_date.y, incbounds = F) 
-    ]
-  
   if (nrow(data_cross_prod) > 0) {
     warning(simpleWarning("Hospital encounters must not overlap."))
     warning(simpleWarning(
@@ -564,16 +566,18 @@ validate_inpatient_episodes <- function(patients,
     allow.cartesian = T
   )
   
-  data_cross_prod <- data_cross_prod[
-    !(encounter_id.x == encounter_id.y & 
-        start.x == start.y & 
-        end.x == end.y)
-    ]
-
-  data_cross_prod <- data_cross_prod[
-    data.table::between(start.x, start.y, end.y, incbounds = F) |
-      data.table::between(end.x, start.y, end.y, incbounds = F) 
-    ]
+  data_cross_prod <- data_cross_prod %>% 
+    dplyr::filter(
+      !(.data$encounter_id.x == .data$encounter_id.y & 
+          .data$start.x == .data$start.y & 
+          .data$end.x == .data$end.y)
+    ) %>% 
+    dplyr::filter(
+      ( .data$start.x > .data$start.y &
+          .data$start.x < .data$end.y ) | 
+        ( .data$end.x > .data$start.y &
+            .data$end.x < .data$end.y )
+    )
   
   if (nrow(data_cross_prod) > 0) {
     warning(simpleWarning(paste0("Hospital `", type,"` must not overlap.")))

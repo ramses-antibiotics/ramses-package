@@ -24,7 +24,7 @@ digraph G {
 
 # Interface
 RamsesObject [
-  width = 2.2
+  width = 2.5
   label = "{«interface»\n
   RamsesObject|
   + class: character\l
@@ -36,7 +36,8 @@ RamsesObject [
   + show(): void\l
   + compute(): RamsesObject\l
   + collect(): tbl_df\l
-  + Patient(): Patient\l}"
+  + Patient(): Patient\l
+  + therapy_timeline(): htmlwidgets\l}"
 ]
 
 /*
@@ -69,13 +70,13 @@ Prescription_Combo [
 */
 
 MedicationRequest [
-  width = 2.7
+  width = 3
   label = "{MedicationRequest|
   \l|
   
   + MedicationRequest(DBICon, id)\l
   + TherapyEpisode(): TherapyEpisode\l
-  + therapy_timeline(): htmlwidgets\l}"
+  + longitudinal_table(collect = T/F): tbl\l}"
   
   # + Clinician(): Clinician\l
   #  + Prescription(): Prescription\l
@@ -88,7 +89,6 @@ TherapyEpisode [
   
   + TherapyEpisode(DBICon, id): TherapyEpisode\l
   + longitudinal_table(collect = T/F): tbl\l
-  + therapy_timeline(): htmlwidgets\l
   + parenteral_changes(): list\l
   + clinical_feature_last(): TherapyEpisode\l
   + clinical_feature_mean(): TherapyEpisode\l
@@ -101,12 +101,11 @@ Patient [
   width = 2.6
   label = "{Patient|
   \l|
-  + Patient(DBICon, id): Patient\l
-  + therapy_timeline(): htmlwidgets\l}"
+  + Patient(DBICon, id): Patient\l}"
 ]
 
 Encounter [
-  width = 3.5
+  width = 3
   label = "{Encounter|
   - longitudinal_table: tbl_sql\l|
 
@@ -115,8 +114,7 @@ Encounter [
   + clinical_feature_last(): Encounter\l
   + clinical_feature_mean(): Encounter\l
   + clinical_feature_ols_trend(): Encounter\l
-  + clinical_feature_interval(): Encounter\l
-  + therapy_timeline(): htmlwidgets\l}"
+  + clinical_feature_interval(): Encounter\l}"
 ]
 
 /*
@@ -158,10 +156,4 @@ TherapyEpisode -> Clinician  [ style = invis ]; */
 Patient -> TherapyEpisode  [ style = invis ]; 
 
 
-/*
-TherapyEpisode -> TherapyList [constraint=false
-  arrowtail=odiamond
-  headlabel = "2..*  "
-  taillabel = "0..*  "]
-*/  
 }

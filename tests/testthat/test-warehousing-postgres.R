@@ -425,11 +425,11 @@ test_that("Ramses on PosgreSQL (system test)", {
   expect_equal(tail(longitudinal_table(test_episode, collect = TRUE)), 
                test_expected_tail_second_therapy_episode)
   
-  # .longitudinal_table_completeness_check -------------------------------------
+  # TherapyEpisode .longitudinal_table_completeness_check -------------------------------------
   
   expect_true(
     .longitudinal_table_completeness_check(
-      episode = TherapyEpisode(pq_conn, "592a738e4c2afcae6f625c01856151e0"),
+      object = TherapyEpisode(pq_conn, "592a738e4c2afcae6f625c01856151e0"),
       tbl_object = TherapyEpisode(pq_conn, "592a738e4c2afcae6f625c01856151e0")@longitudinal_table,
       silent = F
     )
@@ -438,7 +438,7 @@ test_that("Ramses on PosgreSQL (system test)", {
   expect_false(
     expect_warning(
       .longitudinal_table_completeness_check(
-        episode = TherapyEpisode(pq_conn, "592a738e4c2afcae6f625c01856151e0"),
+        object = TherapyEpisode(pq_conn, "592a738e4c2afcae6f625c01856151e0"),
         tbl_object = TherapyEpisode(pq_conn, "89ac870bc1c1e4b2a37cec79d188cb08")@longitudinal_table,
         silent = F
       )
@@ -802,3 +802,295 @@ test_that("Ramses on PosgreSQL (system test)", {
   
 })
 
+
+test_that("Encounter class on Postgres", {
+  
+  if (!identical(Sys.getenv("CI"), "true")) {
+    skip("Test only on GitHub Actions")
+  }
+  
+  pq_conn <- DBI::dbConnect(RPostgres::Postgres(),
+                            user = "user", 
+                            password = "password",
+                            host = "localhost", 
+                            dbname="RamsesDB",
+                            timezone = "UTC")
+  on.exit({
+    .remove_db_tables(conn = pq_conn,
+                      DBI::dbListTables(pq_conn))
+    DBI::dbDisconnect(pq_conn)
+  })
+  on.exit({
+    .remove_db_tables(conn = pq_conn,
+                      DBI::dbListTables(pq_conn))
+    DBI::dbDisconnect(pq_conn)
+  })
+  
+  # database loading functions ------------------------------------------
+  
+  expect_invisible(
+    load_medications(conn = pq_conn, 
+                     prescriptions = .ramses_mock_dataset$drug_rx,
+                     administrations = .ramses_mock_dataset$drug_admins,
+                     overwrite = TRUE)
+  )
+  expect_invisible(
+    load_inpatient_episodes(conn = pq_conn,
+                            patients_data = .ramses_mock_dataset$patients,
+                            episodes_data = .ramses_mock_dataset$episodes,
+                            wards_data = inpatient_wards,
+                            overwrite = TRUE)
+  )
+  expect_invisible(
+    load_inpatient_investigations(
+      conn = pq_conn,
+      investigations_data = inpatient_investigations,
+      overwrite = TRUE
+    ))
+  # Encounter ------------------------------------------------------------------
+  
+  # Single IVPO change pt 99999999999
+  test_encounter <- Encounter(pq_conn, "3968305736")
+  test_output <- longitudinal_table(test_encounter, collect = T)
+  test_expected_head <- dplyr::tibble(
+    t = 0:5,
+    patient_id = "99999999999",
+    encounter_id = "3968305736",
+    admission_date = structure(1486982520, tzone = "UTC", class = c("POSIXct", "POSIXt")), 
+    discharge_date = structure(1487932800, tzone = "UTC", class = c("POSIXct", "POSIXt")), 
+    t_start = structure(1486982520 + 0:5*3600, tzone = "UTC", class = c("POSIXct", "POSIXt")), 
+    t_end = structure(1486982520 + 1:6*3600, tzone = "UTC", class = c("POSIXct", "POSIXt"))
+  )
+  test_expected_tail <- dplyr::tibble(
+    t = 258:263,
+    patient_id = "99999999999",
+    encounter_id = "3968305736",
+    admission_date = structure(1486982520, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+    discharge_date = structure(1487932800, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+    t_start = structure(1486982520 + 258:263*3600, tzone = "UTC", class = c("POSIXct", "POSIXt")), 
+    t_end = structure(c(1486982520 + 259:263*3600, 1487932800), tzone = "UTC", class = c("POSIXct", "POSIXt"))
+  )
+  
+  expect_equal(head(test_output), test_expected_head)
+  expect_equal(tail(test_output), test_expected_tail)
+  expect_equal(
+    as.numeric(sum(difftime(test_output$t_end, test_output$t_start,units =  "days"))),
+    sum(collect(test_encounter)[["ramses_bed_days"]])
+  )
+  
+  # 2+ Encounters --------------------------------------------------------------
+  
+  test_encounter <- Encounter(conn = pq_conn, 
+                              id = c("3968305736", "9278078393"))
+  expect_is(test_encounter, "Encounter")
+  
+  test_expected_tail_second_encounter <- dplyr::tibble(
+    t = 20:25,
+    patient_id = "99999999999",
+    encounter_id = "9278078393",
+    admission_date = structure(1459332000, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+    discharge_date = structure(1459425600, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+    t_start = structure(1459332000 + 20:25*3600, tzone = "UTC", class = c("POSIXct", "POSIXt")), 
+    t_end = structure(c(1459332000 + 21:25*3600, 1459425600), tzone = "UTC", class = c("POSIXct", "POSIXt"))
+  )
+  
+  expect_equal(head(longitudinal_table(test_encounter, collect = TRUE)), 
+               test_expected_head)
+  
+  expect_equal(tail(longitudinal_table(test_encounter, collect = TRUE)), 
+               test_expected_tail_second_encounter)
+  
+  # Encounter .longitudinal_table_completeness_check ---------------------------
+  
+  expect_true(
+    .longitudinal_table_completeness_check(
+      object = Encounter(pq_conn, "3968305736"),
+      tbl_object = Encounter(pq_conn, "3968305736")@longitudinal_table,
+      silent = F
+    )
+  )
+  
+  expect_false(
+    expect_warning(
+      .longitudinal_table_completeness_check(
+        object = Encounter(pq_conn, "3968305736"),
+        tbl_object = Encounter(pq_conn, "4956274655")@longitudinal_table,
+        silent = F
+      )
+    )
+  )
+  
+  # clinical features --------------------------------------------------------
+  
+  # > last -------------------------------------------------------------------
+  
+  expect_error(
+    clinical_feature_last(
+      Encounter(pq_conn, "9278078393"),
+      observation_code = "8310-5",
+      hours = 24,
+      observation_code_system = "doesnotexist"
+    )
+  )
+  last_temp <- clinical_feature_last(
+    Encounter(pq_conn, "9278078393"),
+    observation_code = "8310-5",
+    hours = 24
+  ) %>% 
+    longitudinal_table(collect = T)
+  
+  expect_equal(
+    last_temp$last_temperature_24h[1:5],
+    c(NA, NA, NA, 35.7, 35.7)
+  )
+  expect_equal(
+    last_temp$last_temperature_24h[21:25],
+    c(37.1, 37.1, 37.1, 37.1, 37.1)
+  )
+  rm(last_temp)
+  
+  last_temp_2encounters <- clinical_feature_last(
+    Encounter(pq_conn, c("3968305736", "9278078393")),
+    observation_code = "8310-5",
+    hours = 24
+  ) %>% 
+    longitudinal_table(collect = T)
+  
+  expect_equal(
+    dplyr::filter(last_temp_2encounters, 
+                  encounter_id == "9278078393")$last_temperature_24h[1:5],
+    c(NA, NA, NA, 35.7, 35.7)
+  )
+  expect_equal(
+    dplyr::filter(last_temp_2encounters, 
+                  encounter_id == "9278078393" & 
+                    t %in% 20:25)$last_temperature_24h,
+    c(37.1, 37.1, 37.1, 37.1, 37.1, 37.1)
+  )
+  rm(last_temp_2encounters)
+  
+  last_temp <- clinical_feature_last(
+    Encounter(pq_conn, "3968305736"),
+    observation_code = c("8310-5", "2160-0"),
+    hours = 32
+  ) %>% 
+    longitudinal_table(collect = T)
+  
+  expect_equal(
+    last_temp$last_temperature_32h[1:5],
+    c(NA, 36, 36.9, 36.9, 36.8)
+  )
+  expect_equal(
+    last_temp$last_temperature_32h[174:178],
+    c(35.8, 35.8, 35.8, 35.8, 35.8)
+  )
+  expect_equal(
+    last_temp$last_creatinine_32h[1:5],
+    c(116, 116, 116, 116, 116)
+  )
+  expect_equal(
+    last_temp$last_creatinine_32h[174:178],
+    c(109, 109, 109, 109, 109)
+  )
+  rm(last_temp)
+  
+  # > OLS -------------------------------------------------------------------
+  
+  example_therapy <-  Encounter(pq_conn, "9278078393")
+  example_therapy_record <- collect(example_therapy)
+  
+  expect_error(
+    clinical_feature_ols_trend(
+      example_therapy,
+      observation_code = "8310-5",
+      hours = 24, 
+      observation_code_system = "doesnotexist"
+    )
+  )
+  
+  ols_temp <- longitudinal_table(clinical_feature_ols_trend(
+    example_therapy,
+    observation_code = "8310-5",
+    hours = 24
+  ), collect = T)
+  
+  expect_equal(
+    ols_temp$ols_temperature_24h_intercept[1:10],
+    c(NA, NA, NA, NA, NA, 
+      36.6131724683544, 37.0403876582278, 36.4450313376705, 
+      36.5775984454222, 36.719050516548)
+  )
+  expect_equal(
+    ols_temp$ols_temperature_24h_slope[1:10],
+    c(NA, NA, NA, NA, NA, 0.427215189873417, 0.427215189873417, 0.144431722745784, 
+      0.141452071125883, 0.141452071125883)
+  )
+  
+  # > interval ------------------------------------------------------------------
+  
+  expect_error(
+    clinical_feature_interval(
+      Encounter(pq_conn, "9278078393"),
+      observation_intervals = list("8310-5" = c(36, 38)),
+      hours = 24,
+      observation_code_system = "doesnotexist"
+    )
+  )
+  
+  temperature_check <- longitudinal_table(clinical_feature_interval(
+    Encounter(pq_conn, "9278078393"),
+    observation_intervals = list("8310-5" = c(36, 38)),
+    hours = 24), collect = TRUE)
+  
+  expect_equal(temperature_check$range_temperature36_38_24h_in_range[1:5],
+               c(NA, NA, NA, 0, 0))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_under[1:5],
+               c(NA, NA, NA, 1, 1))
+  expect_equal(temperature_check$range_temperature36_38_24h_strictly_over[1:5],
+               c(NA, NA, NA, 0, 0))
+  
+  expect_error(
+    longitudinal_table(clinical_feature_interval(
+      Encounter(pq_conn, "9278078393"),
+      observation_intervals = list("8310-5" = c(NA, 38)),
+      hours = 24), collect = TRUE)
+  )
+  
+  temperature_check <- longitudinal_table(clinical_feature_interval(
+    Encounter(pq_conn, "9278078393"),
+    observation_intervals = list("8310-5" = c(38)),
+    hours = 24), collect = TRUE)
+  expect_equal(temperature_check$threshold_temperature38_24h_under[1:5],
+               c(NA, NA, NA, 1, 1))
+  expect_equal(temperature_check$threshold_temperature38_24h_strictly_over[1:5],
+               c(NA, NA, NA, 0, 0))
+  
+  temperature_check <- longitudinal_table(clinical_feature_interval(
+    Encounter(pq_conn, "9278078393"),
+    observation_intervals = list("8310-5" = c(36)),
+    hours = 24), collect = TRUE)
+  expect_equal(temperature_check$threshold_temperature36_24h_under[1:6],
+               c(NA, NA, NA, 1, 1, 1))
+  expect_equal(temperature_check$threshold_temperature36_24h_strictly_over[1:6],
+               c(NA, NA, NA, 0, 0, 1))
+  
+  # > mean ------------------------------------------------------------------
+  
+  expect_error(
+    clinical_feature_mean(
+      Encounter(pq_conn, "9278078393"),
+      observation_code = "8310-5",
+      hours = 2, 
+      observation_code_system = "doesnotexist")
+  )
+  
+  temperature_check <- longitudinal_table(
+    clinical_feature_mean(
+      Encounter(pq_conn, "9278078393"),
+      observation_code = "8310-5",
+      hours = 24),
+    collect = TRUE
+  )
+  expect_equal(temperature_check$mean_temperature_24h[1:6],
+               c(NA, NA, NA, 35.7, 35.7, 36.15))
+})
