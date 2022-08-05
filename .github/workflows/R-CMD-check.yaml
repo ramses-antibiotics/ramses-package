@@ -82,22 +82,11 @@ jobs:
           remotes::install_cran("rcmdcheck")
         shell: Rscript {0}
         
-      # - name: Unit tests
-      #   run: devtools::test()
-      #   shell: Rscript {0}
-
       - name: Check
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
         run: rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "warning", check_dir = "check")
         shell: Rscript {0}
-
-      # - name: Upload check results
-      #   if: failure()
-      #   uses: actions/upload-artifact@main
-      #   with:
-      #     name: ${{ runner.os }}-r${{ matrix.config.r }}-results
-      #     path: check
 
       - name: Code coverage
         if: github.ref == 'refs/heads/master' && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release'
@@ -117,3 +106,26 @@ jobs:
         env:
           PROJECT_ID: ramses-antibiotics
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      
+      - uses: r-lib/actions/setup-tinytex@v2
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release'
+        run: tlmgr --version
+
+      - name: Build source and PDF manual
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release'
+        run: |
+          devtools::build(".", vignettes = TRUE, manual = TRUE, path = "~")
+          devtools::build_manual(".", path = "~")
+        shell: Rscript {0}
+        
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Ramses package source
+          path: ~/Ramses_[0-9].[0-9].[0-9].tar.gz
+        
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Ramses package manual
+          path: ~/Ramses_[0-9].[0-9].[0-9].pdf
+    
+
