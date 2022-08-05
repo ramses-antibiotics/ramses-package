@@ -13,6 +13,10 @@ of class `RamsesObject`
 to manipulate hospitalisations (admissions)
 with associated methods for `show()`, `compute()`, `collect()`, `Patient()`, 
 `longitudinal_table()`, `clinical_feature_*()`
+* `TherapyEpisode()` and `Encounter()` have a new optional `extend_table_start` input
+controlling their longitudinal table's start. This allows the creation of longitudinal
+tables starting before the `therapy_start` or `admission_date`, respectively. More
+detail is available from [`vignette("therapy-episodes")`](https://ramses-antibiotics.web.app/articles/therapy-episodes.html)
 
 ## Breaking changes
 

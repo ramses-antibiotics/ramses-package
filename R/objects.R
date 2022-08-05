@@ -108,6 +108,11 @@ setGeneric(name = "Patient", def = Patient)
 #' @slot longitudinal_table a \code{tbl_sql} for the longitudinal encounter table
 #' @param id an encounter identifier 
 #' @param conn a database connection
+#' @param extend_table_start optional integer to specify an earlier start
+#' (in hours) in the longitudinal table of the object. For example, a value of 
+#' 6 means the longitudinal table will begin 6 hours prior to the admission
+#' date. The value must be a positive number. Decimal numbers will be
+#' rounded up to the nearest integer. The default is \code{NULL}.
 #' @rdname Encounter
 #' @export
 setClass(
@@ -118,7 +123,8 @@ setClass(
 
 #' @rdname Encounter
 #' @export
-Encounter <- function(conn, id) {
+Encounter <- function(conn, id, extend_table_start = NULL) {
+  
   id <- sort(na.omit(unique(id)))
   if ( is.null(id) | length(id) < 1) {
     stop("`id` must contain at least one identifier")
@@ -133,6 +139,8 @@ Encounter <- function(conn, id) {
     stop(paste("`id` must be", id_data_type))
   }
   
+  extend_table_start <- .validate_extended_table_input(extend_table_start)
+  
   record <- dplyr::inner_join(
     tbl(conn, "inpatient_episodes"),
     dplyr::tibble(encounter_id = id),
@@ -140,7 +148,8 @@ Encounter <- function(conn, id) {
   
   longitudinal_table <- .longitudinal_table_create.Encounter(
     conn = conn, 
-    id = id
+    id = id,
+    extend_table_start = extend_table_start
   )
   
   # TODO
@@ -154,13 +163,19 @@ Encounter <- function(conn, id) {
       longitudinal_table = longitudinal_table)
 }
 
+
 #' Create the therapy episode longitudinal table
 #'
 #' @param conn a database connection
 #' @param id a vector of encounter identifiers 
+#' @param extend_table_start optional integer to specify an earlier start
+#' (in hours) in the longitudinal table of the object. For example, a value of 
+#' 6 means the longitudinal table will begin 6 hours prior to the start of
+#' therapy. The value must be a positive number. Decimal numbers will be
+#' rounded up to the nearest integer. The default is \code{NULL}.
 #' @noRd
-.longitudinal_table_create.Encounter <- function(conn, id) {
-  
+.longitudinal_table_create.Encounter <- function(conn, id, extend_table_start) {
+
   .build_tally_table(conn)
   
   longitudinal_table <- dplyr::inner_join(
@@ -175,8 +190,9 @@ Encounter <- function(conn, id) {
   
   if(is(conn, "PqConnection") | is(conn, "duckdb_connection")) {
     tbl(conn, "ramses_tally") %>%
+      dplyr::mutate(t = .data$t - as.integer(extend_table_start)) %>% 
       dplyr::full_join(longitudinal_table, by = character()) %>%
-      dplyr::mutate(t_start = dplyr::sql("admission_date + interval '1h' * t "))%>% 
+      dplyr::mutate(t_start = dplyr::sql("admission_date + interval '1h' * t ")) %>% 
       dplyr::filter(.data$t_start < .data$discharge_date) %>% 
       dplyr::mutate(t_end = dplyr::sql("admission_date + interval '1h' * (t + 1)")) %>% 
       dplyr::group_by(.data$patient_id, .data$encounter_id) %>% 
@@ -261,6 +277,11 @@ MedicationRequest <- function(conn, id) {
 #' @param conn a database connection
 #' @param object an object of class \code{MedicationRequest} or 
 #' \code{Prescription}
+#' @param extend_table_start optional integer to specify an earlier start
+#' (in hours) in the longitudinal table of the object. For example, a value of 
+#' 6 means the longitudinal table will begin 6 hours prior to the start of 
+#' antimicrobial therapy. The value must be a positive number. Decimal numbers 
+#' will be rounded up to the nearest integer. The default is \code{NULL}.
 #' @rdname TherapyEpisode
 #' @export
 setClass(
@@ -278,7 +299,8 @@ TherapyEpisode <- function(...) {
 
 #' @rdname TherapyEpisode
 #' @export
-TherapyEpisode.DBIConnection <- function(conn, id) {
+TherapyEpisode.DBIConnection <- function(conn, id, extend_table_start = NULL) {
+
   id <- sort(na.omit(unique(id)))
   if ( is.null(id) | length(id) < 1) {
     stop("`id` must contain at least one identifier")
@@ -293,12 +315,16 @@ TherapyEpisode.DBIConnection <- function(conn, id) {
     stop(paste("`id` must be", id_data_type))
   }
   
+  extend_table_start <- .validate_extended_table_input(extend_table_start)
+  
   record <- dplyr::inner_join(
     tbl(conn, "drug_therapy_episodes"),
     dplyr::tibble(therapy_id = id),
     by = "therapy_id", copy = TRUE)
-  longitudinal_table <- .longitudinal_table_create.TherapyEpisode(conn = conn, 
-                                         id = id)
+  longitudinal_table <- .longitudinal_table_create.TherapyEpisode(
+    conn = conn, 
+    id = id,
+    extend_table_start)
   longitudinal_table <- .longitudinal_table_parenteral_indicator(longitudinal_table)
   new("TherapyEpisode", 
       id = id,
@@ -309,7 +335,7 @@ TherapyEpisode.DBIConnection <- function(conn, id) {
 
 #' @rdname TherapyEpisode
 #' @export
-TherapyEpisode.RamsesObject <- function(object) {
+TherapyEpisode.RamsesObject <- function(object, extend_table_start = NULL) {
   if( !is(object, "MedicationRequest") &
       !is(object, "Prescription") ) {
     stop("`object` must be of class `MedicationRequest` or `Prescription`")
@@ -318,7 +344,7 @@ TherapyEpisode.RamsesObject <- function(object) {
   record <- collect(object)
   id <- unique(na.omit(record$therapy_id)) 
   
-  TherapyEpisode.DBIConnection(conn = conn, id = id)
+  TherapyEpisode.DBIConnection(conn = conn, id = id, extend_table_start = extend_table_start)
 }
 
 #' @export
@@ -330,9 +356,14 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #'
 #' @param conn a database connection
 #' @param id a vector of therapy episode character identifiers (by design, Ramses creates
-#' this as the identifier of the first prescription ordered in an episode)  
+#' this as the identifier of the first prescription ordered in an episode)
+#' @param extend_table_start optional integer to specify an earlier start
+#' (in hours) in the longitudinal table of the object. For example, a value of 
+#' 6 means the longitudinal table will begin 6 hours prior to the admission
+#' date. The value must be a positive number. Decimal numbers will be
+#' rounded up to the nearest integer. The default is \code{NULL}.
 #' @noRd
-.longitudinal_table_create.TherapyEpisode <- function(conn, id) {
+.longitudinal_table_create.TherapyEpisode <- function(conn, id, extend_table_start) {
 
   .build_tally_table(conn)
   
@@ -348,6 +379,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 
   if(is(conn, "PqConnection") | is(conn, "duckdb_connection")) {
     tbl(conn, "ramses_tally") %>%
+      dplyr::mutate(t = .data$t - as.integer(extend_table_start)) %>% 
       dplyr::full_join(longitudinal_table, by = character()) %>%
       dplyr::mutate(t_start = dplyr::sql("therapy_start + interval '1h' * t "))%>% 
       dplyr::filter(.data$t_start < .data$therapy_end) %>% 
@@ -787,3 +819,24 @@ setMethod("compute", "TherapyEpisode", function(x) {
   
   x
 })
+
+
+
+#' Return a single positive integer
+#'
+#' @param x input
+#' @noRd
+.validate_extended_table_input <- function(x) {
+  if ( is.null(x) || all(is.na(x)) ) {
+    x <- 0
+  }
+  if ( length(x) > 1 || !is.numeric(x) ) {
+    stop("`", substitute(x), "` must be a numeric or integer of length 1.")
+  }
+  if ( x < 0 ) {
+    stop("`", substitute(x), "` must be >= 0")
+  } 
+  x <- ceiling(x)
+  
+  x
+}

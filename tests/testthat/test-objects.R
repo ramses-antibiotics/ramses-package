@@ -895,3 +895,49 @@ test_that("Encounter..interface_methods Postgres", {
     "^'therapy_table' is deprecated[.]"
   )
 })
+
+test_that(".validate_extended_table_input", {
+  invalid_input <- 1:2
+  expect_error(
+    .validate_extended_table_input(invalid_input),
+    "`invalid_input` must be a numeric or integer of length 1"
+  )
+  expect_error(
+    .validate_extended_table_input(-1)
+  )
+  expect_error(
+    .validate_extended_table_input("1")
+  )
+  expect_equal(
+    .validate_extended_table_input(NULL),
+    0
+  )
+  expect_equal(
+    .validate_extended_table_input(NA),
+    0
+  )
+  expect_equal(
+    .validate_extended_table_input(1),
+    1
+  )
+  expect_equal(
+    .validate_extended_table_input(1L),
+    1
+  )
+  expect_equal(
+    .validate_extended_table_input(1.1),
+    2
+  )
+  expect_equal(
+    .validate_extended_table_input(1.9),
+    2
+  )
+  expect_equal(
+    .validate_extended_table_input(0.1),
+    1
+  )
+  expect_equal(
+    .validate_extended_table_input(0),
+    0
+  )
+})

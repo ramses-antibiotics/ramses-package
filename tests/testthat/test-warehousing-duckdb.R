@@ -321,14 +321,10 @@ test_that("Ramses on DuckDB (system test)", {
     t = 0:5,
     patient_id = "99999999999",
     therapy_id = "5528fc41106bb48eb4d48bc412e13e67",
-    therapy_start = structure(c(1438939620, 1438939620, 1438939620, 1438939620, 
-                                1438939620, 1438939620), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
-    therapy_end = structure(c(1439810400, 1439810400, 1439810400, 1439810400,
-                              1439810400, 1439810400), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
-    t_start = structure(c(1438939620, 1438943220, 1438946820, 1438950420, 
-                          1438954020, 1438957620), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
-    t_end = structure(c(1438943220, 1438946820, 1438950420, 1438954020, 
-                        1438957620, 1438961220), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    therapy_start = structure(1438939620, tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    therapy_end = structure(1439810400, tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    t_start = structure(1438939620 + 0:5 * 3600, tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    t_end = structure(c(1438939620 + 1:6 * 3600), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
     parenteral = 1L
   )
   test_expected_tail <- dplyr::tibble(
@@ -337,19 +333,40 @@ test_that("Ramses on DuckDB (system test)", {
     therapy_id = "5528fc41106bb48eb4d48bc412e13e67",
     therapy_start = structure(1438939620, tzone = "Europe/London", class = c("POSIXct", "POSIXt")),
     therapy_end = structure(1439810400, tzone = "Europe/London", class = c("POSIXct", "POSIXt")),
-    t_start = structure(c(1439789220, 1439792820, 1439796420, 1439800020, 
-                          1439803620, 1439807220), tzone = "Europe/London", class = c("POSIXct", "POSIXt")),
-    t_end = structure(c(1439792820, 1439796420, 1439800020, 1439803620, 1439807220, 
-                        1439810400), tzone = "Europe/London", class = c("POSIXct", "POSIXt")),
+    t_start = structure(1438939620 + 236:241 * 3600, tzone = "Europe/London", class = c("POSIXct", "POSIXt")),
+    t_end = structure(c(1438939620 + 237:241 * 3600, 1439810400), tzone = "Europe/London", class = c("POSIXct", "POSIXt")),
     parenteral = 0L
   )
   
   expect_equal(head(test_output), test_expected_head)
   expect_equal(tail(test_output), test_expected_tail)
   expect_equal(
-    sum(difftime(test_output$t_end, test_output$t_start,units =  "hours")),
+    sum(difftime(test_output$t_end, test_output$t_start,units = "hours")),
     structure(241.883333333333, class = "difftime", units = "hours")
   )
+  
+  test_episode_extended <- TherapyEpisode(db_conn, "5528fc41106bb48eb4d48bc412e13e67",
+                                 extend_table_start = 2)
+  test_output_extended <- longitudinal_table(test_episode_extended, collect = T)
+  
+  test_expected_head_extended <- dplyr::tibble(
+    t = -2:3,
+    patient_id = "99999999999",
+    therapy_id = "5528fc41106bb48eb4d48bc412e13e67",
+    therapy_start = structure(1438939620, tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    therapy_end = structure(1439810400, tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    t_start = structure(1438939620 + -2:3 * 3600, tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    t_end = structure(c(1438939620 + -1:4 * 3600), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    parenteral = c(NA, 1L, 1L, 1L, 1L, 1L)
+  )
+  expect_equal(head(test_output_extended), test_expected_head_extended)
+  expect_equal(tail(test_output_extended), test_expected_tail)
+  expect_equal(
+    sum(difftime(test_output_extended$t_end, test_output_extended$t_start, units = "hours")),
+    structure(241.883333333333 + 2, class = "difftime", units = "hours") 
+  )
+  
+  # TherapyEpisode() method for MedicationRequest object
   
   test_medication_request <- MedicationRequest(db_conn, "5528fc41106bb48eb4d48bc412e13e67")
   expect_is(test_medication_request, "MedicationRequest")
@@ -374,18 +391,10 @@ test_that("Ramses on DuckDB (system test)", {
     t = 117:122, 
     patient_id = "8258333156", 
     therapy_id = "f770855cf9d424c76fdfbc9786d508ac", 
-    therapy_start = structure(
-      c(1444239793, 1444239793, 1444239793, 1444239793, 
-        1444239793, 1444239793), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
-    therapy_end = structure(
-      c(1444681333, 1444681333, 1444681333, 1444681333, 
-        1444681333, 1444681333), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
-    t_start = structure(
-      c(1444660993, 1444664593, 1444668193, 1444671793, 
-        1444675393, 1444678993), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
-    t_end = structure(
-      c(1444664593, 1444668193, 1444671793, 1444675393, 
-        1444678993, 1444681333), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    therapy_start = structure(1444239793, tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    therapy_end = structure(1444681333, tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    t_start = structure(1444239793 + 117:122 * 3600, tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    t_end = structure(c(1444239793 + 118:122 * 3600, 1444681333), tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
     parenteral = 0L
   )
   expect_equal(head(longitudinal_table(test_episode, collect = TRUE)), 
@@ -393,6 +402,39 @@ test_that("Ramses on DuckDB (system test)", {
   
   expect_equal(tail(longitudinal_table(test_episode, collect = TRUE)), 
                     test_expected_tail_second_therapy_episode)
+  
+  
+  test_episode_extended <- TherapyEpisode(
+    conn = db_conn, 
+    id = c("f770855cf9d424c76fdfbc9786d508ac", 
+           "5528fc41106bb48eb4d48bc412e13e67"),
+    extend_table_start = 2
+  )
+  
+  test_expected_head_second_episode <- dplyr::tibble(
+    t = -2:3, 
+    patient_id = "8258333156", 
+    therapy_id = "f770855cf9d424c76fdfbc9786d508ac", 
+    therapy_start = structure(1444239793, tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    therapy_end = structure(1444681333, tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    t_start = structure(1444239793 + -2:3 * 3600, tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    t_end = structure(1444239793 + -1:4 * 3600, tzone = "Europe/London", class = c("POSIXct", "POSIXt")), 
+    parenteral = c(NA, 1L, 1L, 1L, 1L, 1L)
+  )
+  
+  expect_equal(
+    head(longitudinal_table(test_episode_extended, collect = TRUE)),
+    test_expected_head_extended
+  )
+  expect_equal(
+    tail(longitudinal_table(test_episode_extended, collect = TRUE)), 
+    test_expected_tail_second_therapy_episode
+  )
+  expect_equal(
+    head(dplyr::filter(longitudinal_table(test_episode_extended, collect = TRUE),
+                       .data$therapy_id == "f770855cf9d424c76fdfbc9786d508ac")), 
+    test_expected_head_second_episode
+  )
   
   # TherapyEpisode .longitudinal_table_completeness_check -------------------------------------
   
@@ -783,7 +825,6 @@ test_that("Encounter class on DuckDB", {
   
   # Encounter ------------------------------------------------------------------
   
-  # Single IVPO change pt 99999999999
   test_encounter <- Encounter(db_conn, "3968305736")
   test_output <- longitudinal_table(test_encounter, collect = T)
   test_expected_head <- dplyr::tibble(
@@ -812,6 +853,26 @@ test_that("Encounter class on DuckDB", {
     sum(collect(test_encounter)[["ramses_bed_days"]])
   )
   
+  test_encounter_extended <- Encounter(db_conn, "3968305736", extend_table_start = 2)
+  test_output_extended <- longitudinal_table(test_encounter_extended, collect = T)
+  
+  test_expected_head_extended <- dplyr::tibble(
+    t = -2:3,
+    patient_id = "99999999999",
+    encounter_id = "3968305736",
+    admission_date = structure(1486982520, tzone = "UTC", class = c("POSIXct", "POSIXt")), 
+    discharge_date = structure(1487932800, tzone = "UTC", class = c("POSIXct", "POSIXt")), 
+    t_start = structure(1486982520 + -2:3*3600, tzone = "UTC", class = c("POSIXct", "POSIXt")), 
+    t_end = structure(1486982520 + -1:4*3600, tzone = "UTC", class = c("POSIXct", "POSIXt"))
+  )
+  
+  expect_equal(head(test_output_extended), test_expected_head_extended)
+  expect_equal(tail(test_output_extended), test_expected_tail)
+  expect_equal(
+    as.numeric(sum(difftime(test_output_extended$t_end, test_output_extended$t_start, units =  "days"))),
+    sum(collect(test_encounter)[["ramses_bed_days"]]) + 2/24
+  )
+  
   # 2+ Encounters --------------------------------------------------------------
   
   test_encounter <- Encounter(conn = db_conn, 
@@ -833,6 +894,44 @@ test_that("Encounter class on DuckDB", {
   
   expect_equal(tail(longitudinal_table(test_encounter, collect = TRUE)), 
                test_expected_tail_second_encounter)
+  
+  test_encounter_extended <- Encounter(conn = db_conn, 
+                                       id = c("3968305736", "9278078393"),
+                                       extend_table_start = 2)
+  
+  test_expected_head_second_encounter <- dplyr::tibble(
+    t = -2:3,
+    patient_id = "99999999999",
+    encounter_id = "9278078393",
+    admission_date = structure(1459332000, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+    discharge_date = structure(1459425600, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+    t_start = structure(1459332000 + -2:3*3600, tzone = "UTC", class = c("POSIXct", "POSIXt")), 
+    t_end = structure(c(1459332000 + -1:4*3600), tzone = "UTC", class = c("POSIXct", "POSIXt"))
+  )
+  
+  test_expected_tail_second_encounter <- dplyr::tibble(
+    t = 20:25,
+    patient_id = "99999999999",
+    encounter_id = "9278078393",
+    admission_date = structure(1459332000, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+    discharge_date = structure(1459425600, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+    t_start = structure(1459332000 + 20:25*3600, tzone = "UTC", class = c("POSIXct", "POSIXt")), 
+    t_end = structure(c(1459332000 + 21:25*3600, 1459425600), tzone = "UTC", class = c("POSIXct", "POSIXt"))
+  )
+  
+  expect_equal(
+    head(longitudinal_table(test_encounter_extended, collect = TRUE)),
+    test_expected_head_extended
+  )
+  expect_equal(
+    tail(longitudinal_table(test_encounter_extended, collect = TRUE)), 
+    test_expected_tail_second_encounter
+  )
+  expect_equal(
+    head(dplyr::filter(longitudinal_table(test_encounter_extended, collect = TRUE),
+                       .data$encounter_id == 9278078393)), 
+    test_expected_head_second_encounter
+  )
   
   # Encounter .longitudinal_table_completeness_check ---------------------------
   
@@ -873,12 +972,27 @@ test_that("Encounter class on DuckDB", {
   ) %>% 
     longitudinal_table(collect = T)
   
+  last_temp_extended_1h <- clinical_feature_last(
+    Encounter(db_conn, "9278078393", extend_table_start = 1),
+    observation_code = "8310-5",
+    hours = 24
+  ) %>% 
+    longitudinal_table(collect = T)
+  
   expect_equal(
     last_temp$last_temperature_24h[1:5],
     c(NA, NA, NA, 35.7, 35.7)
   )
   expect_equal(
+    last_temp_extended_1h$last_temperature_24h[1:6],
+    c(NA, NA, NA, NA, 35.7, 35.7)
+  )
+  expect_equal(
     last_temp$last_temperature_24h[21:25],
+    c(37.1, 37.1, 37.1, 37.1, 37.1)
+  )
+  expect_equal(
+    last_temp_extended_1h$last_temperature_24h[22:26],
     c(37.1, 37.1, 37.1, 37.1, 37.1)
   )
   rm(last_temp)

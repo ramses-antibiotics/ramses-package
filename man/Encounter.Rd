@@ -6,12 +6,18 @@
 \alias{Encounter}
 \title{An S4 class to represent inpatient encounters}
 \usage{
-Encounter(conn, id)
+Encounter(conn, id, extend_table_start = NULL)
 }
 \arguments{
 \item{conn}{a database connection}
 
 \item{id}{an encounter identifier}
+
+\item{extend_table_start}{optional integer to specify an earlier start
+(in hours) in the longitudinal table of the object. For example, a value of 
+6 means the longitudinal table will begin 6 hours prior to the admission
+date. The value must be a positive number. Decimal numbers will be
+rounded up to the nearest integer. The default is \code{NULL}.}
 }
 \description{
 An S4 class to represent inpatient encounters
