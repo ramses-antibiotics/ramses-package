@@ -50,6 +50,7 @@ reference:
   contents:
   - RamsesObject-class
   - Patient-class
+  - Encounter-class
   - MedicationRequest-class
   - TherapyEpisode-class
   - longitudinal_table

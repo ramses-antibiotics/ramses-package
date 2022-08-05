@@ -117,7 +117,8 @@ jobs:
       - name: Build source and PDF manual
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release'
         run: |
-          devtools::build(".", vignettes = TRUE, manual = TRUE, path = "~")
+          devtools::install()
+          devtools::build(".", vignettes = TRUE, path = "~")
           devtools::build_manual(".", path = "~")
         shell: Rscript {0}
         
@@ -130,5 +131,3 @@ jobs:
         with:
           name: Ramses package manual
           path: ~/Ramses_[0-9].[0-9].[0-9].pdf
-    
-

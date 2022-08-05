@@ -1061,7 +1061,7 @@ create_mock_database <- function(file,
       help_file <- "load_inpatient_episodes"
     }
     stop(
-      "The database must contain a valid `", table, "` table.\n",
+      "The Ramses database must contain a valid `", table, "` table.\n",
       "Please consult ?", help_file," for help.",
       call. = FALSE
     )
