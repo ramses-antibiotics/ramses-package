@@ -779,6 +779,12 @@ test_that("Encounter..interface_methods DuckDB", {
     Patient(encounter_object),
     "Patient"
   )
+  
+  # Deprecation of therapy_table method
+  expect_warning(
+    forget <- therapy_table(encounter_object),
+    "^'therapy_table' is deprecated[.]"
+  )
 })
 
 
@@ -881,5 +887,11 @@ test_that("Encounter..interface_methods Postgres", {
   expect_s4_class(
     Patient(encounter_object),
     "Patient"
+  )
+  
+  # Deprecation of therapy_table method
+  expect_warning(
+    forget <- therapy_table(encounter_object),
+    "^'therapy_table' is deprecated[.]"
   )
 })

@@ -16,7 +16,7 @@ with associated methods for `show()`, `compute()`, `collect()`, `Patient()`,
 
 ## Breaking changes
 
-* `therapy_table()` is now deprecated: use `longitudinal_table()` instead
+* `therapy_table()` is now deprecated: use `longitudinal_table()` instead  [#86](https://github.com/ramses-antibiotics/ramses-package/issues/86)
 * Database table `inpatient_episodes` and documentation now refer to 'encounters' 
 rather than 'spells'. Variable `spell_id` is now known as `encounter_id` [#86](https://github.com/ramses-antibiotics/ramses-package/issues/86).
 Databases built with previous versions of Ramses will not work with Ramses 0.5.0
