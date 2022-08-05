@@ -74,7 +74,7 @@ Patient.DBIConnection <- function(conn, id) {
   }
   
   record <- tbl(conn, "patients") %>% 
-    dplyr::filter(patient_id == !!id)
+    dplyr::filter(.data$patient_id == !!id)
   
   new("Patient", 
       id = id,

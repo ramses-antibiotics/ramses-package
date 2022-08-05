@@ -1054,6 +1054,18 @@ create_mock_database <- function(file,
   stopifnot(length(table)==1)
   stopifnot(is.character(table))
   stopifnot(is.character(field) | is.null(field))
+  if (!DBI::dbExistsTable(conn, table)) {
+    if (table %in% c("drug_prescriptions", "drug_therapy_episodes") ) {
+      help_file <- "load_medications"
+    } else {
+      help_file <- "load_inpatient_episodes"
+    }
+    stop(
+      "The database must contain a valid `", table, "` table.\n",
+      "Please consult ?", help_file," for help.",
+      call. = FALSE
+    )
+  }
   x <- tbl(conn, table)
   if (!is.null(field)) {
     x <- dplyr::select(x, !!field)

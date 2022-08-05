@@ -4,6 +4,8 @@ test_that("Patient..constructor", {
   fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   on.exit({DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)})
   
+  expect_error(Patient(fake_db_conn, 99),
+               "^The database must contain a valid `patients` table")
   dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
   expect_error(Patient(fake_db_conn, NA),
                "`id` must not be NA")
@@ -177,6 +179,9 @@ test_that(".process_io_parenteral_vector", {
 
 test_that("MedicationRequest..constructor", {
   fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
+  
+  expect_error(MedicationRequest(fake_db_conn, 99),
+               "^The database must contain a valid `drug_prescriptions` table")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(prescription_id = "999999"),
                  "drug_prescriptions", 
@@ -415,6 +420,9 @@ test_that("MedicationRequest..interface_methods Postgres", {
 test_that("TherapyEpisode..constructor", {
   fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   on.exit({DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)})
+  
+  expect_error(TherapyEpisode(fake_db_conn, 99),
+               "^The database must contain a valid `drug_therapy_episodes` table")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(
                    patient_id = "9",
@@ -639,6 +647,9 @@ test_that("TherapyEpisode..interface_methods Postgres", {
 test_that("Encounter..constructor", {
   fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   on.exit({DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)})
+  
+  expect_error(Encounter(fake_db_conn, 99),
+               "^The database must contain a valid `inpatient_episodes` table")
   dplyr::copy_to(
     fake_db_conn, 
     dplyr::tibble(
