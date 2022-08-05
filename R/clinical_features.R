@@ -144,13 +144,6 @@
                                                  observation_code_system) {
   
   if(is(x@conn, "PqConnection") | is(x@conn, "duckdb_connection")) {
-    
-    ## TODO Handle the time zone problem
-    
-    # sql_condition_1 <- paste0(
-    #   "(t_start at time zone 'UTC') > (observation_datetime at time zone 'UTC' ) ",
-    #   "AND (t_start at time zone 'UTC') <= (observation_datetime at time zone 'UTC' + interval '", hours, "h' )"
-    #   )
     sql_condition_1 <- paste0(
       "(t_start) > (observation_datetime) ",
       "AND (t_start) <= (observation_datetime + interval '", hours, "h' )"

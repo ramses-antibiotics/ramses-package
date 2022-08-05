@@ -123,11 +123,13 @@ jobs:
         shell: Rscript {0}
         
       - uses: actions/upload-artifact@v3
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release'
         with:
           name: Ramses package source
           path: ~/Ramses_[0-9].[0-9].[0-9].tar.gz
         
       - uses: actions/upload-artifact@v3
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release'
         with:
           name: Ramses package manual
           path: ~/Ramses_[0-9].[0-9].[0-9].pdf

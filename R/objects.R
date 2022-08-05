@@ -811,8 +811,6 @@ setMethod("compute", "TherapyEpisode", function(x) {
   .create_sql_index(
     conn = x@conn,
     table = dbplyr::remote_name(x@longitudinal_table),
-    # TODO deal with tz problem
-    # fields = "patient_id, (t_start at time zone 'UTC')",
     fields = "patient_id, t_start",
     override_index_name = paste0("idx_pt_time_", dbplyr::remote_name(x@longitudinal_table))
   )
