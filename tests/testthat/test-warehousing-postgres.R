@@ -574,6 +574,12 @@ test_that("Ramses on PosgreSQL (system test)", {
     ), 
     "timevis")
   
+  expect_is(
+    therapy_timeline(Encounter(conn = db_conn,
+                               id = "3968305736")),
+    "timevis"
+  )
+  
   # clinical features --------------------------------------------------------
   
   # > last -------------------------------------------------------------------

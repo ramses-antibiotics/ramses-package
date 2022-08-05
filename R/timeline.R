@@ -96,6 +96,55 @@ setMethod(
 #' @export
 setMethod(
   "therapy_timeline",
+  c(x = "Encounter"),
+  function(x, load_timevis_dependencies = FALSE) {
+    
+    input_encounter <- x
+    if (length(input_encounter@id) > 1) {
+      input_encounter <- Encounter(x@conn, x@id[1])
+      warning("`x` contains multiple encounters.\n",
+              "Only the first therapy episode will be used.", call. = FALSE)
+    }
+    if( nrow(collect(input_encounter)) == 0 ) {
+      stop("Encounter not found in the database", call. = FALSE)
+    }
+    
+    input_patient <- Patient(input_encounter)
+    if( nrow(collect(input_patient)) == 0 ) {
+      stop("Patient not found in the database", call. = FALSE)
+    }
+    
+    date_window <- collect(input_encounter) %>% 
+      dplyr::distinct(left_date = .data$admission_date,
+                      right_date = .data$discharge_date)
+    
+    if(!DBI::dbExistsTable(input_patient@conn, "drug_prescriptions")) {
+      stop("The Ramses database must contain a valid `drug_prescriptions` table.\n",
+           "Please consult ?load_medications for help.",
+           call. = FALSE)
+    }
+    
+    # Retrieve prescription records  
+    medication_requests_inclusion <- tbl(input_patient@conn, "drug_prescriptions") %>%
+      dplyr::filter(.data$patient_id == !!input_patient@id & 
+                      !.data$prescription_status %in% c("cancelled", "draft", "in-error")) %>%
+      dplyr::left_join(tbl(input_patient@conn, "drug_therapy_episodes"), 
+                       by = c("patient_id", "therapy_id")) %>%
+      dplyr::arrange(.data$patient_id, .data$prescription_start) %>% 
+      dplyr::collect()
+    
+    .therapy_timeline_create(
+      medication_requests_df = medication_requests_inclusion,
+      input_patient = input_patient,
+      date_window = date_window,
+      load_timevis_dependencies = load_timevis_dependencies
+    )
+  })
+
+#' @rdname therapy_timeline
+#' @export
+setMethod(
+  "therapy_timeline",
   c(x = "TherapyEpisode"),
   function(x, load_timevis_dependencies = FALSE) {
 
@@ -188,9 +237,12 @@ setMethod(
   timeline_micro <- .therapy_timeline_get_micro(input_patient)
   
   timeline_groups <- data.frame(
-    id = 3:0,
-    content = c("Rx", "Diagnoses", "Clinical findings",
-                "Admissions"# spacer at top of timeline swimming lanes
+    id = 0:3,
+    content = c(
+      "Admissions",
+      "Clinical findings",
+      "Diagnoses", 
+      "Rx"
     ),
     stackSubgroups = c(FALSE, FALSE, FALSE, FALSE),
     # subgroupOrder = c("TherapyRank", NA),#, "Diagnoses", "Cultures"
@@ -504,8 +556,6 @@ setMethod(
         TRUE ~ "Other/Transfer"),
       start = .data$admission_date, 
       end = .data$discharge_date,
-      # group =  2,
-      # subgroup = 1,
       type = 'background',
       className = dplyr::if_else(
         .data$admission_method == 2,
