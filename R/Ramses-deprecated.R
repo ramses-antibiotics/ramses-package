@@ -49,8 +49,8 @@ bridge_spell_therapy_overlap <- function(conn,
                                          overwrite = FALSE) {
   .Deprecated("bridge_encounter_therapy_overlap")
   bridge_encounter_therapy_overlap(
-    object = object, 
-    collect = collect
+    conn = conn, 
+    overwrite = overwrite
   )
 }
   
