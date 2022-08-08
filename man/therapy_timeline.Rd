@@ -21,14 +21,17 @@ therapy_timeline(x, ...)
 \S4method{therapy_timeline}{TherapyEpisode}(x, load_timevis_dependencies = FALSE)
 }
 \arguments{
-\item{x}{an object of class \code{Patient} or \code{TherapyEpisode}}
+\item{x}{an object of class \code{Patient}, \code{Encounter}, 
+or \code{TherapyEpisode}}
 
 \item{...}{other arguments (not in use)}
 
-\item{date1}{(optional, only used for \code{x} of class \code{Patient}) a \code{Date} or \code{POSIXct} window minimum to 
+\item{date1}{(optional, only used for \code{x} of class \code{Patient}) 
+a \code{Date} or \code{POSIXct} window minimum to 
 focus the timeline on by default}
 
-\item{date2}{(optional, only used for \code{x} of class \code{Patient}) a \code{Date} or \code{POSIXct} window maximum to 
+\item{date2}{(optional, only used for \code{x} of class \code{Patient}) 
+a \code{Date} or \code{POSIXct} window maximum to 
 focus the timeline on by default}
 
 \item{load_timevis_dependencies}{if \code{TRUE}, jQuery and Bootstrap will

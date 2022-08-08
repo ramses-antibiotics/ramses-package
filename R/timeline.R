@@ -2,10 +2,13 @@
 
 #' Display an HTML antimicrobial therapy timeline
 #'
-#' @param x an object of class \code{Patient} or \code{TherapyEpisode}
-#' @param date1 (optional, only used for \code{x} of class \code{Patient}) a \code{Date} or \code{POSIXct} window minimum to 
+#' @param x an object of class \code{Patient}, \code{Encounter}, 
+#' or \code{TherapyEpisode}
+#' @param date1 (optional, only used for \code{x} of class \code{Patient}) 
+#' a \code{Date} or \code{POSIXct} window minimum to 
 #' focus the timeline on by default
-#' @param date2 (optional, only used for \code{x} of class \code{Patient}) a \code{Date} or \code{POSIXct} window maximum to 
+#' @param date2 (optional, only used for \code{x} of class \code{Patient}) 
+#' a \code{Date} or \code{POSIXct} window maximum to 
 #' focus the timeline on by default
 #' @param load_timevis_dependencies if \code{TRUE}, jQuery and Bootstrap will
 #' be loaded (default is \code{FALSE}). See \link[timevis]{timevis} for detail.
