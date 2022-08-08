@@ -2,7 +2,7 @@
 % Please edit documentation in R/Ramses-deprecated.R
 \name{bridge_spell_therapy_overlap}
 \alias{bridge_spell_therapy_overlap}
-\title{#' Create database bridge tables}
+\title{Create database bridge tables}
 \usage{
 bridge_spell_therapy_overlap(conn, overwrite = FALSE)
 }

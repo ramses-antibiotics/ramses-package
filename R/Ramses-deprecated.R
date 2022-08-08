@@ -35,7 +35,7 @@ therapy_table <- function(object, collect = FALSE) {
 }
 
 
-#' #' Create database bridge tables
+#' Create database bridge tables
 #'
 #' @param conn a database connection
 #' @param overwrite if \code{TRUE}, will overwrite any existing
