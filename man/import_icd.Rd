@@ -33,11 +33,11 @@ The World Health Organisation's (WHO) International
 Statistical Classification of Diseases and Related Health 
 Problems Tenth Revision is available under restrictive licence terms.
 
-The UK implementation of ICD-10 is available from the NHS TRUD website
+The UK edition of ICD-10 is available from the NHS TRUD website
 \url{https://isd.digital.nhs.uk/trud3/user/guest/group/0/pack/28} 
 at no cost to UK users subject to a licence agreement.
  
-The US implementation of ICD-10-CM is available from 
+The US edition of ICD-10-CM is available from 
 \url{https://www.cdc.gov/nchs/icd/icd10cm.htm}
 }
 \examples{

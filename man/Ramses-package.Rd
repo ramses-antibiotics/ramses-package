@@ -8,7 +8,7 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-A one-stop shop for antimicrobial stewardship data warehousing for hospitals. Ramses supports the modelling and analysis of hospital electronic health records (episodes of care, drug prescriptions and administrations, microbiology and investigations results) to help keep antibiotics working for years to come.
+A package for data-driven hospital antimicrobial stewardship and infection surveillance. Ramses supports the validation and analysis of routine electronic health records (episodes of care, drug prescriptions and administrations, microbiology and investigations results) to help monitor prescribing and keep antibiotics working for years to come.
 }
 \details{
 R package for Antimicrobial Stewardship & Surveillance

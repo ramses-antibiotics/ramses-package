@@ -18,8 +18,8 @@ bridge_encounter_therapy_overlap(conn, overwrite = FALSE)
 \arguments{
 \item{conn}{a database connection}
 
-\item{overwrite}{if \code{TRUE}, will overwrite any existing
-database table. The default is \code{FALSE}}
+\item{overwrite}{if \code{TRUE}, the function will overwrite any existing
+bridge table on the database. The default is \code{FALSE}}
 
 \item{silent}{if \code{TRUE}, the progress bar will be hidden. The default is 
 \code{FALSE}.}
@@ -30,7 +30,12 @@ database table. The default is \code{FALSE}}
 \description{
 Create or re-create bridge tables to facilitate linking prescribing
 events with encounters or episodes of care. Bridge tables are used when computing
-rates of prescribing per admission or per 1,000 bed-days.
+rates of prescribing per admission or per 1,000 bed-days. Examples are available
+from the \link[Ramses]{Ramses} vignette: \code{browseVignettes("Ramses")}.
+The resulting tables on the database are named 
+\code{`bridge_episode_prescription_overlap`}, 
+\code{`bridge_episode_prescription_initiation`}, and
+\code{`bridge_encounter_therapy_overlap`}.
 }
 \details{
 Prescriptions with status \code{"entered-in-error"}, \code{"draft"}, 
@@ -57,4 +62,7 @@ Prescriptions with status \code{"entered-in-error"}, \code{"draft"},
    \code{drug_therapy_episodes} based on matching patient identifiers 
    and a time overlap between therapy episodes and hospital stays.}
 }
+}
+\seealso{
+\code{browseVignettes("Ramses")}
 }

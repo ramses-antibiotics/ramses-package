@@ -264,7 +264,7 @@ MedicationRequest <- function(conn, id) {
 # TherapyEpisode ----------------------------------------------------------
 
 
-#' An S4 class to represent therapy episodes
+#' An S4 class to represent episodes of antimicrobial therapy
 #'
 #' @slot id a therapy episode identifier
 #' @slot conn a database connection
@@ -510,6 +510,9 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
 #'        between(t, 218, 223))
 #' }
 parenteral_changes <- function(therapy_episode, tolerance_hours = 12L) {
+  if (!is(therapy_episode, "TherapyEpisode")) {
+    .throw_error_method_not_implemented("parenteral_changes", class(therapy_episode))
+  }
   stopifnot(is.numeric(tolerance_hours) | length(tolerance_hours) != 1)
   tolerance_hours <- as.integer(tolerance_hours)
   TT <- longitudinal_table(therapy_episode, collect = T)
@@ -586,14 +589,14 @@ parenteral_changes <- function(therapy_episode, tolerance_hours = 12L) {
 
 # longitudinal_table -------------------------------------------------------
 
-#' Verify that all therapy episodes are present in record
+#' Verify that all therapy episodes/encounters are present in record
 #'
 #' @description To verify that a `tbl_objects` table contains 
 #' all therapy episodes referenced in the `object@id` slot
 #' @param object a `TherapyEpisode` or `Encounter` object
 #' @param tbl_object a `tbl_sql` or `tbl_df` containing a `therapy_id` column
 #' @param silent if `TRUE`, will not throw a warning if not all therapy 
-#' episodes are present#'
+#' episodes are present
 #' @return a boolean (and throws a warning)
 #' @noRd
 .longitudinal_table_completeness_check <- function(object, tbl_object, silent = FALSE) {
@@ -628,7 +631,8 @@ parenteral_changes <- function(therapy_episode, tolerance_hours = 12L) {
 
 #' Get the longitudinal_table
 #'
-#' @param object an object of class \code{TherapyEpisode}
+#' @param object an object of class \code{Encounter}, \code{TherapyEpisode}, 
+#' or \code{MedicationRequest}
 #' @param collect if \code{TRUE}, collect the remote \code{tbl_sql} and return a local 
 #' \code{tbl_df}. The default is \code{FALSE}, and simply returns the remote \code{tbl_sql}
 #' @return an object of class \code{tbl}

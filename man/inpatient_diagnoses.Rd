@@ -16,7 +16,7 @@ inpatient_diagnoses
 \description{
 Set of simulated clinical diagnoses of infection for every
 row in \code{\link[Ramses]{inpatient_episodes}},
-detailing all episode start and end times, episode number, and up to
+detailing all episode start and end times, episode numbers, and up to
 5 clinical diagnoses coded according to the International 
 Classification of Diseases, Tenth Revision (ICD-10). 
 

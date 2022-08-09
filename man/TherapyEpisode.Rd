@@ -6,7 +6,7 @@
 \alias{TherapyEpisode}
 \alias{TherapyEpisode.DBIConnection}
 \alias{TherapyEpisode.RamsesObject}
-\title{An S4 class to represent therapy episodes}
+\title{An S4 class to represent episodes of antimicrobial therapy}
 \usage{
 TherapyEpisode(...)
 
@@ -34,7 +34,7 @@ will be rounded up to the nearest integer. The default is \code{NULL}.}
 \code{Prescription}}
 }
 \description{
-An S4 class to represent therapy episodes
+An S4 class to represent episodes of antimicrobial therapy
 }
 \section{Slots}{
 

@@ -3,7 +3,7 @@
 \name{clinical_feature_mean}
 \alias{clinical_feature_mean}
 \alias{clinical_feature_mean,RamsesObject-method}
-\title{Therapy table feature: running mean value of a clinical observation}
+\title{Clinical feature: running mean value of a clinical observation}
 \usage{
 clinical_feature_mean(
   x,
@@ -26,7 +26,7 @@ clinical_feature_mean(
 
 \item{observation_code}{a character vector of clinical investigation codes
 matching the \code{observation_code} field in the \code{inpatient_investigation}
-table (see \code{\link{validate_investigations}()}}
+table (see \code{\link{validate_investigations}()}).}
 
 \item{hours}{the maximum number of hours the observations included in the mean
 should date back from \code{t_start}, the starting time of every row 
@@ -34,8 +34,8 @@ in the therapy table}
 
 \item{observation_code_system}{(optional, reserved to situations where 
 \code{observation_code} is ambiguous across code systems/vocabularies) a single 
-character string specifying the code system identifier (example:
- \code{"http://snomed.info/sct"}) of \code{observation_code}.
+character string specifying the code system identifier of \code{observation_code} 
+(for example: \code{"http://snomed.info/sct"}).
 
 The default (\code{NULL}) filters observations using the \code{observation_code} only.}
 
@@ -43,11 +43,13 @@ The default (\code{NULL}) filters observations using the \code{observation_code}
 be computed on the remote server. This is generally faster.}
 }
 \value{
-an object of class \code{\link{TherapyEpisode}}
+an object of class \code{\link{TherapyEpisode}} or 
+\code{\link{Encounter}}
 }
 \description{
-Add a clinical feature (variable) to a therapy episode table 
-containing the arithmetic mean of clinical observations of interest
+Add a clinical feature (variable) to a therapy or encounter 
+longitudinal table. The feature corresponds to the arithmetic mean of
+clinical observations of interest over a time span set by \code{hours}.
 }
 \details{
 The feature will be computed exclusively on numeric investigations 

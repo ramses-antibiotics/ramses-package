@@ -222,27 +222,30 @@
 }
 
 
-#' Therapy table feature: latest clinical observation value
+#' Clinical feature: latest clinical observation value
 #'
-#' @description Add a clinical feature (variable) to a therapy episode table 
-#' containing the latest value of clinical observations of interest
+#' @description Add a clinical feature (variable) to a therapy or encounter 
+#' longitudinal table. The feature corresponds to the latest value of 
+#' clinical observations of interest carried forward for up to a maximum set by
+#' \code{hours}.
 #' @param x an object of class \code{\link{TherapyEpisode}} or \code{\link{Encounter}}
 #' @param observation_code a character vector of clinical investigation codes
 #' matching the \code{observation_code} field in the \code{inpatient_investigation}
 #' table (see \code{\link{validate_investigations}()})
 #' @param hours the maximum number of hours the observation should date back from
-#' \code{t_start}, the starting time of every row in the therapy table
+#' \code{t_start}, the starting time of every row in the longitudinal table
 #' @param observation_code_system (optional, reserved to situations where 
 #' \code{observation_code} is ambiguous across code systems/vocabularies) a single 
-#' character string specifying the code system identifier (example:
-#'  \code{"http://snomed.info/sct"}) of \code{observation_code}. 
+#' character string specifying the code system identifier of \code{observation_code} 
+#' (for example: \code{"http://snomed.info/sct"}).
 #' The default (\code{NULL}) filters observations using the \code{observation_code} only.
 #' @param compute if \code{TRUE} (the default), the remote therapy table will 
 #' be computed on the remote server. This is generally faster.
 #' @details The feature will be computed exclusively on numeric investigations 
 #' marked with status \code{"final"}, \code{"preliminary"}, \code{"corrected"}, 
 #' or \code{"amended"}.
-#' @return an object of class \code{\link{TherapyEpisode}}
+#' @return an object of class \code{\link{TherapyEpisode}} or 
+#' \code{\link{Encounter}}
 #' @rdname clinical_feature_last
 #' @export
 #' @include objects.R
@@ -336,21 +339,22 @@ setMethod(
 }
 
 
-#' Therapy table feature: running mean value of a clinical observation
+#' Clinical feature: running mean value of a clinical observation
 #'
-#' @description Add a clinical feature (variable) to a therapy episode table 
-#' containing the arithmetic mean of clinical observations of interest
+#' @description Add a clinical feature (variable) to a therapy or encounter 
+#' longitudinal table. The feature corresponds to the arithmetic mean of
+#' clinical observations of interest over a time span set by \code{hours}.
 #' @param x an object of class \code{\link{TherapyEpisode}} or \code{\link{Encounter}}
 #' @param observation_code a character vector of clinical investigation codes
 #' matching the \code{observation_code} field in the \code{inpatient_investigation}
-#' table (see \code{\link{validate_investigations}()}
+#' table (see \code{\link{validate_investigations}()}).
 #' @param hours the maximum number of hours the observations included in the mean
 #' should date back from \code{t_start}, the starting time of every row 
 #' in the therapy table
 #' @param observation_code_system (optional, reserved to situations where 
 #' \code{observation_code} is ambiguous across code systems/vocabularies) a single 
-#' character string specifying the code system identifier (example:
-#'  \code{"http://snomed.info/sct"}) of \code{observation_code}.
+#' character string specifying the code system identifier of \code{observation_code} 
+#' (for example: \code{"http://snomed.info/sct"}).
 #' 
 #' The default (\code{NULL}) filters observations using the \code{observation_code} only.
 #' @param compute if \code{TRUE} (the default), the remote therapy table will 
@@ -359,7 +363,8 @@ setMethod(
 #' marked with status \code{"final"}, \code{"preliminary"}, \code{"corrected"}, 
 #' or \code{"amended"}.
 #' 
-#' @return an object of class \code{\link{TherapyEpisode}}
+#' @return an object of class \code{\link{TherapyEpisode}} or 
+#' \code{\link{Encounter}}
 #' @rdname clinical_feature_mean
 #' @export
 #' @include objects.R
@@ -495,21 +500,21 @@ setMethod(
 }
 
 
-#' Therapy table feature: temporal trend of clinical observations
+#' Clinical feature: temporal trend of clinical observations
 #'
-#' @description Add clinical feature (variables) to a therapy episode or 
-#' encounter longitudinal table containing the Ordinary Least Squares (OLS) 
+#' @description Add a clinical feature (variable) to a therapy or encounter 
+#' longitudinal table. The feature corresponds to the Ordinary Least Squares (OLS) 
 #' intercept and slope of clinical observations of interest
 #' @param x an object of class \code{\link{TherapyEpisode}} or \code{\link{Encounter}}
 #' @param observation_code a character vector of clinical investigation codes
 #' matching the \code{observation_code} field in the \code{inpatient_investigation}
 #' table (see \code{\link{validate_investigations}()}
 #' @param hours the maximum number of hours the observations should date back from
-#' \code{t_start}, the starting time of every row in the therapy table
+#' \code{t_start}, the starting time of every row in the longitudinal table
 #' @param observation_code_system (optional, reserved to situations where 
 #' \code{observation_code} is ambiguous across code systems/vocabularies) a single 
-#' character string specifying the code system identifier (example:
-#'  \code{"http://snomed.info/sct"}) of \code{observation_code}.
+#' character string specifying the code system identifier of \code{observation_code} 
+#' (for example: \code{"http://snomed.info/sct"}).
 #' 
 #' The default (\code{NULL}) filters observations using the \code{observation_code} only.
 #' @param compute if \code{TRUE} (the default), the remote therapy table will 
@@ -524,7 +529,8 @@ setMethod(
 #' The returned regression intercept is defined with respect to time equals
 #' zero at \code{t_start}. It thus corresponds to the value of the linear 
 #' (straight line) extrapolation of the trend to \code{t_start}.
-#' @return an object of class \code{\link{TherapyEpisode}}
+#' @return an object of class \code{\link{TherapyEpisode}} or 
+#' \code{\link{Encounter}}
 #' @rdname clinical_feature_ols_trend
 #' @export
 #' @include objects.R
@@ -677,22 +683,23 @@ setMethod(
 }
 
 
-#' Therapy table feature: number of clinical observations falling in an interval
+#' Clinical feature: number of clinical observations falling in an interval
 #' 
-#' @description Add clinical features (variables) to a therapy episode or 
-#' encounter longitudinal table containing the number of observations falling 
-#' (a) above/below a given threshold or (b) inside/outside a given interval.
+#' @description Add a clinical feature (variable) to a therapy or encounter 
+#' longitudinal table. The feature corresponds to the number of observations falling 
+#' (a) above/below a given threshold or (b) inside/outside a given interval 
+#' depending on values provided to \code{observation_intervals}.
 #' @param x an object of class \code{\link{TherapyEpisode}} or \code{\link{Encounter}}
 #' @param observation_intervals a named list of numeric vectors of length 1 
 #' (for a threshold) or 2 (for an interval). Names of vectors must match the
 #'  \code{observation_code} field in the \code{inpatient_investigation}
-#' table (see \code{\link{validate_investigations}()}. See example
+#' table (see \code{\link{validate_investigations}()}).
 #' @param hours the maximum number of hours the observation should date back from
-#' \code{t_start}, the starting time of every row in the therapy table
+#' \code{t_start}, the starting time of every row in the longitudinal table
 #' @param observation_code_system (optional, reserved to situations where 
 #' \code{observation_code} is ambiguous across code systems/vocabularies) a single 
-#' character string specifying the code system identifier (example:
-#'  \code{"http://snomed.info/sct"}) of \code{observation_code}.
+#' character string specifying the code system identifier of \code{observation_code} 
+#' (for example: \code{"http://snomed.info/sct"}).
 #' 
 #' The default (\code{NULL}) filters observations using the \code{observation_code} only.
 #' @param compute if \code{TRUE} (the default), the remote therapy table will 
@@ -700,7 +707,8 @@ setMethod(
 #' @details The feature will be computed exclusively on numeric investigations 
 #' marked with status \code{"final"}, \code{"preliminary"}, \code{"corrected"}, 
 #' or \code{"amended"}.
-#' @return an object of class \code{\link{TherapyEpisode}}
+#' @return an object of class \code{\link{TherapyEpisode}} or 
+#' \code{\link{Encounter}}
 #' @rdname clinical_feature_interval
 #' @export
 #' @examples 

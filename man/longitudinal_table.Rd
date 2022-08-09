@@ -16,7 +16,8 @@ longitudinal_table(object, collect = FALSE)
 \S4method{longitudinal_table}{Encounter}(object, collect = FALSE)
 }
 \arguments{
-\item{object}{an object of class \code{TherapyEpisode}}
+\item{object}{an object of class \code{Encounter}, \code{TherapyEpisode}, 
+or \code{MedicationRequest}}
 
 \item{collect}{if \code{TRUE}, collect the remote \code{tbl_sql} and return a local 
 \code{tbl_df}. The default is \code{FALSE}, and simply returns the remote \code{tbl_sql}}

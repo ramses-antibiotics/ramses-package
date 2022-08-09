@@ -3,7 +3,7 @@
 \name{clinical_feature_ols_trend}
 \alias{clinical_feature_ols_trend}
 \alias{clinical_feature_ols_trend,RamsesObject-method}
-\title{Therapy table feature: temporal trend of clinical observations}
+\title{Clinical feature: temporal trend of clinical observations}
 \usage{
 clinical_feature_ols_trend(
   x,
@@ -29,12 +29,12 @@ matching the \code{observation_code} field in the \code{inpatient_investigation}
 table (see \code{\link{validate_investigations}()}}
 
 \item{hours}{the maximum number of hours the observations should date back from
-\code{t_start}, the starting time of every row in the therapy table}
+\code{t_start}, the starting time of every row in the longitudinal table}
 
 \item{observation_code_system}{(optional, reserved to situations where 
 \code{observation_code} is ambiguous across code systems/vocabularies) a single 
-character string specifying the code system identifier (example:
- \code{"http://snomed.info/sct"}) of \code{observation_code}.
+character string specifying the code system identifier of \code{observation_code} 
+(for example: \code{"http://snomed.info/sct"}).
 
 The default (\code{NULL}) filters observations using the \code{observation_code} only.}
 
@@ -42,11 +42,12 @@ The default (\code{NULL}) filters observations using the \code{observation_code}
 be computed on the remote server. This is generally faster.}
 }
 \value{
-an object of class \code{\link{TherapyEpisode}}
+an object of class \code{\link{TherapyEpisode}} or 
+\code{\link{Encounter}}
 }
 \description{
-Add clinical feature (variables) to a therapy episode or 
-encounter longitudinal table containing the Ordinary Least Squares (OLS) 
+Add a clinical feature (variable) to a therapy or encounter 
+longitudinal table. The feature corresponds to the Ordinary Least Squares (OLS) 
 intercept and slope of clinical observations of interest
 }
 \details{

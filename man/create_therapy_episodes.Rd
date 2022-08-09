@@ -39,7 +39,7 @@ define:
   a single indication and intent. 
 }
 
-Because of this, \code{\link{load_medications}}() first examines all 
+When loading medication records, \code{\link{load_medications}}() first examines all 
 prescriptions authored in a given hospital admission to ascertain such 
 links between prescriptions. This involves looking at patterns of 
 overlap and succession of prescriptions, and using a graph theory method 

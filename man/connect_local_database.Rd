@@ -2,7 +2,7 @@
 % Please edit documentation in R/database.R
 \name{connect_local_database}
 \alias{connect_local_database}
-\title{Create or connect to a local DuckDB database}
+\title{Connect to (or create) a local DuckDB database}
 \usage{
 connect_local_database(file, timezone = Sys.timezone())
 }
@@ -17,9 +17,10 @@ R from the database. By default, it is set to \code{\link{Sys.timezone}()}.}
 A database connection object of class \code{duckdb_connection}.
 }
 \description{
-Create a local database in memory or on disk using \code{\link[duckdb]{duckdb}()}. 
-This is the ideal method to experiment on a small scale or for testing purposes. \code{duckdb} 
-is a relational database similar to SQLite, with full support for date and datetime data.
+Create a local database in memory or on disk using 
+\code{\link[duckdb]{duckdb}()}. This is the ideal method to experiment 
+on a small scale. DuckDB is a relational database similar to SQLite, 
+with full support for date and datetime data.
 }
 \details{
 This function creates a database on disk at the desired path. 

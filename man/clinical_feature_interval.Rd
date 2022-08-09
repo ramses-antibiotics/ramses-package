@@ -3,7 +3,7 @@
 \name{clinical_feature_interval}
 \alias{clinical_feature_interval}
 \alias{clinical_feature_interval,RamsesObject-method}
-\title{Therapy table feature: number of clinical observations falling in an interval}
+\title{Clinical feature: number of clinical observations falling in an interval}
 \usage{
 clinical_feature_interval(
   x,
@@ -27,15 +27,15 @@ clinical_feature_interval(
 \item{observation_intervals}{a named list of numeric vectors of length 1 
 (for a threshold) or 2 (for an interval). Names of vectors must match the
  \code{observation_code} field in the \code{inpatient_investigation}
-table (see \code{\link{validate_investigations}()}. See example}
+table (see \code{\link{validate_investigations}()}).}
 
 \item{hours}{the maximum number of hours the observation should date back from
-\code{t_start}, the starting time of every row in the therapy table}
+\code{t_start}, the starting time of every row in the longitudinal table}
 
 \item{observation_code_system}{(optional, reserved to situations where 
 \code{observation_code} is ambiguous across code systems/vocabularies) a single 
-character string specifying the code system identifier (example:
- \code{"http://snomed.info/sct"}) of \code{observation_code}.
+character string specifying the code system identifier of \code{observation_code} 
+(for example: \code{"http://snomed.info/sct"}).
 
 The default (\code{NULL}) filters observations using the \code{observation_code} only.}
 
@@ -43,12 +43,14 @@ The default (\code{NULL}) filters observations using the \code{observation_code}
 be computed on the remote server. This is generally faster.}
 }
 \value{
-an object of class \code{\link{TherapyEpisode}}
+an object of class \code{\link{TherapyEpisode}} or 
+\code{\link{Encounter}}
 }
 \description{
-Add clinical features (variables) to a therapy episode or 
-encounter longitudinal table containing the number of observations falling 
-(a) above/below a given threshold or (b) inside/outside a given interval.
+Add a clinical feature (variable) to a therapy or encounter 
+longitudinal table. The feature corresponds to the number of observations falling 
+(a) above/below a given threshold or (b) inside/outside a given interval 
+depending on values provided to \code{observation_intervals}.
 }
 \details{
 The feature will be computed exclusively on numeric investigations 

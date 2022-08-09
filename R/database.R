@@ -6,9 +6,12 @@
 
 #' Load inpatient diagnosis records into the warehouse
 #' 
-#' @description Validate, then load records of clinical diagnoses into the 
-#' warehouse. This function automatically generates derived ICD-10 look up 
-#' tables for comorbidities, infection indications, and the \code{\link{ccs}}.
+#' @description Load records of clinical diagnoses into the 
+#' warehouse along with an ICD-10 reference table (\code{`reference_icd`}). 
+#' In addition, this function automatically generates derived ICD-10 look up 
+#' tables for comorbidities (\code{`reference_icd_comorbidity`}), 
+#' infection indications, (\code{`reference_icd_infections`}), and the \code{\link{ccs}}
+#' (\code{`reference_icd_ccs`} and \code{`reference_icd_ccsr`} ).
 #' @param conn a database connection
 #' @param diagnoses_data a data frame validated with 
 #' \code{\link{validate_inpatient_diagnoses}()}
@@ -700,7 +703,7 @@ load_medications <- function(
 #'   a single indication and intent. 
 #' }
 #' 
-#' Because of this, \code{\link{load_medications}}() first examines all 
+#' When loading medication records, \code{\link{load_medications}}() first examines all 
 #' prescriptions authored in a given hospital admission to ascertain such 
 #' links between prescriptions. This involves looking at patterns of 
 #' overlap and succession of prescriptions, and using a graph theory method 
@@ -855,11 +858,12 @@ create_therapy_episodes <- function(
 # Database management -----------------------------------------------------
 
 
-#' Create or connect to a local DuckDB database
+#' Connect to (or create) a local DuckDB database
 #'
-#' @description Create a local database in memory or on disk using \code{\link[duckdb]{duckdb}()}. 
-#' This is the ideal method to experiment on a small scale or for testing purposes. \code{duckdb} 
-#' is a relational database similar to SQLite, with full support for date and datetime data.
+#' @description Create a local database in memory or on disk using 
+#' \code{\link[duckdb]{duckdb}()}. This is the ideal method to experiment 
+#' on a small scale. DuckDB is a relational database similar to SQLite, 
+#' with full support for date and datetime data.
 #'
 #' @details This function creates a database on disk at the desired path. 
 #' The database and its content will persist after it is disconnected.
@@ -918,7 +922,7 @@ connect_local_database <- function(file, timezone = Sys.timezone()) {
 #' Create a mock database for training/demonstration purposes
 #'
 #' @description Create a local database on disk using 
-#' \code{\link[duckdb]{duckdb}()} and load synthetic data ready for analysis.
+#' \code{\link[duckdb]{duckdb}()} and load it with synthetic data ready for analysis.
 #' @details This function creates a database on disk at the desired path. 
 #' The database and its content will persist after it is disconnected.
 #'
@@ -929,8 +933,6 @@ connect_local_database <- function(file, timezone = Sys.timezone()) {
 #' @param silent if \code{TRUE}, the progress bar will be hidden. The default is 
 #' \code{FALSE}.
 #' @return An object of class \code{duckdb_connection}.
-#' @seealso The dbplyr website provides excellent guidance on how to connect to databases: 
-#' \url{https://db.rstudio.com/getting-started/connect-to-database}
 #' @importFrom DBI dbConnect dbDisconnect
 #' @export
 create_mock_database <- function(file, 
@@ -1267,10 +1269,15 @@ create_mock_database <- function(file,
 #'
 #' @description Create or re-create bridge tables to facilitate linking prescribing
 #' events with encounters or episodes of care. Bridge tables are used when computing
-#' rates of prescribing per admission or per 1,000 bed-days.
+#' rates of prescribing per admission or per 1,000 bed-days. Examples are available
+#' from the \link[Ramses]{Ramses} vignette: \code{browseVignettes("Ramses")}.
+#' The resulting tables on the database are named 
+#' \code{`bridge_episode_prescription_overlap`}, 
+#' \code{`bridge_episode_prescription_initiation`}, and
+#' \code{`bridge_encounter_therapy_overlap`}.
 #' @param conn a database connection
-#' @param overwrite if \code{TRUE}, will overwrite any existing
-#' database table. The default is \code{FALSE}
+#' @param overwrite if \code{TRUE}, the function will overwrite any existing
+#' bridge table on the database. The default is \code{FALSE}
 #' @param silent if \code{TRUE}, the progress bar will be hidden. The default is 
 #' \code{FALSE}.
 #' @details 
@@ -1300,6 +1307,7 @@ create_mock_database <- function(file,
 #'    and a time overlap between therapy episodes and hospital stays.}
 #' } 
 #' @return \code{TRUE} if tables were successfully created
+#' @seealso \code{browseVignettes("Ramses")}
 #' @name bridge_tables
 #' @export
 bridge_tables <- function(conn,

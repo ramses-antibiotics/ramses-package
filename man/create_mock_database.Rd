@@ -21,13 +21,9 @@ An object of class \code{duckdb_connection}.
 }
 \description{
 Create a local database on disk using 
-\code{\link[duckdb]{duckdb}()} and load synthetic data ready for analysis.
+\code{\link[duckdb]{duckdb}()} and load it with synthetic data ready for analysis.
 }
 \details{
 This function creates a database on disk at the desired path. 
 The database and its content will persist after it is disconnected.
-}
-\seealso{
-The dbplyr website provides excellent guidance on how to connect to databases: 
-\url{https://db.rstudio.com/getting-started/connect-to-database}
 }

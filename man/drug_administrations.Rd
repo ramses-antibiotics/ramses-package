@@ -15,7 +15,6 @@ drug_administrations
 }
 \description{
 A set of simulated records of administrations of antibiotics 
-during inpatient care episodes, simulated based on drugs commonly 
-prescribed in hospitals.
+during inpatient care episodes.
 }
 \keyword{datasets}
