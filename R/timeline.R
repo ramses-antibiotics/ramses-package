@@ -3,7 +3,7 @@
 #' Display an HTML antimicrobial therapy timeline
 #'
 #' @param x an object of class \code{Patient}, \code{Encounter}, 
-#' or \code{TherapyEpisode}
+#' or \code{TherapyEpisode} 
 #' @param date1 (optional, only used for \code{x} of class \code{Patient}) 
 #' a \code{Date} or \code{POSIXct} window minimum to 
 #' focus the timeline on by default
@@ -161,8 +161,7 @@ setMethod(
       stop("TherapyEpisode not found in the database", call. = FALSE)
     }
     
-    input_patient <- Patient(input_therapy_episode@conn, 
-                             collect(input_therapy_episode)$patient_id)
+    input_patient <- Patient(input_therapy_episode)
     if( nrow(collect(input_patient)) == 0 ) {
       stop("Patient not found in the database", call. = FALSE)
     }
@@ -188,7 +187,44 @@ setMethod(
     )
   })
 
+#' @rdname therapy_timeline
+#' @export
+setMethod(
+  "therapy_timeline",
+  c(x = "MedicationRequest"),
+  function(x, load_timevis_dependencies = FALSE) {
+    
+    input_therapy_episode <- TherapyEpisode(x)
 
+    if( nrow(collect(input_therapy_episode)) == 0 ) {
+      stop("TherapyEpisode not found in the database", call. = FALSE)
+    }
+    
+    input_patient <- Patient(input_therapy_episode)
+    if( nrow(collect(input_patient)) == 0 ) {
+      stop("Patient not found in the database", call. = FALSE)
+    }
+    
+    date_window <- collect(input_therapy_episode) %>% 
+      dplyr::transmute(left_date = therapy_start,
+                       right_date = therapy_end)
+    
+    # Retrieve prescription records  
+    medication_requests_inclusion <- tbl(input_patient@conn, "drug_prescriptions") %>%
+      dplyr::filter(patient_id == !!input_patient@id & 
+                      !prescription_status %in% c("cancelled", "draft", "in-error")) %>%
+      dplyr::left_join(tbl(input_patient@conn, "drug_therapy_episodes"), 
+                       by = c("patient_id", "therapy_id")) %>%
+      dplyr::arrange(patient_id, prescription_start) %>% 
+      collect()
+    
+    .therapy_timeline_create(
+      medication_requests_df = medication_requests_inclusion,
+      input_patient = input_patient,
+      date_window = date_window,
+      load_timevis_dependencies = load_timevis_dependencies
+    )
+  })
 
 
 #' Extract a data frame of drug data for display in therapy timeline

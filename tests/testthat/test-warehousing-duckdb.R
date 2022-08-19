@@ -525,6 +525,11 @@ test_that("Ramses on DuckDB (system test)", {
     "timevis")
   
   expect_is(
+    therapy_timeline(MedicationRequest(conn = db_conn,
+                                       id = "4d611fc8886c23ab047ad5f74e5080d7")), 
+    "timevis")
+  
+  expect_is(
     therapy_timeline(Encounter(conn = db_conn,
                                id = "3968305736")),
     "timevis"

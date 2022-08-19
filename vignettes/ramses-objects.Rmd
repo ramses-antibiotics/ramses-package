@@ -36,10 +36,9 @@ More information on, objects, classes, and methods in `R` is available from the 
 - they contain a `conn` slot corresponding to the database backend connection, currently either of `duckdb_connection` or `PqConnection` class (see [database objects](#database-objects))
 - they can be passed to `compute()` in order to compute the corresponding database records (faster to retrieve)
 - they can be passed to `collect()` in order to retrieve the corresponding database records (returns a `tbl_df` object)
+- they can be passed to `Patient()` in order to retrieve the corresponding patient entity (returns a `Patient` object).
 
-## Prescribing objects
-
-`MedicationRequest` objects, which represent a single drug-dose order, which may or may not participate in combination therapy (2 or more drugs). `MedicationRequest` objects are associated with one episode of antimicrobial therapy (represented by `TherapyEpisode` objects).
+`MedicationRequest` objects, which represent a single drug-dose order, which may or may not participate in combination therapy (2 or more drugs). `MedicationRequest` objects are associated with one episode of antimicrobial therapy (represented by `TherapyEpisode` objects). It is possible to retrieve the `TherapyEpisode` entity from any `MedicationRequest` object `x` by passing it to the `TherapyEpisode()` function.
 
 <!--
 `Ramses` distinguishes between:
@@ -54,7 +53,7 @@ Both can be used to get to the episode of antimicrobial therapy (class: `Therapy
 
 
 ```{r diagram-objects, fig.cap="Class diagram of the main `Ramses` objects", echo=FALSE}
-htmltools::HTML(DiagrammeRsvg::export_svg(grViz("ramses-objects/ramses-med-class-diagram.gv")))
+htmltools::HTML(DiagrammeRsvg::export_svg(grViz("ramses-objects/ramses-class-diagram.gv")))
 ```
 
 # Database objects

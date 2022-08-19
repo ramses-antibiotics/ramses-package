@@ -575,6 +575,11 @@ test_that("Ramses on PosgreSQL (system test)", {
     "timevis")
   
   expect_is(
+    therapy_timeline(MedicationRequest(conn = pq_conn,
+                                       id = "4d611fc8886c23ab047ad5f74e5080d7")), 
+    "timevis")
+  
+  expect_is(
     therapy_timeline(Encounter(conn = pq_conn,
                                id = "3968305736")),
     "timevis"

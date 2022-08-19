@@ -241,23 +241,22 @@ Encounter(ramses_db, "8895465895") %>%
 
 Both therapy and encounter tables can be extended so they begin earlier than 
 the start of antimicrobial therapy, or the admission date, respectively. Doing 
-so is controlled by the `TherapyEpisode` and `Encounter` objects via an 
-optional parameter `extend_table_start`. This parameter expresses how many 
-hours earlier the table should start.
+so is controlled by the `TherapyEpisode()` and `Encounter()` functions to 
+create the objects in the first place through an optional parameter 
+`extend_table_start`. This parameter expresses how many hours earlier the table 
+should start.
 
 For example, the encounter table can be made to begin 5 hours before admission.
 This can be very useful if the patient is known to have stayed in the Emergency 
 Department before being admitted:
 
 
-```{r extended_encounter_table_code, echo=FALSE}
+```{r extended_encounter_table_code, eval=FALSE}
 Encounter(ramses_db, "8895465895", extend_table_start = 5) %>% 
   longitudinal_table(collect = TRUE) %>% 
-  select(t, admission_date, discharge_date, t_start, t_end) 
+  select(t, admission_date, discharge_date, t_start, t_end)
 ```
-
-
-```{r extended_encounter_table, include=FALSE}
+```{r extended_encounter_table, echo=FALSE, paged.print=TRUE}
 Encounter(ramses_db, "8895465895", extend_table_start = 5) %>% 
   longitudinal_table(collect = TRUE) %>% 
   select(t, admission_date, discharge_date, t_start, t_end) %>% 
@@ -277,7 +276,7 @@ Several functions can enhance both therapy and encounter tables with variables c
 
 The example below demonstrates how to classify a patient as hypothermic/afebrile/febrile:
 
-```{r classify_fever}
+```{r classify_fever, paged.print=TRUE}
 example_sepsis <- TherapyEpisode(ramses_db, "4d611fc8886c23ab047ad5f74e5080d7") %>% 
   clinical_feature_last(observation_code = "8310-5", hours = 6) 
 

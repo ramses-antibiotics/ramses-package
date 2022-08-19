@@ -5,6 +5,7 @@
 \alias{therapy_timeline,Patient-method}
 \alias{therapy_timeline,Encounter-method}
 \alias{therapy_timeline,TherapyEpisode-method}
+\alias{therapy_timeline,MedicationRequest-method}
 \title{Display an HTML antimicrobial therapy timeline}
 \usage{
 therapy_timeline(x, ...)
@@ -19,6 +20,8 @@ therapy_timeline(x, ...)
 \S4method{therapy_timeline}{Encounter}(x, load_timevis_dependencies = FALSE)
 
 \S4method{therapy_timeline}{TherapyEpisode}(x, load_timevis_dependencies = FALSE)
+
+\S4method{therapy_timeline}{MedicationRequest}(x, load_timevis_dependencies = FALSE)
 }
 \arguments{
 \item{x}{an object of class \code{Patient}, \code{Encounter}, 
