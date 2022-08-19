@@ -110,7 +110,7 @@
       dplyr::collect()
   }
   if( nrow(parameter_name) == 0 ) {
-    warning(paste0("`observation_code` ", observation_code, " not found in database."), 
+    stop(paste0("`observation_code` ", observation_code, " not found in database."), 
          call. = FALSE)
     NULL
   } else {
