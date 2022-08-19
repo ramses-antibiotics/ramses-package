@@ -598,6 +598,3 @@ test_that("TherapyEpisode..constructor", {
   expect_error(TherapyEpisode(fake_db_conn, "999999"))
   DBI::dbDisconnect(fake_db_conn)
 })
-
-
-
