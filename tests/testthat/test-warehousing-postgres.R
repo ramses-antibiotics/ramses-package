@@ -1107,7 +1107,7 @@ test_that("Encounter class on Postgres", {
         hours = 24, 
         observation_code_system = "doesnotexist"
       ),
-      "TherapyEpisode"
+      "Encounter"
     )
   )
   
