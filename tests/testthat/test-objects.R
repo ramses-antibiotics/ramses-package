@@ -799,7 +799,6 @@ test_that("Encounter..interface_methods DuckDB", {
 })
 
 
-
 test_that("Encounter..interface_methods Postgres", {
   
   if (!identical(Sys.getenv("CI"), "true")) {

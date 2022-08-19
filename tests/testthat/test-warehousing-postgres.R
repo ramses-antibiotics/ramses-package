@@ -589,12 +589,15 @@ test_that("Ramses on PosgreSQL (system test)", {
   
   # > last -------------------------------------------------------------------
   
-  expect_error(
-    clinical_feature_last(
-      TherapyEpisode(pq_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
-      observation_code = "8310-5",
-      hours = 24,
-      observation_code_system = "doesnotexist"
+  expect_warning(
+    expect_s4_class(
+      clinical_feature_last(
+        TherapyEpisode(pq_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
+        observation_code = "8310-5",
+        hours = 24,
+        observation_code_system = "doesnotexist"
+      ),
+      "TherapyEpisode"
     )
   )
   last_temp <- clinical_feature_last(
@@ -664,12 +667,15 @@ test_that("Ramses on PosgreSQL (system test)", {
   example_therapy <-  TherapyEpisode(pq_conn, "4d611fc8886c23ab047ad5f74e5080d7")
   example_therapy_record <- collect(example_therapy)
   
-  expect_error(
-    clinical_feature_ols_trend(
-      example_therapy,
-      observation_code = "8310-5",
-      hours = 24, 
-      observation_code_system = "doesnotexist"
+  expect_warning(
+    expect_s4_class(
+      clinical_feature_ols_trend(
+        example_therapy,
+        observation_code = "8310-5",
+        hours = 24, 
+        observation_code_system = "doesnotexist"
+      ),
+      "TherapyEpisode"
     )
   )
   
@@ -707,12 +713,15 @@ test_that("Ramses on PosgreSQL (system test)", {
   
   # > interval ------------------------------------------------------------------
   
-  expect_error(
-    clinical_feature_interval(
-      TherapyEpisode(pq_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
-      observation_intervals = list("8310-5" = c(36, 38)),
-      hours = 24,
-      observation_code_system = "doesnotexist"
+  expect_warning(
+    expect_s4_class(
+      clinical_feature_interval(
+        TherapyEpisode(pq_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
+        observation_intervals = list("8310-5" = c(36, 38)),
+        hours = 24,
+        observation_code_system = "doesnotexist"
+      ),
+      "TherapyEpisode"
     )
   )
   
@@ -769,12 +778,15 @@ test_that("Ramses on PosgreSQL (system test)", {
   
   # > mean ------------------------------------------------------------------
   
-  expect_error(
-    clinical_feature_mean(
-      TherapyEpisode(pq_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
-      observation_code = "8310-5",
-      hours = 2, 
-      observation_code_system = "doesnotexist")
+  expect_warning(
+    expect_s4_class(
+      clinical_feature_mean(
+        TherapyEpisode(pq_conn, "4d611fc8886c23ab047ad5f74e5080d7"),
+        observation_code = "8310-5",
+        hours = 2, 
+        observation_code_system = "doesnotexist"),
+      "TherapyEpisode"
+    )
   )
   
   temperature_check <- longitudinal_table(
@@ -993,12 +1005,15 @@ test_that("Encounter class on Postgres", {
   
   # > last -------------------------------------------------------------------
   
-  expect_error(
-    clinical_feature_last(
-      Encounter(pq_conn, "9278078393"),
-      observation_code = "8310-5",
-      hours = 24,
-      observation_code_system = "doesnotexist"
+  expect_warning(
+    expect_s4_class(
+      clinical_feature_last(
+        Encounter(pq_conn, "9278078393"),
+        observation_code = "8310-5",
+        hours = 24,
+        observation_code_system = "doesnotexist"
+      ),
+      "Encounter"
     )
   )
   last_temp <- clinical_feature_last(
@@ -1081,20 +1096,23 @@ test_that("Encounter class on Postgres", {
   
   # > OLS -------------------------------------------------------------------
   
-  example_therapy <-  Encounter(pq_conn, "9278078393")
-  example_therapy_record <- collect(example_therapy)
+  example_encounter <-  Encounter(pq_conn, "9278078393")
+  example_encounter_record <- collect(example_encounter)
   
-  expect_error(
-    clinical_feature_ols_trend(
-      example_therapy,
-      observation_code = "8310-5",
-      hours = 24, 
-      observation_code_system = "doesnotexist"
+  expect_warning(
+    expect_s4_class(
+      clinical_feature_ols_trend(
+        example_encounter,
+        observation_code = "8310-5",
+        hours = 24, 
+        observation_code_system = "doesnotexist"
+      ),
+      "TherapyEpisode"
     )
   )
   
   ols_temp <- longitudinal_table(clinical_feature_ols_trend(
-    example_therapy,
+    example_encounter,
     observation_code = "8310-5",
     hours = 24
   ), collect = T)
@@ -1113,12 +1131,15 @@ test_that("Encounter class on Postgres", {
   
   # > interval ------------------------------------------------------------------
   
-  expect_error(
-    clinical_feature_interval(
-      Encounter(pq_conn, "9278078393"),
-      observation_intervals = list("8310-5" = c(36, 38)),
-      hours = 24,
-      observation_code_system = "doesnotexist"
+  expect_warning(
+    expect_s4_class(
+      clinical_feature_interval(
+        Encounter(pq_conn, "9278078393"),
+        observation_intervals = list("8310-5" = c(36, 38)),
+        hours = 24,
+        observation_code_system = "doesnotexist"
+      ),
+      "Encounter"
     )
   )
   
@@ -1161,12 +1182,15 @@ test_that("Encounter class on Postgres", {
   
   # > mean ------------------------------------------------------------------
   
-  expect_error(
-    clinical_feature_mean(
-      Encounter(pq_conn, "9278078393"),
-      observation_code = "8310-5",
-      hours = 2, 
-      observation_code_system = "doesnotexist")
+  expect_warning(
+    expect_s4_class(
+      clinical_feature_mean(
+        Encounter(pq_conn, "9278078393"),
+        observation_code = "8310-5",
+        hours = 2, 
+        observation_code_system = "doesnotexist"),
+      "Encounter"
+    )
   )
   
   temperature_check <- longitudinal_table(

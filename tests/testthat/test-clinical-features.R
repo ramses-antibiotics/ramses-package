@@ -25,20 +25,22 @@ test_that(".clinical_investigation_code_validate", {
                                           observation_code_system = c("http://codeA.com/", 
                                                                       "http://codeB.com/"))
   )
-  expect_invisible(
+  expect_true(
     .clinical_investigation_code_validate(conn = fake_db_conn, 
                                           observation_code = "A",
                                           observation_code_system = "http://codeA.com/")
   )
-  expect_invisible(
+  expect_true(
     .clinical_investigation_code_validate(conn = fake_db_conn, 
                                           observation_code = c("A", "B"),
                                           observation_code_system = "http://codeA.com/")
   )
-  expect_error(
-    .clinical_investigation_code_validate(conn = fake_db_conn, 
-                                          observation_code = "D",
-                                          observation_code_system = NULL)
+  expect_false(
+    expect_warning(
+      .clinical_investigation_code_validate(conn = fake_db_conn, 
+                                            observation_code = "D",
+                                            observation_code_system = NULL)
+    )
   )
 })
 
@@ -81,6 +83,7 @@ test_that(".clinical_feature_field_name_generate", {
   expect_error(
     .clinical_feature_field_name_generate(fake_db_conn, "mean", "8480-6",  NULL, NA, NULL)
   )
+
 })
 
 test_that(".clinical_feature_object_id_field", {

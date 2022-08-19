@@ -28,6 +28,13 @@ rather than 'spells'. Variable `spell_id` is now known as `encounter_id` [#86](h
 Databases built with previous versions of Ramses will not work with Ramses 0.5.0
 * Support for SQLite databases is withdrawn
 
+# Ramses 0.4.4
+
+## Improvements
+
+* `clinical_feature_*()` functions trigger a warning rather than an error if
+no value matching `observation_code` is found in the`inpatient_investigations` table.
+
 
 # Ramses 0.4.3
 
