@@ -1,4 +1,14 @@
 
+
+# Ramses 0.4.4
+
+*22 August 2022*
+
+## Improvements
+
+* `clinical_feature_*()` functions trigger a warning rather than an error if
+no value matching `observation_code` is found in the`inpatient_investigations` table.
+
 # Ramses 0.4.3
 
 *2 August 2022*

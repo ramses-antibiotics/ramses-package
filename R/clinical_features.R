@@ -9,7 +9,7 @@
 #' code system identifier (eg \code{"http://snomed.info/sct"}) to use.
 #' The default is \code{NULL} and will only filter observation using
 #' \code{observation_code}.
-#' @return a string
+#' @return `TRUE` if validation passes, `FALSE` otherwise 
 #' @noRd
 .clinical_investigation_code_validate <- function(
   conn, 
@@ -47,16 +47,19 @@
                                  "observation_code"], collapse = "', '"), "'\n",
       "Please use the `observation_code_system` option to avoid ambiguity."
     ), call. = FALSE)
-  } 
-  
-  if ( any(!observation_code %in% db_observation_codes[["observation_code"]]) ) {
-    stop(paste0(
+  } else if ( any(!observation_code %in% db_observation_codes[["observation_code"]]) ) {
+    warning(paste0(
       "Some `observation_code` were not found in the database: '",
       paste(
         observation_code[which(!observation_code %in% 
                                  db_observation_codes[["observation_code"]])],
         collapse = "', '"), "'"
     ), call. = FALSE)
+    
+    return(FALSE)
+  } else {
+    
+    return(TRUE)
   }
 }
 
@@ -109,10 +112,13 @@
   if( nrow(parameter_name) == 0 ) {
     stop(paste0("`observation_code` ", observation_code, " not found in database."), 
          call. = FALSE)
+    NULL
+  } else {
+    parameter_name <- parameter_name[["observation_display"]]
+    parameter_name <- gsub("[[:punct:]]", "", tolower(unique(parameter_name)))
+    parameter_name <- gsub(" ", "_", trimws(parameter_name))
   }
-  parameter_name <- parameter_name[["observation_display"]]
-  parameter_name <- gsub("[[:punct:]]", "", tolower(unique(parameter_name)))
-  parameter_name <- gsub(" ", "_", trimws(parameter_name))
+  
   if (!is.null(range_threshold)){
     parameter_name <- paste0(parameter_name, range_threshold)
   }
@@ -261,9 +267,14 @@ setMethod(
   function(x, observation_code, hours, observation_code_system = NULL, compute = TRUE) {
     stopifnot(is.character(observation_code))
     stopifnot(is.numeric(hours) & length(hours) == 1 & hours >= 0)
-    .clinical_investigation_code_validate(conn = x@conn, 
-                                          observation_code = observation_code, 
-                                          observation_code_system = observation_code_system)
+    
+    obs_code_valid <- .clinical_investigation_code_validate(
+      x@conn, 
+      observation_code, 
+      observation_code_system
+    )
+    
+    if (obs_code_valid) {
     
     for (i in seq_len(length(observation_code))) {
       x <- .clinical_feature_last(x = x, 
@@ -271,6 +282,7 @@ setMethod(
                                   hours = hours, 
                                   observation_code_system = observation_code_system,
                                   compute = compute)
+    }
     }
     
     return(x)
@@ -376,14 +388,19 @@ setMethod(
   function(x, observation_code, hours, observation_code_system = NULL, compute = TRUE) {
     stopifnot(is.character(observation_code))
     stopifnot(is.numeric(hours) & length(hours) == 1 & hours >= 0)
-    .clinical_investigation_code_validate(x@conn, 
-                                          observation_code, 
-                                          observation_code_system)
     
-    for (i in seq_len(length(observation_code))) {
-      x <- .clinical_feature_mean(x, observation_code[[i]], hours, observation_code_system, compute = compute)
+    obs_code_valid <- .clinical_investigation_code_validate(
+      x@conn, 
+      observation_code, 
+      observation_code_system
+    )
+    
+    if (obs_code_valid) {
+      for (i in seq_len(length(observation_code))) {
+        x <- .clinical_feature_mean(x, observation_code[[i]], hours, observation_code_system, compute = compute)
+      }
     }
-    
+
     return(x)
   }
 )
@@ -543,12 +560,17 @@ setMethod(
   function(x, observation_code, hours, observation_code_system = NULL, compute = TRUE) {
     stopifnot(is.character(observation_code))
     stopifnot(is.numeric(hours) & length(hours) == 1 & hours >= 0)
-    .clinical_investigation_code_validate(x@conn, 
-                                          observation_code, 
-                                          observation_code_system)
     
-    for (i in seq_len(length(observation_code))) {
-      x <- .clinical_feature_ols_trend(x, observation_code[[i]], hours, observation_code_system, compute = compute)
+    obs_code_valid <- .clinical_investigation_code_validate(
+      x@conn, 
+      observation_code, 
+      observation_code_system
+    )
+    
+    if (obs_code_valid) {
+      for (i in seq_len(length(observation_code))) {
+        x <- .clinical_feature_ols_trend(x, observation_code[[i]], hours, observation_code_system, compute = compute)
+      }
     }
     
     return(x)
@@ -729,30 +751,35 @@ setMethod(
     stopifnot(is.numeric(hours) & length(hours) == 1 & hours >= 0)
     
     input_observation_codes <- names(observation_intervals)
-    .clinical_investigation_code_validate(x@conn, 
-                                          input_observation_codes,
-                                          observation_code_system)
     
-    for (i in seq_len(length(observation_intervals))) {
-      if(length(observation_intervals[[i]]) == 1) {
-        stopifnot(!is.na(observation_intervals[[i]]) &
-                    !is.infinite(observation_intervals[[i]]))
-        x <- .clinical_feature_threshold(x = x, 
-                                         observation_code = input_observation_codes[[i]], 
-                                         threshold = observation_intervals[[i]],
-                                         hours = hours, 
-                                         observation_code_system = observation_code_system, 
-                                         compute = compute)
-      } else {
-        stopifnot(!any(is.na(observation_intervals[[i]])) &
-                    !any(is.infinite(observation_intervals[[i]])))
-        x <- .clinical_feature_interval(x = x, 
-                                        observation_code = input_observation_codes[[i]], 
-                                        lower_bound = sort(observation_intervals[[i]])[1],
-                                        upper_bound = sort(observation_intervals[[i]])[2],
-                                        hours = hours,
-                                        observation_code_system = observation_code_system, 
-                                        compute = compute)
+    obs_code_valid <- .clinical_investigation_code_validate(
+      x@conn, 
+      input_observation_codes, 
+      observation_code_system
+    )
+    
+    if (obs_code_valid) {
+      for (i in seq_len(length(observation_intervals))) {
+        if(length(observation_intervals[[i]]) == 1) {
+          stopifnot(!is.na(observation_intervals[[i]]) &
+                      !is.infinite(observation_intervals[[i]]))
+          x <- .clinical_feature_threshold(x = x, 
+                                           observation_code = input_observation_codes[[i]], 
+                                           threshold = observation_intervals[[i]],
+                                           hours = hours, 
+                                           observation_code_system = observation_code_system, 
+                                           compute = compute)
+        } else {
+          stopifnot(!any(is.na(observation_intervals[[i]])) &
+                      !any(is.infinite(observation_intervals[[i]])))
+          x <- .clinical_feature_interval(x = x, 
+                                          observation_code = input_observation_codes[[i]], 
+                                          lower_bound = sort(observation_intervals[[i]])[1],
+                                          upper_bound = sort(observation_intervals[[i]])[2],
+                                          hours = hours,
+                                          observation_code_system = observation_code_system, 
+                                          compute = compute)
+        }
       }
     }
     

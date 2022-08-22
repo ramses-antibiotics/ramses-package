@@ -391,14 +391,18 @@ test_that("Ramses on SQLite 2", {
   
   # > - last -------------------------------------------------------------------
   
-  expect_error(
-    clinical_feature_last(
-      TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
-      observation_code = "8310-5",
-      hours = 24,
-      observation_code_system = "doesnotexist"
+  expect_warning(
+    expect_s4_class(
+      clinical_feature_last(
+        TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+        observation_code = "8310-5",
+        hours = 24,
+        observation_code_system = "doesnotexist"
+      ),
+      "TherapyEpisode"
     )
   )
+  
   last_temp <- clinical_feature_last(
     TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_code = "8310-5",
@@ -467,12 +471,15 @@ test_that("Ramses on SQLite 2", {
   example_therapy <-  TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7")
   example_therapy_record <- collect(example_therapy)
   
-  expect_error(
-    clinical_feature_ols_trend(
-      example_therapy,
-      observation_code = "8310-5",
-      hours = 24, 
-      observation_code_system = "doesnotexist"
+  expect_warning(
+    expect_s4_class(
+      clinical_feature_ols_trend(
+        example_therapy,
+        observation_code = "8310-5",
+        hours = 24, 
+        observation_code_system = "doesnotexist"
+      ),
+      "TherapyEpisode"
     )
   )
   
@@ -510,13 +517,16 @@ test_that("Ramses on SQLite 2", {
   
   # > - interval ------------------------------------------------------------------
   
-  expect_error(
-    clinical_feature_interval(
-      TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
-      observation_intervals = list("8310-5" = c(36, 38)),
-      hours = 24,
-      observation_code_system = "doesnotexist"
-      )
+  expect_warning(
+    expect_s4_class(
+      clinical_feature_interval(
+        TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+        observation_intervals = list("8310-5" = c(36, 38)),
+        hours = 24,
+        observation_code_system = "doesnotexist"
+      ),
+      "TherapyEpisode"
+    )
   )
   
   temperature_check <- therapy_table(clinical_feature_interval(
@@ -572,12 +582,15 @@ test_that("Ramses on SQLite 2", {
   
   # > - mean ------------------------------------------------------------------
   
-  expect_error(
-    clinical_feature_mean(
-      TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
-      observation_code = "8310-5",
-      hours = 2, 
-      observation_code_system = "doesnotexist")
+  expect_warning(
+    expect_s4_class(
+      clinical_feature_mean(
+        TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+        observation_code = "8310-5",
+        hours = 2, 
+        observation_code_system = "doesnotexist"),
+      "TherapyEpisode"
+    )
   )
   
   temperature_check <- therapy_table(
@@ -1149,14 +1162,18 @@ test_that("Ramses on PosgreSQL", {
   
   # > - last -------------------------------------------------------------------
   
-  expect_error(
-    clinical_feature_last(
-      TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
-      observation_code = "8310-5",
-      hours = 24,
-      observation_code_system = "doesnotexist"
+  expect_warning(
+    expect_s4_class(
+      clinical_feature_last(
+        TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
+        observation_code = "8310-5",
+        hours = 24,
+        observation_code_system = "doesnotexist"
+      ),
+      "TherapyEpisode"
     )
   )
+  
   last_temp <- clinical_feature_last(
     TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
     observation_code = "8310-5",
@@ -1224,12 +1241,15 @@ test_that("Ramses on PosgreSQL", {
   example_therapy <-  TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7")
   example_therapy_record <- collect(example_therapy)
   
-  expect_error(
-    clinical_feature_ols_trend(
-      example_therapy,
-      observation_code = "8310-5",
-      hours = 24, 
-      observation_code_system = "doesnotexist"
+  expect_warning(
+    expect_s4_class(
+      clinical_feature_ols_trend(
+        example_therapy,
+        observation_code = "8310-5",
+        hours = 24, 
+        observation_code_system = "doesnotexist"
+      ),
+      "TherapyEpisode"
     )
   )
   
@@ -1267,12 +1287,15 @@ test_that("Ramses on PosgreSQL", {
   
   # > - interval ------------------------------------------------------------------
   
-  expect_error(
-    clinical_feature_interval(
-      TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
-      observation_intervals = list("8310-5" = c(36, 38)),
-      hours = 24,
-      observation_code_system = "doesnotexist"
+  expect_warning(
+    expect_s4_class(
+      clinical_feature_interval(
+        TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
+        observation_intervals = list("8310-5" = c(36, 38)),
+        hours = 24,
+        observation_code_system = "doesnotexist"
+      ),
+      "TherapyEpisode"
     )
   )
   
@@ -1329,12 +1352,15 @@ test_that("Ramses on PosgreSQL", {
   
   # > - mean ------------------------------------------------------------------
   
-  expect_error(
-    clinical_feature_mean(
-      TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
-      observation_code = "8310-5",
-      hours = 2, 
-      observation_code_system = "doesnotexist")
+  expect_warning(
+    expect_s4_class(
+      clinical_feature_mean(
+        TherapyEpisode(conPostgreSQL, "4d611fc8886c23ab047ad5f74e5080d7"),
+        observation_code = "8310-5",
+        hours = 2, 
+        observation_code_system = "doesnotexist"),
+      "TherapyEpisode"
+    )
   )
   
   temperature_check <- therapy_table(

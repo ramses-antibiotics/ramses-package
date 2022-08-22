@@ -23,20 +23,22 @@ test_that(".clinical_investigation_code_validate", {
                                           observation_code_system = c("http://codeA.com/", 
                                                                       "http://codeB.com/"))
   )
-  expect_invisible(
+  expect_true(
     .clinical_investigation_code_validate(conn = fake_db_conn, 
                                           observation_code = "A",
                                           observation_code_system = "http://codeA.com/")
   )
-  expect_invisible(
+  expect_true(
     .clinical_investigation_code_validate(conn = fake_db_conn, 
                                           observation_code = c("A", "B"),
                                           observation_code_system = "http://codeA.com/")
   )
-  expect_error(
-    .clinical_investigation_code_validate(conn = fake_db_conn, 
-                                          observation_code = "D",
-                                          observation_code_system = NULL)
+  expect_false(
+    expect_warning(
+      .clinical_investigation_code_validate(conn = fake_db_conn, 
+                                            observation_code = "D",
+                                            observation_code_system = NULL)
+    )
   )
   DBI::dbDisconnect(fake_db_conn)
 })
