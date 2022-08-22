@@ -2,6 +2,8 @@
 
 # Ramses 0.4.4
 
+*22 August 2022*
+
 ## Improvements
 
 * `clinical_feature_*()` functions trigger a warning rather than an error if
