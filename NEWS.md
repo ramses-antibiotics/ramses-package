@@ -30,6 +30,8 @@ Databases built with previous versions of Ramses will not work with Ramses 0.5.0
 
 # Ramses 0.4.4
 
+*22 August 2022*
+
 ## Improvements
 
 * `clinical_feature_*()` functions trigger a warning rather than an error if
