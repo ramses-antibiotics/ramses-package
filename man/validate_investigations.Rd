@@ -16,7 +16,7 @@ validate_investigations(
 the UCUM. Default is: \code{c("breaths", "beats", "U")}.}
 }
 \value{
-TRUE if the validation is passed
+\code{TRUE} if the validation is passed
 }
 \description{
 Validate records of observations & investigations
@@ -52,13 +52,14 @@ The following variables are required:
    \item{\code{"observation_datetime"}}{a datetime when the investigation 
    was performed with no missing value}
    \item{\code{"observation_code_system"}}{URL of the code system (for instance: 
-   "http://snomed.info/sct", "http://loinc.org")}
+   \code{"http://snomed.info/sct"}, \code{"http://loinc.org"})}
    \item{\code{"observation_code"}}{LOINC concept code or SNOMED-CT concept 
    code corresponding to a SNOMED CT observable entity or evaluation procedure}
    \item{\code{"observation_name"}}{code system name for the observation}
    \item{\code{"observation_display"}}{observation name to display}
    \item{\code{"observation_value_text"}}{observation string value or codable
-   concept, for example: TRUE/FALSE, Yes/No, SNOMED CT qualifier value}
+   concept, for example: \code{"TRUE"}/\code{"FALSE"}, 
+   \code{"Yes"}/\code{"No"}, SNOMED CT qualifier value}
    \item{\code{"observation_value_numeric"}}{observation numeric value}
    \item{\code{"observation_unit"}}{a unit code passing 
    \code{\link[units]{as_units}()}. See examples. All observations with the

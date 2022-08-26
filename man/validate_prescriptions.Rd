@@ -43,7 +43,8 @@ These fields are required in order to pass the validation:
      \item{\code{authoring_date}}{timestamp for when the prescription was issued}
      \item{\code{prescription_start}}{timestamp for the prescription start}
      \item{\code{prescription_end}}{timestamp for the prescription end (mandated except
-     for one-off prescriptions with \code{daily_frequency} == -1, )}
+     for one-off prescriptions with \code{daily_frequency} == -1 or 
+     prescriptions with \code{prescription_status != "completed"})}
      \item{\code{prescription_context}}{either \code{'inpatient'}, \code{'opat'}, or 
      \code{'discharge'}}
      \item{\code{prescription_status}}{one value from the following 

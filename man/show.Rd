@@ -16,7 +16,7 @@
 \S4method{show}{MedicationRequest}(object)
 }
 \arguments{
-\item{RamsesObject}{an object of class RamsesObject}
+\item{object}{an object of class RamsesObject}
 }
 \value{
 show returns an invisible \code{NULL}.
@@ -25,5 +25,5 @@ show returns an invisible \code{NULL}.
 Print a summary of a Ramses object.
 }
 \seealso{
-\code{\link{methods}{show}}
+\code{\link[methods]{show}()}
 }

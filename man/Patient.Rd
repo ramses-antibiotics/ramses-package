@@ -12,7 +12,7 @@ Patient(...)
 
 Patient.DBIConnection(conn, id)
 
-Patient.RamsesObject(object)
+Patient.RamsesObject(x)
 }
 \arguments{
 \item{...}{generic signature}
@@ -21,7 +21,7 @@ Patient.RamsesObject(object)
 
 \item{id}{a patient identifier}
 
-\item{object}{an object inheriting class \link[Ramses]{RamsesObject}}
+\item{x}{an object inheriting class \link[Ramses]{RamsesObject}}
 }
 \description{
 An S4 class to represent patients

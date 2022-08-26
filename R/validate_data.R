@@ -211,7 +211,7 @@
 #' @param patients data frame containing one row per patient
 #' @param episodes data frame containing one row per episode of care
 #' @param wards (optional) data frame containing one row per ward stay. 
-#'   Default is `NULL`.
+#'   Default is \code{NULL}.
 #' @section Patient mandatory variables:
 #' \describe{
 #'   \item{\code{patient_id}}{a patient identifier with no missing value}
@@ -739,7 +739,8 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
 #'      \item{\code{authoring_date}}{timestamp for when the prescription was issued}
 #'      \item{\code{prescription_start}}{timestamp for the prescription start}
 #'      \item{\code{prescription_end}}{timestamp for the prescription end (mandated except
-#'      for one-off prescriptions with \code{daily_frequency} == -1, )}
+#'      for one-off prescriptions with \code{daily_frequency} == -1 or 
+#'      prescriptions with \code{prescription_status != "completed"})}
 #'      \item{\code{prescription_context}}{either \code{'inpatient'}, \code{'opat'}, or 
 #'      \code{'discharge'}}
 #'      \item{\code{prescription_status}}{one value from the following 
@@ -1278,7 +1279,7 @@ validate_microbiology <- function(specimens, isolates, susceptibilities) {
 #' @param investigations a data frame
 #' @param custom_units a character vector of valid unit codes not listed in
 #' the UCUM. Default is: \code{c("breaths", "beats", "U")}.
-#' @return TRUE if the validation is passed
+#' @return \code{TRUE} if the validation is passed
 #' @section Mandatory variables:
 #' The following variables are required:
 #' \describe{
@@ -1309,13 +1310,14 @@ validate_microbiology <- function(specimens, isolates, susceptibilities) {
 #'    \item{\code{"observation_datetime"}}{a datetime when the investigation 
 #'    was performed with no missing value}
 #'    \item{\code{"observation_code_system"}}{URL of the code system (for instance: 
-#'    "http://snomed.info/sct", "http://loinc.org")}
+#'    \code{"http://snomed.info/sct"}, \code{"http://loinc.org"})}
 #'    \item{\code{"observation_code"}}{LOINC concept code or SNOMED-CT concept 
 #'    code corresponding to a SNOMED CT observable entity or evaluation procedure}
 #'    \item{\code{"observation_name"}}{code system name for the observation}
 #'    \item{\code{"observation_display"}}{observation name to display}
 #'    \item{\code{"observation_value_text"}}{observation string value or codable
-#'    concept, for example: TRUE/FALSE, Yes/No, SNOMED CT qualifier value}
+#'    concept, for example: \code{"TRUE"}/\code{"FALSE"}, 
+#'    \code{"Yes"}/\code{"No"}, SNOMED CT qualifier value}
 #'    \item{\code{"observation_value_numeric"}}{observation numeric value}
 #'    \item{\code{"observation_unit"}}{a unit code passing 
 #'    \code{\link[units]{as_units}()}. See examples. All observations with the

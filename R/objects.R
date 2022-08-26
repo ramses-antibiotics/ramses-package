@@ -33,7 +33,7 @@ setClass(
 #' @slot record a \code{tbl_sql} for the corresponding database record
 #' @param id a patient identifier 
 #' @param conn a database connection
-#' @param object an object inheriting class \link[Ramses]{RamsesObject}
+#' @param x an object inheriting class \link[Ramses]{RamsesObject}
 #' @rdname Patient
 #' @export
 setClass(
@@ -70,17 +70,17 @@ Patient.DBIConnection <- function(conn, id) {
   record <- tbl(conn, "patients") %>% 
     dplyr::filter(.data$patient_id == !!id)
   
-  new("Patient", 
-      id = id,
-      conn = conn,
-      record = record)
+  methods::new("Patient", 
+               id = id,
+               conn = conn,
+               record = record)
 }
 
 #' @rdname Patient
 #' @export
-Patient.RamsesObject <- function(object) {
-  conn <- object@conn
-  record <- collect(object)
+Patient.RamsesObject <- function(x) {
+  conn <- x@conn
+  record <- collect(x)
   id <- unique(na.omit(record$patient_id)) 
   
   Patient.DBIConnection(conn = conn, id = id)
@@ -150,11 +150,11 @@ Encounter <- function(conn, id, extend_table_start = NULL) {
   # longitudinal_table <- .longitudinal_table_parenteral_indicator(
   #   longitudinal_table)
   
-  new("Encounter", 
-      id = id,
-      conn = conn,
-      record = record, 
-      longitudinal_table = longitudinal_table)
+  methods::new("Encounter", 
+               id = id,
+               conn = conn,
+               record = record, 
+               longitudinal_table = longitudinal_table)
 }
 
 
@@ -247,10 +247,10 @@ MedicationRequest <- function(conn, id) {
   
   record <- dplyr::filter(tbl(conn, "drug_prescriptions"),
                           .data$prescription_id == !!id)
-  new("MedicationRequest", 
-      id = id,
-      conn = conn,
-      record = record)
+  methods::new("MedicationRequest", 
+               id = id,
+               conn = conn,
+               record = record)
 }
 
 
@@ -269,8 +269,7 @@ MedicationRequest <- function(conn, id) {
 #' \code{\link{load_medications}()} or
 #' \code{\link{create_therapy_episodes}()})
 #' @param conn a database connection
-#' @param object an object of class \code{MedicationRequest} or 
-#' \code{Prescription}
+#' @param x an object of class \code{MedicationRequest}
 #' @param extend_table_start optional integer to specify an earlier start
 #' (in hours) in the longitudinal table of the object. For example, a value of 
 #' 6 means the longitudinal table will begin 6 hours prior to the start of 
@@ -320,22 +319,18 @@ TherapyEpisode.DBIConnection <- function(conn, id, extend_table_start = NULL) {
     id = id,
     extend_table_start)
   longitudinal_table <- .longitudinal_table_parenteral_indicator(longitudinal_table)
-  new("TherapyEpisode", 
-      id = id,
-      conn = conn,
-      record = record, 
-      longitudinal_table = longitudinal_table)
+  methods::new("TherapyEpisode", 
+               id = id,
+               conn = conn,
+               record = record, 
+               longitudinal_table = longitudinal_table)
 }
 
 #' @rdname TherapyEpisode
 #' @export
-TherapyEpisode.RamsesObject <- function(object, extend_table_start = NULL) {
-  if( !is(object, "MedicationRequest") &
-      !is(object, "Prescription") ) {
-    stop("`object` must be of class `MedicationRequest` or `Prescription`")
-  }
-  conn <- object@conn
-  record <- collect(object)
+TherapyEpisode.MedicationRequest <- function(x, extend_table_start = NULL) {
+  conn <- x@conn
+  record <- collect(x)
   id <- unique(na.omit(record$therapy_id)) 
   
   TherapyEpisode.DBIConnection(conn = conn, id = id, extend_table_start = extend_table_start)
@@ -587,34 +582,34 @@ parenteral_changes <- function(therapy_episode, tolerance_hours = 12L) {
 #'
 #' @description To verify that a `tbl_objects` table contains 
 #' all therapy episodes referenced in the `object@id` slot
-#' @param object a `TherapyEpisode` or `Encounter` object
+#' @param x a `TherapyEpisode` or `Encounter` object
 #' @param tbl_object a `tbl_sql` or `tbl_df` containing a `therapy_id` column
 #' @param silent if `TRUE`, will not throw a warning if not all therapy 
 #' episodes are present
 #' @return a boolean (and throws a warning)
 #' @noRd
-.longitudinal_table_completeness_check <- function(object, tbl_object, silent = FALSE) {
-  if (is(object, "Encounter")) {
+.longitudinal_table_completeness_check <- function(x, tbl_object, silent = FALSE) {
+  if (is(x, "Encounter")) {
     object_id_field <- "encounter_id"
     warning_object_class <- "encounters"
-  } else if (is(object, "TherapyEpisode")) {
+  } else if (is(x, "TherapyEpisode")) {
     object_id_field <- "therapy_id"
     warning_object_class <- "therapy episodes"
   } else {
     .throw_error_method_not_implemented(
       function_name = ".longitudinal_table_completeness_check()",
-      class_name = class(object)
+      class_name = class(x)
     )
   }
   
   remote_ids <- dplyr::distinct(tbl_object, .data[[object_id_field]]) %>% 
     dplyr::collect()
-  missing <- !object@id %in% remote_ids[[object_id_field]]
+  missing <- !x@id %in% remote_ids[[object_id_field]]
   
   if (any(missing)) {
     if (!silent) {
       warning("Some ", warning_object_class, " were not found:\n",
-              paste(utils::head(object@id[missing]), collapse = ", "),
+              paste(utils::head(x@id[missing]), collapse = ", "),
               ifelse(sum(!missing) > 5, "...", ""), call. = FALSE)
     }
   }
@@ -625,53 +620,53 @@ parenteral_changes <- function(therapy_episode, tolerance_hours = 12L) {
 
 #' Get the longitudinal_table
 #'
-#' @param object an object of class \code{Encounter}, \code{TherapyEpisode}, 
+#' @param x an object of class \code{Encounter}, \code{TherapyEpisode}, 
 #' or \code{MedicationRequest}
 #' @param collect if \code{TRUE}, collect the remote \code{tbl_sql} and return a local 
 #' \code{tbl_df}. The default is \code{FALSE}, and simply returns the remote \code{tbl_sql}
 #' @return an object of class \code{tbl}
 #' @rdname longitudinal_table
 #' @export
-setGeneric("longitudinal_table", function(object, collect = FALSE) standardGeneric("longitudinal_table"))
+setGeneric("longitudinal_table", function(x, collect = FALSE) standardGeneric("longitudinal_table"))
 
 #' @rdname longitudinal_table
 #' @export
-setMethod("longitudinal_table", "TherapyEpisode", function(object, collect = FALSE) {
+setMethod("longitudinal_table", "TherapyEpisode", function(x, collect = FALSE) {
   stopifnot(is.logical(collect))
-  .longitudinal_table_completeness_check(object, object@longitudinal_table)
+  .longitudinal_table_completeness_check(x, x@longitudinal_table)
   if( collect ) {
-    dplyr::collect(object@longitudinal_table) %>% 
+    dplyr::collect(x@longitudinal_table) %>% 
       dplyr::arrange(.data$therapy_id, .data$t)
   } else {
-    object@longitudinal_table
+    x@longitudinal_table
   }
 })
 
 #' @rdname longitudinal_table
 #' @export
-setMethod("longitudinal_table", "MedicationRequest", function(object, collect = FALSE) {
+setMethod("longitudinal_table", "MedicationRequest", function(x, collect = FALSE) {
   stopifnot(is.logical(collect))
-  object <- TherapyEpisode(object)
-  .longitudinal_table_completeness_check(object, object@longitudinal_table)
+  x <- TherapyEpisode(x)
+  .longitudinal_table_completeness_check(x, x@longitudinal_table)
   if( collect ) {
-    dplyr::collect(object@longitudinal_table) %>% 
+    dplyr::collect(x@longitudinal_table) %>% 
       dplyr::arrange(.data$therapy_id, .data$t)
   } else {
-    object@longitudinal_table
+    x@longitudinal_table
   }
 })
 
 
 #' @rdname longitudinal_table
 #' @export
-setMethod("longitudinal_table", "Encounter", function(object, collect = FALSE) {
+setMethod("longitudinal_table", "Encounter", function(x, collect = FALSE) {
   stopifnot(is.logical(collect))
-  .longitudinal_table_completeness_check(object, object@longitudinal_table)
+  .longitudinal_table_completeness_check(x, x@longitudinal_table)
   if( collect ) {
-    dplyr::collect(object@longitudinal_table) %>% 
+    dplyr::collect(x@longitudinal_table) %>% 
       dplyr::arrange(.data$encounter_id, .data$t)
   } else {
-    object@longitudinal_table
+    x@longitudinal_table
   }
 })
 
@@ -701,11 +696,12 @@ setMethod("longitudinal_table", "Encounter", function(object, collect = FALSE) {
 #' Show a Ramses object
 #'
 #' @description Print a summary of a Ramses object.
-#' @param RamsesObject an object of class RamsesObject
+#' @param object an object of class RamsesObject
 #'
 #' @return show returns an invisible \code{NULL}.
 #' @rdname show
-#' @seealso \code{\link{methods}{show}}
+#' @seealso \code{\link[methods]{show}()}
+#' @importFrom methods show
 #' @export
 setMethod("show", "RamsesObject", function(object) {
   cat(class(object), as.character(object@id), "\n")
@@ -851,7 +847,7 @@ setMethod("show", "MedicationRequest", function(object) {
 #' backend database (see \code{dplyr::\link[dplyr]{compute}()}). This function 
 #' creates a database index of \code{Encounter} and \code{TherapyEpisode} 
 #' longitudinal tables, which can speed up operations such as those performed
-#' by \code{\link[Ramses]{clinical_feature}_x()} functions.
+#' by \code{clinical_feature_x()} functions.
 #' @param x an object of class \code{RamsesObject}
 #' @param ... arguments passed on to methods (compatibility with \code{dplyr}'s
 #' S3 generic)
@@ -885,7 +881,7 @@ setMethod("compute", "RamsesObject", function(x) {
 # collect methods ---------------------------------------------------------
 
 
-#' Retrieve the database record of a Ramses Object
+#' Retrieve the database record of a Ramses object
 #' 
 #' @description Retrieve a data frame of the record belonging to a Ramses 
 #' object instance.
@@ -895,7 +891,7 @@ setMethod("compute", "RamsesObject", function(x) {
 #' @return a data frame of class \code{tbl_df}
 #' @rdname collect
 #' @importFrom dplyr collect
-#' @seealso \code{\link[Ramses]{longitudinal_table}()}
+#' @seealso \code{\link[dplyr]{collect}()}, \code{\link[Ramses]{longitudinal_table}()}
 #' @export
 setGeneric("collect", function(x, ...) standardGeneric("collect"))
 

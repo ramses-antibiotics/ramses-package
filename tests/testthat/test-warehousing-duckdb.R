@@ -440,7 +440,7 @@ test_that("Ramses on DuckDB (system test)", {
   
   expect_true(
     .longitudinal_table_completeness_check(
-      object = TherapyEpisode(db_conn, "592a738e4c2afcae6f625c01856151e0"),
+      x = TherapyEpisode(db_conn, "592a738e4c2afcae6f625c01856151e0"),
       tbl_object = TherapyEpisode(db_conn, "592a738e4c2afcae6f625c01856151e0")@longitudinal_table,
       silent = F
     )
@@ -449,7 +449,7 @@ test_that("Ramses on DuckDB (system test)", {
   expect_false(
     expect_warning(
       .longitudinal_table_completeness_check(
-        object = TherapyEpisode(db_conn, "592a738e4c2afcae6f625c01856151e0"),
+        x = TherapyEpisode(db_conn, "592a738e4c2afcae6f625c01856151e0"),
         tbl_object = TherapyEpisode(db_conn, "89ac870bc1c1e4b2a37cec79d188cb08")@longitudinal_table,
         silent = F
       )
@@ -959,7 +959,7 @@ test_that("Encounter class on DuckDB", {
   
   expect_true(
     .longitudinal_table_completeness_check(
-      object = Encounter(db_conn, "3968305736"),
+      x = Encounter(db_conn, "3968305736"),
       tbl_object = Encounter(db_conn, "3968305736")@longitudinal_table,
       silent = F
     )
@@ -968,7 +968,7 @@ test_that("Encounter class on DuckDB", {
   expect_false(
     expect_warning(
       .longitudinal_table_completeness_check(
-        object = Encounter(db_conn, "3968305736"),
+        x = Encounter(db_conn, "3968305736"),
         tbl_object = Encounter(db_conn, "4956274655")@longitudinal_table,
         silent = F
       )

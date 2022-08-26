@@ -12,7 +12,7 @@ validate_inpatient_episodes(patients, episodes, wards = NULL)
 \item{episodes}{data frame containing one row per episode of care}
 
 \item{wards}{(optional) data frame containing one row per ward stay. 
-Default is `NULL`.}
+Default is \code{NULL}.}
 }
 \value{
 A logical value indicating success

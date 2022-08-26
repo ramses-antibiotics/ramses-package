@@ -468,7 +468,7 @@ test_that("Ramses on PosgreSQL (system test)", {
   
   expect_true(
     .longitudinal_table_completeness_check(
-      object = TherapyEpisode(pq_conn, "592a738e4c2afcae6f625c01856151e0"),
+      x = TherapyEpisode(pq_conn, "592a738e4c2afcae6f625c01856151e0"),
       tbl_object = TherapyEpisode(pq_conn, "592a738e4c2afcae6f625c01856151e0")@longitudinal_table,
       silent = F
     )
@@ -477,7 +477,7 @@ test_that("Ramses on PosgreSQL (system test)", {
   expect_false(
     expect_warning(
       .longitudinal_table_completeness_check(
-        object = TherapyEpisode(pq_conn, "592a738e4c2afcae6f625c01856151e0"),
+        x = TherapyEpisode(pq_conn, "592a738e4c2afcae6f625c01856151e0"),
         tbl_object = TherapyEpisode(pq_conn, "89ac870bc1c1e4b2a37cec79d188cb08")@longitudinal_table,
         silent = F
       )
@@ -985,7 +985,7 @@ test_that("Encounter class on Postgres", {
   
   expect_true(
     .longitudinal_table_completeness_check(
-      object = Encounter(pq_conn, "3968305736"),
+      x = Encounter(pq_conn, "3968305736"),
       tbl_object = Encounter(pq_conn, "3968305736")@longitudinal_table,
       silent = F
     )
@@ -994,7 +994,7 @@ test_that("Encounter class on Postgres", {
   expect_false(
     expect_warning(
       .longitudinal_table_completeness_check(
-        object = Encounter(pq_conn, "3968305736"),
+        x = Encounter(pq_conn, "3968305736"),
         tbl_object = Encounter(pq_conn, "4956274655")@longitudinal_table,
         silent = F
       )

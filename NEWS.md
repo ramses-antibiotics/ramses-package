@@ -13,11 +13,13 @@ of class `RamsesObject`
 to manipulate hospitalisations (admissions)
 with associated methods for `show()`, `compute()`, `collect()`, `Patient()`, 
 `longitudinal_table()`, `clinical_feature_*()`, `therapy_timeline()`
-* Improved documentation and export of S4 methods `compute()` and `collect()`
 * `TherapyEpisode()` and `Encounter()` have a new optional `extend_table_start` input
 controlling their longitudinal table's start. This allows the creation of longitudinal
 tables starting before the `therapy_start` or `admission_date`, respectively. More
 detail is available from [`vignette("therapy-episodes")`](https://ramses-antibiotics.web.app/articles/therapy-episodes.html)
+* Improved documentation and export of S4 methods `compute()` and `collect()`
+* Breaking change of function signature for all methods: function argument
+`object` is now standardised to argument `x`, except `show(object)`.
 
 ## Breaking changes
 

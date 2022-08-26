@@ -29,7 +29,7 @@ Compute the \code{tbl_sql} records of a Ramses object in the
 backend database (see \code{dplyr::\link[dplyr]{compute}()}). This function 
 creates a database index of \code{Encounter} and \code{TherapyEpisode} 
 longitudinal tables, which can speed up operations such as those performed
-by \code{\link[Ramses]{clinical_feature}_x()} functions.
+by \code{clinical_feature_x()} functions.
 }
 \seealso{
 \code{\link[dplyr]{compute}()}

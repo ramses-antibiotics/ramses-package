@@ -5,7 +5,7 @@
 \alias{collect,TherapyEpisode-method}
 \alias{collect,Encounter-method}
 \alias{collect,RamsesObject-method}
-\title{Retrieve the database record of a Ramses Object}
+\title{Retrieve the database record of a Ramses object}
 \usage{
 collect(x, ...)
 
@@ -29,5 +29,5 @@ Retrieve a data frame of the record belonging to a Ramses
 object instance.
 }
 \seealso{
-\code{\link[Ramses]{longitudinal_table}()}
+\code{\link[dplyr]{collect}()}, \code{\link[Ramses]{longitudinal_table}()}
 }

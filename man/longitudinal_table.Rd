@@ -7,16 +7,16 @@
 \alias{longitudinal_table,Encounter-method}
 \title{Get the longitudinal_table}
 \usage{
-longitudinal_table(object, collect = FALSE)
+longitudinal_table(x, collect = FALSE)
 
-\S4method{longitudinal_table}{TherapyEpisode}(object, collect = FALSE)
+\S4method{longitudinal_table}{TherapyEpisode}(x, collect = FALSE)
 
-\S4method{longitudinal_table}{MedicationRequest}(object, collect = FALSE)
+\S4method{longitudinal_table}{MedicationRequest}(x, collect = FALSE)
 
-\S4method{longitudinal_table}{Encounter}(object, collect = FALSE)
+\S4method{longitudinal_table}{Encounter}(x, collect = FALSE)
 }
 \arguments{
-\item{object}{an object of class \code{Encounter}, \code{TherapyEpisode}, 
+\item{x}{an object of class \code{Encounter}, \code{TherapyEpisode}, 
 or \code{MedicationRequest}}
 
 \item{collect}{if \code{TRUE}, collect the remote \code{tbl_sql} and return a local 

@@ -29,7 +29,7 @@ NULL
 therapy_table <- function(object, collect = FALSE) {
   .Deprecated("longitudinal_table")
   longitudinal_table(
-    object = object, 
+    x = object, 
     collect = collect
   )
 }

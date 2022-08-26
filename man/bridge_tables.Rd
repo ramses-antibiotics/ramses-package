@@ -32,10 +32,11 @@ Create or re-create bridge tables to facilitate linking prescribing
 events with encounters or episodes of care. Bridge tables are used when computing
 rates of prescribing per admission or per 1,000 bed-days. Examples are available
 from the \link[Ramses]{Ramses} vignette: \code{browseVignettes("Ramses")}.
-The resulting tables on the database are named 
-\code{`bridge_episode_prescription_overlap`}, 
-\code{`bridge_episode_prescription_initiation`}, and
-\code{`bridge_encounter_therapy_overlap`}.
+The resulting tables on the database are named \itemize{
+  \item \code{bridge_episode_prescription_overlap}
+  \item \code{bridge_episode_prescription_initiation}
+  \item \code{bridge_encounter_therapy_overlap}.
+}
 }
 \details{
 Prescriptions with status \code{"entered-in-error"}, \code{"draft"}, 

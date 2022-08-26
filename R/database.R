@@ -24,7 +24,7 @@
 #' \code{\link{map_charlson_comorbidities}()},
 #' \code{\link{map_ICD10_CCS}()},
 #' \code{\link{map_ICD10_CCSR}()}
-#' @import methods
+#' @importFrom methods is
 #' @export
 load_inpatient_diagnoses <- function(conn, diagnoses_data,
                                      diagnoses_lookup, overwrite = FALSE) {
@@ -1269,10 +1269,11 @@ create_mock_database <- function(file,
 #' events with encounters or episodes of care. Bridge tables are used when computing
 #' rates of prescribing per admission or per 1,000 bed-days. Examples are available
 #' from the \link[Ramses]{Ramses} vignette: \code{browseVignettes("Ramses")}.
-#' The resulting tables on the database are named 
-#' \code{`bridge_episode_prescription_overlap`}, 
-#' \code{`bridge_episode_prescription_initiation`}, and
-#' \code{`bridge_encounter_therapy_overlap`}.
+#' The resulting tables on the database are named \itemize{
+#'   \item \code{bridge_episode_prescription_overlap}
+#'   \item \code{bridge_episode_prescription_initiation}
+#'   \item \code{bridge_encounter_therapy_overlap}.
+#' }
 #' @param conn a database connection
 #' @param overwrite if \code{TRUE}, the function will overwrite any existing
 #' bridge table on the database. The default is \code{FALSE}
