@@ -97,7 +97,7 @@
                                     operation,
                                     hours), is.na))))
   operation <- tolower(operation)
-  if( is.null(observation_code_system) ) {
+  if ( is.null(observation_code_system) ) {
     parameter_name <- tbl(conn, "inpatient_investigations") %>% 
       dplyr::filter(observation_code == !!observation_code) %>% 
       dplyr::distinct(observation_display) %>% 
@@ -109,7 +109,7 @@
       dplyr::distinct(observation_display) %>% 
       dplyr::collect()
   }
-  if( nrow(parameter_name) == 0 ) {
+  if ( nrow(parameter_name) == 0 ) {
     stop(paste0("`observation_code` ", observation_code, " not found in database."), 
          call. = FALSE)
     NULL
@@ -142,14 +142,14 @@
   }
 }
 
-#' @importFrom dbplyr sql
+
 .clinical_feature_observations_fetch <- function(x, 
                                                  LT, 
                                                  observation_code, 
                                                  hours,
                                                  observation_code_system) {
   
-  if(is(x@conn, "PqConnection") | is(x@conn, "duckdb_connection")) {
+  if (is(x@conn, "PqConnection") | is(x@conn, "duckdb_connection")) {
     sql_condition_1 <- paste0(
       "(t_start) > (observation_datetime) ",
       "AND (t_start) <= (observation_datetime + interval '", hours, "h' )"
@@ -174,7 +174,7 @@
         !is.na(observation_value_numeric)
     )
   
-  if( !is.null(observation_code_system) ) {
+  if ( !is.null(observation_code_system) ) {
     observations_linked <- observations_linked %>% 
       dplyr::filter(observation_code_system == !!observation_code_system)
   }
@@ -186,7 +186,7 @@
 .clinical_feature_last <- function(x, observation_code, hours, observation_code_system, compute) {
   stopifnot(is.logical(compute))
   x_entity_id_field_name <- .clinical_feature_object_id_field(x)
-  if(compute) {
+  if (compute) {
     x <- compute(x)
   }
   LT <- x@longitudinal_table
@@ -220,7 +220,7 @@
     observations_linked,
     by = c("patient_id", x_entity_id_field_name, "t")
   )
-  if(compute) {
+  if (compute) {
     x <- compute(x)
   }
   
@@ -311,7 +311,7 @@ setMethod(
 .clinical_feature_mean <- function(x, observation_code, hours, observation_code_system, compute) {
   stopifnot(is.logical(compute))
   x_entity_id_field_name <- .clinical_feature_object_id_field(x)
-  if(compute) {
+  if (compute) {
     x <- compute(x)
   }
   LT <- x@longitudinal_table
@@ -343,7 +343,7 @@ setMethod(
     by = c("patient_id", x_entity_id_field_name, "t")
   )
   
-  if(compute) {
+  if (compute) {
     x <- compute(x)
   }
   
@@ -434,7 +434,7 @@ setMethod(
   final_slope <- observation_datetime_int <- regression_N <- NULL
   slope_denominator <- slope_numerator <- t_bar <- y_bar <- NULL
   
-  if(compute) {
+  if (compute) {
     x <- compute(x)
   }
   LT <- x@longitudinal_table
@@ -457,7 +457,7 @@ setMethod(
     observation_code_system = observation_code_system
   )
   
-  if(is(x@conn, "PqConnection") | is(x@conn, "duckdb_connection")) {
+  if (is(x@conn, "PqConnection") | is(x@conn, "duckdb_connection")) {
     observations_linked <- dplyr::mutate(
       observations_linked,
       observation_datetime_int = dplyr::sql(
@@ -509,7 +509,7 @@ setMethod(
     by = c("patient_id", x_entity_id_field_name, "t")
   )
   
-  if(compute) {
+  if (compute) {
     x <- compute(x)
   }
   
@@ -603,7 +603,7 @@ setMethod(
 .clinical_feature_threshold <- function(x, observation_code, threshold, hours, observation_code_system, compute) {
   stopifnot(is.logical(compute))
   x_entity_id_field_name <- .clinical_feature_object_id_field(x)
-  if(compute) {
+  if (compute) {
     x <- compute(x)
   }
   LT <- x@longitudinal_table
@@ -643,7 +643,7 @@ setMethod(
     by = c("patient_id", x_entity_id_field_name, "t")
   )
   
-  if(compute) {
+  if (compute) {
     x <- compute(x)
   }
   
@@ -653,7 +653,7 @@ setMethod(
 .clinical_feature_interval <- function(x, observation_code, lower_bound, upper_bound, hours, observation_code_system, compute) {
   stopifnot(is.logical(compute))
   x_entity_id_field_name <- .clinical_feature_object_id_field(x)
-  if(compute) {
+  if (compute) {
     x <- compute(x)
   }
   LT <- x@longitudinal_table
@@ -697,7 +697,7 @@ setMethod(
       by = c("patient_id", x_entity_id_field_name, "t")
     )
   
-  if(compute) {
+  if (compute) {
     x <- compute(x)
   }
   
@@ -784,7 +784,7 @@ setMethod(
     
     if (obs_code_valid) {
       for (i in seq_len(length(observation_intervals))) {
-        if(length(observation_intervals[[i]]) == 1) {
+        if (length(observation_intervals[[i]]) == 1) {
           stopifnot(!is.na(observation_intervals[[i]]) &
                       !is.infinite(observation_intervals[[i]]))
           x <- .clinical_feature_threshold(x = x, 

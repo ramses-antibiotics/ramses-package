@@ -1,12 +1,8 @@
 
-
-
-# Interface ---------------------------------------------------------------
-
 setOldClass(c("tbl_duckdb_connection", "tbl_dbi", "tbl_sql", "tbl_lazy", "tbl"))
 setOldClass(c("tbl_PqConnection", "tbl_dbi", "tbl_sql", "tbl_lazy", "tbl"))
-setGeneric("collect", function(x) standardGeneric("collect"))
-setGeneric("compute", function(x) standardGeneric("compute"))
+
+# Interface ---------------------------------------------------------------
 
 #' An S4 virtual class for Ramses objects
 #'
@@ -14,8 +10,6 @@ setGeneric("compute", function(x) standardGeneric("compute"))
 #' @slot conn a database connection
 #' @slot record a \code{tbl_sql} for the corresponding database record
 #' @rdname RamsesObject
-#' @importFrom dplyr collect
-#' @importFrom dplyr compute
 #' @export
 #' @importClassesFrom duckdb duckdb_connection
 setClass(
@@ -682,6 +676,25 @@ setMethod("longitudinal_table", "Encounter", function(object, collect = FALSE) {
 })
 
 
+#' Return a single positive integer
+#'
+#' @param x input
+#' @noRd
+.validate_extended_table_input <- function(x) {
+  if ( is.null(x) || all(is.na(x)) ) {
+    x <- 0
+  }
+  if ( length(x) > 1 || !is.numeric(x) ) {
+    stop("`", substitute(x), "` must be a numeric or integer of length 1.")
+  }
+  if ( x < 0 ) {
+    stop("`", substitute(x), "` must be >= 0")
+  } 
+  x <- ceiling(x)
+  
+  x
+}
+
 # show methods ------------------------------------------------------------
 
 setMethod("show", "RamsesObject", function(object) {
@@ -785,31 +798,21 @@ setMethod("show", "MedicationRequest", function(object) {
 })
 
 
-# compute/collect methods -------------------------------------------------
+# compute methods ---------------------------------------------------------
 
-setMethod("collect", "RamsesObject", function(x) {
-  dplyr::collect(x@record)
-})
-
-setMethod("compute", "RamsesObject", function(x) {
-  x@record <- dplyr::compute(x@record)
-  x
-})
-
-setMethod("collect", "TherapyEpisode", function(x) {
-  .longitudinal_table_completeness_check(x, x@record)
-  dplyr::collect(x@record)
-})
-
-setMethod("compute", "TherapyEpisode", function(x) {
+.compute_longitudinal_objects <- function(x) {
   .longitudinal_table_completeness_check(x, x@record)
   x@record <- dplyr::compute(x@record)
   x@longitudinal_table <- dplyr::compute(x@longitudinal_table)
-
+  
   .create_sql_primary_key(
     conn = x@conn,
     table = dbplyr::remote_name(x@longitudinal_table),
-    field = "t, patient_id, therapy_id",
+    field = ifelse(
+      methods::is(x, "Encounter"),
+      "t, patient_id, encounter_id",
+      "t, patient_id, therapy_id"
+    ),
     override_index_name = paste0("idx_pk_", dbplyr::remote_name(x@longitudinal_table))
   )
   .create_sql_index(
@@ -820,25 +823,70 @@ setMethod("compute", "TherapyEpisode", function(x) {
   )
   
   x
+}
+
+#' Compute a Ramses Object
+#'
+#' @param x an object of class \code{RamsesObject}
+#' @param ... arguments passed on to methods (compatibility with \code{dplyr}'s
+#' S3 generic)
+#' 
+#' @return an object of class \code{RamsesObject}
+#' @seealso \code{\link[dplyr]{compute}()}
+#' @rdname compute
+#' @importFrom dplyr compute
+#' @export
+setGeneric("compute", function(x, ...) standardGeneric("compute"))
+
+#' @rdname compute
+#' @export
+setMethod("compute", "TherapyEpisode", function(x) {
+  .compute_longitudinal_objects(x)
 })
 
+#' @rdname compute
+#' @export
+setMethod("compute", "Encounter", function(x) {
+  .compute_longitudinal_objects(x)
+})
 
-
-#' Return a single positive integer
-#'
-#' @param x input
-#' @noRd
-.validate_extended_table_input <- function(x) {
-  if ( is.null(x) || all(is.na(x)) ) {
-    x <- 0
-  }
-  if ( length(x) > 1 || !is.numeric(x) ) {
-    stop("`", substitute(x), "` must be a numeric or integer of length 1.")
-  }
-  if ( x < 0 ) {
-    stop("`", substitute(x), "` must be >= 0")
-  } 
-  x <- ceiling(x)
-  
+#' @rdname compute
+#' @export
+setMethod("compute", "RamsesObject", function(x) {
+  x@record <- dplyr::compute(x@record)
   x
-}
+})
+
+# collect methods ---------------------------------------------------------
+
+
+#' Get the database record of a `RamsesObject` entity
+#'
+#' @param x an object of class \code{RamsesObject}
+#' @param ... arguments passed on to methods (compatibility with \code{dplyr}'s
+#' S3 generic)
+#' @return an object of class \code{tbl_df}
+#' @rdname collect
+#' @importFrom dplyr collect
+#' @export
+setGeneric("collect", function(x, ...) standardGeneric("collect"))
+
+#' @rdname collect
+#' @export
+setMethod("collect", "TherapyEpisode", function(x) {
+  .longitudinal_table_completeness_check(x, x@record)
+  dplyr::collect(x@record)
+})
+
+#' @rdname collect
+#' @export
+setMethod("collect", "Encounter", function(x) {
+  .longitudinal_table_completeness_check(x, x@record)
+  dplyr::collect(x@record)
+})
+
+#' @rdname collect
+#' @export
+setMethod("collect", "RamsesObject", function(x) {
+  dplyr::collect(x@record)
+})

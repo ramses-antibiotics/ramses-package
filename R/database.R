@@ -880,7 +880,6 @@ create_therapy_episodes <- function(
 #' @seealso The \code{duckdb} website provides excellent guidance on how to
 #' connect to databases: 
 #' \url{https://duckdb.org/docs/api/r}
-#' @importFrom DBI dbConnect dbDisconnect
 #' @export
 #'
 #' @examples
@@ -933,7 +932,6 @@ connect_local_database <- function(file, timezone = Sys.timezone()) {
 #' @param silent if \code{TRUE}, the progress bar will be hidden. The default is 
 #' \code{FALSE}.
 #' @return An object of class \code{duckdb_connection}.
-#' @importFrom DBI dbConnect dbDisconnect
 #' @export
 create_mock_database <- function(file, 
                                  timezone = Sys.timezone(),
