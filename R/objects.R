@@ -697,12 +697,25 @@ setMethod("longitudinal_table", "Encounter", function(object, collect = FALSE) {
 
 # show methods ------------------------------------------------------------
 
+
+#' Show a Ramses object
+#'
+#' @description Print a summary of a Ramses object.
+#' @param RamsesObject an object of class RamsesObject
+#'
+#' @return show returns an invisible \code{NULL}.
+#' @rdname show
+#' @seealso \code{\link{methods}{show}}
+#' @export
 setMethod("show", "RamsesObject", function(object) {
   cat(class(object), as.character(object@id), "\n")
   cat("\nDatabase connection:\n")
   print(object@conn)
+  invisible()
 })
 
+#' @rdname show
+#' @export
 setMethod("show", "Encounter", function(object) {
   if( length(object@id) == 1 ) {
     cat("Encounter", paste(as.character(object@id), collapse = ", "), "\n")
@@ -732,8 +745,11 @@ setMethod("show", "Encounter", function(object) {
   
   cat("\nDatabase connection:\n")
   show(object@conn)
+  invisible()
 })
 
+#' @rdname show
+#' @export
 setMethod("show", "TherapyEpisode", function(object) {
    if( length(object@id) <= 3 ) {
     cat(class(object), paste(as.character(object@id), collapse = ", "), "\n")
@@ -775,8 +791,11 @@ setMethod("show", "TherapyEpisode", function(object) {
 
   cat("\nDatabase connection:\n")
   show(object@conn)
+  invisible()
 })
 
+#' @rdname show
+#' @export
 setMethod("show", "MedicationRequest", function(object) {
   cat(class(object), as.character(object@id), "\n")
   record <- dplyr::collect(object@record)
@@ -795,6 +814,7 @@ setMethod("show", "MedicationRequest", function(object) {
   }
   cat("\nDatabase connection:\n")
   print(object@conn)
+  invisible()
 })
 
 
