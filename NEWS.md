@@ -6,7 +6,7 @@
 * Local databases (`connect_local_database()` and `create_mock_database()`) 
 are now powered by [DuckDB](https://duckdb.org/) rather than SQLite, bringing support for 
 datetime variable types and increased performance. Ramses now depends on 
-the [`duckdb`](https://cran.r-project.org/web/packages/duckdb/index.html) library
+the [`duckdb`](https://CRAN.R-project.org/package=duckdb) library
 * Added `Patient()` function to create a `Patient` object from any other object
 of class `RamsesObject`
 * Added new S4 class `Encounter` [#92](https://github.com/ramses-antibiotics/ramses-package/issues/92) 

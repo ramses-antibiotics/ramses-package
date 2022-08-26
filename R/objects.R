@@ -807,19 +807,19 @@ setMethod("show", "MedicationRequest", function(object) {
   
   .create_sql_primary_key(
     conn = x@conn,
-    table = dbplyr::remote_name(x@longitudinal_table),
+    table = x@longitudinal_table$lazy_query$x,
     field = ifelse(
       methods::is(x, "Encounter"),
       "t, patient_id, encounter_id",
       "t, patient_id, therapy_id"
     ),
-    override_index_name = paste0("idx_pk_", dbplyr::remote_name(x@longitudinal_table))
+    override_index_name = paste0("idx_pk_", x@longitudinal_table$lazy_query$x)
   )
   .create_sql_index(
     conn = x@conn,
-    table = dbplyr::remote_name(x@longitudinal_table),
+    table = x@longitudinal_table$lazy_query$x,
     fields = "patient_id, t_start",
-    override_index_name = paste0("idx_pt_time_", dbplyr::remote_name(x@longitudinal_table))
+    override_index_name = paste0("idx_pt_time_", x@longitudinal_table$lazy_query$x)
   )
   
   x
@@ -868,6 +868,7 @@ setMethod("compute", "RamsesObject", function(x) {
 #' @return an object of class \code{tbl_df}
 #' @rdname collect
 #' @importFrom dplyr collect
+#' @importFrom dbplyr collect
 #' @export
 setGeneric("collect", function(x, ...) standardGeneric("collect"))
 
