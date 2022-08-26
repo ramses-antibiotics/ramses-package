@@ -32,7 +32,7 @@ Imports:
     DBI,
     rlang,
     dplyr (>= 1.0.1),
-    dbplyr (>= 2.1.0),
+    dbplyr (>= 2.2.0),
     magrittr,
     Rdpack (>= 0.7),
     data.table,

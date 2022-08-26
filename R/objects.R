@@ -807,19 +807,19 @@ setMethod("show", "MedicationRequest", function(object) {
   
   .create_sql_primary_key(
     conn = x@conn,
-    table = x@longitudinal_table$lazy_query$x,
+    table = dbplyr::remote_name(x@longitudinal_table),
     field = ifelse(
       methods::is(x, "Encounter"),
       "t, patient_id, encounter_id",
       "t, patient_id, therapy_id"
     ),
-    override_index_name = paste0("idx_pk_", x@longitudinal_table$lazy_query$x)
+    override_index_name = paste0("idx_pk_", dbplyr::remote_name(x@longitudinal_table))
   )
   .create_sql_index(
     conn = x@conn,
-    table = x@longitudinal_table$lazy_query$x,
+    table = dbplyr::remote_name(x@longitudinal_table),
     fields = "patient_id, t_start",
-    override_index_name = paste0("idx_pt_time_", x@longitudinal_table$lazy_query$x)
+    override_index_name = paste0("idx_pt_time_", dbplyr::remote_name(x@longitudinal_table))
   )
   
   x
