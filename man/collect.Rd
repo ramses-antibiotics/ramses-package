@@ -5,7 +5,7 @@
 \alias{collect,TherapyEpisode-method}
 \alias{collect,Encounter-method}
 \alias{collect,RamsesObject-method}
-\title{Get the database record of a `RamsesObject` entity}
+\title{Retrieve the database record of a Ramses Object}
 \usage{
 collect(x, ...)
 
@@ -22,8 +22,12 @@ collect(x, ...)
 S3 generic)}
 }
 \value{
-an object of class \code{tbl_df}
+a data frame of class \code{tbl_df}
 }
 \description{
-Get the database record of a `RamsesObject` entity
+Retrieve a data frame of the record belonging to a Ramses 
+object instance.
+}
+\seealso{
+\code{\link[Ramses]{longitudinal_table}()}
 }

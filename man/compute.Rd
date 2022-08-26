@@ -5,7 +5,7 @@
 \alias{compute,TherapyEpisode-method}
 \alias{compute,Encounter-method}
 \alias{compute,RamsesObject-method}
-\title{Compute a Ramses Object}
+\title{Compute the database records of a Ramses object}
 \usage{
 compute(x, ...)
 
@@ -25,7 +25,11 @@ S3 generic)}
 an object of class \code{RamsesObject}
 }
 \description{
-Compute a Ramses Object
+Compute the \code{tbl_sql} records of a Ramses object in the 
+backend database (see \code{dplyr::\link[dplyr]{compute}()}). This function 
+creates a database index of \code{Encounter} and \code{TherapyEpisode} 
+longitudinal tables, which can speed up operations such as those performed
+by \code{\link[Ramses]{clinical_feature}_x()} functions.
 }
 \seealso{
 \code{\link[dplyr]{compute}()}

@@ -825,8 +825,13 @@ setMethod("show", "MedicationRequest", function(object) {
   x
 }
 
-#' Compute a Ramses Object
+#' Compute the database records of a Ramses object
 #'
+#' @description Compute the \code{tbl_sql} records of a Ramses object in the 
+#' backend database (see \code{dplyr::\link[dplyr]{compute}()}). This function 
+#' creates a database index of \code{Encounter} and \code{TherapyEpisode} 
+#' longitudinal tables, which can speed up operations such as those performed
+#' by \code{\link[Ramses]{clinical_feature}_x()} functions.
 #' @param x an object of class \code{RamsesObject}
 #' @param ... arguments passed on to methods (compatibility with \code{dplyr}'s
 #' S3 generic)
@@ -860,15 +865,17 @@ setMethod("compute", "RamsesObject", function(x) {
 # collect methods ---------------------------------------------------------
 
 
-#' Get the database record of a `RamsesObject` entity
-#'
+#' Retrieve the database record of a Ramses Object
+#' 
+#' @description Retrieve a data frame of the record belonging to a Ramses 
+#' object instance.
 #' @param x an object of class \code{RamsesObject}
 #' @param ... arguments passed on to methods (compatibility with \code{dplyr}'s
 #' S3 generic)
-#' @return an object of class \code{tbl_df}
+#' @return a data frame of class \code{tbl_df}
 #' @rdname collect
 #' @importFrom dplyr collect
-#' @importFrom dbplyr collect
+#' @seealso \code{\link[Ramses]{longitudinal_table}()}
 #' @export
 setGeneric("collect", function(x, ...) standardGeneric("collect"))
 
