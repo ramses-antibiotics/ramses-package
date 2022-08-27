@@ -80,14 +80,14 @@ devtools::install_github("ramses-antibiotics/ramses-package")
 ```
 
 `Ramses` comes with synthetic data for testing and training purposes.
-You can use it to create a demonstration SQLite database fully loaded with 
-synthetic electronic health records. 
+You can use it to create a demonstration DuckDB database fully loaded with 
+synthetic electronic health records on a local drive. No need for a database server. 
 
 ```{r setup_mock_db, warning=FALSE, message=FALSE}
 library(Ramses)
 library(ggplot2)
 library(dplyr)
-ramses_db <- create_mock_database("ramses-db.sqlite")
+ramses_db <- create_mock_database("ramses-db.duckdb")
 ```
 
 ## Visualisation
@@ -186,7 +186,7 @@ consumption_denom_init <- study_pop %>%
   group_by(calendar_year, calendar_month, main_specialty_code) %>% 
   summarise(
     bed_days = sum(ramses_bed_days),
-    total_admissions = n_distinct(paste0(patient_id, spell_id))
+    total_admissions = n_distinct(paste0(patient_id, encounter_id))
   )
 
 consumption_rates_init <- full_join(consumption_denom_init, consumption_num_init) %>% 
@@ -208,17 +208,17 @@ ggplot(consumption_rates_init,
 
 ### Length of therapy
 
-Length of Therapy is the time elapsed during a prescribing episodes (sequence of antimicrobial prescriptions separated by at the most 36 hours by default). To measure it, the bridge table `bridge_spell_therapy_overlap` is available. It calculate the total LOT during between admission and discharge (excluding to-take-home medications).
+Length of Therapy is the time elapsed during a prescribing episodes (sequence of antimicrobial prescriptions separated by at the most 36 hours by default). To measure it, the bridge table `bridge_encounter_therapy_overlap` is available. It calculate the total LOT during between admission and discharge (excluding to-take-home medications).
 
 ```{r message=FALSE, results='asis'}
-length_therapy_by_spell <- study_pop %>% 
-  distinct(patient_id, spell_id, admission_method) %>% 
-  left_join(tbl(ramses_db, "bridge_spell_therapy_overlap")) %>% 
-  group_by(patient_id, spell_id, admission_method) %>% 
+length_therapy_by_encounter <- study_pop %>% 
+  distinct(patient_id, encounter_id, admission_method) %>% 
+  left_join(tbl(ramses_db, "bridge_encounter_therapy_overlap")) %>% 
+  group_by(patient_id, encounter_id, admission_method) %>% 
   summarise(LOT = sum(LOT, na.rm = T)) %>% 
   collect()
 
-length_therapy_by_spell %>% 
+length_therapy_by_encounter %>% 
   group_by(admission_method) %>% 
   summarise(
     `Total admissions` = n(),
@@ -307,12 +307,12 @@ ggplot(consumption_aware_episodes,
 Always remember close database connections when you are finished.
 
 ```{r dbDisconnect}
-DBI::dbDisconnect(ramses_db)
+DBI::dbDisconnect(ramses_db, shutdown = TRUE)
 ```
 
 
 ```{r include=FALSE}
-file.remove("ramses-db.sqlite")
+file.remove("ramses-db.duckdb")
 ```
 
 

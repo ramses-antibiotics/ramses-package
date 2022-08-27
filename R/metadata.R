@@ -67,11 +67,11 @@ download_icd10cm <- function(silent = FALSE) {
 #' Statistical Classification of Diseases and Related Health 
 #' Problems Tenth Revision is available under restrictive licence terms.
 #' 
-#' The UK implementation of ICD-10 is available from the NHS TRUD website
+#' The UK edition of ICD-10 is available from the NHS TRUD website
 #' \url{https://isd.digital.nhs.uk/trud3/user/guest/group/0/pack/28} 
 #' at no cost to UK users subject to a licence agreement.
 #'  
-#' The US implementation of ICD-10-CM is available from 
+#' The US edition of ICD-10-CM is available from 
 #' \url{https://www.cdc.gov/nchs/icd/icd10cm.htm}
 #'
 #' @param archive path to the ZIP archive containing an ICD-10 release 
@@ -202,8 +202,8 @@ map_charlson_comorbidities <- function(df, icd_column){
       TRUE ~ as.character(comorb)
     )) %>% 
     dplyr::mutate(charlson_weights = dplyr::case_when(
-      comorb %in% c("ami", "chf", "pvd", "cevd", "dementia",
-                    "copd", "rheumd", "pud", "mld", "diab") ~ 1L,
+      comorb %in% c("mi", "chf", "pvd", "cevd", "dementia",
+                    "cpd", "rheumd", "pud", "mld", "diab") ~ 1L,
       comorb %in% c("diabwc", "hp", "rend", "canc") ~ 2L,
       comorb %in% c("mlsd") ~ 3L,
       comorb %in% c("metacanc", "aids") ~ 6L,

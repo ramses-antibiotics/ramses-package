@@ -3,15 +3,15 @@ test_that("ICD-10-CM downloads and maps to Charlson", {
   icd10cm <- download_icd10cm()
   expect_equal(icd10cm$icd_code[1], "A000")
   icd10_charlson <- map_charlson_comorbidities(df = icd10cm, icd_column = "icd_code")
-  expect_true(icd10_charlson[icd10_charlson$icd_code=="J440", "comorb"] == "copd")
-  expect_true(icd10_charlson[icd10_charlson$icd_code=="J440", "comorb_group"] == "copd")
+  expect_true(icd10_charlson[icd10_charlson$icd_code=="J440", "comorb"] == "cpd")
+  expect_true(icd10_charlson[icd10_charlson$icd_code=="J440", "comorb_group"] == "cpd")
   expect_equal(icd10_charlson[icd10_charlson$icd_code=="J440", "charlson_weights"], 1)
   
   # Bug 84 fix verification
   icd10cm_tbl <- dplyr::as_tibble(icd10cm)
   icd10_charlson_tbl <- map_charlson_comorbidities(df = icd10cm_tbl, icd_column = "icd_code")
-  expect_true(icd10_charlson_tbl[icd10_charlson_tbl$icd_code=="J440", "comorb"] == "copd")
-  expect_true(icd10_charlson_tbl[icd10_charlson_tbl$icd_code=="J440", "comorb_group"] == "copd")
+  expect_true(icd10_charlson_tbl[icd10_charlson_tbl$icd_code=="J440", "comorb"] == "cpd")
+  expect_true(icd10_charlson_tbl[icd10_charlson_tbl$icd_code=="J440", "comorb_group"] == "cpd")
   expect_equal(icd10_charlson_tbl[icd10_charlson_tbl$icd_code=="J440", "charlson_weights"], 1)
 })
 

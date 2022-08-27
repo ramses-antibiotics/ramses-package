@@ -2,8 +2,8 @@
 % Please edit documentation in R/clinical_features.R
 \name{clinical_feature_interval}
 \alias{clinical_feature_interval}
-\alias{clinical_feature_interval,TherapyEpisode-method}
-\title{Therapy table feature: number of clinical observations falling in an interval}
+\alias{clinical_feature_interval,RamsesObject-method}
+\title{Clinical feature: number of clinical observations falling in an interval}
 \usage{
 clinical_feature_interval(
   x,
@@ -13,7 +13,7 @@ clinical_feature_interval(
   compute = TRUE
 )
 
-\S4method{clinical_feature_interval}{TherapyEpisode}(
+\S4method{clinical_feature_interval}{RamsesObject}(
   x,
   observation_intervals,
   hours,
@@ -22,20 +22,20 @@ clinical_feature_interval(
 )
 }
 \arguments{
-\item{x}{a \code{\link{TherapyEpisode}} object}
+\item{x}{an object of class \code{\link{TherapyEpisode}} or \code{\link{Encounter}}}
 
 \item{observation_intervals}{a named list of numeric vectors of length 1 
 (for a threshold) or 2 (for an interval). Names of vectors must match the
  \code{observation_code} field in the \code{inpatient_investigation}
-table (see \code{\link{validate_investigations}()}. See example}
+table (see \code{\link{validate_investigations}()}).}
 
 \item{hours}{the maximum number of hours the observation should date back from
-\code{t_start}, the starting time of every row in the therapy table}
+\code{t_start}, the starting time of every row in the longitudinal table}
 
 \item{observation_code_system}{(optional, reserved to situations where 
 \code{observation_code} is ambiguous across code systems/vocabularies) a single 
-character string specifying the code system identifier (example:
- \code{"http://snomed.info/sct"}) of \code{observation_code}.
+character string specifying the code system identifier of \code{observation_code} 
+(for example: \code{"http://snomed.info/sct"}).
 
 The default (\code{NULL}) filters observations using the \code{observation_code} only.}
 
@@ -43,12 +43,14 @@ The default (\code{NULL}) filters observations using the \code{observation_code}
 be computed on the remote server. This is generally faster.}
 }
 \value{
-an object of class \code{\link{TherapyEpisode}}
+an object of class \code{\link{TherapyEpisode}} or 
+\code{\link{Encounter}}
 }
 \description{
-Add clinical features (variables) to a therapy episode table 
-containing the number of observations falling (a) above/below a given threshold
-or (b) inside/outside a given interval.
+Add a clinical feature (variable) to a therapy or encounter 
+longitudinal table. The feature corresponds to the number of observations falling 
+(a) above/below a given threshold or (b) inside/outside a given interval 
+depending on values provided to \code{observation_intervals}.
 }
 \details{
 The feature will be computed exclusively on numeric investigations 
@@ -57,20 +59,20 @@ or \code{"amended"}.
 }
 \examples{
 \dontrun{
-conSQLite <- create_mock_database("example.sqlite")
+fake_db <- create_mock_database("example.duckdb")
 
 temperature_interval <- clinical_feature_interval(
-   TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+   TherapyEpisode(fake_db, "4d611fc8886c23ab047ad5f74e5080d7"),
    observation_intervals = list("8310-5" = c(36, 38)),
    hours = 24
    )
-str(therapy_table(temperature_interval, collect = TRUE))
+str(longitudinal_table(temperature_interval, collect = TRUE))
 
 temperature_threshold <- clinical_feature_interval(
-   TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+   TherapyEpisode(fake_db, "4d611fc8886c23ab047ad5f74e5080d7"),
    observation_intervals = list("8310-5" = 38),
    hours = 24
    )
-str(therapy_table(temperature_threshold, collect = TRUE))
+str(longitudinal_table(temperature_threshold, collect = TRUE))
 }
 }

@@ -14,8 +14,6 @@ Simulated data
 drug_prescriptions
 }
 \description{
-A set of simulated antibiotic prescriptions records simulated 
-based on commonly prescribed drugs for clinical diagnoses 
-recorded in \code{\link[Ramses]{inpatient_episodes}}.
+A set of simulated antibiotic prescriptions records.
 }
 \keyword{datasets}

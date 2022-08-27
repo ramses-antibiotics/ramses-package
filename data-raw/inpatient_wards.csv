@@ -1,4 +1,4 @@
-"patient_id","spell_id","ward_code","ward_display_name","ward_description","ward_start","ward_end"
+"patient_id","encounter_id","ward_code","ward_display_name","ward_description","ward_start","ward_end"
 "6145252493","5458286195","AMU","AMU","Acute Medical Unit","2015-09-24 09:13:22","2015-09-24 18:19:55"
 "6145252493","5458286195","6S","6 South","6 South","2015-09-24 18:19:55","2015-09-24 19:16:41"
 "5124578766","1275624266","AMU","AMU","Acute Medical Unit","2015-08-04 11:27:16","2015-08-04 14:57:04"

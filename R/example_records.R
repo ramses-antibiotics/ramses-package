@@ -1,5 +1,4 @@
 
-
 #' Simulated patients
 #' 
 #' @description Set of simulated demographics records of 202 patients 
@@ -28,7 +27,7 @@
 #' Simulated hospital ward movements
 #' 
 #' @description Set of simulated records of ward movements during 
-#' hospitalisation spells included in \code{\link[Ramses]{inpatient_episodes}}.
+#' hospitalisation encounters included in \code{\link[Ramses]{inpatient_episodes}}.
 #' 
 #' This data was simulated to reproduce relevant characteristics of English 
 #' NHS Admitted Patient Care datasets. More information can be found on the 
@@ -43,7 +42,7 @@
 #' 
 #' @description Set of simulated clinical diagnoses of infection for every
 #' row in \code{\link[Ramses]{inpatient_episodes}},
-#' detailing all episode start and end times, episode number, and up to
+#' detailing all episode start and end times, episode numbers, and up to
 #' 5 clinical diagnoses coded according to the International 
 #' Classification of Diseases, Tenth Revision (ICD-10). 
 #' 
@@ -63,9 +62,7 @@
 
 #' Simulated antimicrobial drug prescriptions
 #' 
-#' @description A set of simulated antibiotic prescriptions records simulated 
-#' based on commonly prescribed drugs for clinical diagnoses 
-#' recorded in \code{\link[Ramses]{inpatient_episodes}}. 
+#' @description A set of simulated antibiotic prescriptions records. 
 #'   
 #' @format A data frame of records of drug prescriptions.
 #' @docType data
@@ -76,15 +73,13 @@
 #' Simulated antimicrobial drug administrations
 #' 
 #' @description A set of simulated records of administrations of antibiotics 
-#' during inpatient care episodes, simulated based on drugs commonly 
-#' prescribed in hospitals. 
+#' during inpatient care episodes.
 #'   
 #' @format A data frame of records of drug administrations.
 #' @docType data
 #' @name drug_administrations
 #' @source Simulated data
 "drug_administrations"
-
 
 #' Simulated clinical investigation results
 #' 
@@ -98,7 +93,6 @@
 #' @name inpatient_investigations
 #' @source Simulated data
 "inpatient_investigations"
-
 
 #' Simulated microbial culture and susceptibility results
 #' 

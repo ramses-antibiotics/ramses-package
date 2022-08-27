@@ -40,7 +40,7 @@
 #' \insertCite{PHE-aware2019}{Ramses}.
 #' 
 #' The version included in Ramses contains an additional row for metronidazole
-#' J01XD01 with administered orally (classified as Access). This is sometimes 
+#' J01XD01 administered orally (classified as Access). This is sometimes 
 #' used in combination with other antibacterials that do not cover anaerobic 
 #' organisms, but is not present in the Anatomical Therapeutic Chemical (ATC) 
 #' classification.
@@ -107,9 +107,8 @@
 #'     \item Mental Illness
 #'   }
 #'   
-#'   In Ramses, this dataset is useful to facilitate machine learning tasks that rely on ICD-10 
-#'   clinical diagnosis codes and other applications that require mutually-exclusive categories 
-#'   (eg tasks involving data aggregation).
+#'   This dataset can help group ICD-10 into a smaller number of mutually-exclusive 
+#'   categories, such as aggregating data.
 #'   
 #' @format A data frame with 72,446 ICD-10-CM codes mapped to CCS multilevel categories.
 #' @docType data
@@ -125,7 +124,7 @@
 "ccs"
 
 
-#' Clinical Classifications Software \emph{Refined} (CCSR): map to 4-character ICD codes
+#' Clinical Classifications Software Refined (CCSR): map to 4-character ICD codes
 #' 
 #' @description A map of 538 clinical concepts to 4-character ICD codes 
 #' adapted from the Clinical Classifications Software Refined (CCSR) 

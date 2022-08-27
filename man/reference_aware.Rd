@@ -48,7 +48,7 @@ and quality improvement in English hospitals
 \insertCite{PHE-aware2019}{Ramses}.
 
 The version included in Ramses contains an additional row for metronidazole
-J01XD01 with administered orally (classified as Access). This is sometimes 
+J01XD01 administered orally (classified as Access). This is sometimes 
 used in combination with other antibacterials that do not cover anaerobic 
 organisms, but is not present in the Anatomical Therapeutic Chemical (ATC) 
 classification.

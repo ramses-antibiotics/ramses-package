@@ -5,6 +5,6 @@
 doc
 Meta
 .idea
-*.sqlite
+*.duckdb
 inst/doc
 docs

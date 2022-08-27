@@ -4,14 +4,24 @@
 \name{Patient-class}
 \alias{Patient-class}
 \alias{Patient}
+\alias{Patient.DBIConnection}
+\alias{Patient.RamsesObject}
 \title{An S4 class to represent patients}
 \usage{
-Patient(conn, id)
+Patient(...)
+
+Patient.DBIConnection(conn, id)
+
+Patient.RamsesObject(x)
 }
 \arguments{
+\item{...}{generic signature}
+
 \item{conn}{a database connection}
 
 \item{id}{a patient identifier}
+
+\item{x}{an object inheriting class \link[Ramses]{RamsesObject}}
 }
 \description{
 An S4 class to represent patients

@@ -1,4 +1,37 @@
 
+# Ramses 0.5.0
+
+*27 August 2022*
+
+## Improvements
+
+* Local databases (`connect_local_database()` and `create_mock_database()`) 
+are now powered by [DuckDB](https://duckdb.org/) rather than SQLite, bringing support for 
+datetime variable types and increased performance. Ramses now depends on 
+the [`duckdb`](https://CRAN.R-project.org/package=duckdb) library
+* Added new S4 class `Encounter` [#92](https://github.com/ramses-antibiotics/ramses-package/issues/92) 
+to manipulate hospitalisations (admissions)
+with associated methods for `show()`, `compute()`, `collect()`, `Patient()`, 
+`longitudinal_table()`, `clinical_feature_*()`, `therapy_timeline()`
+* `TherapyEpisode()` and `Encounter()` have a new optional `extend_table_start` input
+controlling their longitudinal table's start. This allows the creation of longitudinal
+tables starting before the `therapy_start` or `admission_date`, respectively. More
+detail is available from [`vignette("therapy-episodes")`](https://ramses-antibiotics.web.app/articles/therapy-episodes.html)
+* Added `Patient()` function to create a `Patient` object from any other object
+of class `RamsesObject`
+* Improved documentation and export of S4 methods `compute()` and `collect()`.
+
+## Breaking changes
+
+* `therapy_table()` is now deprecated: use `longitudinal_table()` instead  [#86](https://github.com/ramses-antibiotics/ramses-package/issues/86)
+* `bridge_spell_therapy_overlap()` is now deprecated : use 
+`bridge_encounter_therapy_overlap()` instead  [#86](https://github.com/ramses-antibiotics/ramses-package/issues/86)
+* Database table `inpatient_episodes` and documentation now refer to 'encounters' 
+rather than 'spells'. Variable `spell_id` is now known as `encounter_id` [#86](https://github.com/ramses-antibiotics/ramses-package/issues/86).
+Databases built with previous versions of Ramses will not work with Ramses 0.5.0
+* Function signatures for all methods are standardised: function arguments 
+`object` are now changed to `x`, except for `show(object)`.
+* Support for SQLite databases is withdrawn.
 
 # Ramses 0.4.4
 
@@ -8,6 +41,7 @@
 
 * `clinical_feature_*()` functions trigger a warning rather than an error if
 no value matching `observation_code` is found in the`inpatient_investigations` table.
+
 
 # Ramses 0.4.3
 

@@ -6,7 +6,9 @@ test_that(".clinical_investigation_code_validate", {
                   observation_code_system = c("http://codeA.com/", "http://codeA.com/", 
                                               "http://codeB.com/", "http://codeB.com/"))
   )
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  on.exit({DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)})
+  
   dplyr::copy_to(fake_db_conn, 
                  df = investigationstable, 
                  name = "inpatient_investigations", 
@@ -40,7 +42,6 @@ test_that(".clinical_investigation_code_validate", {
                                             observation_code_system = NULL)
     )
   )
-  DBI::dbDisconnect(fake_db_conn)
 })
 
 
@@ -49,7 +50,9 @@ test_that(".clinical_feature_field_name_generate", {
                                          observation_code_system,
                                          observation_code,
                                          observation_display)
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  on.exit({DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)})
+  
   dplyr::copy_to(fake_db_conn, 
                  df = investigationstable, 
                  name = "inpatient_investigations", 
@@ -80,5 +83,43 @@ test_that(".clinical_feature_field_name_generate", {
   expect_error(
     .clinical_feature_field_name_generate(fake_db_conn, "mean", "8480-6",  NULL, NA, NULL)
   )
-  DBI::dbDisconnect(fake_db_conn)
+
+})
+
+test_that(".clinical_feature_object_id_field", {
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  on.exit({DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)})
+  
+  dplyr::copy_to(fake_db_conn, 
+                 df = dplyr::tibble(patient_id = 99), 
+                 name = "patients", 
+                 temporary = FALSE)
+  
+  patient_object <- new("Patient", 
+                        id = 99, 
+                        conn = fake_db_conn,
+                        record = tbl(fake_db_conn, "patients"))
+  encounter_object <- new("Encounter", 
+                          id = 99, 
+                          conn = fake_db_conn,
+                          record = tbl(fake_db_conn, "patients"),
+                          longitudinal_table = tbl(fake_db_conn, "patients"))
+  therapy_episode_object <- new("TherapyEpisode", 
+                                id = 99, 
+                                conn = fake_db_conn,
+                                record = tbl(fake_db_conn, "patients"),
+                                longitudinal_table = tbl(fake_db_conn, "patients"))
+  
+  expect_error(
+    .clinical_feature_object_id_field(patient_object),
+    "[.]clinical_feature_object_id_field[(][)] is not implemented for Patient objects"
+  )
+  expect_equal(
+    .clinical_feature_object_id_field(encounter_object),
+    "encounter_id"
+  )
+  expect_equal(
+    .clinical_feature_object_id_field(therapy_episode_object),
+    "therapy_id"
+  )
 })

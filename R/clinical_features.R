@@ -97,7 +97,7 @@
                                     operation,
                                     hours), is.na))))
   operation <- tolower(operation)
-  if( is.null(observation_code_system) ) {
+  if ( is.null(observation_code_system) ) {
     parameter_name <- tbl(conn, "inpatient_investigations") %>% 
       dplyr::filter(observation_code == !!observation_code) %>% 
       dplyr::distinct(observation_display) %>% 
@@ -109,7 +109,7 @@
       dplyr::distinct(observation_display) %>% 
       dplyr::collect()
   }
-  if( nrow(parameter_name) == 0 ) {
+  if ( nrow(parameter_name) == 0 ) {
     stop(paste0("`observation_code` ", observation_code, " not found in database."), 
          call. = FALSE)
     NULL
@@ -126,22 +126,33 @@
 }
 
 
-#' @importFrom dbplyr sql
+#' Get the object identifier field name in the remote table
+#'
+#' @param x an object of class `TherapyEpisode` or `Encounter`
+#' @return a string
+#' @noRd
+.clinical_feature_object_id_field <- function(x) {
+  if (is(x, "Encounter")) {
+    return("encounter_id")
+  } else if (is(x, "TherapyEpisode")) {
+    return("therapy_id")
+  } else {
+    .throw_error_method_not_implemented(".clinical_feature_object_id_field()", 
+                                        class(x))
+  }
+}
+
+
 .clinical_feature_observations_fetch <- function(x, 
-                                                 TT, 
-                                                 therapy_record, 
+                                                 LT, 
                                                  observation_code, 
                                                  hours,
                                                  observation_code_system) {
   
-  if(is(x@conn, "SQLiteConnection")) {
-    sql_condition_1 <- paste0("datetime(observation_datetime) < datetime(t_start) AND ",
-                              "datetime(observation_datetime) >= ", 
-                              "datetime(t_start, -", hours," || ' hours')")
-  } else if(is(x@conn, "PqConnection")) {
+  if (is(x@conn, "PqConnection") | is(x@conn, "duckdb_connection")) {
     sql_condition_1 <- paste0(
-      "(t_start at time zone 'UTC') > (observation_datetime at time zone 'UTC' ) ",
-      "AND (t_start at time zone 'UTC') <= (observation_datetime at time zone 'UTC' + interval '", hours, "h' )"
+      "(t_start) > (observation_datetime) ",
+      "AND (t_start) <= (observation_datetime + interval '", hours, "h' )"
       )
   } else {
     .throw_error_method_not_implemented(".clinical_feature_threshold()",
@@ -149,7 +160,7 @@
   }
   
   observations_linked <- dplyr::inner_join(
-    TT, 
+    LT, 
     dplyr::select(tbl(x@conn, "inpatient_investigations"),
                   patient_id, observation_datetime,
                   observation_code, observation_value_numeric,
@@ -163,7 +174,7 @@
         !is.na(observation_value_numeric)
     )
   
-  if( !is.null(observation_code_system) ) {
+  if ( !is.null(observation_code_system) ) {
     observations_linked <- observations_linked %>% 
       dplyr::filter(observation_code_system == !!observation_code_system)
   }
@@ -174,12 +185,13 @@
 
 .clinical_feature_last <- function(x, observation_code, hours, observation_code_system, compute) {
   stopifnot(is.logical(compute))
-  if(compute) {
+  x_entity_id_field_name <- .clinical_feature_object_id_field(x)
+  if (compute) {
     x <- compute(x)
   }
-  TT <- x@therapy_table
+  LT <- x@longitudinal_table
   
-  therapy_record <- collect(x)
+  object_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
     conn = x@conn, 
     operation = "last", 
@@ -189,26 +201,26 @@
   
   observations_linked <- .clinical_feature_observations_fetch(
     x = x, 
-    TT = TT,
-    therapy_record = therapy_record,
+    LT = LT,
     observation_code = observation_code,
     hours = hours,
     observation_code_system = observation_code_system
   ) %>% 
-    dplyr::group_by(patient_id, t) %>% 
+    dplyr::group_by(.data$patient_id, .data[[x_entity_id_field_name]], .data$t) %>% 
     dplyr::mutate(keep = dplyr::row_number(dplyr::desc(observation_datetime))) %>% 
     dplyr::ungroup() %>% 
-    dplyr::filter(keep == 1) %>% 
-    dplyr::transmute(patient_id, 
-                     t, 
-                     {{field_name}} := observation_value_numeric)
+    dplyr::filter(.data$keep == 1) %>% 
+    dplyr::transmute(.data$t,
+                     .data$patient_id, 
+                     .data[[x_entity_id_field_name]], 
+                     {{field_name}} := .data$observation_value_numeric)
   
-  x@therapy_table <- dplyr::left_join(
-    TT,
+  x@longitudinal_table <- dplyr::left_join(
+    LT,
     observations_linked,
-    by = c("patient_id", "t")
+    by = c("patient_id", x_entity_id_field_name, "t")
   )
-  if(compute) {
+  if (compute) {
     x <- compute(x)
   }
   
@@ -216,39 +228,42 @@
 }
 
 
-#' Therapy table feature: latest clinical observation value
+#' Clinical feature: latest clinical observation value
 #'
-#' @description Add a clinical feature (variable) to a therapy episode table 
-#' containing the latest value of clinical observations of interest
-#' @param x a \code{\link{TherapyEpisode}} object
+#' @description Add a clinical feature (variable) to a therapy or encounter 
+#' longitudinal table. The feature corresponds to the latest value of 
+#' clinical observations of interest carried forward for up to a maximum set by
+#' \code{hours}.
+#' @param x an object of class \code{\link{TherapyEpisode}} or \code{\link{Encounter}}
 #' @param observation_code a character vector of clinical investigation codes
 #' matching the \code{observation_code} field in the \code{inpatient_investigation}
 #' table (see \code{\link{validate_investigations}()})
 #' @param hours the maximum number of hours the observation should date back from
-#' \code{t_start}, the starting time of every row in the therapy table
+#' \code{t_start}, the starting time of every row in the longitudinal table
 #' @param observation_code_system (optional, reserved to situations where 
 #' \code{observation_code} is ambiguous across code systems/vocabularies) a single 
-#' character string specifying the code system identifier (example:
-#'  \code{"http://snomed.info/sct"}) of \code{observation_code}. 
+#' character string specifying the code system identifier of \code{observation_code} 
+#' (for example: \code{"http://snomed.info/sct"}).
 #' The default (\code{NULL}) filters observations using the \code{observation_code} only.
 #' @param compute if \code{TRUE} (the default), the remote therapy table will 
 #' be computed on the remote server. This is generally faster.
 #' @details The feature will be computed exclusively on numeric investigations 
 #' marked with status \code{"final"}, \code{"preliminary"}, \code{"corrected"}, 
 #' or \code{"amended"}.
-#' @return an object of class \code{\link{TherapyEpisode}}
+#' @return an object of class \code{\link{TherapyEpisode}} or 
+#' \code{\link{Encounter}}
 #' @rdname clinical_feature_last
 #' @export
 #' @include objects.R
 #' @examples 
 #' \dontrun{
-#' conSQLite <- create_mock_database("example.sqlite")
+#' fake_db <- create_mock_database("example.duckdb")
 #' temperature_check <- clinical_feature_last(
-#'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+#'    TherapyEpisode(fake_db, "4d611fc8886c23ab047ad5f74e5080d7"),
 #'    observation_code = "8310-5",
 #'    hours = 24
 #'    )
-#' str(therapy_table(temperature_check, collect = TRUE))
+#' str(longitudinal_table(temperature_check, collect = TRUE))
 #' }
 setGeneric(
   "clinical_feature_last", 
@@ -263,8 +278,11 @@ setGeneric(
 #' @export
 setMethod(
   "clinical_feature_last",
-  c(x = "TherapyEpisode"),
+  c(x = "RamsesObject"),
   function(x, observation_code, hours, observation_code_system = NULL, compute = TRUE) {
+    if (!(is(x, "TherapyEpisode") || is(x, "Encounter"))) {
+      stop("`x` must be an object of class `TherapyEpisode` or `Encounter`.")
+    }
     stopifnot(is.character(observation_code))
     stopifnot(is.numeric(hours) & length(hours) == 1 & hours >= 0)
     
@@ -292,12 +310,12 @@ setMethod(
 
 .clinical_feature_mean <- function(x, observation_code, hours, observation_code_system, compute) {
   stopifnot(is.logical(compute))
-  if(compute) {
+  x_entity_id_field_name <- .clinical_feature_object_id_field(x)
+  if (compute) {
     x <- compute(x)
   }
-  TT <- x@therapy_table
+  LT <- x@longitudinal_table
   
-  therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
     conn = x@conn, 
     operation = "mean", 
@@ -308,25 +326,24 @@ setMethod(
   
   observations_linked <- .clinical_feature_observations_fetch(
     x = x, 
-    TT = TT,
-    therapy_record = therapy_record,
+    LT = LT,
     observation_code = observation_code,
     hours = hours,
     observation_code_system = observation_code_system
   ) %>% 
-    dplyr::group_by(patient_id, t) %>% 
+    dplyr::group_by(.data$patient_id, .data[[x_entity_id_field_name]], .data$t) %>% 
     dplyr::summarise(
-      {{field_name}} := mean(observation_value_numeric, na.rm = TRUE),
+      {{field_name}} := mean(.data$observation_value_numeric, na.rm = TRUE),
       {{field_name_N}} := dplyr::n()
     )
   
-  x@therapy_table <- dplyr::left_join(
-    TT,
+  x@longitudinal_table <- dplyr::left_join(
+    LT,
     observations_linked,
-    by = c("patient_id", "t")
+    by = c("patient_id", x_entity_id_field_name, "t")
   )
   
-  if(compute) {
+  if (compute) {
     x <- compute(x)
   }
   
@@ -334,21 +351,22 @@ setMethod(
 }
 
 
-#' Therapy table feature: running mean value of a clinical observation
+#' Clinical feature: running mean value of a clinical observation
 #'
-#' @description Add a clinical feature (variable) to a therapy episode table 
-#' containing the arithmetic mean of clinical observations of interest
-#' @param x a \code{\link{TherapyEpisode}} object
+#' @description Add a clinical feature (variable) to a therapy or encounter 
+#' longitudinal table. The feature corresponds to the arithmetic mean of
+#' clinical observations of interest over a time span set by \code{hours}.
+#' @param x an object of class \code{\link{TherapyEpisode}} or \code{\link{Encounter}}
 #' @param observation_code a character vector of clinical investigation codes
 #' matching the \code{observation_code} field in the \code{inpatient_investigation}
-#' table (see \code{\link{validate_investigations}()}
+#' table (see \code{\link{validate_investigations}()}).
 #' @param hours the maximum number of hours the observations included in the mean
 #' should date back from \code{t_start}, the starting time of every row 
 #' in the therapy table
 #' @param observation_code_system (optional, reserved to situations where 
 #' \code{observation_code} is ambiguous across code systems/vocabularies) a single 
-#' character string specifying the code system identifier (example:
-#'  \code{"http://snomed.info/sct"}) of \code{observation_code}.
+#' character string specifying the code system identifier of \code{observation_code} 
+#' (for example: \code{"http://snomed.info/sct"}).
 #' 
 #' The default (\code{NULL}) filters observations using the \code{observation_code} only.
 #' @param compute if \code{TRUE} (the default), the remote therapy table will 
@@ -357,19 +375,20 @@ setMethod(
 #' marked with status \code{"final"}, \code{"preliminary"}, \code{"corrected"}, 
 #' or \code{"amended"}.
 #' 
-#' @return an object of class \code{\link{TherapyEpisode}}
+#' @return an object of class \code{\link{TherapyEpisode}} or 
+#' \code{\link{Encounter}}
 #' @rdname clinical_feature_mean
 #' @export
 #' @include objects.R
 #' @examples 
 #' \dontrun{
-#' conSQLite <- create_mock_database("example.sqlite")
+#' fake_db <- create_mock_database("example.duckdb")
 #' temperature_check <- clinical_feature_mean(
-#'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+#'    TherapyEpisode(fake_db, "4d611fc8886c23ab047ad5f74e5080d7"),
 #'    observation_code = "8310-5",
 #'    hours = 24
 #'    )
-#' str(therapy_table(temperature_check, collect = TRUE))
+#' str(longitudinal_table(temperature_check, collect = TRUE))
 #' }
 setGeneric(
   "clinical_feature_mean", 
@@ -384,8 +403,11 @@ setGeneric(
 #' @export
 setMethod(
   "clinical_feature_mean",
-  c(x = "TherapyEpisode"),
+  c(x = "RamsesObject"),
   function(x, observation_code, hours, observation_code_system = NULL, compute = TRUE) {
+    if (!(is(x, "TherapyEpisode") || is(x, "Encounter"))) {
+      stop("`x` must be an object of class `TherapyEpisode` or `Encounter`.")
+    }
     stopifnot(is.character(observation_code))
     stopifnot(is.numeric(hours) & length(hours) == 1 & hours >= 0)
     
@@ -408,15 +430,15 @@ setMethod(
 
 .clinical_feature_ols_trend <- function(x, observation_code, hours, observation_code_system, compute) {
   stopifnot(is.logical(compute))
+  x_entity_id_field_name <- .clinical_feature_object_id_field(x)
   final_slope <- observation_datetime_int <- regression_N <- NULL
   slope_denominator <- slope_numerator <- t_bar <- y_bar <- NULL
   
-  if(compute) {
+  if (compute) {
     x <- compute(x)
   }
-  TT <- x@therapy_table
+  LT <- x@longitudinal_table
 
-  therapy_record <- collect(x)
   field_name <- .clinical_feature_field_name_generate(
     conn = x@conn, 
     operation = "ols", 
@@ -429,21 +451,13 @@ setMethod(
   
   observations_linked <- .clinical_feature_observations_fetch(
     x = x, 
-    TT = TT,
-    therapy_record = therapy_record,
+    LT = LT,
     observation_code = observation_code,
     hours = hours,
     observation_code_system = observation_code_system
   )
   
-  if(is(x@conn, "SQLiteConnection")) {
-    observations_linked <- dplyr::mutate(
-      observations_linked,
-      observation_datetime_int = dplyr::sql(
-        "( strftime('%s', observation_datetime) - 
-           strftime('%s', t_start) ) / 3600.0")
-      )
-  } else if(is(x@conn, "PqConnection")) {
+  if (is(x@conn, "PqConnection") | is(x@conn, "duckdb_connection")) {
     observations_linked <- dplyr::mutate(
       observations_linked,
       observation_datetime_int = dplyr::sql(
@@ -456,43 +470,46 @@ setMethod(
   }
   
   observations_linked <- observations_linked %>% 
-    dplyr::group_by(patient_id, t) %>%
+    dplyr::group_by(.data$patient_id, .data[[x_entity_id_field_name]], .data$t) %>%
     dplyr::mutate(
-      y_bar = mean(observation_value_numeric, na.rm = TRUE),
-      t_bar = mean(observation_datetime_int, na.rm = TRUE)
+      y_bar = mean(.data$observation_value_numeric, na.rm = TRUE),
+      t_bar = mean(.data$observation_datetime_int, na.rm = TRUE)
     ) %>% 
     dplyr::summarise(
       slope_numerator = sum(
-        (observation_value_numeric - y_bar) *
-          (observation_datetime_int - t_bar),
+        (.data$observation_value_numeric - .data$y_bar) *
+          (.data$observation_datetime_int - .data$t_bar),
         na.rm = TRUE),
       slope_denominator = sum(
-        (observation_datetime_int - t_bar) *
-          (observation_datetime_int - t_bar),
+        (.data$observation_datetime_int - .data$t_bar) *
+          (.data$observation_datetime_int - .data$t_bar),
         na.rm = TRUE),
       regression_N = dplyr::n(),
-      y_bar = mean(y_bar, na.rm = TRUE),
-      t_bar = mean(t_bar, na.rm = TRUE)
+      y_bar = mean(.data$y_bar, na.rm = TRUE),
+      t_bar = mean(.data$t_bar, na.rm = TRUE)
     ) %>%
-    dplyr::mutate(final_slope = slope_numerator /
-                    dplyr::if_else(slope_denominator == 0, NA_real_, slope_denominator)
+    dplyr::mutate(final_slope = .data$slope_numerator /
+                    dplyr::if_else(.data$slope_denominator == 0,
+                                   NA_real_, 
+                                   .data$slope_denominator)
     ) %>%
-    dplyr::transmute(t,
-                     patient_id,
+    dplyr::transmute(.data$t,
+                     .data$patient_id,
+                     .data[[x_entity_id_field_name]],
                      {{field_name_intercept}} := dplyr::if_else(
-                       is.na(final_slope),
+                       is.na(.data$final_slope),
                        NA_real_,
-                       y_bar - final_slope * t_bar),
-                     {{field_name_slope}} := final_slope,
-                     {{field_name_N}} := regression_N)
+                       .data$y_bar - .data$final_slope * .data$t_bar),
+                     {{field_name_slope}} := .data$final_slope,
+                     {{field_name_N}} := .data$regression_N)
   
-  x@therapy_table <- dplyr::left_join(
-    TT,
+  x@longitudinal_table <- dplyr::left_join(
+    LT,
     observations_linked,
-    by = c("patient_id", "t")
+    by = c("patient_id", x_entity_id_field_name, "t")
   )
   
-  if(compute) {
+  if (compute) {
     x <- compute(x)
   }
   
@@ -500,21 +517,21 @@ setMethod(
 }
 
 
-#' Therapy table feature: temporal trend of clinical observations
+#' Clinical feature: temporal trend of clinical observations
 #'
-#' @description Add clinical feature (variables) to a therapy episode table 
-#' containing the Ordinary Least Squares (OLS) intercept and slope of clinical
-#' observations of interest
-#' @param x a \code{\link{TherapyEpisode}} object
+#' @description Add a clinical feature (variable) to a therapy or encounter 
+#' longitudinal table. The feature corresponds to the Ordinary Least Squares (OLS) 
+#' intercept and slope of clinical observations of interest
+#' @param x an object of class \code{\link{TherapyEpisode}} or \code{\link{Encounter}}
 #' @param observation_code a character vector of clinical investigation codes
 #' matching the \code{observation_code} field in the \code{inpatient_investigation}
 #' table (see \code{\link{validate_investigations}()}
 #' @param hours the maximum number of hours the observations should date back from
-#' \code{t_start}, the starting time of every row in the therapy table
+#' \code{t_start}, the starting time of every row in the longitudinal table
 #' @param observation_code_system (optional, reserved to situations where 
 #' \code{observation_code} is ambiguous across code systems/vocabularies) a single 
-#' character string specifying the code system identifier (example:
-#'  \code{"http://snomed.info/sct"}) of \code{observation_code}.
+#' character string specifying the code system identifier of \code{observation_code} 
+#' (for example: \code{"http://snomed.info/sct"}).
 #' 
 #' The default (\code{NULL}) filters observations using the \code{observation_code} only.
 #' @param compute if \code{TRUE} (the default), the remote therapy table will 
@@ -529,19 +546,20 @@ setMethod(
 #' The returned regression intercept is defined with respect to time equals
 #' zero at \code{t_start}. It thus corresponds to the value of the linear 
 #' (straight line) extrapolation of the trend to \code{t_start}.
-#' @return an object of class \code{\link{TherapyEpisode}}
+#' @return an object of class \code{\link{TherapyEpisode}} or 
+#' \code{\link{Encounter}}
 #' @rdname clinical_feature_ols_trend
 #' @export
 #' @include objects.R
 #' @examples 
 #' \dontrun{
-#' conSQLite <- create_mock_database("example.sqlite")
+#' fake_db <- create_mock_database("example.duckdb")
 #' temperature_check <- clinical_feature_ols_trend(
-#'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+#'    TherapyEpisode(fake_db, "4d611fc8886c23ab047ad5f74e5080d7"),
 #'    observation_code = "8310-5",
 #'    hours = 24
 #'    )
-#' str(therapy_table(temperature_check, collect = TRUE))
+#' str(longitudinal_table(temperature_check, collect = TRUE))
 #' }
 setGeneric(
   "clinical_feature_ols_trend", 
@@ -556,8 +574,11 @@ setGeneric(
 #' @export
 setMethod(
   "clinical_feature_ols_trend",
-  c(x = "TherapyEpisode"),
+  c(x = "RamsesObject"),
   function(x, observation_code, hours, observation_code_system = NULL, compute = TRUE) {
+    if (!(is(x, "TherapyEpisode") || is(x, "Encounter"))) {
+      stop("`x` must be an object of class `TherapyEpisode` or `Encounter`.")
+    }
     stopifnot(is.character(observation_code))
     stopifnot(is.numeric(hours) & length(hours) == 1 & hours >= 0)
     
@@ -581,11 +602,11 @@ setMethod(
 
 .clinical_feature_threshold <- function(x, observation_code, threshold, hours, observation_code_system, compute) {
   stopifnot(is.logical(compute))
-  if(compute) {
+  x_entity_id_field_name <- .clinical_feature_object_id_field(x)
+  if (compute) {
     x <- compute(x)
   }
-  TT <- x@therapy_table
-  therapy_record <- collect(x)
+  LT <- x@longitudinal_table
   field_name <- .clinical_feature_field_name_generate(
       conn = x@conn, 
       operation = "threshold",
@@ -602,13 +623,12 @@ setMethod(
   
   observations_linked <- .clinical_feature_observations_fetch(
     x = x, 
-    TT = TT,
-    therapy_record = therapy_record,
+    LT = LT,
     observation_code = observation_code,
     hours = hours,
     observation_code_system = observation_code_system
   ) %>% 
-    dplyr::group_by(patient_id, t) %>%
+    dplyr::group_by(.data$patient_id, .data[[x_entity_id_field_name]], .data$t) %>%
     dplyr::summarise(
       {{field_name_under}} := sum(dplyr::case_when(
         dplyr::sql(sql_under) ~ 1L, TRUE ~ 0L
@@ -617,13 +637,13 @@ setMethod(
         dplyr::sql(sql_over) ~ 1L, TRUE ~ 0L
       ), na.rm = TRUE))
   
-  x@therapy_table <- dplyr::left_join(
-    TT,
+  x@longitudinal_table <- dplyr::left_join(
+    LT,
     observations_linked,
-    by = c("patient_id", "t")
+    by = c("patient_id", x_entity_id_field_name, "t")
   )
   
-  if(compute) {
+  if (compute) {
     x <- compute(x)
   }
   
@@ -632,11 +652,11 @@ setMethod(
 
 .clinical_feature_interval <- function(x, observation_code, lower_bound, upper_bound, hours, observation_code_system, compute) {
   stopifnot(is.logical(compute))
-  if(compute) {
+  x_entity_id_field_name <- .clinical_feature_object_id_field(x)
+  if (compute) {
     x <- compute(x)
   }
-  TT <- x@therapy_table
-  therapy_record <- collect(x)
+  LT <- x@longitudinal_table
   field_name <- .clinical_feature_field_name_generate(
     conn = x@conn, 
     operation = paste0("range"),
@@ -654,13 +674,12 @@ setMethod(
   
   observations_linked <- .clinical_feature_observations_fetch(
     x = x, 
-    TT = TT,
-    therapy_record = therapy_record,
+    LT = LT,
     observation_code = observation_code,
     hours = hours,
     observation_code_system = observation_code_system
   ) %>% 
-    dplyr::group_by(patient_id, t) %>%
+    dplyr::group_by(.data$patient_id, .data[[x_entity_id_field_name]], .data$t) %>%
     dplyr::summarise(
       {{field_name_under}} := sum(dplyr::case_when(
         dplyr::sql(sql_under) ~ 1L, TRUE ~ 0L
@@ -672,13 +691,13 @@ setMethod(
         dplyr::sql(sql_over) ~ 1L, TRUE ~ 0L
       ), na.rm = TRUE))
   
-  x@therapy_table <- dplyr::left_join(
-      TT,
+  x@longitudinal_table <- dplyr::left_join(
+      LT,
       observations_linked,
-      by = c("patient_id", "t")
+      by = c("patient_id", x_entity_id_field_name, "t")
     )
   
-  if(compute) {
+  if (compute) {
     x <- compute(x)
   }
   
@@ -686,22 +705,23 @@ setMethod(
 }
 
 
-#' Therapy table feature: number of clinical observations falling in an interval
+#' Clinical feature: number of clinical observations falling in an interval
 #' 
-#' @description Add clinical features (variables) to a therapy episode table 
-#' containing the number of observations falling (a) above/below a given threshold
-#' or (b) inside/outside a given interval.
-#' @param x a \code{\link{TherapyEpisode}} object
+#' @description Add a clinical feature (variable) to a therapy or encounter 
+#' longitudinal table. The feature corresponds to the number of observations falling 
+#' (a) above/below a given threshold or (b) inside/outside a given interval 
+#' depending on values provided to \code{observation_intervals}.
+#' @param x an object of class \code{\link{TherapyEpisode}} or \code{\link{Encounter}}
 #' @param observation_intervals a named list of numeric vectors of length 1 
 #' (for a threshold) or 2 (for an interval). Names of vectors must match the
 #'  \code{observation_code} field in the \code{inpatient_investigation}
-#' table (see \code{\link{validate_investigations}()}. See example
+#' table (see \code{\link{validate_investigations}()}).
 #' @param hours the maximum number of hours the observation should date back from
-#' \code{t_start}, the starting time of every row in the therapy table
+#' \code{t_start}, the starting time of every row in the longitudinal table
 #' @param observation_code_system (optional, reserved to situations where 
 #' \code{observation_code} is ambiguous across code systems/vocabularies) a single 
-#' character string specifying the code system identifier (example:
-#'  \code{"http://snomed.info/sct"}) of \code{observation_code}.
+#' character string specifying the code system identifier of \code{observation_code} 
+#' (for example: \code{"http://snomed.info/sct"}).
 #' 
 #' The default (\code{NULL}) filters observations using the \code{observation_code} only.
 #' @param compute if \code{TRUE} (the default), the remote therapy table will 
@@ -709,26 +729,27 @@ setMethod(
 #' @details The feature will be computed exclusively on numeric investigations 
 #' marked with status \code{"final"}, \code{"preliminary"}, \code{"corrected"}, 
 #' or \code{"amended"}.
-#' @return an object of class \code{\link{TherapyEpisode}}
+#' @return an object of class \code{\link{TherapyEpisode}} or 
+#' \code{\link{Encounter}}
 #' @rdname clinical_feature_interval
 #' @export
 #' @examples 
 #' \dontrun{
-#' conSQLite <- create_mock_database("example.sqlite")
+#' fake_db <- create_mock_database("example.duckdb")
 #' 
 #' temperature_interval <- clinical_feature_interval(
-#'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+#'    TherapyEpisode(fake_db, "4d611fc8886c23ab047ad5f74e5080d7"),
 #'    observation_intervals = list("8310-5" = c(36, 38)),
 #'    hours = 24
 #'    )
-#' str(therapy_table(temperature_interval, collect = TRUE))
+#' str(longitudinal_table(temperature_interval, collect = TRUE))
 #' 
 #' temperature_threshold <- clinical_feature_interval(
-#'    TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+#'    TherapyEpisode(fake_db, "4d611fc8886c23ab047ad5f74e5080d7"),
 #'    observation_intervals = list("8310-5" = 38),
 #'    hours = 24
 #'    )
-#' str(therapy_table(temperature_threshold, collect = TRUE))
+#' str(longitudinal_table(temperature_threshold, collect = TRUE))
 #' }
 #' @include objects.R
 setGeneric(
@@ -744,8 +765,11 @@ setGeneric(
 #' @export
 setMethod(
   "clinical_feature_interval",
-  c(x = "TherapyEpisode"),
+  c(x = "RamsesObject"),
   function(x, observation_intervals, hours, observation_code_system = NULL, compute = TRUE) {
+    if (!(is(x, "TherapyEpisode") || is(x, "Encounter"))) {
+      stop("`x` must be an object of class `TherapyEpisode` or `Encounter`.")
+    }
     stopifnot(is.list(observation_intervals))
     stopifnot(all(unlist(lapply(observation_intervals, length)) %in% 1:2))
     stopifnot(is.numeric(hours) & length(hours) == 1 & hours >= 0)
@@ -760,7 +784,7 @@ setMethod(
     
     if (obs_code_valid) {
       for (i in seq_len(length(observation_intervals))) {
-        if(length(observation_intervals[[i]]) == 1) {
+        if (length(observation_intervals[[i]]) == 1) {
           stopifnot(!is.na(observation_intervals[[i]]) &
                       !is.infinite(observation_intervals[[i]]))
           x <- .clinical_feature_threshold(x = x, 

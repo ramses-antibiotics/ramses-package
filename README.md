@@ -8,7 +8,9 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4428899.svg)](https://doi.org/10.5281/zenodo.4428899)
 <!-- badges: end -->
  
-<div class="lead"><code>Ramses</code> is an analytical software package enabling hospitals to protect antibiotics by monitoring their prescribing and the management of infections using routine electronic health records.</div>
+<div class="lead"><code>Ramses</code> is an analytical software package helping 
+hospitals to monitor their antimicrobial prescribing and the management of 
+infections using routine electronic health records.</div>
 
 ## Overview
 
@@ -24,7 +26,7 @@
 - admission/discharge/transfer data and ward movements
 - antibiotic prescription and administration records
 - microbiology order requests and results
-- other clinical investigations (blood counts, vitals, point of care tests. etc.) 
+- other clinical investigations (blood counts, vitals, point of care tests. etc.).
 
 
 ## Features
@@ -32,7 +34,7 @@
 - measuring antibiotic consumption
 <!-- - measuring drug/bug match and rates of microbial culture sampling -->
 - integration with the [AMR package](https://msberends.github.io/AMR/) for classification/prediction of resistance phenotypes 
-- compatible with SQLite and PostgreSQL databases
+- compatible with [DuckDB](https://duckdb.org/) and PostgreSQL databases
 
 ## Funders
 

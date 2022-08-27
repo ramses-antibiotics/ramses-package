@@ -24,18 +24,19 @@ digraph G {
 
 # Interface
 RamsesObject [
-  width = 2.2
+  width = 2.5
   label = "{«interface»\n
   RamsesObject|
   + class: character\l
-  + id: character\l
+  + id: character/integer\l
   + conn: DBIConnection\l
   - record: tbl_sql\l|
   
   + class(): character\l
   + show(): void\l
   + compute(): RamsesObject\l
-  + collect(): tbl_df\l}"
+  + collect(): tbl_df\l
+  + Patient(): Patient\l}"
 ]
 
 /*
@@ -68,13 +69,13 @@ Prescription_Combo [
 */
 
 MedicationRequest [
-  width = 2.7
+  width = 3
   label = "{MedicationRequest|
-  - patient_id\l|
+  \l|
   
   + MedicationRequest(DBICon, id)\l
-  + Patient(): Patient\l
   + TherapyEpisode(): TherapyEpisode\l
+  + longitudinal_table(collect = T/F): tbl\l
   + therapy_timeline(): htmlwidgets\l}"
   
   # + Clinician(): Clinician\l
@@ -84,18 +85,16 @@ MedicationRequest [
 TherapyEpisode [
   width = 3.5
   label = "{TherapyEpisode|
-  - therapy_table: tbl_sql\l|
+  - longitudinal_table: tbl_sql\l|
   
   + TherapyEpisode(DBICon, id): TherapyEpisode\l
-  + Patient(): Patient\l
-  + therapy_table(collect = T/F): tbl\l
-  + therapy_timeline(): htmlwidgets\l
   + parenteral_changes(): list\l
+  + longitudinal_table(collect = T/F): tbl\l
   + clinical_feature_last(): TherapyEpisode\l
   + clinical_feature_mean(): TherapyEpisode\l
   + clinical_feature_ols_trend(): TherapyEpisode\l
-  + clinical_feature_interval(): TherapyEpisode\l}"
-#  + medication_request(): list\l}"
+  + clinical_feature_interval(): TherapyEpisode\l
+  + therapy_timeline(): htmlwidgets\l}"
 ]
 
 Patient [
@@ -103,6 +102,20 @@ Patient [
   label = "{Patient|
   \l|
   + Patient(DBICon, id): Patient\l
+  + therapy_timeline(): htmlwidgets\l}"
+]
+
+Encounter [
+  width = 3
+  label = "{Encounter|
+  - longitudinal_table: tbl_sql\l|
+
+  + Encounter(DBICon, id): Encounter\l
+  + longitudinal_table(collect = T/F): tbl\l
+  + clinical_feature_last(): Encounter\l
+  + clinical_feature_mean(): Encounter\l
+  + clinical_feature_ols_trend(): Encounter\l
+  + clinical_feature_interval(): Encounter\l
   + therapy_timeline(): htmlwidgets\l}"
 ]
 
@@ -116,12 +129,6 @@ Clinician [
   + get_lead_clinician: Clinician\l}"
 ]*/
 
-/*
-TherapyList [
-label = "{TherapyList|\l+ id: list\l+ type: \"therapy-list\"\l- TherapyTable: tbl\l+ lazy_status: boolean\l|+ fetch(): data.frame\l + therapy_table(): list\l}"
-]
-*/
-
 
 /*RamsesObject -> Prescription [dir=back]
 Prescription -> Prescription_Mono [dir=back]
@@ -129,7 +136,7 @@ Prescription -> Prescription_Combo [dir=back]*/
 RamsesObject -> MedicationRequest [dir=back]
 
 RamsesObject -> Patient [dir=back]
-/*RamsesObject -> Clinician [dir=back]*/
+RamsesObject -> Encounter [dir=back]
 RamsesObject -> TherapyEpisode [dir=back]
 
 TherapyEpisode -> MedicationRequest [ constraint=false
@@ -151,10 +158,4 @@ TherapyEpisode -> Clinician  [ style = invis ]; */
 Patient -> TherapyEpisode  [ style = invis ]; 
 
 
-/*
-TherapyEpisode -> TherapyList [constraint=false
-  arrowtail=odiamond
-  headlabel = "2..*  "
-  taillabel = "0..*  "]
-*/  
 }

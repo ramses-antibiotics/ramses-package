@@ -50,11 +50,14 @@ reference:
   contents:
   - RamsesObject-class
   - Patient-class
+  - Encounter-class
   - MedicationRequest-class
   - TherapyEpisode-class
-  - therapy_table
+  - longitudinal_table
   - parenteral_changes
   - starts_with("clinical_feature_")
+  - collect
+  - compute
   - therapy_timeline
 - title: Transform and validate data
   desc:  Functions to enrich and validate data before loading into the warehouse.
@@ -99,7 +102,6 @@ reference:
   - create_mock_database
   - starts_with("bridge_")
   - create_therapy_episodes
-  - collect_ramses_tbl
 - title: Index
   desc:  All functions in alphabetical order
   contents:

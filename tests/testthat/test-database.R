@@ -16,59 +16,59 @@ test_that("Batch SQL scripts get split", {
   
   expect_equal(.split_sql_batch("blah1; blah2; WHILE stuff BEGIN balh3; balh3; END; blah4; WHILE i'm bored BEGIN AH END;"),
                c("blah1;", " blah2;", "WHILE stuff BEGIN balh3; balh3; END;", " blah4;", "WHILE i'm bored BEGIN AH END;"))
-  
 })
 
 
 test_that("bridge_episode_prescription_overlap", {
-  emptydatabase <- dbConnect(RSQLite::SQLite(), ":memory:")
+    db_con <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
   expect_error(bridge_episode_prescription_overlap(
     conn = "not_a_connection", overwrite = TRUE))
   expect_error(bridge_episode_prescription_overlap(
-    conn = emptydatabase, overwrite = TRUE))
+    conn = db_con, overwrite = TRUE))
   expect_error(bridge_episode_prescription_overlap(
-    conn = emptydatabase, overwrite = "TRUE"))
-  dbDisconnect(emptydatabase)
+    conn = db_con, overwrite = "TRUE"))
+  DBI::dbDisconnect(db_con, shutdown = TRUE)
 })
 
 test_that("bridge_episode_prescription_initiation", {
-  emptydatabase <- dbConnect(RSQLite::SQLite(), ":memory:")
+    db_con <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
   expect_error(bridge_episode_prescription_initiation(
     conn = "not_a_connection", overwrite = TRUE))
   expect_error(bridge_episode_prescription_initiation(
-    conn = emptydatabase, overwrite = TRUE))
+    conn = db_con, overwrite = TRUE))
   expect_error(bridge_episode_prescription_initiation(
-    conn = emptydatabase, overwrite = "TRUE"))
-  dbDisconnect(emptydatabase)
+    conn = db_con, overwrite = "TRUE"))
+  DBI::dbDisconnect(db_con, shutdown = TRUE)
 })
 
-test_that("bridge_spell_therapy_overlap", {
-  emptydatabase <- dbConnect(RSQLite::SQLite(), ":memory:")
-  expect_error(bridge_spell_therapy_overlap(
+test_that("bridge_encounter_therapy_overlap", {
+  db_con <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  expect_error(bridge_encounter_therapy_overlap(
     conn = "not_a_connection", overwrite = TRUE))
-  expect_error(bridge_spell_therapy_overlap(
-    conn = emptydatabase, overwrite = TRUE))
-  expect_error(bridge_spell_therapy_overlap(
-    conn = emptydatabase, overwrite = "TRUE"))
-  dbDisconnect(emptydatabase)
+  expect_error(bridge_encounter_therapy_overlap(
+    conn = db_con, overwrite = TRUE))
+  expect_error(bridge_encounter_therapy_overlap(
+    conn = db_con, overwrite = "TRUE"))
+  DBI::dbDisconnect(db_con, shutdown = TRUE)
 })
 
-test_that(".compute_bed_days.SQLiteConnection", {
-  temp_db <- dbConnect(RSQLite::SQLite(), ":memory:")
+test_that(".compute_bed_days", {
+  db_con <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
   dplyr::copy_to(
-    dest = temp_db,
+    dest = db_con,
     df = data.frame(
       episode_start = "2015-01-01 10:00:00",
-      episode_end = "2015-01-02 16:00:00"
+      episode_end = "2015-01-02 16:00:00",
+      ramses_bed_days = NA_real_
     ), 
     name = "inpatient_episodes", 
     temporary = FALSE
   )
-  .compute_bed_days.SQLiteConnection(temp_db)
+  .compute_bed_days(db_con)
   expect_equal(
-    dplyr::collect(tbl(temp_db, "inpatient_episodes"))[["ramses_bed_days"]],
+    dplyr::collect(tbl(db_con, "inpatient_episodes"))[["ramses_bed_days"]],
     1.25)
-  dbDisconnect(temp_db)
+  DBI::dbDisconnect(db_con, shutdown = TRUE)
 })
 
 test_that(".format_id_as_character", {
@@ -83,26 +83,26 @@ test_that(".format_id_as_character", {
 })
 
 test_that(".sql_data_type", {
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-  dplyr::copy_to(dest = fake_db_conn,
+  db_con <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  dplyr::copy_to(dest = db_con,
                  df = dplyr::tibble(patient_id = "99999999999", 
                                     int_var = 1L,
                                     num_var = 1.1), 
                  name = "patients", 
                  temporary = FALSE)
   expect_equal(
-    .sql_data_type(fake_db_conn, "patients", c("patient_id", "int_var")),
+    .sql_data_type(db_con, "patients", c("patient_id", "int_var")),
     c("patient_id" = "character",
       "int_var" = "integer")
   )
   expect_equal(
-    .sql_data_type(fake_db_conn, "patients"),
+    .sql_data_type(db_con, "patients"),
     c(patient_id = "character", 
       int_var = "integer", 
       num_var = "numeric")
   )
   expect_error(
-    .sql_data_type(fake_db_conn, "patients", 1)
+    .sql_data_type(db_con, "patients", 1)
   )
-  DBI::dbDisconnect(fake_db_conn)
+  DBI::dbDisconnect(db_con, shutdown = TRUE)
 })

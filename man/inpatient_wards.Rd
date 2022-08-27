@@ -15,7 +15,7 @@ inpatient_wards
 }
 \description{
 Set of simulated records of ward movements during 
-hospitalisation spells included in \code{\link[Ramses]{inpatient_episodes}}.
+hospitalisation encounters included in \code{\link[Ramses]{inpatient_episodes}}.
 
 This data was simulated to reproduce relevant characteristics of English 
 NHS Admitted Patient Care datasets. More information can be found on the 

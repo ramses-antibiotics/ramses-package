@@ -1,7 +1,7 @@
 position,variable_name,must_exist,must_be_nonmissing,must_be_unique
 1,observation_id,TRUE,TRUE,TRUE
 2,patient_id,TRUE,TRUE,FALSE
-3,spell_id,FALSE,FALSE,FALSE
+3,encounter_id,FALSE,FALSE,FALSE
 4,status,TRUE,TRUE,FALSE
 5,request_datetime,TRUE,TRUE,FALSE
 6,observation_datetime,TRUE,TRUE,FALSE

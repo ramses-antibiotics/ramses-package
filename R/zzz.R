@@ -79,9 +79,6 @@
 
 global_vars <- c(
   "n",
-  "admission_date",
-  "discharge_date",
-  "spell_id",
   "ddd_value",
   "ddd_unit",
   "valid_ab",
@@ -128,10 +125,7 @@ global_vars <- c(
   "DDD_prescribed",
   "DOT",
   "LOT",
-  "diagnosis_episode_end",
-  "t_start",
-  "t_end",
-  "keep"
+  "diagnosis_episode_end"
 )
 
 utils::globalVariables(global_vars)

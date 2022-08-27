@@ -44,9 +44,8 @@ The Clinical Classifications Software (CCS) is a database developed as part
     \item Mental Illness
   }
   
-  In Ramses, this dataset is useful to facilitate machine learning tasks that rely on ICD-10 
-  clinical diagnosis codes and other applications that require mutually-exclusive categories 
-  (eg tasks involving data aggregation).
+  This dataset can help group ICD-10 into a smaller number of mutually-exclusive 
+  categories, such as aggregating data.
 }
 \examples{
 data("ccs")

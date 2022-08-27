@@ -2,8 +2,8 @@
 % Please edit documentation in R/clinical_features.R
 \name{clinical_feature_ols_trend}
 \alias{clinical_feature_ols_trend}
-\alias{clinical_feature_ols_trend,TherapyEpisode-method}
-\title{Therapy table feature: temporal trend of clinical observations}
+\alias{clinical_feature_ols_trend,RamsesObject-method}
+\title{Clinical feature: temporal trend of clinical observations}
 \usage{
 clinical_feature_ols_trend(
   x,
@@ -13,7 +13,7 @@ clinical_feature_ols_trend(
   compute = TRUE
 )
 
-\S4method{clinical_feature_ols_trend}{TherapyEpisode}(
+\S4method{clinical_feature_ols_trend}{RamsesObject}(
   x,
   observation_code,
   hours,
@@ -22,19 +22,19 @@ clinical_feature_ols_trend(
 )
 }
 \arguments{
-\item{x}{a \code{\link{TherapyEpisode}} object}
+\item{x}{an object of class \code{\link{TherapyEpisode}} or \code{\link{Encounter}}}
 
 \item{observation_code}{a character vector of clinical investigation codes
 matching the \code{observation_code} field in the \code{inpatient_investigation}
 table (see \code{\link{validate_investigations}()}}
 
 \item{hours}{the maximum number of hours the observations should date back from
-\code{t_start}, the starting time of every row in the therapy table}
+\code{t_start}, the starting time of every row in the longitudinal table}
 
 \item{observation_code_system}{(optional, reserved to situations where 
 \code{observation_code} is ambiguous across code systems/vocabularies) a single 
-character string specifying the code system identifier (example:
- \code{"http://snomed.info/sct"}) of \code{observation_code}.
+character string specifying the code system identifier of \code{observation_code} 
+(for example: \code{"http://snomed.info/sct"}).
 
 The default (\code{NULL}) filters observations using the \code{observation_code} only.}
 
@@ -42,12 +42,13 @@ The default (\code{NULL}) filters observations using the \code{observation_code}
 be computed on the remote server. This is generally faster.}
 }
 \value{
-an object of class \code{\link{TherapyEpisode}}
+an object of class \code{\link{TherapyEpisode}} or 
+\code{\link{Encounter}}
 }
 \description{
-Add clinical feature (variables) to a therapy episode table 
-containing the Ordinary Least Squares (OLS) intercept and slope of clinical
-observations of interest
+Add a clinical feature (variable) to a therapy or encounter 
+longitudinal table. The feature corresponds to the Ordinary Least Squares (OLS) 
+intercept and slope of clinical observations of interest
 }
 \details{
 The feature will be computed exclusively on numeric investigations 
@@ -63,12 +64,12 @@ zero at \code{t_start}. It thus corresponds to the value of the linear
 }
 \examples{
 \dontrun{
-conSQLite <- create_mock_database("example.sqlite")
+fake_db <- create_mock_database("example.duckdb")
 temperature_check <- clinical_feature_ols_trend(
-   TherapyEpisode(conSQLite, "4d611fc8886c23ab047ad5f74e5080d7"),
+   TherapyEpisode(fake_db, "4d611fc8886c23ab047ad5f74e5080d7"),
    observation_code = "8310-5",
    hours = 24
    )
-str(therapy_table(temperature_check, collect = TRUE))
+str(longitudinal_table(temperature_check, collect = TRUE))
 }
 }

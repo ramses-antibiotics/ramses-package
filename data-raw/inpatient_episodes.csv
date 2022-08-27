@@ -1,4 +1,4 @@
-"forename","surname","date_of_birth","date_of_death","sex","NHS_number","patient_id","ethnic_group","spell_id","admission_method","admission_date","discharge_date","age_on_admission","episode_number","last_episode_in_spell","episode_start","episode_end","consultant_code","main_specialty_code"
+"forename","surname","date_of_birth","date_of_death","sex","NHS_number","patient_id","ethnic_group","encounter_id","admission_method","admission_date","discharge_date","age_on_admission","episode_number","last_episode_in_encounter","episode_start","episode_end","consultant_code","main_specialty_code"
 "mcihmnagko","chljfpmapf",1993-10-25,NA,"2","9912833513","6145252493","C","5458286195",1,2015-09-24 09:13:22,2015-09-24 19:16:41,21,1,1,2015-09-24 09:13:22,2015-09-24 19:16:41,"C1000003","100"
 "jmkjniicmg","ibljnlajio",1966-08-02,NA,"1","1733723521","5124578766","M","1275624266",2,2015-08-04 11:27:16,2015-08-12 12:54:48,49,1,2,2015-08-04 11:27:16,2015-08-06 11:49:09,"C3400039","340"
 "jmkjniicmg","ibljnlajio",1966-08-02,NA,"1","1733723521","5124578766","M","1275624266",2,2015-08-04 11:27:16,2015-08-12 12:54:48,49,2,2,2015-08-06 11:49:09,2015-08-08 12:11:02,"C1000010","100"

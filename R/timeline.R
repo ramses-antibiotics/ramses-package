@@ -2,10 +2,13 @@
 
 #' Display an HTML antimicrobial therapy timeline
 #'
-#' @param x an object of class \code{Patient} or \code{TherapyEpisode}
-#' @param date1 (optional, only used for \code{x} of class \code{Patient}) a \code{Date} or \code{POSIXct} window minimum to 
+#' @param x an object of class \code{Patient}, \code{Encounter}, 
+#' or \code{TherapyEpisode} 
+#' @param date1 (optional, only used for \code{x} of class \code{Patient}) 
+#' a \code{Date} or \code{POSIXct} window minimum to 
 #' focus the timeline on by default
-#' @param date2 (optional, only used for \code{x} of class \code{Patient}) a \code{Date} or \code{POSIXct} window maximum to 
+#' @param date2 (optional, only used for \code{x} of class \code{Patient}) 
+#' a \code{Date} or \code{POSIXct} window maximum to 
 #' focus the timeline on by default
 #' @param load_timevis_dependencies if \code{TRUE}, jQuery and Bootstrap will
 #' be loaded (default is \code{FALSE}). See \link[timevis]{timevis} for detail.
@@ -36,6 +39,12 @@ setMethod(
       stop("Patient not found in the database")
     }
     
+    if(!DBI::dbExistsTable(input_patient@conn, "drug_prescriptions")) {
+      stop("The Ramses database must contain a valid `drug_prescriptions` table.\n",
+           "Please consult ?load_medications for help.",
+           call. = FALSE)
+    }
+    
     # Retrieve prescription records  
     medication_requests_inclusion <- tbl(input_patient@conn, "drug_prescriptions") %>%
       dplyr::filter(patient_id == !!input_patient@id & 
@@ -43,7 +52,7 @@ setMethod(
       dplyr::left_join(tbl(input_patient@conn, "drug_therapy_episodes"), 
                        by = c("patient_id", "therapy_id")) %>%
       dplyr::arrange(patient_id, prescription_start) %>% 
-      collect_ramses_tbl()
+      dplyr::collect()
     
     # Calculate the date range the timeline should display by default
     
@@ -90,6 +99,55 @@ setMethod(
 #' @export
 setMethod(
   "therapy_timeline",
+  c(x = "Encounter"),
+  function(x, load_timevis_dependencies = FALSE) {
+    
+    input_encounter <- x
+    if (length(input_encounter@id) > 1) {
+      input_encounter <- Encounter(x@conn, x@id[1])
+      warning("`x` contains multiple encounters.\n",
+              "Only the first therapy episode will be used.", call. = FALSE)
+    }
+    if( nrow(collect(input_encounter)) == 0 ) {
+      stop("Encounter not found in the database", call. = FALSE)
+    }
+    
+    input_patient <- Patient(input_encounter)
+    if( nrow(collect(input_patient)) == 0 ) {
+      stop("Patient not found in the database", call. = FALSE)
+    }
+    
+    date_window <- collect(input_encounter) %>% 
+      dplyr::distinct(left_date = .data$admission_date,
+                      right_date = .data$discharge_date)
+    
+    if(!DBI::dbExistsTable(input_patient@conn, "drug_prescriptions")) {
+      stop("The Ramses database must contain a valid `drug_prescriptions` table.\n",
+           "Please consult ?load_medications for help.",
+           call. = FALSE)
+    }
+    
+    # Retrieve prescription records  
+    medication_requests_inclusion <- tbl(input_patient@conn, "drug_prescriptions") %>%
+      dplyr::filter(.data$patient_id == !!input_patient@id & 
+                      !.data$prescription_status %in% c("cancelled", "draft", "in-error")) %>%
+      dplyr::left_join(tbl(input_patient@conn, "drug_therapy_episodes"), 
+                       by = c("patient_id", "therapy_id")) %>%
+      dplyr::arrange(.data$patient_id, .data$prescription_start) %>% 
+      dplyr::collect()
+    
+    .therapy_timeline_create(
+      medication_requests_df = medication_requests_inclusion,
+      input_patient = input_patient,
+      date_window = date_window,
+      load_timevis_dependencies = load_timevis_dependencies
+    )
+  })
+
+#' @rdname therapy_timeline
+#' @export
+setMethod(
+  "therapy_timeline",
   c(x = "TherapyEpisode"),
   function(x, load_timevis_dependencies = FALSE) {
 
@@ -103,8 +161,7 @@ setMethod(
       stop("TherapyEpisode not found in the database", call. = FALSE)
     }
     
-    input_patient <- Patient(input_therapy_episode@conn, 
-                             collect(input_therapy_episode)$patient_id)
+    input_patient <- Patient(input_therapy_episode)
     if( nrow(collect(input_patient)) == 0 ) {
       stop("Patient not found in the database", call. = FALSE)
     }
@@ -120,7 +177,7 @@ setMethod(
       dplyr::left_join(tbl(input_patient@conn, "drug_therapy_episodes"), 
                        by = c("patient_id", "therapy_id")) %>%
       dplyr::arrange(patient_id, prescription_start) %>% 
-      collect_ramses_tbl()
+      collect()
     
     .therapy_timeline_create(
       medication_requests_df = medication_requests_inclusion,
@@ -130,7 +187,44 @@ setMethod(
     )
   })
 
+#' @rdname therapy_timeline
+#' @export
+setMethod(
+  "therapy_timeline",
+  c(x = "MedicationRequest"),
+  function(x, load_timevis_dependencies = FALSE) {
+    
+    input_therapy_episode <- TherapyEpisode(x)
 
+    if( nrow(collect(input_therapy_episode)) == 0 ) {
+      stop("TherapyEpisode not found in the database", call. = FALSE)
+    }
+    
+    input_patient <- Patient(input_therapy_episode)
+    if( nrow(collect(input_patient)) == 0 ) {
+      stop("Patient not found in the database", call. = FALSE)
+    }
+    
+    date_window <- collect(input_therapy_episode) %>% 
+      dplyr::transmute(left_date = therapy_start,
+                       right_date = therapy_end)
+    
+    # Retrieve prescription records  
+    medication_requests_inclusion <- tbl(input_patient@conn, "drug_prescriptions") %>%
+      dplyr::filter(patient_id == !!input_patient@id & 
+                      !prescription_status %in% c("cancelled", "draft", "in-error")) %>%
+      dplyr::left_join(tbl(input_patient@conn, "drug_therapy_episodes"), 
+                       by = c("patient_id", "therapy_id")) %>%
+      dplyr::arrange(patient_id, prescription_start) %>% 
+      collect()
+    
+    .therapy_timeline_create(
+      medication_requests_df = medication_requests_inclusion,
+      input_patient = input_patient,
+      date_window = date_window,
+      load_timevis_dependencies = load_timevis_dependencies
+    )
+  })
 
 
 #' Extract a data frame of drug data for display in therapy timeline
@@ -182,9 +276,12 @@ setMethod(
   timeline_micro <- .therapy_timeline_get_micro(input_patient)
   
   timeline_groups <- data.frame(
-    id = 3:0,
-    content = c("Rx", "Diagnoses", "Clinical findings",
-                "Admissions"# spacer at top of timeline swimming lanes
+    id = 0:3,
+    content = c(
+      "Admissions",
+      "Clinical findings",
+      "Diagnoses", 
+      "Rx"
     ),
     stackSubgroups = c(FALSE, FALSE, FALSE, FALSE),
     # subgroupOrder = c("TherapyRank", NA),#, "Diagnoses", "Cultures"
@@ -220,40 +317,50 @@ setMethod(
 .therapy_timeline_get_drugs <- function(medication_requests_df) {
 
   timeline_Rx <- medication_requests_df %>%
-    dplyr::filter(!is.na(prescription_start)) %>%
-    dplyr::arrange(therapy_rank) %>%
-    dplyr::mutate(duration = as.numeric(prescription_end - prescription_start, unit = "secs")) %>% 
-    dplyr::transmute(id = paste0("MedicationRequest:", prescription_id, ":Rx"), 
-                     content = prescription_text,
-                     title = paste0(prescription_start, ", ",
-                                    ifelse(daily_frequency < 0, "",
-                                           ifelse(duration < 24*3600,
-                                                  paste(trunc(duration/3600), "hours, "),
-                                                  paste(trunc(duration/3600/24), "days, "))),
-                                    "Therapy episode: ", therapy_id, ", position: ", therapy_rank), 
-                     start = prescription_start,
-                     end = prescription_end,
-                     type = ifelse(daily_frequency < 0, 'point', 'range'),
-                     group = 3,
-                     subgroup = as.character(therapy_rank),
-                     className = dplyr::case_when(
-                       daily_frequency < 0 ~ "prescription-OOF",
-                       prescription_context == "discharge" ~ "prescription-REGT",
-                       TRUE ~ "prescription-REG"
-                     )) %>% as.data.frame()
+    dplyr::filter(!is.na(.data$prescription_start)) %>%
+    dplyr::arrange(.data$therapy_rank) %>%
+    dplyr::mutate(duration = as.numeric(.data$prescription_end - .data$prescription_start, unit = "secs")) %>% 
+    dplyr::transmute(
+      id = paste0("MedicationRequest:", .data$prescription_id, ":Rx"), 
+      content = .data$prescription_text,
+      title = paste0(
+        .data$prescription_start, ", ",
+        dplyr::if_else(
+          .data$daily_frequency < 0, "",
+          dplyr::if_else(duration < 24*3600,
+                         paste(trunc(.data$duration/3600), "hours, "),
+                         paste(trunc(.data$duration/3600/24), "days, "))
+        ),
+        "Therapy episode: ", .data$therapy_id, ", position: ", .data$therapy_rank
+      ), 
+      start = .data$prescription_start,
+      end = .data$prescription_end,
+      type = dplyr::if_else(.data$daily_frequency < 0, 'point', 'range'),
+      group = 3,
+      subgroup = as.character(.data$therapy_rank),
+      className = dplyr::case_when(
+        .data$daily_frequency < 0 ~ "prescription-OOF",
+        .data$prescription_context == "discharge" ~ "prescription-REGT",
+        TRUE ~ "prescription-REG"
+      )
+    ) %>%
+    as.data.frame()
   
   # This extracts data for the time of request 
   # (displaying a vertical bar before the drug administrations start)
   timeline_Rx_request <- medication_requests_df %>%
-    dplyr::filter(!is.na(prescription_start)) %>%
-    dplyr::arrange(therapy_rank) %>%
-    dplyr::transmute(id = paste0("MedicationRequest:", prescription_id, ":request"), 
-                     title = paste0("Time requested: ", authoring_date),
-                     start = authoring_date,
-                     type =  'point' ,
-                     group = 3,
-                     subgroup = as.character(therapy_rank),
-                     className = "prescription-request") %>% as.data.frame()
+    dplyr::filter(!is.na(.data$prescription_start)) %>%
+    dplyr::arrange(.data$therapy_rank) %>%
+    dplyr::transmute(
+      id = paste0("MedicationRequest:", .data$prescription_id, ":request"), 
+      title = paste0("Time requested: ", .data$authoring_date),
+      start = .data$authoring_date,
+      type =  'point' ,
+      group = 3,
+      subgroup = as.character(.data$therapy_rank),
+      className = "prescription-request"
+    ) %>% 
+    as.data.frame()
   
   list(
     timeline_Rx = timeline_Rx,
@@ -269,38 +376,56 @@ setMethod(
 .therapy_timeline_get_micro <- function(input_patient) {
   
   stopifnot(is(input_patient, "Patient"))
+  tables_missing <- !vapply(
+    X = c(
+      "microbiology_specimens",
+      "microbiology_isolates"
+    ), 
+    FUN = DBI::dbExistsTable, 
+    conn = input_patient@conn, 
+    FUN.VALUE = logical(1L))
+  if (any(tables_missing)) {
+    warning(
+      "The following tables are missing from the Ramses database:\n",
+      paste(paste0("`", names(tables_missing)[tables_missing], "`"), collapse = ", "), "\n",
+      "Please consult ?load_microbiology for help.",
+      call. = FALSE
+    )
+    return(data.frame())
+  }
   
   micro <- tbl(input_patient@conn, "microbiology_specimens") %>%
-    dplyr::filter(patient_id == !!input_patient@id) %>% 
+    dplyr::filter(.data$patient_id == !!input_patient@id) %>% 
     dplyr::left_join(
       tbl(input_patient@conn, "microbiology_isolates"),
       by = c("patient_id", "specimen_id")
     ) %>% 
-    collect_ramses_tbl()
+    dplyr::collect()
   
   if(nrow(micro) == 0){
     return(data.frame())
   } else {
     timeline_micro_reports <- micro %>%
-      dplyr::mutate(className = dplyr::if_else(is.na(organism_code),
+      dplyr::mutate(className = dplyr::if_else(is.na(.data$organism_code),
                                                "micro-report-no-growth", 
                                                "micro-report")) %>% 
-      dplyr::group_by(specimen_id, className) %>% 
+      dplyr::group_by(.data$specimen_id, .data$className) %>% 
       dplyr::summarise(
         id = paste0("Specimen ID:",
-                    paste(unique(specimen_id), sep = "-"), 
+                    paste(unique(.data$specimen_id), sep = "-"), 
                     ":report"),
-        start = min(isolation_datetime, na.rm = T),
+        start = min(.data$isolation_datetime, na.rm = TRUE),
         title = paste0(
-          paste(unique(specimen_type_display), collapse = ", "), "\n",
+          paste(unique(.data$specimen_type_display), collapse = ", "), "\n",
           "Organisms: ", 
-          paste(unique(organism_display_name), collapse = ", "), "\n",
-          "Sample received: ", unique(as.Date(specimen_datetime))
+          paste(unique(.data$organism_display_name), collapse = ", "), "\n",
+          "Sample received: ", unique(as.Date(.data$specimen_datetime))
           ),
         type = "point",
         group = 1,
         subgroup = "micro"
-      )
+      ) %>% 
+      dplyr::ungroup()
     
     # TODO: reintroduce the micro-requests when we have a date of reporting
     # timeline_micro_requests <- micro %>%
@@ -322,7 +447,6 @@ setMethod(
 }
   
 
-
 #' Extract a data frame of infection diagnoses for display in therapy timeline
 #' @param input_patient a `Patient` object
 #' @return a data frame
@@ -331,96 +455,97 @@ setMethod(
   
   stopifnot(is(input_patient, "Patient"))
   
+  tables_missing <- !vapply(
+    X = c(
+      "inpatient_diagnoses",
+      "reference_icd",
+      "reference_icd_infections"
+    ), 
+    FUN = DBI::dbExistsTable, 
+    conn = input_patient@conn, 
+    FUN.VALUE = logical(1L))
+  if (any(tables_missing)) {
+    warning(
+      "The following tables are missing from the Ramses database:\n",
+      paste(paste0("`", names(tables_missing)[tables_missing], "`"), collapse = ", "), "\n",
+      "Please consult ?load_inpatient_diagnoses for help.",
+      call. = FALSE
+    )
+    return(data.frame())
+  }
+  
   # Taking ICD labels from the most recent ICD edition
   icd_lu <- tbl(input_patient@conn, "reference_icd") %>%
-    dplyr::select(icd_code,
-                  icd_display,
-                  icd_description,
-                  category_description)
+    dplyr::select(.data$icd_code,
+                  .data$icd_display,
+                  .data$icd_description,
+                  .data$category_description)
   
   # Consolidating diagnoses across episodes of care
   diag <- tbl(input_patient@conn, "inpatient_diagnoses") %>%
-    dplyr::filter(patient_id == !!input_patient@id) %>% 
+    dplyr::filter(.data$patient_id == !!input_patient@id) %>% 
     dplyr::inner_join(tbl(input_patient@conn, "reference_icd_infections"), 
                by = c("icd_code")) %>%
-    dplyr::compute()
+    dplyr::collect()
   
   # If no infection diagnosis is present, return empty data frame.
   # It will get ignore when feeding into timevis
-  if(nrow(dplyr::collect(diag)) == 0){
+  if(nrow(diag) == 0){
     return(data.frame())
   } 
-  
-  if( is(diag, "tbl_SQLiteConnection") ) {
-    # combining episodes together for diagnoses that span several episodes
-    diag <- diag %>%
-      dplyr::mutate(
-        prim_diag = dplyr::if_else(diagnosis_position == 1, 1, 0),
-        grp = dplyr::sql("
-         CASE WHEN ABS(strftime('%s', LAG([episode_end], 1, 0)
-                       OVER(PARTITION BY patient_id, icd_code
-                            ORDER BY [episode_start]))
-                       - strftime('%s', [episode_start])) <= (6 * 3600) 
-         THEN NULL
-         ELSE ROW_NUMBER() OVER(ORDER BY [episode_start]) END")) %>% 
-      dplyr::mutate(grp = dplyr::sql(
-        "MAX(grp) 
-         OVER(PARTITION BY patient_id, icd_code, prim_diag
-         ORDER BY patient_id, [episode_start])"
-      )) 
-  } else if( is(diag, "tbl_PqConnection") ) {
-    # combining episodes together for diagnoses that span several episodes
-    diag <- diag %>%
-      dplyr::mutate(diagnosis_episode_end = dplyr::sql("
-      LAG(episode_end, 1)
-      OVER(PARTITION BY patient_id, icd_code
-           ORDER BY episode_start)")) %>% 
-      dplyr::mutate(
-        prim_diag = dplyr::if_else(diagnosis_position == 1, 1, 0),
-        grp = dplyr::sql("
-         CASE WHEN ABS( EXTRACT(EPOCH FROM( 
-               diagnosis_episode_end::TIMESTAMP
-                - episode_start::TIMESTAMP ))) <= (6 * 3600) 
-         THEN NULL
-         ELSE ROW_NUMBER() OVER(ORDER BY episode_start) END")) %>% 
-      dplyr::mutate(grp = dplyr::sql(
-        "MAX(grp) 
-         OVER(PARTITION BY patient_id, icd_code, prim_diag
-              ORDER BY patient_id, episode_start)"
-      )) %>% 
-      dplyr::select(-diagnosis_episode_end)
-  } else {
-    .throw_error_method_not_implemented(".therapy_timeline_get_diagnoses()", class(diag))
-  }
-  
+
+  # combining episodes together for diagnoses that span several episodes
   diag <- diag %>%
-    dplyr::group_by(patient_id, icd_code, grp, prim_diag, 
-                    infection_group1_code,
-                    infection_group1_label,
-                    infection_group2_code,
-                    infection_group2_label) %>%
-    dplyr::summarise(start_time = min(episode_start, na.rm = TRUE),
-                     end_time = max(episode_end, na.rm = TRUE)) %>%
-    dplyr::compute()
+    dplyr::group_by(.data$patient_id, .data$icd_code) %>% 
+    dplyr::mutate(diagnosis_episode_end = dplyr::lag(.data$episode_end, 
+                                                     n = 1, 
+                                                     order_by = .data$episode_start)) %>% 
+    dplyr::ungroup() %>% 
+    dplyr::mutate(
+      prim_diag = dplyr::if_else(.data$diagnosis_position == 1, 1, 0),
+      grp = dplyr::if_else(
+        abs(as.numeric(.data$diagnosis_episode_end - .data$episode_start, units = "secs")) <= (6 * 3600),
+        NA_integer_,
+        dplyr::row_number(.data$episode_start)
+      )
+    ) %>% 
+    dplyr::group_by(.data$patient_id, .data$icd_code, .data$prim_diag) %>% 
+    dplyr::mutate(grp = max(.data$grp)) %>% 
+    dplyr::select(-.data$diagnosis_episode_end) %>%
+    dplyr::group_by(
+      .data$patient_id, 
+      .data$icd_code, 
+      .data$grp, 
+      .data$prim_diag, 
+      .data$infection_group1_code,
+      .data$infection_group1_label,
+      .data$infection_group2_code,
+      .data$infection_group2_label
+    ) %>%
+    dplyr::summarise(
+      start_time = min(.data$episode_start, na.rm = TRUE),
+      end_time = max(.data$episode_end, na.rm = TRUE)
+    ) 
   
-  diag <- diag %>%
-    dplyr::left_join(icd_lu, by = c('icd_code')) %>% 
-    collect_ramses_tbl() %>% 
-    data.table() %>% unique() %>%
+  diag <- dplyr::right_join(icd_lu, diag, 
+                            by = "icd_code", copy = TRUE) %>% 
+    dplyr::collect() %>% 
+    data.table() %>% 
+    unique() %>%
     dplyr::mutate(icd_text = paste0(
-      dplyr::if_else(prim_diag == 1, "<strong>", ""), 
-      icd_display, " &ndash; ", icd_description,
-      dplyr::if_else(prim_diag == 1, "</strong>", "")))
+      dplyr::if_else(.data$prim_diag == 1, "<strong>", ""), 
+      .data$icd_display, " &ndash; ", .data$icd_description,
+      dplyr::if_else(.data$prim_diag == 1, "</strong>", "")))
   
   diag <- dplyr::transmute(
     diag,
     id = NA, 
-    content = icd_text, 
-    title = paste0(icd_description, ifelse(prim_diag == 1, " (PRIMARY DIAGNOSIS)", "")),
-    start = start_time,  
-    end = end_time,
+    content = .data$icd_text, 
+    title = paste0(.data$icd_description, dplyr::if_else(.data$prim_diag == 1, " (PRIMARY DIAGNOSIS)", "")),
+    start = .data$start_time,  
+    end = .data$end_time,
     group =  2,
-    subgroup = infection_group1_code,
+    subgroup = .data$infection_group1_code,
     type = 'range',
     style = "background-color: #97e2f8",#paste0("background-color: #97e2f8", graph_colour), # TODO why not move this to CSS!
     className = "") %>% 
@@ -439,26 +564,40 @@ setMethod(
 .therapy_timeline_get_admissions <- function(input_patient) {
   
   stopifnot(is(input_patient, "Patient"))
+  tables_missing <- !vapply(
+    X = c(
+      "inpatient_episodes"
+    ), 
+    FUN = DBI::dbExistsTable, 
+    conn = input_patient@conn, 
+    FUN.VALUE = logical(1L))
+  if (any(tables_missing)) {
+    warning(
+      "The following tables are missing from the Ramses database:\n",
+      paste(paste0("`", names(tables_missing)[tables_missing], "`"), collapse = ", "), "\n",
+      "Please consult ?load_inpatient_diagnoses for help.",
+      call. = FALSE
+    )
+    return(data.frame())
+  }
   
   tbl(input_patient@conn, "inpatient_episodes") %>%
-    dplyr::filter(patient_id == !!input_patient@id) %>% 
-    collect_ramses_tbl() %>% 
-    dplyr::filter(!is.na(discharge_date)) %>%
-    dplyr::distinct(admission_method, admission_date, discharge_date) %>%
+    dplyr::filter(.data$patient_id == !!input_patient@id) %>% 
+    dplyr::filter(!is.na(.data$discharge_date)) %>%
+    dplyr::distinct(.data$admission_method, .data$admission_date, .data$discharge_date) %>%
     na.omit() %>% 
+    dplyr::collect() %>% 
     dplyr::transmute(
       id = NA_character_, 
       content =  dplyr::case_when(
-        admission_method == 2 ~ "Emergency admission",
-        admission_method == 1 ~ "Elective admission",
+        .data$admission_method == 2 ~ "Emergency admission",
+        .data$admission_method == 1 ~ "Elective admission",
         TRUE ~ "Other/Transfer"),
-      start = admission_date, 
-      end = discharge_date,
-      # group =  2,
-      # subgroup = 1,
+      start = .data$admission_date, 
+      end = .data$discharge_date,
       type = 'background',
       className = dplyr::if_else(
-        admission_method == 2,
+        .data$admission_method == 2,
         'admission-emergency', 
         'admission-elective')
     ) %>%

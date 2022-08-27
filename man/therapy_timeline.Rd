@@ -3,7 +3,9 @@
 \name{therapy_timeline}
 \alias{therapy_timeline}
 \alias{therapy_timeline,Patient-method}
+\alias{therapy_timeline,Encounter-method}
 \alias{therapy_timeline,TherapyEpisode-method}
+\alias{therapy_timeline,MedicationRequest-method}
 \title{Display an HTML antimicrobial therapy timeline}
 \usage{
 therapy_timeline(x, ...)
@@ -15,17 +17,24 @@ therapy_timeline(x, ...)
   load_timevis_dependencies = FALSE
 )
 
+\S4method{therapy_timeline}{Encounter}(x, load_timevis_dependencies = FALSE)
+
 \S4method{therapy_timeline}{TherapyEpisode}(x, load_timevis_dependencies = FALSE)
+
+\S4method{therapy_timeline}{MedicationRequest}(x, load_timevis_dependencies = FALSE)
 }
 \arguments{
-\item{x}{an object of class \code{Patient} or \code{TherapyEpisode}}
+\item{x}{an object of class \code{Patient}, \code{Encounter}, 
+or \code{TherapyEpisode}}
 
 \item{...}{other arguments (not in use)}
 
-\item{date1}{(optional, only used for \code{x} of class \code{Patient}) a \code{Date} or \code{POSIXct} window minimum to 
+\item{date1}{(optional, only used for \code{x} of class \code{Patient}) 
+a \code{Date} or \code{POSIXct} window minimum to 
 focus the timeline on by default}
 
-\item{date2}{(optional, only used for \code{x} of class \code{Patient}) a \code{Date} or \code{POSIXct} window maximum to 
+\item{date2}{(optional, only used for \code{x} of class \code{Patient}) 
+a \code{Date} or \code{POSIXct} window maximum to 
 focus the timeline on by default}
 
 \item{load_timevis_dependencies}{if \code{TRUE}, jQuery and Bootstrap will

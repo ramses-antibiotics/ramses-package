@@ -33,13 +33,12 @@ More information on, objects, classes, and methods in `R` is available from the 
 `Ramses` objects are S4 classes. They all conform to the `RamsesObject` virtual class specification:
 
 - they contain an `id` slot corresponding to a primary key in the database backend
-- they contain a `conn` slot corresponding to the database backend connection, currently either of `SQLiteConnection` or `PqConnection` class (see [database objects](#database-objects))
+- they contain a `conn` slot corresponding to the database backend connection, currently either of `duckdb_connection` or `PqConnection` class (see [database objects](#database-objects))
 - they can be passed to `compute()` in order to compute the corresponding database records (faster to retrieve)
 - they can be passed to `collect()` in order to retrieve the corresponding database records (returns a `tbl_df` object)
+- they can be passed to `Patient()` in order to retrieve the corresponding patient entity (returns a `Patient` object).
 
-## Prescribing objects
-
-`MedicationRequest` objects, which represent a single drug-dose order, which may or may not participate in combination therapy (2 or more drugs). `MedicationRequest` objects are associated with one episode of antimicrobial therapy (represented by `TherapyEpisode` objects).
+`MedicationRequest` objects, which represent a single drug-dose order, which may or may not participate in combination therapy (2 or more drugs). `MedicationRequest` objects are associated with one episode of antimicrobial therapy (represented by `TherapyEpisode` objects). It is possible to retrieve the `TherapyEpisode` entity from any `MedicationRequest` object `x` by passing it to the `TherapyEpisode()` function.
 
 <!--
 `Ramses` distinguishes between:
@@ -54,14 +53,14 @@ Both can be used to get to the episode of antimicrobial therapy (class: `Therapy
 
 
 ```{r diagram-objects, fig.cap="Class diagram of the main `Ramses` objects", echo=FALSE}
-htmltools::HTML(DiagrammeRsvg::export_svg(grViz("ramses-objects/ramses-med-class-diagram.gv")))
+htmltools::HTML(DiagrammeRsvg::export_svg(grViz("ramses-objects/ramses-class-diagram.gv")))
 ```
 
 # Database objects
 
 `Ramses` uses other objects for backend database connections and tables. They follow the [`dbplyr`](https://dbplyr.tidyverse.org/articles/dbplyr.html) architecture:
 
-- database connections have class `DBIConnection`. Currently, `SQLiteConnection` (package RSQLite) and `PqConnection` (package RPostgres) are supported
+- database connections have class `DBIConnection`. Currently, `duckdb_connection` (package duckdb) and `PqConnection` (package RPostgres) are supported
 - database table are created using the `tbl()` function and are represented by `tbl_sql` objects which, although they inherit from the `tbl` class, are distinct from the common `tbl_df` tibble class.
 
 ```{r diagram-tbl, fig.cap="Class diagram of tbl objects in the `tidyverse`", echo=FALSE}

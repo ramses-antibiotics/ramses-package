@@ -1,51 +1,63 @@
 
 test_that("Patient..constructor", {
   patients <- dplyr::tibble(patient_id = "99999999999")
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
+  on.exit({DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)})
+  
+  expect_error(Patient(fake_db_conn, 99),
+               "^The Ramses database must contain a valid `patients` table")
   dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
-  expect_error(Patient(fake_db_conn, NA))
-  expect_error(Patient(fake_db_conn, c()))
-  expect_error(Patient(fake_db_conn, c("a", "b")))
+  expect_error(Patient(fake_db_conn, NA),
+               "`id` must not be NA")
+  expect_error(Patient(fake_db_conn, c()),
+               "`id` must have length 1")
+  expect_error(Patient(fake_db_conn, c("a", "b")),
+               "`id` must have length 1")
   patient_object <- Patient(fake_db_conn, "99999999999")
   expect_s4_class(patient_object, "Patient")
   expect_s4_class(compute(patient_object), "Patient")
   expect_is(collect(patient_object), "tbl_df")
-  expect_error(Patient(fake_db_conn, 99999999999))
-  DBI::dbDisconnect(fake_db_conn)
+  expect_error(Patient(fake_db_conn, 99999999999),
+               "`id` must be character")
+  DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
   # works with integer/numeric
   patients <- dplyr::tibble(patient_id = 999)
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
-  expect_error(Patient(fake_db_conn, "999"))
+  expect_error(Patient(fake_db_conn, "999"),
+               "`id` must be numeric")
   expect_s4_class(Patient(fake_db_conn, 999), "Patient")
   expect_s4_class(Patient(fake_db_conn, 999L), "Patient")
-  DBI::dbDisconnect(fake_db_conn)
+  DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
   patients <- dplyr::tibble(patient_id = 999L)
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(fake_db_conn, patients, temporary = FALSE)
-  expect_error(Patient(fake_db_conn, "999"))
+  expect_error(Patient(fake_db_conn, "999"),
+               "`id` must be integer")
   expect_s4_class(Patient(fake_db_conn, 999), "Patient")
   expect_s4_class(Patient(fake_db_conn, 999L), "Patient")
-  DBI::dbDisconnect(fake_db_conn)
 })
 
-test_that("Patient..interface_methods SQLite", {
+test_that("Patient..interface_methods DuckDB", {
   patients <- dplyr::tibble(patient_id = "99999999999")
-  conSQLite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-  dplyr::copy_to(conSQLite, patients, temporary = FALSE)
+
+  conDuckDB <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
+  on.exit({DBI::dbDisconnect(conDuckDB, shutdown = TRUE)})
+  
+  dplyr::copy_to(conDuckDB, patients, temporary = FALSE)
   
   # SHOW
-  expect_equal(capture.output(Patient(conSQLite, "3422481921"))[1],
+  expect_equal(capture.output(Patient(conDuckDB, "3422481921"))[1],
                "Patient 3422481921 ")
-  DBI::dbDisconnect(conSQLite)
+  DBI::dbDisconnect(conDuckDB, shutdown = TRUE)
   
   patients <- dplyr::tibble(patient_id = 99999999999)
-  conSQLite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-  dplyr::copy_to(conSQLite, patients, temporary = FALSE)
+  conDuckDB <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
+  dplyr::copy_to(conDuckDB, patients, temporary = FALSE)
   
-  patient_object <- Patient(conSQLite, 99999999999)
+  patient_object <- Patient(conDuckDB, 99999999999)
   # CLASS
   expect_equal(
     class(patient_object),
@@ -73,7 +85,6 @@ test_that("Patient..interface_methods SQLite", {
     collect(patient_object),
     patients
   )
-  DBI::dbDisconnect(conSQLite)
 })
 
 
@@ -87,7 +98,13 @@ test_that("Patient..interface_methods Postgres", {
                                   user = "user", 
                                   password = "password",
                                   host = "localhost", 
-                                  dbname="RamsesDB")
+                                  dbname="RamsesDB",
+                                  timezone = "UTC")
+  on.exit({
+    .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
+    DBI::dbDisconnect(conPostgreSQL)
+  })
+  
   patients <- dplyr::tibble(patient_id = 99999999999)
   dplyr::copy_to(conPostgreSQL, patients, temporary = FALSE)
   
@@ -119,9 +136,6 @@ test_that("Patient..interface_methods Postgres", {
     collect(patient_object),
     patients
   )
-  
-  .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
-  DBI::dbDisconnect(conPostgreSQL)
 })
 
 test_that(".process_io_parenteral_vector", {
@@ -164,44 +178,54 @@ test_that(".process_io_parenteral_vector", {
 
 
 test_that("MedicationRequest..constructor", {
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
+  
+  expect_error(MedicationRequest(fake_db_conn, 99),
+               "^The Ramses database must contain a valid `drug_prescriptions` table")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(prescription_id = "999999"),
                  "drug_prescriptions", 
                  temporary = FALSE)
-  expect_error(MedicationRequest(fake_db_conn, NA))
-  expect_error(MedicationRequest(fake_db_conn, c()))
-  expect_warning(MedicationRequest(fake_db_conn, c("a", "b")))
+  on.exit({DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)})
+  expect_error(MedicationRequest(fake_db_conn, NA),
+               "`id` must not be NA")
+  expect_error(MedicationRequest(fake_db_conn, c()),
+               "`id` must have length 1")
+  expect_warning(MedicationRequest(fake_db_conn, c("a", "b")),
+                 "`id` must have length 1")
   object <- MedicationRequest(fake_db_conn, "999999")
   expect_s4_class(object, "MedicationRequest")
-  expect_error(MedicationRequest(fake_db_conn, 999999))
-  DBI::dbDisconnect(fake_db_conn)
+  expect_error(MedicationRequest(fake_db_conn, 999999),
+               "`id` must be character")
+  DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
   # works with integer/numeric
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(prescription_id = 999L),
                  "drug_prescriptions", 
                  temporary = FALSE)
-  expect_error(MedicationRequest(fake_db_conn, "999"))
+  expect_error(MedicationRequest(fake_db_conn, "999"),
+               "`id` must be integer")
   expect_s4_class(MedicationRequest(fake_db_conn, 999), "MedicationRequest")
   expect_s4_class(MedicationRequest(fake_db_conn, 999L), "MedicationRequest")
-  DBI::dbDisconnect(fake_db_conn)
+  DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(fake_db_conn, 
                  dplyr::tibble(prescription_id = 999),
                  "drug_prescriptions", 
                  temporary = FALSE)
-  expect_error(MedicationRequest(fake_db_conn, "999"))
+  expect_error(MedicationRequest(fake_db_conn, "999"),
+               "`id` must be numeric")
   expect_s4_class(MedicationRequest(fake_db_conn, 999), "MedicationRequest")
   expect_s4_class(MedicationRequest(fake_db_conn, 999L), "MedicationRequest")
-  DBI::dbDisconnect(fake_db_conn)
 })
 
 
-test_that("MedicationRequest..interface_methods SQLite", {
-  conSQLite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+test_that("MedicationRequest..interface_methods DuckDB", {
+  conDuckDB <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
+  on.exit({DBI::dbDisconnect(conDuckDB, shutdown = TRUE)})
   
   fake_prescription <- data.frame(
     patient_id = "5124578766",
@@ -230,12 +254,16 @@ test_that("MedicationRequest..interface_methods SQLite", {
     frequency = "TDS",
     daily_frequency = 3,
     duration = 3,
-    antiinfective_type = "antibacterial"
+    antiinfective_type = "antibacterial",
+    stringsAsFactors = FALSE
   )
-  load_medications(conn = conSQLite,
+  
+  dplyr::copy_to(conDuckDB, df = dplyr::tibble(patient_id="5124578766"), 
+                 name = "patients", temporary = FALSE)
+  load_medications(conn = conDuckDB,
                    prescriptions = fake_prescription,
                    overwrite = TRUE)
-  med_req_object <- MedicationRequest(conSQLite, 111)
+  med_req_object <- MedicationRequest(conDuckDB, 111)
   
   # CLASS
   expect_equal(
@@ -266,20 +294,24 @@ test_that("MedicationRequest..interface_methods SQLite", {
   expect_equal(
     collect(med_req_object),
     dplyr::tibble(id = 1L, patient_id = "5124578766", prescription_id = 111,
-               combination_id = NA, therapy_id = 111, therapy_rank = NA,
+               combination_id = NA_real_, therapy_id = 111, therapy_rank = NA_real_,
                prescription_text = "Piperacillin / Tazobactam IVI 4.5 g TDS",
                drug_code = "TZP", drug_name = "Piperacillin + Tazobactam",
                drug_display_name = "Piperacillin + Tazobactam", drug_group = "Beta-lactams/penicillins",
                antiinfective_type = "antibacterial", ATC_code = "J01CR05",
                ATC_route = "P", dose = 4.5, unit = "g", route = "IV", frequency = "TDS",
-               authoring_date = structure(1438690036, class = c("POSIXct", "POSIXt"), tzone = ""), 
-               prescription_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = ""), 
-               prescription_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = ""),
+               authoring_date = structure(1438690036, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+               prescription_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+               prescription_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC"),
                prescription_context = "inpatient",
                prescription_status = "completed", daily_frequency = 3, duration = 3)
   )
   
-  DBI::dbDisconnect(conSQLite)
+  # PATIENT
+  expect_s4_class(
+    Patient(med_req_object),
+    "Patient"
+  )
 })
 
 test_that("MedicationRequest..interface_methods Postgres", {
@@ -292,7 +324,12 @@ test_that("MedicationRequest..interface_methods Postgres", {
                                   user = "user", 
                                   password = "password",
                                   host = "localhost", 
-                                  dbname="RamsesDB")
+                                  dbname="RamsesDB",
+                                  timezone = "UTC")
+  on.exit({
+    .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
+    DBI::dbDisconnect(conPostgreSQL)
+  })
   
   fake_prescription <- data.frame(
     patient_id = "5124578766",
@@ -321,8 +358,11 @@ test_that("MedicationRequest..interface_methods Postgres", {
     frequency = "TDS",
     daily_frequency = 3,
     duration = 3,
-    antiinfective_type = "antibacterial"
+    antiinfective_type = "antibacterial",
+    stringsAsFactors = FALSE
   )
+  dplyr::copy_to(conPostgreSQL, df = dplyr::tibble(patient_id="5124578766"), 
+                 name = "patients", temporary = FALSE)
   load_medications(conn = conPostgreSQL,
                    prescriptions = fake_prescription,
                    overwrite = TRUE)
@@ -370,43 +410,60 @@ test_that("MedicationRequest..interface_methods Postgres", {
                   prescription_status = "completed", daily_frequency = 3, duration = 3)
   )
   
-  .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
-  DBI::dbDisconnect(conPostgreSQL)
+  # PATIENT
+  expect_s4_class(
+    Patient(med_req_object),
+    "Patient"
+  )
 })
 
 test_that("TherapyEpisode..constructor", {
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
+  on.exit({DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)})
+  
+  expect_error(TherapyEpisode(fake_db_conn, 99),
+               "^The Ramses database must contain a valid `drug_therapy_episodes` table")
   dplyr::copy_to(fake_db_conn, 
-                 dplyr::tibble(therapy_id = "999999"),
+                 dplyr::tibble(
+                   patient_id = "9",
+                   therapy_id = "999999"
+                 ),
                  "drug_therapy_episodes", 
                  temporary = FALSE)
-  expect_error(TherapyEpisode(fake_db_conn, NA))
-  expect_error(TherapyEpisode(fake_db_conn, c()))
-  expect_error(TherapyEpisode(fake_db_conn, 999999))
-  expect_error(TherapyEpisode(fake_db_conn, 999999L))
-  DBI::dbDisconnect(fake_db_conn)
+  expect_error(TherapyEpisode(fake_db_conn, NA),
+               "`id` must contain at least one identifier")
+  expect_error(TherapyEpisode(fake_db_conn, c()),
+               "`id` must contain at least one identifier")
+  expect_error(TherapyEpisode(fake_db_conn, 999999),
+               "`id` must be character")
+  expect_error(TherapyEpisode(fake_db_conn, 999999L),
+               "`id` must be character")
+  DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
   # works with integer/numeric
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(fake_db_conn, 
-                 dplyr::tibble(therapy_id = 999999L),
+                 dplyr::tibble(patient_id = 9L,
+                               therapy_id = 999999L),
                  "drug_therapy_episodes", 
                  temporary = FALSE)
-  expect_error(TherapyEpisode(fake_db_conn, "999999"))
-  DBI::dbDisconnect(fake_db_conn)
+  expect_error(TherapyEpisode(fake_db_conn, "999999"),
+               "`id` must be integer")
+  DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
   dplyr::copy_to(fake_db_conn, 
-                 dplyr::tibble(therapy_id = 999999),
+                 dplyr::tibble(patient_id = 9,
+                               therapy_id = 999999),
                  "drug_therapy_episodes", 
                  temporary = FALSE)
   expect_error(TherapyEpisode(fake_db_conn, "999999"))
-  DBI::dbDisconnect(fake_db_conn)
 })
 
 
-test_that("TherapyEpisode..interface_methods SQLite", {
-  conSQLite <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+test_that("TherapyEpisode..interface_methods DuckDB", {
+  conDuckDB <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
+  on.exit({DBI::dbDisconnect(conDuckDB, shutdown = TRUE)})
   
   fake_prescription <- data.frame(
     patient_id = "5124578766",
@@ -435,12 +492,15 @@ test_that("TherapyEpisode..interface_methods SQLite", {
     frequency = "TDS",
     daily_frequency = 3,
     duration = 3,
-    antiinfective_type = "antibacterial"
+    antiinfective_type = "antibacterial",
+    stringsAsFactors = FALSE
   )
-  load_medications(conn = conSQLite,
+  dplyr::copy_to(conDuckDB, df = dplyr::tibble(patient_id="5124578766"), 
+                 name = "patients", temporary = FALSE)
+  load_medications(conn = conDuckDB,
                    prescriptions = fake_prescription,
                    overwrite = TRUE)
-  therapy_object <- TherapyEpisode(conSQLite, 111)
+  therapy_object <- TherapyEpisode(conDuckDB, 111)
   
   # CLASS
   expect_equal(
@@ -474,12 +534,16 @@ test_that("TherapyEpisode..interface_methods SQLite", {
       patient_id = "5124578766", 
       therapy_id = 111, 
       antiinfective_type = "antibacterial", 
-      therapy_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = ""),
-      therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "")
+      therapy_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = "UTC"),
+      therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC")
     )
   )
   
-  DBI::dbDisconnect(conSQLite)
+  # PATIENT
+  expect_s4_class(
+    Patient(therapy_object),
+    "Patient"
+  )
 })
 
 test_that("TherapyEpisode..interface_methods Postgres", {
@@ -492,7 +556,12 @@ test_that("TherapyEpisode..interface_methods Postgres", {
                                   user = "user", 
                                   password = "password",
                                   host = "localhost", 
-                                  dbname="RamsesDB")
+                                  dbname="RamsesDB",
+                                  timezone = "UTC")
+  on.exit({
+    .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
+    DBI::dbDisconnect(conPostgreSQL)
+  })
   
   fake_prescription <- data.frame(
     patient_id = "5124578766",
@@ -521,8 +590,11 @@ test_that("TherapyEpisode..interface_methods Postgres", {
     frequency = "TDS",
     daily_frequency = 3,
     duration = 3,
-    antiinfective_type = "antibacterial"
+    antiinfective_type = "antibacterial",
+    stringsAsFactors = FALSE
   )
+  dplyr::copy_to(conPostgreSQL, df = dplyr::tibble(patient_id="5124578766"), 
+                 name = "patients", temporary = FALSE)
   load_medications(conn = conPostgreSQL,
                    prescriptions = fake_prescription,
                    overwrite = TRUE)
@@ -565,36 +637,317 @@ test_that("TherapyEpisode..interface_methods Postgres", {
     )
   )
   
-  .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
-  DBI::dbDisconnect(conPostgreSQL)
+  # PATIENT
+  expect_s4_class(
+    Patient(therapy_object),
+    "Patient"
+  )
 })
 
-test_that("TherapyEpisode..constructor", {
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-  dplyr::copy_to(fake_db_conn, 
-                 dplyr::tibble(therapy_id = "999999"),
-                 "drug_therapy_episodes", 
-                 temporary = FALSE)
-  expect_error(TherapyEpisode(fake_db_conn, NA))
-  expect_error(TherapyEpisode(fake_db_conn, c()))
-  expect_error(TherapyEpisode(fake_db_conn, 999999))
-  expect_error(TherapyEpisode(fake_db_conn, 999999L))
-  DBI::dbDisconnect(fake_db_conn)
+test_that("Encounter..constructor", {
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
+  on.exit({DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)})
+  
+  expect_error(Encounter(fake_db_conn, 99),
+               "^The Ramses database must contain a valid `inpatient_episodes` table")
+  dplyr::copy_to(
+    fake_db_conn, 
+    dplyr::tibble(
+      patient_id = "9",
+      encounter_id = "999999"
+    ),
+    "inpatient_episodes", 
+    temporary = FALSE
+  )
+  expect_error(Encounter(fake_db_conn, NA),
+               "`id` must contain at least one identifier")
+  expect_error(Encounter(fake_db_conn, c()),
+               "`id` must contain at least one identifier")
+  expect_error(Encounter(fake_db_conn, 999999),
+               "`id` must be character")
+  expect_error(Encounter(fake_db_conn, 999999L),
+               "`id` must be character")
+  expect_s4_class(Encounter(fake_db_conn, "999999"), "Encounter")
+  DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
   # works with integer/numeric
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-  dplyr::copy_to(fake_db_conn, 
-                 dplyr::tibble(therapy_id = 999999L),
-                 "drug_therapy_episodes", 
-                 temporary = FALSE)
-  expect_error(TherapyEpisode(fake_db_conn, "999999"))
-  DBI::dbDisconnect(fake_db_conn)
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
+  dplyr::copy_to(
+    fake_db_conn, 
+    dplyr::tibble(
+      patient_id = 9,
+      encounter_id = 999999
+    ),
+    "inpatient_episodes", 
+    temporary = FALSE
+  )
+  expect_error(Encounter(fake_db_conn, "999999"), 
+               "`id` must be numeric")
+  expect_s4_class(Encounter(fake_db_conn, 999999), "Encounter")
+  expect_s4_class(Encounter(fake_db_conn, 999999L), "Encounter")
+  DBI::dbDisconnect(fake_db_conn, shutdown = TRUE)
   
-  fake_db_conn <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
-  dplyr::copy_to(fake_db_conn, 
-                 dplyr::tibble(therapy_id = 999999),
-                 "drug_therapy_episodes", 
-                 temporary = FALSE)
-  expect_error(TherapyEpisode(fake_db_conn, "999999"))
-  DBI::dbDisconnect(fake_db_conn)
+  fake_db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
+  dplyr::copy_to(
+    fake_db_conn, 
+    dplyr::tibble(
+      patient_id = 9L,
+      encounter_id = 999999L
+    ),
+    "inpatient_episodes", 
+    temporary = FALSE
+  )
+  expect_error(Encounter(fake_db_conn, "999999"),
+               "`id` must be integer")
+  expect_s4_class(Encounter(fake_db_conn, 999999), "Encounter")
+  expect_s4_class(Encounter(fake_db_conn, 999999L), "Encounter")
+})
+
+
+test_that("Encounter..interface_methods DuckDB", {
+  conDuckDB <- DBI::dbConnect(duckdb::duckdb(), ":memory:", timezone_out = "UTC")
+  on.exit({DBI::dbDisconnect(conDuckDB, shutdown = TRUE)})
+  
+  fake_encounters <- dplyr::tibble(
+    patient_id = 6145252493, 
+    encounter_id = 5458286195:5458286199, 
+    admission_method = "1", 
+    admission_date = structure(1443082402, tzone = "UTC", class = c("POSIXct", "POSIXt")), 
+    discharge_date = structure(1443118601, tzone = "UTC", class = c("POSIXct", "POSIXt")), 
+    episode_number = 1L, 
+    last_episode_in_encounter = 1, 
+    episode_start = structure(1443082402, tzone = "UTC", class = c("POSIXct", "POSIXt")), 
+    episode_end = structure(1443118601, tzone = "UTC", class = c("POSIXct", "POSIXt")), 
+    consultant_code = "C1000003", 
+    main_specialty_code = "100"
+  )
+  dplyr::copy_to(conDuckDB, df = dplyr::tibble(patient_id=6145252493), 
+                 name = "patients", temporary = FALSE)
+  load_inpatient_episodes(
+    conn = conDuckDB,
+    patients_data = dplyr::tibble(patient_id = 6145252493),
+    episodes_data = fake_encounters,
+    overwrite = TRUE
+  )
+  encounter_object <- Encounter(conDuckDB, 5458286195)
+  
+  # CLASS
+  expect_equal(
+    class(encounter_object),
+    structure("Encounter", package = "Ramses")
+  )
+  
+  # SHOW
+  expect_equal(
+    capture.output(encounter_object)[1:2],
+    c("Encounter 5458286195 ", "Patient:   6145252493 ")
+  )
+  expect_equal(
+    capture.output(Encounter(conDuckDB, 5458286195:5458286196))[1:3],
+    c("Encounters 5458286195, 5458286196 ", "[total of 2 encounters]", "Patient(s):   6145252493 ")
+  )
+  expect_equal(
+    capture.output(Encounter(conDuckDB, 5458286195:5458286199))[1:3],
+    c("Encounters 5458286195, 5458286196, 5458286197 ...", 
+      "[total of 5 encounters]", 
+      "Patient(s):   6145252493 ")
+  )
+  
+  # COMPUTE 
+  expect_equal(
+    encounter_object@record$lazy_query$x$x,
+    structure("inpatient_episodes", class = c("ident", "character"))
+  )
+  encounter_object_computed <- compute(encounter_object)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            encounter_object_computed@record$lazy_query$x
+          ))
+  )
+  
+  # COLLECT
+  expect_equal(
+    collect(encounter_object),
+    dplyr::tibble(
+      patient_id = 6145252493, 
+      encounter_id = 5458286195, 
+      admission_method = "1", 
+      admission_date = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      discharge_date = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_number = 1L, 
+      last_episode_in_encounter = 1, 
+      episode_start = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_end = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      consultant_code = "C1000003", 
+      main_specialty_code = "100", 
+      ramses_bed_days = 0.418969907407407
+    )
+  )
+  
+  # PATIENT
+  expect_s4_class(
+    Patient(encounter_object),
+    "Patient"
+  )
+  
+  # Deprecation of therapy_table method
+  expect_warning(
+    forget <- therapy_table(encounter_object),
+    "^'therapy_table' is deprecated[.]"
+  )
+})
+
+
+test_that("Encounter..interface_methods Postgres", {
+  
+  if (!identical(Sys.getenv("CI"), "true")) {
+    skip("Test only on Travis")
+  }
+  
+  conPostgreSQL <- DBI::dbConnect(RPostgres::Postgres(),
+                                  user = "user", 
+                                  password = "password",
+                                  host = "localhost", 
+                                  dbname="RamsesDB",
+                                  timezone = "UTC")
+  on.exit({
+    .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
+    DBI::dbDisconnect(conPostgreSQL)
+  })
+  
+  fake_encounters <- dplyr::tibble(
+    patient_id = 6145252493, 
+    encounter_id = 5458286195:5458286199, 
+    admission_method = "1", 
+    admission_date = structure(1443082402, tzone = "UTC", class = c("POSIXct", "POSIXt")), 
+    discharge_date = structure(1443118601, tzone = "UTC", class = c("POSIXct", "POSIXt")), 
+    episode_number = 1L, 
+    last_episode_in_encounter = 1, 
+    episode_start = structure(1443082402, tzone = "UTC", class = c("POSIXct", "POSIXt")), 
+    episode_end = structure(1443118601, tzone = "UTC", class = c("POSIXct", "POSIXt")), 
+    consultant_code = "C1000003", 
+    main_specialty_code = "100"
+  )
+  dplyr::copy_to(conPostgreSQL, df = dplyr::tibble(patient_id=6145252493), 
+                 name = "patients", temporary = FALSE)
+  load_inpatient_episodes(
+    conn = conPostgreSQL,
+    patients_data = dplyr::tibble(patient_id = 6145252493),
+    episodes_data = fake_encounters,
+    overwrite = TRUE
+  )
+  encounter_object <- Encounter(conPostgreSQL, 5458286195)
+  
+  # CLASS
+  expect_equal(
+    class(encounter_object),
+    structure("Encounter", package = "Ramses")
+  )
+  
+  # SHOW
+  expect_equal(
+    capture.output(encounter_object)[1:2],
+    c("Encounter 5458286195 ", "Patient:   6145252493 ")
+  )
+  expect_equal(
+    capture.output(Encounter(conPostgreSQL, 5458286195:5458286196))[1:3],
+    c("Encounters 5458286195, 5458286196 ", "[total of 2 encounters]", "Patient(s):   6145252493 ")
+  )
+  expect_equal(
+    capture.output(Encounter(conPostgreSQL, 5458286195:5458286199))[1:3],
+    c("Encounters 5458286195, 5458286196, 5458286197 ...", 
+      "[total of 5 encounters]", 
+      "Patient(s):   6145252493 ")
+  )
+  
+  # COMPUTE 
+  expect_equal(
+    encounter_object@record$lazy_query$x$x,
+    structure("inpatient_episodes", class = c("ident", "character"))
+  )
+  encounter_object_computed <- compute(encounter_object)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            encounter_object_computed@record$lazy_query$x
+          ))
+  )
+  
+  # COLLECT
+  expect_equal(
+    collect(encounter_object),
+    dplyr::tibble(
+      patient_id = 6145252493, 
+      encounter_id = 5458286195, 
+      admission_method = "1", 
+      admission_date = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      discharge_date = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_number = 1L, 
+      last_episode_in_encounter = 1, 
+      episode_start = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_end = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      consultant_code = "C1000003", 
+      main_specialty_code = "100", 
+      ramses_bed_days = 0.418969907407407
+    )
+  )
+  
+  # PATIENT
+  expect_s4_class(
+    Patient(encounter_object),
+    "Patient"
+  )
+  
+  # Deprecation of therapy_table method
+  expect_warning(
+    forget <- therapy_table(encounter_object),
+    "^'therapy_table' is deprecated[.]"
+  )
+})
+
+test_that(".validate_extended_table_input", {
+  invalid_input <- 1:2
+  expect_error(
+    .validate_extended_table_input(invalid_input),
+    "`invalid_input` must be a numeric or integer of length 1"
+  )
+  expect_error(
+    .validate_extended_table_input(-1)
+  )
+  expect_error(
+    .validate_extended_table_input("1")
+  )
+  expect_equal(
+    .validate_extended_table_input(NULL),
+    0
+  )
+  expect_equal(
+    .validate_extended_table_input(NA),
+    0
+  )
+  expect_equal(
+    .validate_extended_table_input(1),
+    1
+  )
+  expect_equal(
+    .validate_extended_table_input(1L),
+    1
+  )
+  expect_equal(
+    .validate_extended_table_input(1.1),
+    2
+  )
+  expect_equal(
+    .validate_extended_table_input(1.9),
+    2
+  )
+  expect_equal(
+    .validate_extended_table_input(0.1),
+    1
+  )
+  expect_equal(
+    .validate_extended_table_input(0),
+    0
+  )
 })

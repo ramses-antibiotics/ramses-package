@@ -146,11 +146,11 @@ The diagrams below illustrates how to characterise prescribing events using Rams
 ```{r create_db, message=FALSE, warning=FALSE}
 library(Ramses)
 library(dplyr)
-ramses_db <- create_mock_database("ramses-db.sqlite")
+ramses_db <- create_mock_database("ramses-db.duckdb")
 
 tbl(ramses_db, "drug_prescriptions") %>% 
   filter(patient_id == "99999999998") %>% 
-  collect_ramses_tbl() %>% 
+  collect() %>% 
   select(patient_id, prescription_id, combination_id, 
          therapy_id, therapy_rank, prescription_text) %>% 
   glimpse()
@@ -178,13 +178,14 @@ For more information on S4 classes used in Ramses and their associated methods, 
 
 ## Therapy tables
 
-Therapy episodes can be studied by creating a longitudinal, hour-by-hour matrix called 'therapy table'.
+Therapy episodes can be studied by creating a longitudinal, hour-by-hour matrix called 'longitudinal table'.
 
 ```{r therapy_table_code, eval=FALSE}
-therapy_table(uti_episode, collect = TRUE)
+longitudinal_table(uti_episode, collect = TRUE) %>% 
+  select(t, therapy_start, therapy_end, t_start, t_end, parenteral)
 ```
 ```{r therapy_table_output, echo=FALSE, paged.print=TRUE}
-therapy_table(uti_episode, collect = TRUE) %>% 
+longitudinal_table(uti_episode, collect = TRUE) %>% 
   select(t, therapy_start, therapy_end, t_start, t_end, parenteral) %>% 
   rmarkdown::paged_table()
 ```
@@ -212,9 +213,61 @@ parenteral_changes(TherapyEpisode(ramses_db, "a028cf950c29ca73c01803b54642d513")
 
 In this example, parenteral therapy was first initiated at $t$ = 0, then converted to oral administration at $t$ = 97, until $t$ = 144. A new sequence of parenteral therapy begins at $t$ = 146, all within the same therapy episode.
 
+
+## Encounter tables
+
+Encounters (hospitalisations) can also be used to 
+generate longitudinal tables thanks to the `Encounter()` function. In the example
+below, an encounter table is created for the same patient `99999999998` for
+encounter `8895465895`, which is the same admission during which antimicrobial 
+therapy episode `d7c0310a08cf9f0f318276125cd282ed` was administered.
+
+Like therapy tables, encounter tables can be enhanced with [clinical features](#adding-clinical-features).
+
+
+```{r encounter_table_code, eval=FALSE}
+Encounter(ramses_db, "8895465895") %>% 
+  longitudinal_table(collect = TRUE) %>% 
+  select(t, admission_date, discharge_date, t_start, t_end)
+```
+```{r encounter_output, echo=FALSE, paged.print=TRUE}
+Encounter(ramses_db, "8895465895") %>% 
+  longitudinal_table(collect = TRUE) %>% 
+  select(t, admission_date, discharge_date, t_start, t_end) %>% 
+  rmarkdown::paged_table()
+```
+
+## Extended longitudinal tables
+
+Both therapy and encounter tables can be extended so they begin earlier than 
+the start of antimicrobial therapy, or the admission date, respectively. Doing 
+so is controlled by the `TherapyEpisode()` and `Encounter()` functions to 
+create the objects in the first place through an optional parameter 
+`extend_table_start`. This parameter expresses how many hours earlier the table 
+should start.
+
+For example, the encounter table can be made to begin 5 hours before admission.
+This can be very useful if the patient is known to have stayed in the Emergency 
+Department before being admitted:
+
+
+```{r extended_encounter_table_code, eval=FALSE}
+Encounter(ramses_db, "8895465895", extend_table_start = 5) %>% 
+  longitudinal_table(collect = TRUE) %>% 
+  select(t, admission_date, discharge_date, t_start, t_end)
+```
+```{r extended_encounter_table, echo=FALSE, paged.print=TRUE}
+Encounter(ramses_db, "8895465895", extend_table_start = 5) %>% 
+  longitudinal_table(collect = TRUE) %>% 
+  select(t, admission_date, discharge_date, t_start, t_end) %>% 
+  rmarkdown::paged_table()
+```
+
+The `extend_table_start` parameter may also be used in the `TherapyEpisode()` function.
+
 ## Adding clinical features
 
-Several functions can enhance therapy tables with variables characterising the clinical state and trajectory of the patient. For instance, we may be interested in temperature: 
+Several functions can enhance both therapy and encounter tables with variables characterising the clinical state and trajectory of the patient. For instance, we may be interested in temperature: 
 
 - `clinical_feature_last()` fetches the most recent temperature value.
 - `clinical_feature_mean()` computes a running arithmetic mean of the temperature time series.
@@ -223,14 +276,11 @@ Several functions can enhance therapy tables with variables characterising the c
 
 The example below demonstrates how to classify a patient as hypothermic/afebrile/febrile:
 
-```{r classify_fever}
-example_sepsis <- TherapyEpisode(ramses_db, "4d611fc8886c23ab047ad5f74e5080d7")
+```{r classify_fever, paged.print=TRUE}
+example_sepsis <- TherapyEpisode(ramses_db, "4d611fc8886c23ab047ad5f74e5080d7") %>% 
+  clinical_feature_last(observation_code = "8310-5", hours = 6) 
 
-clinical_feature_last(
-  x = example_sepsis,
-  observation_code = "8310-5",
-  hours = 6
-) %>% therapy_table(collect = TRUE) %>% 
+longitudinal_table(example_sepsis, collect = TRUE) %>% 
   mutate(
     febrile = case_when(
       last_temperature_6h < 36 ~ "hypothermic",
@@ -250,7 +300,7 @@ clinical_feature_ols_trend(
   x = example_sepsis,
   observation_code = "751-8",
   hours = 48
-) %>% therapy_table(collect = TRUE) %>% 
+) %>% longitudinal_table(collect = TRUE) %>% 
   select(t, t_start, ols_neutrophils_48h_slope, ols_neutrophils_48h_intercept, ols_neutrophils_48h_N) %>%
   filter(between(t, 10, 14) | between(t, 80, 84))
 ```
@@ -259,9 +309,11 @@ Note that the intercept is defined for $t$ = `t_start`. In other words, its valu
 
 We can see that, at the time of therapy initiation, the neutrophil count was increasing by an average 0.09 per nanoliter every hour (neutrophilia). After 80 hours (day 3), we find first evidence of the neutrophil count going down at a rate of 0.09 per nanoliter every hour, returning to a normal range (2--7.5 10<sup>9</sup>/L). Depending on the patient's other vitals, this could indicate the infection is under control.
 
+
+
 ```{r dbDisconnect, include=FALSE}
-DBI::dbDisconnect(ramses_db)
-file.remove("ramses-db.sqlite")
+DBI::dbDisconnect(ramses_db, shutdown = TRUE)
+file.remove("ramses-db.duckdb")
 ```
 
 

@@ -2,23 +2,29 @@
 % Please edit documentation in R/database.R
 \name{connect_local_database}
 \alias{connect_local_database}
-\title{Create or connect to a local SQLite database}
+\title{Connect to (or create) a local DuckDB database}
 \usage{
-connect_local_database(file)
+connect_local_database(file, timezone = Sys.timezone())
 }
 \arguments{
-\item{file}{A file path to an existing or new database file with a \code{.sqlite} extension.}
+\item{file}{A file path to an existing or new database file with a
+".duckdb" extension.}
+
+\item{timezone}{A string for the time zone in which to return data to 
+R from the database. By default, it is set to \code{\link{Sys.timezone}()}.}
 }
 \value{
-A database connection object of class \code{SQLiteConnection}.
+A database connection object of class \code{duckdb_connection}.
 }
 \description{
-Create a local database in memory or on disk using \code{\link[RSQLite]{SQLite}()}. 
-This is the ideal method to experiment on a small scale or for testing purposes.
+Create a local database in memory or on disk using 
+\code{\link[duckdb]{duckdb}()}. This is the ideal method to experiment 
+on a small scale. DuckDB is a relational database similar to SQLite, 
+with full support for date and datetime data.
 }
 \details{
-This function creates a database on disk at the desired path. The database and
-its content will persist after it is disconnected.
+This function creates a database on disk at the desired path. 
+The database and its content will persist after it is disconnected.
 }
 \section{Warning}{
      
@@ -28,21 +34,22 @@ method with mock data unless you operate within a secure data enclave.
 
 \examples{
     # Create database and load data
-    con <- connect_local_database("ramses-db.sqlite")
+    con <- connect_local_database("ramses-db.duckdb")
     
     dplyr::copy_to(dest = con, df = reference_aware, name = "reference_aware", 
                    overwrite = FALSE, temporary = FALSE)      
     
     # Close connection to database
-    DBI::dbDisconnect(con)
+    DBI::dbDisconnect(con, shutdown=TRUE)
     
     # Connect to the database again and show data
-    con <- connect_local_database("ramses-db.sqlite")
+    con <- connect_local_database("ramses-db.duckdb")
     dplyr::tbl(con, "reference_aware")
-    DBI::dbDisconnect(con)
-    file.remove("ramses-db.sqlite")
+    DBI::dbDisconnect(con, shutdown=TRUE)
+    file.remove("ramses-db.duckdb")
 }
 \seealso{
-The dbplyr website provides excellent guidance on how to connect to databases: 
-\url{https://db.rstudio.com/getting-started/connect-to-database}
+The \code{duckdb} website provides excellent guidance on how to
+connect to databases: 
+\url{https://duckdb.org/docs/api/r}
 }
