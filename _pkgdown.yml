@@ -56,6 +56,8 @@ reference:
   - longitudinal_table
   - parenteral_changes
   - starts_with("clinical_feature_")
+  - collect
+  - compute
   - therapy_timeline
 - title: Transform and validate data
   desc:  Functions to enrich and validate data before loading into the warehouse.
