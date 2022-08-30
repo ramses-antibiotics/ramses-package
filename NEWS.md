@@ -1,4 +1,15 @@
 
+
+# Ramses 0.5.1
+
+*30 August 2022*
+
+## Bug fix
+
+* Fix bug affecting `TherapyEpisode` instances created for more than 3 therapy
+episodes (`id` with length > 3) [#100](https://github.com/ramses-antibiotics/ramses-package/issues/100) 
+
+
 # Ramses 0.5.0
 
 *27 August 2022*

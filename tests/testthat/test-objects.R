@@ -604,6 +604,14 @@ test_that("TherapyEpisode..interface_methods DuckDB", {
     Patient(therapy_object),
     "Patient"
   )
+  expect_error(
+    Patient(therapy_object_multi),
+    "`id` must have length 1"
+  )
+  expect_error(
+    Patient(therapy_object_multi4),
+    "`id` must have length 1"
+  )
 })
 
 test_that("TherapyEpisode..interface_methods Postgres", {
@@ -762,6 +770,14 @@ test_that("TherapyEpisode..interface_methods Postgres", {
     Patient(therapy_object),
     "Patient"
   )
+  expect_error(
+    Patient(therapy_object_multi),
+    "`id` must have length 1"
+  )
+  expect_error(
+    Patient(therapy_object_multi4),
+    "`id` must have length 1"
+  )
 })
 
 test_that("Encounter..constructor", {
@@ -850,6 +866,8 @@ test_that("Encounter..interface_methods DuckDB", {
     overwrite = TRUE
   )
   encounter_object <- Encounter(conDuckDB, 5458286195)
+  encounter_object_multi <- Encounter(conDuckDB, 5458286195:5458286196)
+  encounter_object_multi5 <- Encounter(conDuckDB, 5458286195:5458286199)
   
   # CLASS
   expect_equal(
@@ -863,11 +881,11 @@ test_that("Encounter..interface_methods DuckDB", {
     c("Encounter 5458286195 ", "Patient:   6145252493 ")
   )
   expect_equal(
-    capture.output(Encounter(conDuckDB, 5458286195:5458286196))[1:3],
+    capture.output(encounter_object_multi)[1:3],
     c("Encounters 5458286195, 5458286196 ", "[total of 2 encounters]", "Patient(s):   6145252493 ")
   )
   expect_equal(
-    capture.output(Encounter(conDuckDB, 5458286195:5458286199))[1:3],
+    capture.output(encounter_object_multi5)[1:3],
     c("Encounters 5458286195, 5458286196, 5458286197 ...", 
       "[total of 5 encounters]", 
       "Patient(s):   6145252493 ")
@@ -883,6 +901,28 @@ test_that("Encounter..interface_methods DuckDB", {
     grepl("^dbplyr_", 
           as.character(
             encounter_object_computed@record$lazy_query$x
+          ))
+  )
+  expect_equal(
+    encounter_object_multi@record$lazy_query$x$x,
+    structure("inpatient_episodes", class = c("ident", "character"))
+  )
+  encounter_object_multi_computed <- compute(encounter_object_multi)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            encounter_object_multi_computed@record$lazy_query$x
+          ))
+  )
+  expect_equal(
+    encounter_object_multi5@record$lazy_query$x$x,
+    structure("inpatient_episodes", class = c("ident", "character"))
+  )
+  encounter_object_multi5_computed <- compute(encounter_object_multi5)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            encounter_object_multi5_computed@record$lazy_query$x
           ))
   )
   
@@ -904,10 +944,51 @@ test_that("Encounter..interface_methods DuckDB", {
       ramses_bed_days = 0.418969907407407
     )
   )
-  
+  expect_equal(
+    collect(encounter_object_multi),
+    dplyr::tibble(
+      patient_id = 6145252493, 
+      encounter_id = 5458286195:5458286196, 
+      admission_method = "1", 
+      admission_date = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      discharge_date = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_number = 1L, 
+      last_episode_in_encounter = 1, 
+      episode_start = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_end = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      consultant_code = "C1000003", 
+      main_specialty_code = "100", 
+      ramses_bed_days = 0.418969907407407
+    )
+  )
+  expect_equal(
+    collect(encounter_object_multi5),
+    dplyr::tibble(
+      patient_id = 6145252493, 
+      encounter_id = 5458286195:5458286199, 
+      admission_method = "1", 
+      admission_date = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      discharge_date = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_number = 1L, 
+      last_episode_in_encounter = 1, 
+      episode_start = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_end = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      consultant_code = "C1000003", 
+      main_specialty_code = "100", 
+      ramses_bed_days = 0.418969907407407
+    )
+  )
   # PATIENT
   expect_s4_class(
     Patient(encounter_object),
+    "Patient"
+  )
+  expect_s4_class(
+    Patient(encounter_object_multi),
+    "Patient"
+  )
+  expect_s4_class(
+    Patient(encounter_object_multi5),
     "Patient"
   )
   
@@ -958,6 +1039,8 @@ test_that("Encounter..interface_methods Postgres", {
     overwrite = TRUE
   )
   encounter_object <- Encounter(conPostgreSQL, 5458286195)
+  encounter_object_multi <- Encounter(conPostgreSQL, 5458286195:5458286196)
+  encounter_object_multi5 <- Encounter(conPostgreSQL, 5458286195:5458286199)
   
   # CLASS
   expect_equal(
@@ -971,11 +1054,11 @@ test_that("Encounter..interface_methods Postgres", {
     c("Encounter 5458286195 ", "Patient:   6145252493 ")
   )
   expect_equal(
-    capture.output(Encounter(conPostgreSQL, 5458286195:5458286196))[1:3],
+    capture.output(encounter_object_multi)[1:3],
     c("Encounters 5458286195, 5458286196 ", "[total of 2 encounters]", "Patient(s):   6145252493 ")
   )
   expect_equal(
-    capture.output(Encounter(conPostgreSQL, 5458286195:5458286199))[1:3],
+    capture.output(encounter_object_multi5)[1:3],
     c("Encounters 5458286195, 5458286196, 5458286197 ...", 
       "[total of 5 encounters]", 
       "Patient(s):   6145252493 ")
@@ -991,6 +1074,28 @@ test_that("Encounter..interface_methods Postgres", {
     grepl("^dbplyr_", 
           as.character(
             encounter_object_computed@record$lazy_query$x
+          ))
+  )
+  expect_equal(
+    encounter_object_multi@record$lazy_query$x$x,
+    structure("inpatient_episodes", class = c("ident", "character"))
+  )
+  encounter_object_multi_computed <- compute(encounter_object_multi)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            encounter_object_multi_computed@record$lazy_query$x
+          ))
+  )
+  expect_equal(
+    encounter_object_multi5@record$lazy_query$x$x,
+    structure("inpatient_episodes", class = c("ident", "character"))
+  )
+  encounter_object_multi5_computed <- compute(encounter_object_multi5)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            encounter_object_multi5_computed@record$lazy_query$x
           ))
   )
   
@@ -1012,10 +1117,51 @@ test_that("Encounter..interface_methods Postgres", {
       ramses_bed_days = 0.418969907407407
     )
   )
-  
+  expect_equal(
+    collect(encounter_object_multi),
+    dplyr::tibble(
+      patient_id = 6145252493, 
+      encounter_id = 5458286195:5458286196, 
+      admission_method = "1", 
+      admission_date = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      discharge_date = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_number = 1L, 
+      last_episode_in_encounter = 1, 
+      episode_start = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_end = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      consultant_code = "C1000003", 
+      main_specialty_code = "100", 
+      ramses_bed_days = 0.418969907407407
+    )
+  )
+  expect_equal(
+    collect(encounter_object_multi5),
+    dplyr::tibble(
+      patient_id = 6145252493, 
+      encounter_id = 5458286195:5458286199, 
+      admission_method = "1", 
+      admission_date = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      discharge_date = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_number = 1L, 
+      last_episode_in_encounter = 1, 
+      episode_start = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_end = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      consultant_code = "C1000003", 
+      main_specialty_code = "100", 
+      ramses_bed_days = 0.418969907407407
+    )
+  )
   # PATIENT
   expect_s4_class(
     Patient(encounter_object),
+    "Patient"
+  )
+  expect_s4_class(
+    Patient(encounter_object_multi),
+    "Patient"
+  )
+  expect_s4_class(
+    Patient(encounter_object_multi5),
     "Patient"
   )
   
