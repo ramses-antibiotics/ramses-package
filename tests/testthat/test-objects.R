@@ -466,8 +466,8 @@ test_that("TherapyEpisode..interface_methods DuckDB", {
   on.exit({DBI::dbDisconnect(conDuckDB, shutdown = TRUE)})
   
   fake_prescription <- data.frame(
-    patient_id = "5124578766",
-    prescription_id = 111,
+    patient_id = c("5124578766", "5124578767", "5124578768", "5124578769"),
+    prescription_id = 111:114,
     prescription_text = "Piperacillin / Tazobactam IVI 4.5 g TDS",
     authoring_date = structure(1438690036,
                                class = c("POSIXct", "POSIXt"),
@@ -501,10 +501,20 @@ test_that("TherapyEpisode..interface_methods DuckDB", {
                    prescriptions = fake_prescription,
                    overwrite = TRUE)
   therapy_object <- TherapyEpisode(conDuckDB, 111)
+  therapy_object_multi <- TherapyEpisode(conDuckDB, 111:113)
+  therapy_object_multi4 <- TherapyEpisode(conDuckDB, 111:114)
   
   # CLASS
   expect_equal(
     class(therapy_object),
+    structure("TherapyEpisode", package = "Ramses")
+  )
+  expect_equal(
+    class(therapy_object_multi),
+    structure("TherapyEpisode", package = "Ramses")
+  )
+  expect_equal(
+    class(therapy_object_multi4),
     structure("TherapyEpisode", package = "Ramses")
   )
   
@@ -512,6 +522,14 @@ test_that("TherapyEpisode..interface_methods DuckDB", {
   expect_equal(
     capture.output(therapy_object)[1:2],
     c("TherapyEpisode 111 ", "Patient:   5124578766 ")
+  )
+  expect_equal(
+    capture.output(therapy_object_multi)[1:2],
+    c("TherapyEpisode 111, 112, 113 ", "[total of 3 therapy episodes]")
+  )
+  expect_equal(
+    capture.output(therapy_object_multi4)[1:2],
+    c("TherapyEpisode 111, 112, 113 ...", "[total of 4 therapy episodes]")
   )
   
   # COMPUTE 
@@ -526,6 +544,28 @@ test_that("TherapyEpisode..interface_methods DuckDB", {
             therapy_object_computed@record$lazy_query$x
           ))
   )
+  expect_equal(
+    therapy_object_multi@record$lazy_query$x$x,
+    structure("drug_therapy_episodes", class = c("ident", "character"))
+  )
+  therapy_object_multi_computed <- compute(therapy_object_multi)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            therapy_object_multi_computed@record$lazy_query$x
+          ))
+  )
+  expect_equal(
+    therapy_object_multi4@record$lazy_query$x$x,
+    structure("drug_therapy_episodes", class = c("ident", "character"))
+  )
+  therapy_object_multi_computed4 <- compute(therapy_object_multi4)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            therapy_object_multi_computed4@record$lazy_query$x
+          ))
+  )
   
   # COLLECT
   expect_equal(
@@ -533,6 +573,26 @@ test_that("TherapyEpisode..interface_methods DuckDB", {
     dplyr::tibble(
       patient_id = "5124578766", 
       therapy_id = 111, 
+      antiinfective_type = "antibacterial", 
+      therapy_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = "UTC"),
+      therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC")
+    )
+  )
+  expect_equal(
+    collect(therapy_object_multi),
+    dplyr::tibble(
+      patient_id = c("5124578766", "5124578767", "5124578768"), 
+      therapy_id = 111:113, 
+      antiinfective_type = "antibacterial", 
+      therapy_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = "UTC"),
+      therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC")
+    )
+  )
+  expect_equal(
+    collect(therapy_object_multi4),
+    dplyr::tibble(
+      patient_id = c("5124578766", "5124578767", "5124578768", "5124578769"), 
+      therapy_id = 111:114, 
       antiinfective_type = "antibacterial", 
       therapy_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = "UTC"),
       therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC")
@@ -564,8 +624,8 @@ test_that("TherapyEpisode..interface_methods Postgres", {
   })
   
   fake_prescription <- data.frame(
-    patient_id = "5124578766",
-    prescription_id = 111,
+    patient_id = c("5124578766", "5124578767", "5124578768", "5124578769"),
+    prescription_id = 111:114,
     prescription_text = "Piperacillin / Tazobactam IVI 4.5 g TDS",
     authoring_date = structure(1438690036,
                                class = c("POSIXct", "POSIXt"),
@@ -599,10 +659,20 @@ test_that("TherapyEpisode..interface_methods Postgres", {
                    prescriptions = fake_prescription,
                    overwrite = TRUE)
   therapy_object <- TherapyEpisode(conPostgreSQL, 111)
+  therapy_object_multi <- TherapyEpisode(conPostgreSQL, 111:113)
+  therapy_object_multi4 <- TherapyEpisode(conPostgreSQL, 111:114)
   
   # CLASS
   expect_equal(
     class(therapy_object),
+    structure("TherapyEpisode", package = "Ramses")
+  )
+  expect_equal(
+    class(therapy_object_multi),
+    structure("TherapyEpisode", package = "Ramses")
+  )
+  expect_equal(
+    class(therapy_object_multi4),
     structure("TherapyEpisode", package = "Ramses")
   )
   
@@ -610,6 +680,14 @@ test_that("TherapyEpisode..interface_methods Postgres", {
   expect_equal(
     capture.output(therapy_object)[1:2],
     c("TherapyEpisode 111 ", "Patient:   5124578766 ")
+  )
+  expect_equal(
+    capture.output(therapy_object_multi)[1:2],
+    c("TherapyEpisode 111, 112, 113 ", "[total of 3 therapy episodes]")
+  )
+  expect_equal(
+    capture.output(therapy_object_multi4)[1:2],
+    c("TherapyEpisode 111, 112, 113 ...", "[total of 4 therapy episodes]")
   )
   
   # COMPUTE 
@@ -624,6 +702,28 @@ test_that("TherapyEpisode..interface_methods Postgres", {
             therapy_object_computed@record$lazy_query$x
           ))
   )
+  expect_equal(
+    therapy_object_multi@record$lazy_query$x$x,
+    structure("drug_therapy_episodes", class = c("ident", "character"))
+  )
+  therapy_object_multi_computed <- compute(therapy_object_multi)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            therapy_object_multi_computed@record$lazy_query$x
+          ))
+  )
+  expect_equal(
+    therapy_object_multi4@record$lazy_query$x$x,
+    structure("drug_therapy_episodes", class = c("ident", "character"))
+  )
+  therapy_object_multi_computed4 <- compute(therapy_object_multi4)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            therapy_object_multi_computed4@record$lazy_query$x
+          ))
+  )
   
   # COLLECT
   expect_equal(
@@ -631,6 +731,26 @@ test_that("TherapyEpisode..interface_methods Postgres", {
     dplyr::tibble(
       patient_id = "5124578766", 
       therapy_id = 111, 
+      antiinfective_type = "antibacterial", 
+      therapy_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = "UTC"),
+      therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC")
+    )
+  )
+  expect_equal(
+    collect(therapy_object_multi),
+    dplyr::tibble(
+      patient_id = c("5124578766", "5124578767", "5124578768"), 
+      therapy_id = 111:113, 
+      antiinfective_type = "antibacterial", 
+      therapy_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = "UTC"),
+      therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC")
+    )
+  )
+  expect_equal(
+    collect(therapy_object_multi4),
+    dplyr::tibble(
+      patient_id = c("5124578766", "5124578767", "5124578768", "5124578769"), 
+      therapy_id = 111:114, 
       antiinfective_type = "antibacterial", 
       therapy_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = "UTC"),
       therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC")
