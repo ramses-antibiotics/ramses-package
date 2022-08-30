@@ -5,6 +5,7 @@ on:
       - develop
       - 'feature/**'
       - 'bug_fix/**'
+      - 'bugfix/**'
 
 name: R-CMD-check
 

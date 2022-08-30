@@ -749,7 +749,7 @@ setMethod("show", "Encounter", function(object) {
 setMethod("show", "TherapyEpisode", function(object) {
    if( length(object@id) <= 3 ) {
     cat(class(object), paste(as.character(object@id), collapse = ", "), "\n")
-  } else if( length(id) > 3 ) {
+  } else if( length(object@id) > 3 ) {
     cat(class(object), paste(as.character(object@id)[1:3], collapse = ", "), "...\n")
   }
   record <- dplyr::collect(object@record)

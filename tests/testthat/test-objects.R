@@ -466,8 +466,8 @@ test_that("TherapyEpisode..interface_methods DuckDB", {
   on.exit({DBI::dbDisconnect(conDuckDB, shutdown = TRUE)})
   
   fake_prescription <- data.frame(
-    patient_id = "5124578766",
-    prescription_id = 111,
+    patient_id = c("5124578766", "5124578767", "5124578768", "5124578769"),
+    prescription_id = 111:114,
     prescription_text = "Piperacillin / Tazobactam IVI 4.5 g TDS",
     authoring_date = structure(1438690036,
                                class = c("POSIXct", "POSIXt"),
@@ -501,10 +501,20 @@ test_that("TherapyEpisode..interface_methods DuckDB", {
                    prescriptions = fake_prescription,
                    overwrite = TRUE)
   therapy_object <- TherapyEpisode(conDuckDB, 111)
+  therapy_object_multi <- TherapyEpisode(conDuckDB, 111:113)
+  therapy_object_multi4 <- TherapyEpisode(conDuckDB, 111:114)
   
   # CLASS
   expect_equal(
     class(therapy_object),
+    structure("TherapyEpisode", package = "Ramses")
+  )
+  expect_equal(
+    class(therapy_object_multi),
+    structure("TherapyEpisode", package = "Ramses")
+  )
+  expect_equal(
+    class(therapy_object_multi4),
     structure("TherapyEpisode", package = "Ramses")
   )
   
@@ -512,6 +522,14 @@ test_that("TherapyEpisode..interface_methods DuckDB", {
   expect_equal(
     capture.output(therapy_object)[1:2],
     c("TherapyEpisode 111 ", "Patient:   5124578766 ")
+  )
+  expect_equal(
+    capture.output(therapy_object_multi)[1:2],
+    c("TherapyEpisode 111, 112, 113 ", "[total of 3 therapy episodes]")
+  )
+  expect_equal(
+    capture.output(therapy_object_multi4)[1:2],
+    c("TherapyEpisode 111, 112, 113 ...", "[total of 4 therapy episodes]")
   )
   
   # COMPUTE 
@@ -526,6 +544,28 @@ test_that("TherapyEpisode..interface_methods DuckDB", {
             therapy_object_computed@record$lazy_query$x
           ))
   )
+  expect_equal(
+    therapy_object_multi@record$lazy_query$x$x,
+    structure("drug_therapy_episodes", class = c("ident", "character"))
+  )
+  therapy_object_multi_computed <- compute(therapy_object_multi)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            therapy_object_multi_computed@record$lazy_query$x
+          ))
+  )
+  expect_equal(
+    therapy_object_multi4@record$lazy_query$x$x,
+    structure("drug_therapy_episodes", class = c("ident", "character"))
+  )
+  therapy_object_multi_computed4 <- compute(therapy_object_multi4)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            therapy_object_multi_computed4@record$lazy_query$x
+          ))
+  )
   
   # COLLECT
   expect_equal(
@@ -538,11 +578,39 @@ test_that("TherapyEpisode..interface_methods DuckDB", {
       therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC")
     )
   )
+  expect_equal(
+    collect(therapy_object_multi),
+    dplyr::tibble(
+      patient_id = c("5124578766", "5124578767", "5124578768"), 
+      therapy_id = 111:113, 
+      antiinfective_type = "antibacterial", 
+      therapy_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = "UTC"),
+      therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC")
+    )
+  )
+  expect_equal(
+    collect(therapy_object_multi4),
+    dplyr::tibble(
+      patient_id = c("5124578766", "5124578767", "5124578768", "5124578769"), 
+      therapy_id = 111:114, 
+      antiinfective_type = "antibacterial", 
+      therapy_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = "UTC"),
+      therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC")
+    )
+  )
   
   # PATIENT
   expect_s4_class(
     Patient(therapy_object),
     "Patient"
+  )
+  expect_error(
+    Patient(therapy_object_multi),
+    "`id` must have length 1"
+  )
+  expect_error(
+    Patient(therapy_object_multi4),
+    "`id` must have length 1"
   )
 })
 
@@ -564,8 +632,8 @@ test_that("TherapyEpisode..interface_methods Postgres", {
   })
   
   fake_prescription <- data.frame(
-    patient_id = "5124578766",
-    prescription_id = 111,
+    patient_id = c("5124578766", "5124578767", "5124578768", "5124578769"),
+    prescription_id = 111:114,
     prescription_text = "Piperacillin / Tazobactam IVI 4.5 g TDS",
     authoring_date = structure(1438690036,
                                class = c("POSIXct", "POSIXt"),
@@ -599,10 +667,20 @@ test_that("TherapyEpisode..interface_methods Postgres", {
                    prescriptions = fake_prescription,
                    overwrite = TRUE)
   therapy_object <- TherapyEpisode(conPostgreSQL, 111)
+  therapy_object_multi <- TherapyEpisode(conPostgreSQL, 111:113)
+  therapy_object_multi4 <- TherapyEpisode(conPostgreSQL, 111:114)
   
   # CLASS
   expect_equal(
     class(therapy_object),
+    structure("TherapyEpisode", package = "Ramses")
+  )
+  expect_equal(
+    class(therapy_object_multi),
+    structure("TherapyEpisode", package = "Ramses")
+  )
+  expect_equal(
+    class(therapy_object_multi4),
     structure("TherapyEpisode", package = "Ramses")
   )
   
@@ -610,6 +688,14 @@ test_that("TherapyEpisode..interface_methods Postgres", {
   expect_equal(
     capture.output(therapy_object)[1:2],
     c("TherapyEpisode 111 ", "Patient:   5124578766 ")
+  )
+  expect_equal(
+    capture.output(therapy_object_multi)[1:2],
+    c("TherapyEpisode 111, 112, 113 ", "[total of 3 therapy episodes]")
+  )
+  expect_equal(
+    capture.output(therapy_object_multi4)[1:2],
+    c("TherapyEpisode 111, 112, 113 ...", "[total of 4 therapy episodes]")
   )
   
   # COMPUTE 
@@ -624,6 +710,28 @@ test_that("TherapyEpisode..interface_methods Postgres", {
             therapy_object_computed@record$lazy_query$x
           ))
   )
+  expect_equal(
+    therapy_object_multi@record$lazy_query$x$x,
+    structure("drug_therapy_episodes", class = c("ident", "character"))
+  )
+  therapy_object_multi_computed <- compute(therapy_object_multi)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            therapy_object_multi_computed@record$lazy_query$x
+          ))
+  )
+  expect_equal(
+    therapy_object_multi4@record$lazy_query$x$x,
+    structure("drug_therapy_episodes", class = c("ident", "character"))
+  )
+  therapy_object_multi_computed4 <- compute(therapy_object_multi4)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            therapy_object_multi_computed4@record$lazy_query$x
+          ))
+  )
   
   # COLLECT
   expect_equal(
@@ -636,11 +744,39 @@ test_that("TherapyEpisode..interface_methods Postgres", {
       therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC")
     )
   )
+  expect_equal(
+    collect(therapy_object_multi),
+    dplyr::tibble(
+      patient_id = c("5124578766", "5124578767", "5124578768"), 
+      therapy_id = 111:113, 
+      antiinfective_type = "antibacterial", 
+      therapy_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = "UTC"),
+      therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC")
+    )
+  )
+  expect_equal(
+    collect(therapy_object_multi4),
+    dplyr::tibble(
+      patient_id = c("5124578766", "5124578767", "5124578768", "5124578769"), 
+      therapy_id = 111:114, 
+      antiinfective_type = "antibacterial", 
+      therapy_start = structure(1438695916, class = c("POSIXct", "POSIXt"), tzone = "UTC"),
+      therapy_end = structure(1438955116, class = c("POSIXct", "POSIXt"), tzone = "UTC")
+    )
+  )
   
   # PATIENT
   expect_s4_class(
     Patient(therapy_object),
     "Patient"
+  )
+  expect_error(
+    Patient(therapy_object_multi),
+    "`id` must have length 1"
+  )
+  expect_error(
+    Patient(therapy_object_multi4),
+    "`id` must have length 1"
   )
 })
 
@@ -730,6 +866,8 @@ test_that("Encounter..interface_methods DuckDB", {
     overwrite = TRUE
   )
   encounter_object <- Encounter(conDuckDB, 5458286195)
+  encounter_object_multi <- Encounter(conDuckDB, 5458286195:5458286196)
+  encounter_object_multi5 <- Encounter(conDuckDB, 5458286195:5458286199)
   
   # CLASS
   expect_equal(
@@ -743,11 +881,11 @@ test_that("Encounter..interface_methods DuckDB", {
     c("Encounter 5458286195 ", "Patient:   6145252493 ")
   )
   expect_equal(
-    capture.output(Encounter(conDuckDB, 5458286195:5458286196))[1:3],
+    capture.output(encounter_object_multi)[1:3],
     c("Encounters 5458286195, 5458286196 ", "[total of 2 encounters]", "Patient(s):   6145252493 ")
   )
   expect_equal(
-    capture.output(Encounter(conDuckDB, 5458286195:5458286199))[1:3],
+    capture.output(encounter_object_multi5)[1:3],
     c("Encounters 5458286195, 5458286196, 5458286197 ...", 
       "[total of 5 encounters]", 
       "Patient(s):   6145252493 ")
@@ -763,6 +901,28 @@ test_that("Encounter..interface_methods DuckDB", {
     grepl("^dbplyr_", 
           as.character(
             encounter_object_computed@record$lazy_query$x
+          ))
+  )
+  expect_equal(
+    encounter_object_multi@record$lazy_query$x$x,
+    structure("inpatient_episodes", class = c("ident", "character"))
+  )
+  encounter_object_multi_computed <- compute(encounter_object_multi)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            encounter_object_multi_computed@record$lazy_query$x
+          ))
+  )
+  expect_equal(
+    encounter_object_multi5@record$lazy_query$x$x,
+    structure("inpatient_episodes", class = c("ident", "character"))
+  )
+  encounter_object_multi5_computed <- compute(encounter_object_multi5)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            encounter_object_multi5_computed@record$lazy_query$x
           ))
   )
   
@@ -784,10 +944,51 @@ test_that("Encounter..interface_methods DuckDB", {
       ramses_bed_days = 0.418969907407407
     )
   )
-  
+  expect_equal(
+    collect(encounter_object_multi),
+    dplyr::tibble(
+      patient_id = 6145252493, 
+      encounter_id = 5458286195:5458286196, 
+      admission_method = "1", 
+      admission_date = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      discharge_date = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_number = 1L, 
+      last_episode_in_encounter = 1, 
+      episode_start = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_end = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      consultant_code = "C1000003", 
+      main_specialty_code = "100", 
+      ramses_bed_days = 0.418969907407407
+    )
+  )
+  expect_equal(
+    collect(encounter_object_multi5),
+    dplyr::tibble(
+      patient_id = 6145252493, 
+      encounter_id = 5458286195:5458286199, 
+      admission_method = "1", 
+      admission_date = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      discharge_date = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_number = 1L, 
+      last_episode_in_encounter = 1, 
+      episode_start = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_end = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      consultant_code = "C1000003", 
+      main_specialty_code = "100", 
+      ramses_bed_days = 0.418969907407407
+    )
+  )
   # PATIENT
   expect_s4_class(
     Patient(encounter_object),
+    "Patient"
+  )
+  expect_s4_class(
+    Patient(encounter_object_multi),
+    "Patient"
+  )
+  expect_s4_class(
+    Patient(encounter_object_multi5),
     "Patient"
   )
   
@@ -838,6 +1039,8 @@ test_that("Encounter..interface_methods Postgres", {
     overwrite = TRUE
   )
   encounter_object <- Encounter(conPostgreSQL, 5458286195)
+  encounter_object_multi <- Encounter(conPostgreSQL, 5458286195:5458286196)
+  encounter_object_multi5 <- Encounter(conPostgreSQL, 5458286195:5458286199)
   
   # CLASS
   expect_equal(
@@ -851,11 +1054,11 @@ test_that("Encounter..interface_methods Postgres", {
     c("Encounter 5458286195 ", "Patient:   6145252493 ")
   )
   expect_equal(
-    capture.output(Encounter(conPostgreSQL, 5458286195:5458286196))[1:3],
+    capture.output(encounter_object_multi)[1:3],
     c("Encounters 5458286195, 5458286196 ", "[total of 2 encounters]", "Patient(s):   6145252493 ")
   )
   expect_equal(
-    capture.output(Encounter(conPostgreSQL, 5458286195:5458286199))[1:3],
+    capture.output(encounter_object_multi5)[1:3],
     c("Encounters 5458286195, 5458286196, 5458286197 ...", 
       "[total of 5 encounters]", 
       "Patient(s):   6145252493 ")
@@ -871,6 +1074,28 @@ test_that("Encounter..interface_methods Postgres", {
     grepl("^dbplyr_", 
           as.character(
             encounter_object_computed@record$lazy_query$x
+          ))
+  )
+  expect_equal(
+    encounter_object_multi@record$lazy_query$x$x,
+    structure("inpatient_episodes", class = c("ident", "character"))
+  )
+  encounter_object_multi_computed <- compute(encounter_object_multi)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            encounter_object_multi_computed@record$lazy_query$x
+          ))
+  )
+  expect_equal(
+    encounter_object_multi5@record$lazy_query$x$x,
+    structure("inpatient_episodes", class = c("ident", "character"))
+  )
+  encounter_object_multi5_computed <- compute(encounter_object_multi5)
+  expect_true(
+    grepl("^dbplyr_", 
+          as.character(
+            encounter_object_multi5_computed@record$lazy_query$x
           ))
   )
   
@@ -892,10 +1117,51 @@ test_that("Encounter..interface_methods Postgres", {
       ramses_bed_days = 0.418969907407407
     )
   )
-  
+  expect_equal(
+    collect(encounter_object_multi),
+    dplyr::tibble(
+      patient_id = 6145252493, 
+      encounter_id = 5458286195:5458286196, 
+      admission_method = "1", 
+      admission_date = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      discharge_date = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_number = 1L, 
+      last_episode_in_encounter = 1, 
+      episode_start = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_end = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      consultant_code = "C1000003", 
+      main_specialty_code = "100", 
+      ramses_bed_days = 0.418969907407407
+    )
+  )
+  expect_equal(
+    collect(encounter_object_multi5),
+    dplyr::tibble(
+      patient_id = 6145252493, 
+      encounter_id = 5458286195:5458286199, 
+      admission_method = "1", 
+      admission_date = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      discharge_date = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_number = 1L, 
+      last_episode_in_encounter = 1, 
+      episode_start = structure(1443082402, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      episode_end = structure(1443118601, class = c("POSIXct", "POSIXt"), tzone = "UTC"), 
+      consultant_code = "C1000003", 
+      main_specialty_code = "100", 
+      ramses_bed_days = 0.418969907407407
+    )
+  )
   # PATIENT
   expect_s4_class(
     Patient(encounter_object),
+    "Patient"
+  )
+  expect_s4_class(
+    Patient(encounter_object_multi),
+    "Patient"
+  )
+  expect_s4_class(
+    Patient(encounter_object_multi5),
     "Patient"
   )
   
