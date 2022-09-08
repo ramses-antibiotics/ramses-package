@@ -1219,7 +1219,8 @@ validate_microbiology <- function(specimens, isolates, susceptibilities) {
     schema$susceptibilities$variable_name[schema$susceptibilities$must_be_unique]
   )
   
-  invalid_specimen_codes <- !(specimens$specimen_type_code %in% reference_specimen_type$conceptId)
+  invalid_specimen_codes <- !(specimens$specimen_type_code %in% 
+                                Ramses::reference_specimen_type$conceptId)
   if( any(invalid_specimen_codes) ) {
     warning(paste(
       c("Some values in `specimen_type_code` are not valid SNOMED CT specimen concepts:",
@@ -1257,8 +1258,7 @@ validate_microbiology <- function(specimens, isolates, susceptibilities) {
     ))
   }
   
-  invalid_drug_codes <- na.omit(unique(c(isolates$agent_code,
-                                 susceptibilities$agent_code)))
+  invalid_drug_codes <- na.omit(unique(susceptibilities$agent_code))
   invalid_drug_codes <- invalid_drug_codes[
     !invalid_drug_codes %in% AMR::antibiotics$ab
   ]
