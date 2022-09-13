@@ -1219,7 +1219,8 @@ validate_microbiology <- function(specimens, isolates, susceptibilities) {
     schema$susceptibilities$variable_name[schema$susceptibilities$must_be_unique]
   )
   
-  invalid_specimen_codes <- !(specimens$specimen_type_code %in% reference_specimen_type$conceptId)
+  invalid_specimen_codes <- !(specimens$specimen_type_code %in% 
+                                Ramses::reference_specimen_type$conceptId)
   if( any(invalid_specimen_codes) ) {
     warning(paste(
       c("Some values in `specimen_type_code` are not valid SNOMED CT specimen concepts:",
@@ -1257,8 +1258,7 @@ validate_microbiology <- function(specimens, isolates, susceptibilities) {
     ))
   }
   
-  invalid_drug_codes <- na.omit(unique(c(isolates$agent_code,
-                                 susceptibilities$agent_code)))
+  invalid_drug_codes <- na.omit(unique(susceptibilities$agent_code))
   invalid_drug_codes <- invalid_drug_codes[
     !invalid_drug_codes %in% AMR::antibiotics$ab
   ]
@@ -1400,16 +1400,31 @@ validate_investigations <- function(investigations,
   units_validate <- .validate_UCUM_codes(unique(investigations$observation_unit))
   
   units_mixed <- investigations %>% 
-    dplyr::distinct(observation_code_system, observation_code, observation_unit) %>% 
-    dplyr::group_by(observation_code_system, observation_code) %>% 
-    dplyr::summarise(n = dplyr::n()) %>% 
-    dplyr::filter(n > 1)
+    dplyr::group_by(.data$observation_code_system, .data$observation_code) %>% 
+    dplyr::summarise(n = dplyr::n_distinct(.data$observation_unit)) %>% 
+    dplyr::filter(.data$n > 1)
   
   if( nrow(units_mixed) > 0 ) {
     stop(
-      "\nEvery `observation_code` must only be associated with one `observation_unit`.\n",
+      "Every `observation_code` must only be associated with one `observation_unit`.\n",
       "Please convert these observations to a single unit: \n\n ",
       paste0(utils::capture.output(data.frame(units_mixed[, 1:2])), collapse = "\n"), 
+      call. = FALSE
+    )
+  }
+  
+  multiple_names <- investigations %>% 
+    dplyr::group_by(.data$observation_code_system, .data$observation_code) %>% 
+    dplyr::summarise(n_name = dplyr::n_distinct(.data$observation_name),
+                     n_display = dplyr::n_distinct(.data$observation_display)) %>% 
+    dplyr::filter(.data$n_display > 1 | .data$n_name > 1)
+  
+  if( nrow(multiple_names) > 0 ) {
+    stop(
+      "Every `observation_code` must only be associated with ",
+      "one `observation_name` and `observation_display` only.\n",
+      "Please unify observation names and display names for the following codes: \n\n ",
+      paste0(utils::capture.output(data.frame(multiple_names[, 1:2])), collapse = "\n"), 
       call. = FALSE
     )
   }
