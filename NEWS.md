@@ -1,4 +1,14 @@
 
+# Ramses 0.5.2
+
+*13 September 2022*
+
+## Improvements
+
+- `validate_investigations()` now expects `observation_code` values to be associated
+with unique `observation_name` and `observation_display` values
+- improvements to namespace handling in `validate_microbiology()`.
+
 
 # Ramses 0.5.1
 
