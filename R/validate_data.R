@@ -1449,5 +1449,5 @@ validate_investigations <- function(investigations,
 
 arrange_variables <- function(data, first_column_names) {
   other_names <- colnames(data)[!colnames(data) %in% first_column_names]
-  dplyr::select(data, c(first_column_names, other_names))
+  dplyr::select(data, dplyr::all_of(first_column_names), dplyr::all_of(other_names))
 }
