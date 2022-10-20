@@ -486,6 +486,39 @@ setMethod(
     dplyr::filter(.data$patient_id == !!input_patient@id) %>% 
     dplyr::inner_join(tbl(input_patient@conn, "reference_icd_infections"), 
                by = c("icd_code")) %>%
+    dplyr::left_join(
+      dplyr::select(
+        tbl(input_patient@conn, "inpatient_episodes"),
+        .data$patient_id, 
+        .data$encounter_id, 
+        .data$episode_number,
+        .data$episode_start,
+        .data$episode_end
+      ),
+      by = c("patient_id", "encounter_id", "episode_number")
+    )
+  
+  if (
+    all(c("diagnosis_start", "diagnosis_end") %in% colnames(diag))
+  ) {
+    diag <- diag %>% 
+      dplyr::mutate(
+        tl_start = dplyr::if_else(is.na(.data$diagnosis_start), 
+                                  .data$episode_start,
+                                  .data$diagnosis_start),
+        tl_end = dplyr::if_else(is.na(.data$diagnosis_end), 
+                                .data$episode_end,
+                                .data$diagnosis_end)
+      )
+  } else {
+    diag <- diag %>% 
+      dplyr::mutate(
+        tl_start = .data$episode_start,
+        tl_end = .data$episode_end
+      )
+  }
+  diag <- diag %>% 
+    dplyr::filter( !( is.na(.data$tl_start) | is.na(.data$tl_end) ) ) %>% 
     dplyr::collect()
   
   # If no infection diagnosis is present, return empty data frame.
@@ -494,24 +527,30 @@ setMethod(
     return(data.frame())
   } 
 
-  # combining episodes together for diagnoses that span several episodes
+  # combining diagnosis episodes that resume <24h after ending
   diag <- diag %>%
+    dplyr::arrange(.data$patient_id, .data$icd_code, .data$tl_start) %>% 
     dplyr::group_by(.data$patient_id, .data$icd_code) %>% 
-    dplyr::mutate(diagnosis_episode_end = dplyr::lag(.data$episode_end, 
+    dplyr::mutate(diagnosis_episode_end = dplyr::lag(.data$tl_end, 
                                                      n = 1, 
-                                                     order_by = .data$episode_start)) %>% 
+                                                     order_by = .data$tl_start)) %>% 
     dplyr::ungroup() %>% 
     dplyr::mutate(
-      prim_diag = dplyr::if_else(.data$diagnosis_position == 1, 1, 0),
-      grp = dplyr::if_else(
-        abs(as.numeric(.data$diagnosis_episode_end - .data$episode_start, units = "secs")) <= (6 * 3600),
-        NA_integer_,
-        dplyr::row_number(.data$episode_start)
-      )
+      prim_diag = dplyr::if_else(.data$diagnosis_position == 1, 1, 0)
     ) %>% 
     dplyr::group_by(.data$patient_id, .data$icd_code, .data$prim_diag) %>% 
-    dplyr::mutate(grp = max(.data$grp)) %>% 
-    dplyr::select(-.data$diagnosis_episode_end) %>%
+    dplyr::mutate(
+      grp = cumsum(dplyr::case_when(
+        # First diagnosis episode
+        is.na(.data$diagnosis_episode_end) ~ 0L,
+        # Diagnosis episode closely following identical one
+        abs(as.numeric(.data$diagnosis_episode_end - .data$tl_start, units = "hours")) < 24 ~ 0L,
+        # Independent (new) diagnosis episode
+        TRUE ~ 1L
+      ))
+    ) %>% 
+    # dplyr::mutate(grp = max(.data$grp)) %>% 
+    dplyr::ungroup() %>% 
     dplyr::group_by(
       .data$patient_id, 
       .data$icd_code, 
@@ -523,8 +562,8 @@ setMethod(
       .data$infection_group2_label
     ) %>%
     dplyr::summarise(
-      start_time = min(.data$episode_start, na.rm = TRUE),
-      end_time = max(.data$episode_end, na.rm = TRUE)
+      start_time = min(.data$tl_start, na.rm = TRUE),
+      end_time = max(.data$tl_end, na.rm = TRUE)
     ) 
   
   diag <- dplyr::right_join(icd_lu, diag, 

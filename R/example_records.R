@@ -41,9 +41,9 @@
 #' Simulated inpatient clinical diagnoses
 #' 
 #' @description Set of simulated clinical diagnoses of infection for every
-#' row in \code{\link[Ramses]{inpatient_episodes}},
-#' detailing all episode start and end times, episode numbers, and up to
-#' 5 clinical diagnoses coded according to the International 
+#' row in \code{\link[Ramses]{inpatient_episodes}}, patient, encounter, and 
+#' episode numbers, along with up to 5 clinical diagnoses per admission
+#' coded according to the International 
 #' Classification of Diseases, Tenth Revision (ICD-10). 
 #' 
 #' This data was simulated to reproduce a set of combinations of infection 

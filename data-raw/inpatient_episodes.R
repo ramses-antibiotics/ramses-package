@@ -71,7 +71,9 @@ inpatient_diagnoses2 <- read.csv(
                  "POSIXct", "character"))
 inpatient_diagnoses <- dplyr::bind_rows(inpatient_diagnoses,
                                         inpatient_diagnoses2) %>% 
-  dplyr::select(-.data$episode_start, -.data$episode_end)
+  dplyr::select(-.data$episode_start, 
+                -.data$episode_end, 
+                -.data$last_episode_in_encounter)
 
 for (i in which(vapply(inpatient_diagnoses, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {
   attr(inpatient_diagnoses[[i]], "tzone") <- "Europe/London"

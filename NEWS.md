@@ -1,4 +1,18 @@
 
+# Ramses 0.6.0
+
+## Improvements
+
+- `validate_inpatient_diagnoses()` now accepts two optional fields `diagnosis_start`
+and `diagnosis_end` to take advantage of clinical systems such as problem lists.
+
+
+# Bug fix
+
+- `therapy_timeline()` now operates with or without `diagnosis_start` and `diagnosis_end`
+variables. The `inpatient_diagnoses` mock dataset no longer contains those fields.
+
+
 # Ramses 0.5.2
 
 *13 September 2022*

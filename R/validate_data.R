@@ -603,7 +603,8 @@ validate_inpatient_episodes <- function(patients,
 #' @param diagnoses_lookup a data frame containing an ICD-10 reference look up 
 #' table with, at minimum, variables \code{icd_description}, \code{icd_display}, 
 #' \code{category_code}, \code{category_description}
-#' @section Diagnoses set mandatory variables:
+#' 
+#' @section Diagnoses mandatory variables:
 #' \describe{
 #'   \item{\code{patient_id}}{a patient identifier with no missing value}
 #'   \item{\code{encounter_id}}{a hospital encounter identifier with no missing value}
@@ -614,6 +615,20 @@ validate_inpatient_episodes <- function(patients,
 #'   \item{\code{diagnosis_position}}{an integer describing the diagnosis position
 #'   on the discharge summary (1 = primary cause of admission}
 #' }
+#' 
+#' @section Diagnoses optional variables:
+#' Some record systems track dates when clinical diagnoses were first noted and
+#' when they were considered resolved (eg: problem lists). \code{diagnosis_start}
+#' and \code{diagnosis_end} should be used to store this information.
+#' 
+#' \describe{
+#'   \item{\code{diagnosis_start}}{a patient identifier with no missing value}
+#'   \item{\code{diagnosis_end}}{a hospital encounter identifier with no missing value}
+#' }
+#' 
+#' If no data are provided, Ramses functions such as \code{\link[Ramses]{therapy_timeline}}
+#' will use episode start and end dates from the \code{inpatient_episodes} table instead.
+#' 
 #' @section Diagnoses lookup mandatory variables:
 #' 
 #' \describe{
