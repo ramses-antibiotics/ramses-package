@@ -190,6 +190,16 @@ test_that("Ramses on DuckDB (system test)", {
                            diagnoses_data = .ramses_mock_dataset$diagnoses,
                            diagnoses_lookup = .ramses_mock_dataset$icd10cm_2020,
                            overwrite = TRUE)))
+  expect_true(
+    all(
+      c("reference_icd",
+        "reference_icd_comorbidity",
+        "reference_icd_infections",
+        "reference_icd_ccs",
+        "reference_icd_ccsr") %in%
+      DBI::dbListTables(db_conn)
+    )
+  )
   expect_invisible(
     load_inpatient_investigations(
       conn = db_conn,
