@@ -224,7 +224,7 @@ test_that("Ramses on PosgreSQL (system test)", {
         "reference_icd_infections",
         "reference_icd_ccs",
         "reference_icd_ccsr") %in%
-        DBI::dbListTables(db_conn)
+        DBI::dbListTables(pq_conn)
     )
   )
   expect_invisible(
