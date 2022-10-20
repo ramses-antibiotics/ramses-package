@@ -758,18 +758,18 @@ create_therapy_episodes <- function(
     dplyr::select(-therapy_id, -therapy_rank) %>%
     dplyr::left_join(therapy_episode_ids, by = "id") %>% 
     dplyr::mutate(
-      therapy_id = dplyr::if_else(
-        is.na(therapy_id) & 
-          !prescription_status %in% c('unknown', 'cancelled', 'draft', 'entered-in-error'),
-        prescription_id,
-        therapy_id),
       therapy_rank = dplyr::if_else(
         is.na(therapy_id) & 
           is.na(therapy_rank) &
           !prescription_status %in% c('unknown', 'cancelled', 'draft', 'entered-in-error'),
         1L,
         therapy_rank
-      )
+      ),
+      therapy_id = dplyr::if_else(
+        is.na(therapy_id) & 
+          !prescription_status %in% c('unknown', 'cancelled', 'draft', 'entered-in-error'),
+        prescription_id,
+        therapy_id)
     ) %>% 
     dplyr::select(-combination_id) %>%
     dplyr::left_join(therapy_combination_ids, by = "id")

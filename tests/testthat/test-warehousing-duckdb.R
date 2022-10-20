@@ -205,6 +205,13 @@ test_that("Ramses on DuckDB (system test)", {
       overwrite = TRUE
     )
   )
+  test_therapy_rank <- tbl(db_conn, "drug_prescriptions") %>% 
+    dplyr::filter(!.data$prescription_status %in% c('unknown', 'cancelled', 'draft', 'entered-in-error')) %>% 
+    dplyr::distinct(.data$therapy_rank) %>% 
+    dplyr::collect()
+  expect_true(
+    all(test_therapy_rank$therapy_rank > 0)
+  )
   test_output <- tbl(db_conn, "drug_prescriptions") %>% 
     dplyr::filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", 
                                          "89ac870bc1c1e4b2a37cec79d188cb08",
