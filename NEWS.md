@@ -9,6 +9,8 @@
 and `diagnosis_end` to take advantage of clinical systems such as problem lists.
 - general code maintenance and adaptation to ongoing changes to the dplyr data masking
 approach [#105](https://github.com/ramses-antibiotics/ramses-package/issues/105) 
+- bridge tables now include a field `antiinfective_type` for ease [#76](https://github.com/ramses-antibiotics/ramses-package/issues/76) and 
+generation is improved [#104](https://github.com/ramses-antibiotics/ramses-package/issues/104).
 
 ## Bug fix
 

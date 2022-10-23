@@ -1351,7 +1351,8 @@ bridge_episode_prescription_overlap <- function(conn,
         "patient_id",
         "prescription_id",
         "prescription_start",
-        "prescription_end"
+        "prescription_end",
+        "antiinfective_type"
       )),
       tidyselect::any_of("DDD")
     )
@@ -1400,6 +1401,7 @@ bridge_episode_prescription_overlap <- function(conn,
       "encounter_id",
       "episode_number",
       "prescription_id",
+      "antiinfective_type",
       "DOT",
       "DDD_prescribed"
     )
@@ -1410,6 +1412,7 @@ bridge_episode_prescription_overlap <- function(conn,
       "encounter_id",
       "episode_number",
       "prescription_id",
+      "antiinfective_type",
       "DOT"
     )
   }
@@ -1447,6 +1450,7 @@ bridge_episode_prescription_initiation <- function(conn,
       tidyselect::all_of(c(
         "patient_id",
         "prescription_id",
+        "antiinfective_type",
         "prescription_start",
         "prescription_end",
         "authoring_date"
@@ -1496,6 +1500,7 @@ bridge_episode_prescription_initiation <- function(conn,
       "encounter_id",
       "episode_number",
       "prescription_id",
+      "antiinfective_type",
       "DOT",
       "DDD_prescribed"
     )
@@ -1506,6 +1511,7 @@ bridge_episode_prescription_initiation <- function(conn,
       "encounter_id",
       "episode_number",
       "prescription_id",
+      "antiinfective_type",
       "DOT"
     )
   }
@@ -1565,6 +1571,7 @@ bridge_encounter_therapy_overlap <- function(conn,
     "patient_id",
     "encounter_id",
     "therapy_id",
+    "antiinfective_type",
     "LOT"
   )
   
