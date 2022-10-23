@@ -217,6 +217,16 @@ test_that("Ramses on PosgreSQL (system test)", {
                                diagnoses_data = .ramses_mock_dataset$diagnoses,
                                diagnoses_lookup = .ramses_mock_dataset$icd10cm_2020,
                                overwrite = TRUE)))
+  expect_true(
+    all(
+      c("reference_icd",
+        "reference_icd_comorbidity",
+        "reference_icd_infections",
+        "reference_icd_ccs",
+        "reference_icd_ccsr") %in%
+        DBI::dbListTables(pq_conn)
+    )
+  )
   expect_invisible(
     load_inpatient_investigations(
       conn = pq_conn,
@@ -233,6 +243,12 @@ test_that("Ramses on PosgreSQL (system test)", {
     )
   )
   
+  test_therapy_rank <- tbl(pq_conn, "drug_prescriptions") %>% 
+    dplyr::distinct(.data$therapy_rank) %>% 
+    dplyr::collect()
+  expect_true(
+    all(test_therapy_rank$therapy_rank > 0)
+  )
   test_output <- tbl(pq_conn, "drug_prescriptions") %>% 
     dplyr::filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", 
                                          "89ac870bc1c1e4b2a37cec79d188cb08",

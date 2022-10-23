@@ -190,6 +190,16 @@ test_that("Ramses on DuckDB (system test)", {
                            diagnoses_data = .ramses_mock_dataset$diagnoses,
                            diagnoses_lookup = .ramses_mock_dataset$icd10cm_2020,
                            overwrite = TRUE)))
+  expect_true(
+    all(
+      c("reference_icd",
+        "reference_icd_comorbidity",
+        "reference_icd_infections",
+        "reference_icd_ccs",
+        "reference_icd_ccsr") %in%
+      DBI::dbListTables(db_conn)
+    )
+  )
   expect_invisible(
     load_inpatient_investigations(
       conn = db_conn,
@@ -204,6 +214,13 @@ test_that("Ramses on DuckDB (system test)", {
       .ramses_mock_dataset$micro$susceptibilities,
       overwrite = TRUE
     )
+  )
+  test_therapy_rank <- tbl(db_conn, "drug_prescriptions") %>% 
+    dplyr::filter(!.data$prescription_status %in% c('unknown', 'cancelled', 'draft', 'entered-in-error')) %>% 
+    dplyr::distinct(.data$therapy_rank) %>% 
+    dplyr::collect()
+  expect_true(
+    all(test_therapy_rank$therapy_rank > 0)
   )
   test_output <- tbl(db_conn, "drug_prescriptions") %>% 
     dplyr::filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", 
@@ -759,10 +776,10 @@ test_that("Ramses on DuckDB (system test)", {
     utils::capture.output(TherapyEpisode(db_conn, "89ac870bc1c1e4b2a37cec79d188cb08"))[1:8],
     c("TherapyEpisode 89ac870bc1c1e4b2a37cec79d188cb08 ", "Patient:   1555756339 ", 
       paste0("Start:     ",
-             as.character(as.POSIXct("2017-07-02 01:15:46", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
+             format(as.POSIXct("2017-07-02 01:15:46", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
              " "), 
       paste0("End:       ",
-             as.character(as.POSIXct("2017-07-06 01:35:46", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
+             format(as.POSIXct("2017-07-06 01:35:46", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
              " "), 
       "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
       "  > Clarithromycin ORAL 500mg 4 days"))
@@ -770,10 +787,10 @@ test_that("Ramses on DuckDB (system test)", {
     utils::capture.output(TherapyEpisode(db_conn, "fa179f4bcf3efa1e21225ab207ab40c4"))[1:11],
     c("TherapyEpisode fa179f4bcf3efa1e21225ab207ab40c4 ", "Patient:   3422481921 ", 
       paste0("Start:     ", 
-             as.character(as.POSIXct("2017-11-15 15:33:36", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
+             format(as.POSIXct("2017-11-15 15:33:36", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
              " "),
       paste0("End:       ",
-             as.character(as.POSIXct("2017-12-01 21:11:36", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
+             format(as.POSIXct("2017-12-01 21:11:36", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
              " "),
       "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
       "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  > Piperacillin/tazobactam IV 4.5g 4 days", 
@@ -800,10 +817,10 @@ test_that("Ramses on DuckDB (system test)", {
     c("MedicationRequest 5528fc41106bb48eb4d48bc412e13e67 ", "Clarithromycin IV 500mg 0 days ", 
       "Patient:     99999999999 ", 
       paste0("Start:        ", 
-             as.character(as.POSIXct("2015-08-07 10:27:00", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
+             format(as.POSIXct("2015-08-07 10:27:00", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
              " "),
       paste0("End:          ", 
-             as.character(as.POSIXct("2015-08-07 15:59:00", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
+             format(as.POSIXct("2015-08-07 15:59:00", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
              " "),
       "Therapy:      5528fc41106bb48eb4d48bc412e13e67 ", 
       "", "Database connection:"))
@@ -812,10 +829,10 @@ test_that("Ramses on DuckDB (system test)", {
     c("MedicationRequest 1ab55e515af6b86dde76abbe0bffbd3f ", "Clarithromycin ORAL 500mg 4 days ", 
       "Patient:     3894468747 ", 
       paste0("Start:        ", 
-             as.character(as.POSIXct("2015-10-01 21:38:55", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
+             format(as.POSIXct("2015-10-01 21:38:55", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
              " "), 
       paste0("End:          ", 
-             as.character(as.POSIXct("2015-10-05 21:38:55", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
+             format(as.POSIXct("2015-10-05 21:38:55", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
              " "),
       "Combination:  1ab55e515af6b86dde76abbe0bffbd3f ", 
       "Therapy:      1ab55e515af6b86dde76abbe0bffbd3f ", "", "Database connection:"

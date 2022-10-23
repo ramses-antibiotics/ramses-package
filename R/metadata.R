@@ -29,12 +29,12 @@ download_icd10cm <- function(silent = FALSE) {
   icd_source$icd_description <- trimws(icd_source$icd_description)
   icd_source$level <- nchar(icd_source$icd_code)
   
-  icd3 <- dplyr::filter(icd_source, level == 3) %>% 
-    dplyr::transmute(category_code = icd_code,
-                     category_description = icd_description)
+  icd3 <- dplyr::filter(icd_source, .data$level == 3) %>% 
+    dplyr::transmute(category_code = .data$icd_code,
+                     category_description = .data$icd_description)
   
-  icd5 <- dplyr::filter(icd_source, header_indicator == 1) %>% 
-    dplyr::mutate(category_code = substring(icd_code, 0, 3))
+  icd5 <- dplyr::filter(icd_source, .data$header_indicator == 1) %>% 
+    dplyr::mutate(category_code = substring(.data$icd_code, 0, 3))
   
   icd <- merge(icd5, icd3, by = "category_code", all.x = T)
   
@@ -46,7 +46,7 @@ download_icd10cm <- function(silent = FALSE) {
   
   icd$edition <- "ICD-10-CM 2020"
   
-  icd <- dplyr::select(icd, -header_indicator, -level)
+  icd <- dplyr::select(icd, -tidyselect::all_of(c("header_indicator", "level")))
 
   icd <- arrange_variables(icd, 
                            first_column_names = c(
@@ -112,12 +112,12 @@ import_icd <- function(archive, version) {
   
   icd_source$level <- nchar(icd_source[["alt_code"]])
   
-  icd3 <- dplyr::filter(icd_source, level == 3) %>% 
-    dplyr::transmute(category_code = alt_code,
-                     category_description = description)
+  icd3 <- dplyr::filter(icd_source, .data$level == 3) %>% 
+    dplyr::transmute(category_code = .data$alt_code,
+                     category_description = .data$description)
   
-  icd5 <- dplyr::filter(icd_source, level > 3) %>% 
-    dplyr::mutate(category_code = substring(alt_code, 0, 3))
+  icd5 <- dplyr::filter(icd_source, .data$level > 3) %>% 
+    dplyr::mutate(category_code = substring(.data$alt_code, 0, 3))
   
   icd <- merge(icd5, icd3, by = "category_code", all.x = T)
   
@@ -127,9 +127,9 @@ import_icd <- function(archive, version) {
   icd$edition <- version
   
   icd <- dplyr::rename(icd,
-                       icd_display = code,
-                       icd_code = alt_code,
-                       icd_description = description)
+                       icd_display = .data$code,
+                       icd_code = .data$alt_code,
+                       icd_description = .data$description)
   icd <- arrange_variables(icd, 
                            first_column_names = c(
                              "icd_code",
@@ -196,17 +196,17 @@ map_charlson_comorbidities <- function(df, icd_column){
   names(loc)[2] <- "comorb"
   loc <- loc %>% 
     dplyr::mutate(comorb_group = dplyr::case_when(
-      comorb %in% c("diab", "diabwc") ~ "diab",
-      comorb %in% c("mld", "msld") ~ "ld",
-      comorb %in% c("canc", "metacanc") ~ "canc",
-      TRUE ~ as.character(comorb)
+      .data$comorb %in% c("diab", "diabwc") ~ "diab",
+      .data$comorb %in% c("mld", "msld") ~ "ld",
+      .data$comorb %in% c("canc", "metacanc") ~ "canc",
+      TRUE ~ as.character(.data$comorb)
     )) %>% 
     dplyr::mutate(charlson_weights = dplyr::case_when(
-      comorb %in% c("mi", "chf", "pvd", "cevd", "dementia",
+      .data$comorb %in% c("mi", "chf", "pvd", "cevd", "dementia",
                     "cpd", "rheumd", "pud", "mld", "diab") ~ 1L,
-      comorb %in% c("diabwc", "hp", "rend", "canc") ~ 2L,
-      comorb %in% c("mlsd") ~ 3L,
-      comorb %in% c("metacanc", "aids") ~ 6L,
+      .data$comorb %in% c("diabwc", "hp", "rend", "canc") ~ 2L,
+      .data$comorb %in% c("mlsd") ~ 3L,
+      .data$comorb %in% c("metacanc", "aids") ~ 6L,
       TRUE ~ NA_integer_
     ))
   
@@ -325,15 +325,23 @@ map_ICD10_CCSR <- function(df, icd_column) {
   df$match_key <- gsub("X$", "", df[[icd_column]])
   
   # Prepare look ups for left joins
-  ccsx_allchars <- dplyr::select(ccsx, 
-                                 -keep_3chars, -keep_4chars,
-                                 -icd_code_3chars, -icd_code_4chars)
-  ccsx_3chars <- dplyr::filter(ccsx, keep_3chars) %>% 
-    dplyr::select(-keep_3chars, -keep_4chars, 
-                  -icd_code_4chars, -icd_code)
-  ccsx_4chars <- dplyr::filter(ccsx, keep_4chars) %>% 
-    dplyr::select(-keep_3chars, -keep_4chars, 
-                  -icd_code_3chars, -icd_code)
+  ccsx_allchars <- dplyr::select(
+    ccsx, 
+    -tidyselect::all_of(c("keep_3chars",
+                          "keep_4chars",
+                          "icd_code_3chars",
+                          "icd_code_4chars"))
+  )
+  ccsx_3chars <- dplyr::filter(ccsx, .data$keep_3chars) %>% 
+    dplyr::select(-tidyselect::all_of(c("keep_3chars",
+                                        "keep_4chars",
+                                        "icd_code",
+                                        "icd_code_4chars")))
+  ccsx_4chars <- dplyr::filter(ccsx, .data$keep_4chars) %>% 
+    dplyr::select(-tidyselect::all_of(c("keep_3chars",
+                                        "keep_4chars",
+                                        "icd_code_3chars",
+                                        "icd_code")))
   
   # Match on all
   x_matched <- dplyr::inner_join(df, 
@@ -378,7 +386,7 @@ map_ICD10_CCSR <- function(df, icd_column) {
   # Get both matched and unmatched codes
   x_all <- dplyr::bind_rows(x_matched, x_unmatched) %>%
     dplyr::arrange(!!dplyr::sym(icd_column)) %>%
-    dplyr::select(-match_key)
+    dplyr::select(-tidyselect::all_of("match_key"))
   
   x_all
 }
@@ -525,7 +533,7 @@ compute_DDDs <- function(ATC_code, ATC_administration, dose, unit, silent = FALS
       colnames(atc_page) <- gsub("^ddd$", "ddd_value", colnames(atc_page))
       
       atc_page$ATC_code <- search_ATC[i]
-      reference_DDD[[i]] <- dplyr::select(atc_page, -name, -note)
+      reference_DDD[[i]] <- dplyr::select(atc_page, -tidyselect::all_of(c("name", "note")))
     }
   }
   
@@ -537,6 +545,7 @@ compute_DDDs <- function(ATC_code, ATC_administration, dose, unit, silent = FALS
     unit = unit
   )
   
+  ddd_value <- DDD <- NULL
   x <- merge(x, reference_DDD, all.x = T, sort = F)
   x$DDD <- NA_real_
   u = NULL

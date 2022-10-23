@@ -294,7 +294,7 @@ test_that("MedicationRequest..interface_methods DuckDB", {
   expect_equal(
     collect(med_req_object),
     dplyr::tibble(id = 1L, patient_id = "5124578766", prescription_id = 111,
-               combination_id = NA_real_, therapy_id = 111, therapy_rank = NA_real_,
+               combination_id = NA_real_, therapy_id = 111, therapy_rank = 1L,
                prescription_text = "Piperacillin / Tazobactam IVI 4.5 g TDS",
                drug_code = "TZP", drug_name = "Piperacillin + Tazobactam",
                drug_display_name = "Piperacillin + Tazobactam", drug_group = "Beta-lactams/penicillins",
@@ -397,7 +397,7 @@ test_that("MedicationRequest..interface_methods Postgres", {
   expect_equal(
     collect(med_req_object),
     dplyr::tibble(id = 1L, patient_id = "5124578766", prescription_id = 111,
-                  combination_id = NA_real_, therapy_id = 111, therapy_rank = NA,
+                  combination_id = NA_real_, therapy_id = 111, therapy_rank = 1L,
                   prescription_text = "Piperacillin / Tazobactam IVI 4.5 g TDS",
                   drug_code = "TZP", drug_name = "Piperacillin + Tazobactam",
                   drug_display_name = "Piperacillin + Tazobactam", drug_group = "Beta-lactams/penicillins",

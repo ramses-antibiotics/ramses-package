@@ -23,20 +23,20 @@
   if ( !is.null(observation_code_system) ) {
   db_observation_codes <- dplyr::filter(
     dplyr::tbl(conn, "inpatient_investigations"), 
-    observation_code %in% !!observation_code & 
-      observation_code_system == !!observation_code_system
+    .data$observation_code %in% !!observation_code & 
+      .data$observation_code_system == !!observation_code_system
     )
   } else {
     db_observation_codes <- dplyr::filter(
       dplyr::tbl(conn, "inpatient_investigations"),
-      observation_code %in% !!observation_code
+      .data$observation_code %in% !!observation_code
     ) 
   }
   
   db_observation_codes <- dplyr::distinct(db_observation_codes,
-                                          observation_code_system, 
-                                          observation_code) %>% 
-    dplyr::group_by(observation_code) %>% 
+                                          .data$observation_code_system, 
+                                          .data$observation_code) %>% 
+    dplyr::group_by(.data$observation_code) %>% 
     dplyr::summarise(n = dplyr::n()) %>% 
     dplyr::collect() 
 
@@ -99,14 +99,14 @@
   operation <- tolower(operation)
   if ( is.null(observation_code_system) ) {
     parameter_name <- tbl(conn, "inpatient_investigations") %>% 
-      dplyr::filter(observation_code == !!observation_code) %>% 
-      dplyr::distinct(observation_display) %>% 
+      dplyr::filter(.data$observation_code == !!observation_code) %>% 
+      dplyr::distinct(.data$observation_display) %>% 
       dplyr::collect()
   } else {
     parameter_name <- tbl(conn, "inpatient_investigations") %>% 
-      dplyr::filter(observation_code == !!observation_code &
-                      observation_code_system == !!observation_code_system) %>% 
-      dplyr::distinct(observation_display) %>% 
+      dplyr::filter(.data$observation_code == !!observation_code &
+                      .data$observation_code_system == !!observation_code_system) %>% 
+      dplyr::distinct(.data$observation_display) %>% 
       dplyr::collect()
   }
   if ( nrow(parameter_name) == 0 ) {
@@ -162,21 +162,21 @@
   observations_linked <- dplyr::inner_join(
     LT, 
     dplyr::select(tbl(x@conn, "inpatient_investigations"),
-                  patient_id, observation_datetime,
-                  observation_code, observation_value_numeric,
-                  status, observation_code_system),
+                  "patient_id", "observation_datetime",
+                  "observation_code", "observation_value_numeric",
+                  "status", "observation_code_system"),
     by = "patient_id"
   ) %>% 
     dplyr::filter(
       dplyr::sql(sql_condition_1) &
-        status %in% c("final", "preliminary", "corrected", "amended") &
-        observation_code %in% !!observation_code & 
-        !is.na(observation_value_numeric)
+        .data$status %in% c("final", "preliminary", "corrected", "amended") &
+        .data$observation_code %in% !!observation_code & 
+        !is.na(.data$observation_value_numeric)
     )
   
   if ( !is.null(observation_code_system) ) {
     observations_linked <- observations_linked %>% 
-      dplyr::filter(observation_code_system == !!observation_code_system)
+      dplyr::filter(.data$observation_code_system == !!observation_code_system)
   }
   
   observations_linked
@@ -207,7 +207,7 @@
     observation_code_system = observation_code_system
   ) %>% 
     dplyr::group_by(.data$patient_id, .data[[x_entity_id_field_name]], .data$t) %>% 
-    dplyr::mutate(keep = dplyr::row_number(dplyr::desc(observation_datetime))) %>% 
+    dplyr::mutate(keep = dplyr::row_number(dplyr::desc(.data$observation_datetime))) %>% 
     dplyr::ungroup() %>% 
     dplyr::filter(.data$keep == 1) %>% 
     dplyr::transmute(.data$t,

@@ -47,11 +47,11 @@ setMethod(
     
     # Retrieve prescription records  
     medication_requests_inclusion <- tbl(input_patient@conn, "drug_prescriptions") %>%
-      dplyr::filter(patient_id == !!input_patient@id & 
-                      !prescription_status %in% c("cancelled", "draft", "in-error")) %>%
+      dplyr::filter(.data$patient_id == !!input_patient@id & 
+                      !.data$prescription_status %in% c("cancelled", "draft", "in-error")) %>%
       dplyr::left_join(tbl(input_patient@conn, "drug_therapy_episodes"), 
                        by = c("patient_id", "therapy_id")) %>%
-      dplyr::arrange(patient_id, prescription_start) %>% 
+      dplyr::arrange(.data$patient_id, .data$prescription_start) %>% 
       dplyr::collect()
     
     # Calculate the date range the timeline should display by default
@@ -61,30 +61,30 @@ setMethod(
       date2 <- as.POSIXct(date2)
       date_window <- dplyr::filter(
         medication_requests_inclusion, 
-        dplyr::between(therapy_start, date1, date2) |
-          dplyr::between(therapy_end, date1, date2) |
-          (therapy_start <= date1 & date1 <= therapy_end)) %>%
-        dplyr::summarise(left_date = min(therapy_start, na.rm = T), 
-                         right_date = max(therapy_end, na.rm = T))
+        dplyr::between(.data$therapy_start, date1, date2) |
+          dplyr::between(.data$therapy_end, date1, date2) |
+          (.data$therapy_start <= date1 & date1 <= .data$therapy_end)) %>%
+        dplyr::summarise(left_date = min(.data$therapy_start, na.rm = T), 
+                         right_date = max(.data$therapy_end, na.rm = T))
     } else if( !is.null(date2) ) {
       date2 <- as.POSIXct(date2)
       date_window <- dplyr::filter(
         medication_requests_inclusion, 
-        therapy_start <= date2 ) %>%
-        dplyr::summarise(left_date = min(therapy_start, na.rm = T), 
-                         right_date = max(therapy_end, na.rm = T)) 
+        .data$therapy_start <= date2 ) %>%
+        dplyr::summarise(left_date = min(.data$therapy_start, na.rm = T), 
+                         right_date = max(.data$therapy_end, na.rm = T)) 
     } else if( !is.null(date1) ) {
       date1 <- as.POSIXct(date1)
       date_window <- dplyr::filter(
         medication_requests_inclusion, 
-        therapy_end >= date1 ) %>%
-        dplyr::summarise(left_date = min(therapy_start, na.rm = T), 
-                         right_date = max(therapy_end, na.rm = T)) 
+        .data$therapy_end >= date1 ) %>%
+        dplyr::summarise(left_date = min(.data$therapy_start, na.rm = T), 
+                         right_date = max(.data$therapy_end, na.rm = T)) 
     } else {
       date_window <- dplyr::summarise(
         medication_requests_inclusion, 
-        left_date = min(therapy_start, na.rm = T), 
-        right_date = max(therapy_end, na.rm = T)) 
+        left_date = min(.data$therapy_start, na.rm = T), 
+        right_date = max(.data$therapy_end, na.rm = T)) 
     }
     
     .therapy_timeline_create(
@@ -167,16 +167,16 @@ setMethod(
     }
     
     date_window <- collect(input_therapy_episode) %>% 
-      dplyr::transmute(left_date = therapy_start,
-                       right_date = therapy_end)
+      dplyr::transmute(left_date = .data$therapy_start,
+                       right_date = .data$therapy_end)
     
     # Retrieve prescription records  
     medication_requests_inclusion <- tbl(input_patient@conn, "drug_prescriptions") %>%
-      dplyr::filter(patient_id == !!input_patient@id & 
-                      !prescription_status %in% c("cancelled", "draft", "in-error")) %>%
+      dplyr::filter(.data$patient_id == !!input_patient@id & 
+                      !.data$prescription_status %in% c("cancelled", "draft", "in-error")) %>%
       dplyr::left_join(tbl(input_patient@conn, "drug_therapy_episodes"), 
                        by = c("patient_id", "therapy_id")) %>%
-      dplyr::arrange(patient_id, prescription_start) %>% 
+      dplyr::arrange(.data$patient_id, .data$prescription_start) %>% 
       collect()
     
     .therapy_timeline_create(
@@ -206,16 +206,16 @@ setMethod(
     }
     
     date_window <- collect(input_therapy_episode) %>% 
-      dplyr::transmute(left_date = therapy_start,
-                       right_date = therapy_end)
+      dplyr::transmute(left_date = .data$therapy_start,
+                       right_date = .data$therapy_end)
     
     # Retrieve prescription records  
     medication_requests_inclusion <- tbl(input_patient@conn, "drug_prescriptions") %>%
-      dplyr::filter(patient_id == !!input_patient@id & 
-                      !prescription_status %in% c("cancelled", "draft", "in-error")) %>%
+      dplyr::filter(.data$patient_id == !!input_patient@id & 
+                      !.data$prescription_status %in% c("cancelled", "draft", "in-error")) %>%
       dplyr::left_join(tbl(input_patient@conn, "drug_therapy_episodes"), 
                        by = c("patient_id", "therapy_id")) %>%
-      dplyr::arrange(patient_id, prescription_start) %>% 
+      dplyr::arrange(.data$patient_id, .data$prescription_start) %>% 
       collect()
     
     .therapy_timeline_create(
@@ -327,7 +327,7 @@ setMethod(
         .data$prescription_start, ", ",
         dplyr::if_else(
           .data$daily_frequency < 0, "",
-          dplyr::if_else(duration < 24*3600,
+          dplyr::if_else(.data$duration < 24*3600,
                          paste(trunc(.data$duration/3600), "hours, "),
                          paste(trunc(.data$duration/3600/24), "days, "))
         ),
@@ -476,16 +476,49 @@ setMethod(
   
   # Taking ICD labels from the most recent ICD edition
   icd_lu <- tbl(input_patient@conn, "reference_icd") %>%
-    dplyr::select(.data$icd_code,
-                  .data$icd_display,
-                  .data$icd_description,
-                  .data$category_description)
+    dplyr::select("icd_code",
+                  "icd_display",
+                  "icd_description",
+                  "category_description")
   
   # Consolidating diagnoses across episodes of care
   diag <- tbl(input_patient@conn, "inpatient_diagnoses") %>%
     dplyr::filter(.data$patient_id == !!input_patient@id) %>% 
     dplyr::inner_join(tbl(input_patient@conn, "reference_icd_infections"), 
-               by = c("icd_code")) %>%
+                      by = c("icd_code")) %>%
+    dplyr::left_join(
+      dplyr::select(
+        tbl(input_patient@conn, "inpatient_episodes"),
+        "patient_id", 
+        "encounter_id", 
+        "episode_number",
+        "episode_start",
+        "episode_end"
+      ),
+      by = c("patient_id", "encounter_id", "episode_number")
+    )
+  
+  if (
+    all(c("diagnosis_start", "diagnosis_end") %in% colnames(diag))
+  ) {
+    diag <- diag %>% 
+      dplyr::mutate(
+        tl_start = dplyr::if_else(is.na(.data$diagnosis_start), 
+                                  .data$episode_start,
+                                  .data$diagnosis_start),
+        tl_end = dplyr::if_else(is.na(.data$diagnosis_end), 
+                                .data$episode_end,
+                                .data$diagnosis_end)
+      )
+  } else {
+    diag <- diag %>% 
+      dplyr::mutate(
+        tl_start = .data$episode_start,
+        tl_end = .data$episode_end
+      )
+  }
+  diag <- diag %>% 
+    dplyr::filter( !( is.na(.data$tl_start) | is.na(.data$tl_end) ) ) %>% 
     dplyr::collect()
   
   # If no infection diagnosis is present, return empty data frame.
@@ -494,24 +527,30 @@ setMethod(
     return(data.frame())
   } 
 
-  # combining episodes together for diagnoses that span several episodes
+  # combining diagnosis episodes that resume <24h after ending
   diag <- diag %>%
+    dplyr::arrange(.data$patient_id, .data$icd_code, .data$tl_start) %>% 
     dplyr::group_by(.data$patient_id, .data$icd_code) %>% 
-    dplyr::mutate(diagnosis_episode_end = dplyr::lag(.data$episode_end, 
+    dplyr::mutate(diagnosis_episode_end = dplyr::lag(.data$tl_end, 
                                                      n = 1, 
-                                                     order_by = .data$episode_start)) %>% 
+                                                     order_by = .data$tl_start)) %>% 
     dplyr::ungroup() %>% 
     dplyr::mutate(
-      prim_diag = dplyr::if_else(.data$diagnosis_position == 1, 1, 0),
-      grp = dplyr::if_else(
-        abs(as.numeric(.data$diagnosis_episode_end - .data$episode_start, units = "secs")) <= (6 * 3600),
-        NA_integer_,
-        dplyr::row_number(.data$episode_start)
-      )
+      prim_diag = dplyr::if_else(.data$diagnosis_position == 1, 1, 0)
     ) %>% 
     dplyr::group_by(.data$patient_id, .data$icd_code, .data$prim_diag) %>% 
-    dplyr::mutate(grp = max(.data$grp)) %>% 
-    dplyr::select(-.data$diagnosis_episode_end) %>%
+    dplyr::mutate(
+      grp = cumsum(dplyr::case_when(
+        # First diagnosis episode
+        is.na(.data$diagnosis_episode_end) ~ 0L,
+        # Diagnosis episode closely following identical one
+        abs(as.numeric(.data$diagnosis_episode_end - .data$tl_start, units = "hours")) < 24 ~ 0L,
+        # Independent (new) diagnosis episode
+        TRUE ~ 1L
+      ))
+    ) %>% 
+    # dplyr::mutate(grp = max(.data$grp)) %>% 
+    dplyr::ungroup() %>% 
     dplyr::group_by(
       .data$patient_id, 
       .data$icd_code, 
@@ -523,8 +562,8 @@ setMethod(
       .data$infection_group2_label
     ) %>%
     dplyr::summarise(
-      start_time = min(.data$episode_start, na.rm = TRUE),
-      end_time = max(.data$episode_end, na.rm = TRUE)
+      start_time = min(.data$tl_start, na.rm = TRUE),
+      end_time = max(.data$tl_end, na.rm = TRUE)
     ) 
   
   diag <- dplyr::right_join(icd_lu, diag, 

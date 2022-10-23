@@ -361,10 +361,10 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
     dplyr::tibble(therapy_id = sort(unique(id))), 
     by = "therapy_id", copy = TRUE
   ) %>% 
-    dplyr::select(.data$patient_id, 
-                  .data$therapy_id, 
-                  .data$therapy_start, 
-                  .data$therapy_end)
+    dplyr::select("patient_id", 
+                  "therapy_id", 
+                  "therapy_start", 
+                  "therapy_end")
 
   if(is(conn, "PqConnection") | is(conn, "duckdb_connection")) {
     tbl(conn, "ramses_tally") %>%
@@ -398,7 +398,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
   
   medication_requests <- dplyr::inner_join(
     tbl(longitudinal_table$src$con, "drug_prescriptions"),
-    dplyr::distinct(longitudinal_table, therapy_id),
+    dplyr::distinct(longitudinal_table, .data$therapy_id),
     by = "therapy_id", copy = TRUE
   )
   
@@ -727,8 +727,8 @@ setMethod("show", "Encounter", function(object) {
     cat("Please check object id is valid\n")
   } else if( length(object@id) == 1 ) {
     cat("Patient:  ", unique(record$patient_id), "\n")
-    cat("Start:    ", as.character(unique(record$admission_date), format = "%Y-%m-%d %H:%M:%S %Z"), "\n")
-    cat("End:      ", as.character(unique(record$discharge_date), format = "%Y-%m-%d %H:%M:%S %Z"), "\n\n")
+    cat("Start:    ", format(unique(record$admission_date), format = "%Y-%m-%d %H:%M:%S %Z"), "\n")
+    cat("End:      ", format(unique(record$discharge_date), format = "%Y-%m-%d %H:%M:%S %Z"), "\n\n")
   } else if( length(object@id) > 1 ) {
     cat("[total of", length(object@id), "encounters]\n")
     record <- dplyr::arrange(record, .data$encounter_id, .data$episode_number)
@@ -762,11 +762,11 @@ setMethod("show", "TherapyEpisode", function(object) {
       dplyr::filter(.data$patient_id == !!record$patient_id &
                       .data$therapy_id == !!object@id) %>%
       dplyr::arrange(.data$therapy_rank) %>%
-      dplyr::select(.data$prescription_text) %>%
+      dplyr::select("prescription_text") %>%
       dplyr::collect()
     cat("Patient:  ", record$patient_id, "\n")
-    cat("Start:    ", as.character(record$therapy_start, format = "%Y-%m-%d %H:%M:%S %Z"), "\n")
-    cat("End:      ", as.character(record$therapy_end, format = "%Y-%m-%d %H:%M:%S %Z"), "\n\n")
+    cat("Start:    ", format(record$therapy_start, format = "%Y-%m-%d %H:%M:%S %Z"), "\n")
+    cat("End:      ", format(record$therapy_end, format = "%Y-%m-%d %H:%M:%S %Z"), "\n\n")
     cat("Medications:\n ")
     if(nrow(prescriptions) > 5) {
       cat(paste0(" > ", prescriptions$prescription_text[1:4], "\n"))
@@ -801,8 +801,8 @@ setMethod("show", "MedicationRequest", function(object) {
   } else {
     cat(record$prescription_text, "\n")
     cat("Patient:    ", as.character(record$patient_id), "\n")
-    cat("Start:       ", as.character(record$prescription_start, format = "%Y-%m-%d %H:%M:%S %Z"), "\n")
-    cat("End:         ", as.character(record$prescription_end, format = "%Y-%m-%d %H:%M:%S %Z"), "\n")
+    cat("Start:       ", format(record$prescription_start, format = "%Y-%m-%d %H:%M:%S %Z"), "\n")
+    cat("End:         ", format(record$prescription_end, format = "%Y-%m-%d %H:%M:%S %Z"), "\n")
     if( !is.na(record$combination_id) ) {
       cat("Combination: ", as.character(record$combination_id), "\n")
     }

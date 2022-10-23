@@ -23,7 +23,7 @@ Validate constraints on diagnosis records, namely that the
 minimum variables are present, and that all \code{icd_code} values can be 
 looked up in an ICD-10 reference table
 }
-\section{Diagnoses set mandatory variables}{
+\section{Diagnoses mandatory variables}{
 
 \describe{
   \item{\code{patient_id}}{a patient identifier with no missing value}
@@ -35,6 +35,23 @@ looked up in an ICD-10 reference table
   \item{\code{diagnosis_position}}{an integer describing the diagnosis position
   on the discharge summary (1 = primary cause of admission}
 }
+}
+
+\section{Diagnoses optional variables}{
+
+Some record systems track dates when clinical diagnoses were first noted and
+when they were considered resolved (eg: problem lists). \code{diagnosis_start}
+and \code{diagnosis_end} should be used to store this information.
+
+\describe{
+  \item{\code{diagnosis_start}}{a vector of \code{POSIXct} timestamps when 
+  the clinical problems were first noted or manifested}
+  \item{\code{diagnosis_end}}{a vector of \code{POSIXct} timestamp when the
+  clinical problems were considered resolved}
+}
+
+If no data are provided, Ramses functions such as \code{\link[Ramses]{therapy_timeline}}
+will use episode start and end dates from the \code{inpatient_episodes} table instead.
 }
 
 \section{Diagnoses lookup mandatory variables}{
@@ -49,7 +66,7 @@ looked up in an ICD-10 reference table
   \item{\code{category_description}}{full text descriptions of three-character heading codes}
 }
 
-*Note*: \code{\link[Ramses]{import_icd}()} can produce this lookup data frame from
+\strong{Note}: \code{\link[Ramses]{import_icd}()} can produce this lookup data frame from
 a standard ICD release archive file.
 }
 

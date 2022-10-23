@@ -426,10 +426,10 @@ validate_inpatient_episodes <- function(patients,
   wards <- merge(
     wards, 
     dplyr::distinct(episodes, 
-                    patient_id, 
-                    encounter_id, 
-                    admission_date, 
-                    discharge_date), 
+                    .data$patient_id, 
+                    .data$encounter_id, 
+                    .data$admission_date, 
+                    .data$discharge_date), 
     all.x = TRUE)
   
   .validate_inpatient_episode_dates(data = wards,
@@ -525,15 +525,21 @@ validate_inpatient_episodes <- function(patients,
     validation_result <- FALSE
   }
   
-  BD_encounter <-  BD_episode <-  nextepistart <-  NULL
-  
   episodes <- data.table::as.data.table(data)
+  
+  end <- start <- patient_id <- encounter_id <- admission_date <- NULL
+  discharge_date <- BD_encounter <- BD_episode <- nextepistart <- NULL
   
   bed_day_matching <- episodes[,
     list(BD_episode = sum(difftime(end, start, units = "secs"))), 
-    by = list(patient_id, encounter_id, admission_date, discharge_date)
+    by = list(patient_id, 
+              encounter_id, 
+              admission_date, 
+              discharge_date)
     ]
-  bed_day_matching[, BD_encounter := difftime(discharge_date, admission_date, units = "secs")]
+  bed_day_matching[, BD_encounter := difftime(discharge_date, 
+                                              admission_date,
+                                              units = "secs")]
   
   if (nrow(bed_day_matching[abs(BD_episode - BD_encounter) > 5]) > 0) {
     warning(simpleWarning(paste0(
@@ -603,7 +609,8 @@ validate_inpatient_episodes <- function(patients,
 #' @param diagnoses_lookup a data frame containing an ICD-10 reference look up 
 #' table with, at minimum, variables \code{icd_description}, \code{icd_display}, 
 #' \code{category_code}, \code{category_description}
-#' @section Diagnoses set mandatory variables:
+#' 
+#' @section Diagnoses mandatory variables:
 #' \describe{
 #'   \item{\code{patient_id}}{a patient identifier with no missing value}
 #'   \item{\code{encounter_id}}{a hospital encounter identifier with no missing value}
@@ -614,6 +621,22 @@ validate_inpatient_episodes <- function(patients,
 #'   \item{\code{diagnosis_position}}{an integer describing the diagnosis position
 #'   on the discharge summary (1 = primary cause of admission}
 #' }
+#' 
+#' @section Diagnoses optional variables:
+#' Some record systems track dates when clinical diagnoses were first noted and
+#' when they were considered resolved (eg: problem lists). \code{diagnosis_start}
+#' and \code{diagnosis_end} should be used to store this information.
+#' 
+#' \describe{
+#'   \item{\code{diagnosis_start}}{a vector of \code{POSIXct} timestamps when 
+#'   the clinical problems were first noted or manifested}
+#'   \item{\code{diagnosis_end}}{a vector of \code{POSIXct} timestamp when the
+#'   clinical problems were considered resolved}
+#' }
+#' 
+#' If no data are provided, Ramses functions such as \code{\link[Ramses]{therapy_timeline}}
+#' will use episode start and end dates from the \code{inpatient_episodes} table instead.
+#' 
 #' @section Diagnoses lookup mandatory variables:
 #' 
 #' \describe{
@@ -625,7 +648,7 @@ validate_inpatient_episodes <- function(patients,
 #'   \item{\code{category_description}}{full text descriptions of three-character heading codes}
 #' }
 #' 
-#' *Note*: \code{\link[Ramses]{import_icd}()} can produce this lookup data frame from
+#' \strong{Note}: \code{\link[Ramses]{import_icd}()} can produce this lookup data frame from
 #' a standard ICD release archive file.
 #' 
 #' @return A logical value indicating success
@@ -693,6 +716,7 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
     action = "error"
   )
   
+  icd_code <- NULL
   diagnoses_data <- data.table::data.table(diagnoses_data)
   diagnoses_data <- unique(diagnoses_data[, list(icd_code)])
   diagnoses_lookup <- data.table::data.table(diagnoses_lookup)[, list(icd_code)]
@@ -855,10 +879,10 @@ validate_prescriptions <- function(data) {
         "except for one-off prescriptions\n",
         .print_and_capture(utils::head(
           dplyr::select(dplyr::filter(
-            data, is.na(prescription_end) & 
-              daily_frequency != -1 &
-              prescription_status == "completed"),
-            patient_id, daily_frequency, prescription_end)))
+            data, is.na(.data$prescription_end) & 
+              .data$daily_frequency != -1 &
+              .data$prescription_status == "completed"),
+            "patient_id", "daily_frequency", "prescription_end")))
     )))
   }
   
@@ -895,9 +919,9 @@ validate_prescriptions <- function(data) {
   }
   
   duplicates <- data %>% 
-    dplyr::group_by(patient_id, drug_code, dose, route, prescription_start) %>% 
+    dplyr::group_by(.data$patient_id, .data$drug_code, .data$dose, .data$route, .data$prescription_start) %>% 
     dplyr::summarise(n = dplyr::n()) %>% 
-    dplyr::filter(n > 1)
+    dplyr::filter(.data$n > 1)
   duplicates <- merge(data, duplicates)
   
   if( nrow(duplicates) > 0 ) {
@@ -906,11 +930,17 @@ validate_prescriptions <- function(data) {
     )
     warning(simpleWarning(
       .print_and_capture(utils::head(
-        dplyr::select(dplyr::arrange(duplicates, 
-                              patient_id, drug_code, prescription_start),
-               patient_id, prescription_id, 
-               prescription_text, prescription_start))
-    )))
+        dplyr::select(
+          dplyr::arrange(duplicates, 
+                         .data$patient_id, 
+                         .data$drug_code, 
+                         .data$prescription_start),
+          "patient_id", 
+          "prescription_id", 
+          "prescription_text", 
+          "prescription_start"
+        )
+      ))))
   }
   
   NULL
@@ -1038,9 +1068,9 @@ validate_administrations <- function(data) {
   }
   
   duplicates <- data %>% 
-    dplyr::group_by(patient_id, drug_code, dose, route, administration_date) %>% 
+    dplyr::group_by(.data$patient_id, .data$drug_code, .data$dose, .data$route, .data$administration_date) %>% 
     dplyr::summarise(n = dplyr::n()) %>% 
-    dplyr::filter(n > 1)
+    dplyr::filter(.data$n > 1)
   duplicates <- merge(data, duplicates)
   
   if( nrow(duplicates) > 0 ) {
@@ -1049,11 +1079,18 @@ validate_administrations <- function(data) {
     )
     warning(simpleWarning(
       .print_and_capture(utils::head(
-        dplyr::select(dplyr::arrange(duplicates, 
-                              patient_id, drug_code, administration_date),
-               patient_id, prescription_id, administration_id,
-               administration_text, administration_date))
-      )))
+        dplyr::select(
+          dplyr::arrange(duplicates, 
+                         .data$patient_id, 
+                         .data$drug_code, 
+                         .data$administration_date),
+          "patient_id", 
+          "prescription_id", 
+          "administration_id", 
+          "administration_text",
+          "administration_date"
+        )
+    ))))
   }
   
   NULL
@@ -1434,5 +1471,5 @@ validate_investigations <- function(investigations,
 
 arrange_variables <- function(data, first_column_names) {
   other_names <- colnames(data)[!colnames(data) %in% first_column_names]
-  dplyr::select(data, c(first_column_names, other_names))
+  dplyr::select(data, dplyr::all_of(first_column_names), dplyr::all_of(other_names))
 }

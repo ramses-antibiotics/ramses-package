@@ -34,22 +34,22 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
   }
   
   reference_icd_infections <- map_infections_abx_indications(
-    df = dplyr::select(diagnoses_lookup, icd_code), 
+    df = dplyr::select(diagnoses_lookup, "icd_code"), 
     icd_column = "icd_code") %>% 
     na.omit()
   
   reference_icd_comorbidity <- map_charlson_comorbidities(
-    df = dplyr::select(diagnoses_lookup, icd_code), 
+    df = dplyr::select(diagnoses_lookup, "icd_code"), 
     icd_column = "icd_code") %>% 
     na.omit()
   
   reference_icd_ccsr <- map_ICD10_CCSR(
-    df = dplyr::select(diagnoses_lookup, icd_code), 
+    df = dplyr::select(diagnoses_lookup, "icd_code"), 
     icd_column = "icd_code") %>% 
     na.omit()
   
   reference_icd_ccs <- map_ICD10_CCS(
-    df = dplyr::select(diagnoses_lookup, icd_code), 
+    df = dplyr::select(diagnoses_lookup, "icd_code"), 
     icd_column = "icd_code") %>% 
     na.omit()
   
@@ -114,7 +114,7 @@ load_inpatient_episodes <- function(conn,
                                     overwrite = TRUE) {
   
   patients_data <- dplyr::arrange(patients_data, 
-                                  patient_id)
+                                  .data$patient_id)
   patients_data <- patients_data[
     , c(
       "patient_id",
@@ -124,7 +124,7 @@ load_inpatient_episodes <- function(conn,
 
   episodes_data <- episodes_data %>% 
     dplyr::mutate(ramses_bed_days = NA_real_) %>% 
-    dplyr::arrange(patient_id, episode_start)
+    dplyr::arrange(.data$patient_id, .data$episode_start)
   
   first_column_names_episodes <- .inpatient_episodes_variables()[["variable_name"]]
   first_column_names_episodes <- c(
@@ -164,7 +164,7 @@ load_inpatient_episodes <- function(conn,
   
   if(!is.null(wards_data)) {
     wards_data <- dplyr::arrange(wards_data,
-                                 patient_id, ward_start)
+                                 .data$patient_id, .data$ward_start)
     first_column_names_wards <- .inpatient_wards_variables()[["variable_name"]]
     first_column_names_wards <- c(
       "id",
@@ -446,7 +446,7 @@ load_medications <- function(
   create_therapy_id <- !exists("therapy_id", prescriptions)
   create_combination_id <- !exists("combination_id", prescriptions)
   
-  prescriptions <- dplyr::arrange(prescriptions, patient_id, prescription_start)
+  prescriptions <- dplyr::arrange(prescriptions, .data$patient_id, .data$prescription_start)
   prescriptions$id <- seq_len(nrow(prescriptions))
 
   if( !is(prescriptions$authoring_date, "POSIXct") ){
@@ -566,7 +566,7 @@ load_medications <- function(
 .create_therapy_id <- function(conn, silent) {
   
   edges_table <- dplyr::select(tbl(conn, "drug_prescriptions_edges"),
-                               from_id, to_id)  
+                               "from_id", "to_id")  
   
   if(!silent) message("Transitive closure of therapy episodes beginning...\n")
   therapy_grps <- .run_transitive_closure(edges_table)
@@ -574,26 +574,26 @@ load_medications <- function(
   therapy_grps <- therapy_grps %>% 
     dplyr::left_join(
       dplyr::select(tbl(conn, "drug_prescriptions"), 
-                    id, prescription_id, prescription_start, drug_name), 
+                    "id", "prescription_id", "prescription_start", "drug_name"), 
       by = c("id" = "id")
     ) %>% 
-    dplyr::group_by(grp) %>% 
+    dplyr::group_by(.data$grp) %>% 
     dplyr::mutate(therapy_rank = dplyr::row_number(
-      paste0(prescription_start, drug_name))) %>% 
+      paste0(.data$prescription_start, .data$drug_name))) %>% 
     dplyr::ungroup() %>% 
     dplyr::compute()
   
   th_ids <- therapy_grps %>% 
-    dplyr::filter(therapy_rank == 1) %>% 
-    dplyr::mutate(therapy_id = prescription_id) %>% 
-    dplyr::select(grp, therapy_id) %>% 
+    dplyr::filter(.data$therapy_rank == 1) %>% 
+    dplyr::mutate(therapy_id = .data$prescription_id) %>% 
+    dplyr::select("grp", "therapy_id") %>% 
     dplyr::compute()
   
   therapy_grps <- dplyr::left_join(
     therapy_grps,
     th_ids,  
     by = c("grp" = "grp")) %>% 
-    dplyr::distinct(id, therapy_id, therapy_rank) %>% 
+    dplyr::distinct(.data$id, .data$therapy_id, .data$therapy_rank) %>% 
     dplyr::compute(name = "ramses_tc_therapy", temporary = FALSE)
   
   therapy_grps
@@ -609,8 +609,8 @@ load_medications <- function(
 .create_combination_id <- function(conn, silent) {
   
   edges_table <- tbl(conn, "drug_prescriptions_edges") %>% 
-    dplyr::filter(edge_type == "combination") %>% 
-    dplyr::select(from_id, to_id) 
+    dplyr::filter(.data$edge_type == "combination") %>% 
+    dplyr::select("from_id", "to_id") 
   
   if(!silent) message("Transitive closure of therapy combinations beginning...\n")
   therapy_grps <- .run_transitive_closure(edges_table)
@@ -618,13 +618,13 @@ load_medications <- function(
   therapy_grps <- therapy_grps %>% 
     dplyr::left_join(
       dplyr::select(tbl(conn, "drug_prescriptions"), 
-                    id, prescription_id), 
+                    "id", "prescription_id"), 
       by = "id"
     ) %>% 
-    dplyr::group_by(grp) %>% 
-    dplyr::mutate(combination_id = min(prescription_id, na.rm = T)) %>% 
+    dplyr::group_by(.data$grp) %>% 
+    dplyr::mutate(combination_id = min(.data$prescription_id, na.rm = T)) %>% 
     dplyr::ungroup() %>% 
-    dplyr::distinct(id, combination_id) %>% 
+    dplyr::distinct(.data$id, .data$combination_id) %>% 
     dplyr::compute(name = "ramses_tc_combination", temporary = FALSE)
   
   therapy_grps
@@ -644,10 +644,10 @@ load_medications <- function(
   if (is(conn, "duckdb_connection") || is(conn, "PqConnection")) {
     drug_therapy_episodes <- tbl(conn, "drug_prescriptions") %>%
       dplyr::collect() %>% 
-      dplyr::filter(!is.na(therapy_id)) %>% 
-      dplyr::group_by(patient_id, therapy_id, antiinfective_type) %>% 
-      dplyr::summarise(therapy_start = min(prescription_start, na.rm = TRUE),
-                       therapy_end = max(prescription_end, na.rm = TRUE))
+      dplyr::filter(!is.na(.data$therapy_id)) %>% 
+      dplyr::group_by(.data$patient_id, .data$therapy_id, .data$antiinfective_type) %>% 
+      dplyr::summarise(therapy_start = min(.data$prescription_start, na.rm = TRUE),
+                       therapy_end = max(.data$prescription_end, na.rm = TRUE))
     dplyr::copy_to(
       dest = conn,
       df = drug_therapy_episodes,
@@ -755,23 +755,23 @@ create_therapy_episodes <- function(
   therapy_combination_ids <- .create_combination_id(conn = conn, silent = silent)
   
   new_drug_prescriptions_tbl <- tbl(conn, "drug_prescriptions") %>% 
-    dplyr::select(-therapy_id, -therapy_rank) %>%
+    dplyr::select(-tidyselect::all_of(c("therapy_id", "therapy_rank"))) %>%
     dplyr::left_join(therapy_episode_ids, by = "id") %>% 
     dplyr::mutate(
-      therapy_id = dplyr::if_else(
-        is.na(therapy_id) & 
-          !prescription_status %in% c('unknown', 'cancelled', 'draft', 'entered-in-error'),
-        prescription_id,
-        therapy_id),
       therapy_rank = dplyr::if_else(
-        is.na(therapy_id) & 
-          is.na(therapy_rank) &
-          !prescription_status %in% c('unknown', 'cancelled', 'draft', 'entered-in-error'),
+        is.na(.data$therapy_id) & 
+          is.na(.data$therapy_rank) &
+          !.data$prescription_status %in% c('unknown', 'cancelled', 'draft', 'entered-in-error'),
         1L,
-        therapy_rank
-      )
+        .data$therapy_rank
+      ),
+      therapy_id = dplyr::if_else(
+        is.na(.data$therapy_id) & 
+          !.data$prescription_status %in% c('unknown', 'cancelled', 'draft', 'entered-in-error'),
+        .data$prescription_id,
+        .data$therapy_id)
     ) %>% 
-    dplyr::select(-combination_id) %>%
+    dplyr::select(-tidyselect::all_of("combination_id")) %>%
     dplyr::left_join(therapy_combination_ids, by = "id")
   
   first_column_names <- .drug_prescriptions_variables()[["variable_name"]]
@@ -806,7 +806,7 @@ create_therapy_episodes <- function(
 ) {
   
   administrations <- dplyr::arrange(administrations, 
-                                    patient_id, administration_date)
+                                    .data$patient_id, .data$administration_date)
   administrations$id <- seq_len(nrow(administrations))
   
   first_column_names <- .drug_administrations_variables()[["variable_name"]]
@@ -952,7 +952,8 @@ create_mock_database <- function(file,
   .build_tally_table(mock_db)
   dplyr::copy_to(
     dest = mock_db,
-    df = dplyr::filter(Ramses::reference_aware, version == "England" & year == "2019"),
+    df = dplyr::filter(Ramses::reference_aware, 
+                       .data$version == "England" & .data$year == "2019"),
     name = "reference_aware",
     temporary = FALSE,
     overwrite = TRUE
@@ -1222,6 +1223,7 @@ create_mock_database <- function(file,
     vapply(graph_list, length, FUN.VALUE = integer(1)) > 1
   ]
   
+  id <- grp <- NULL
   rames_tc_groups_dt <- data.table::data.table(
     id = graph_list,
     grp = as.integer(names(graph_list))
@@ -1339,10 +1341,20 @@ bridge_episode_prescription_overlap <- function(conn,
   tblz_episodes <- tbl(conn, "inpatient_episodes")
   tblz_prescriptions <- tbl(conn, "drug_prescriptions") %>% 
     dplyr::filter(
-      !prescription_status %in% c("entered-in-error",
+      !.data$prescription_status %in% c("entered-in-error",
                                   "draft",
                                   "cancelled",
                                   "unknown")
+    ) %>% 
+    dplyr::select(
+      tidyselect::all_of(c(
+        "patient_id",
+        "prescription_id",
+        "prescription_start",
+        "prescription_end",
+        "antiinfective_type"
+      )),
+      tidyselect::any_of("DDD")
     )
   DDD_present <- "DDD" %in% colnames(tblz_prescriptions)
   
@@ -1350,9 +1362,9 @@ bridge_episode_prescription_overlap <- function(conn,
     dplyr::inner_join(tblz_prescriptions, 
                      by = "patient_id") %>% 
     dplyr::filter(
-      dplyr::between(prescription_start, episode_start, episode_end) |
-        dplyr::between(prescription_end, episode_start, episode_end) |
-        dplyr::between(episode_start, prescription_start, prescription_end)
+      dplyr::between(.data$prescription_start, .data$episode_start, .data$episode_end) |
+        dplyr::between(.data$prescription_end, .data$episode_start, .data$episode_end) |
+        dplyr::between(.data$episode_start, .data$prescription_start, .data$prescription_end)
     )
   
   if( is(conn, "PqConnection") || is(conn, "duckdb_connection") ) {
@@ -1383,23 +1395,25 @@ bridge_episode_prescription_overlap <- function(conn,
                                         class(conn))
   }
   if ( DDD_present ) {
-    tblz_bridge_episode_prescriptions_overlap <- dplyr::transmute(
+    tblz_bridge_episode_prescriptions_overlap <- dplyr::select(
       tblz_bridge_episode_prescriptions_overlap,
-      patient_id,
-      encounter_id,
-      episode_number,
-      prescription_id,
-      DOT,
-      DDD_prescribed
+      "patient_id",
+      "encounter_id",
+      "episode_number",
+      "prescription_id",
+      "antiinfective_type",
+      "DOT",
+      "DDD_prescribed"
     )
   } else {
-    tblz_bridge_episode_prescriptions_overlap <- dplyr::transmute(
+    tblz_bridge_episode_prescriptions_overlap <- dplyr::select(
       tblz_bridge_episode_prescriptions_overlap,
-      patient_id,
-      encounter_id,
-      episode_number,
-      prescription_id,
-      DOT
+      "patient_id",
+      "encounter_id",
+      "episode_number",
+      "prescription_id",
+      "antiinfective_type",
+      "DOT"
     )
   }
   
@@ -1427,10 +1441,21 @@ bridge_episode_prescription_initiation <- function(conn,
   tblz_episodes <- tbl(conn, "inpatient_episodes")
   tblz_prescriptions <- tbl(conn, "drug_prescriptions") %>% 
     dplyr::filter(
-      !prescription_status %in% c("entered-in-error",
-                                  "draft",
-                                  "cancelled",
-                                  "unknown")
+      !.data$prescription_status %in% c("entered-in-error",
+                                        "draft",
+                                        "cancelled",
+                                        "unknown")
+    ) %>% 
+    dplyr::select(
+      tidyselect::all_of(c(
+        "patient_id",
+        "prescription_id",
+        "antiinfective_type",
+        "prescription_start",
+        "prescription_end",
+        "authoring_date"
+      )),
+      tidyselect::any_of("DDD")
     )
   DDD_present <- "DDD" %in% colnames(tblz_prescriptions)
   
@@ -1438,7 +1463,7 @@ bridge_episode_prescription_initiation <- function(conn,
     dplyr::inner_join(tblz_prescriptions, 
                      by = "patient_id") %>% 
     dplyr::filter(
-      dplyr::between(authoring_date, episode_start, episode_end) 
+      dplyr::between(.data$authoring_date, .data$episode_start, .data$episode_end) 
     )
   
   if( is(conn, "PqConnection") || is(conn, "duckdb_connection") ) {
@@ -1469,23 +1494,25 @@ bridge_episode_prescription_initiation <- function(conn,
   }
   
   if ( DDD_present ) {
-    tblz_bridge_episode_prescription_initiation <- dplyr::transmute(
+    tblz_bridge_episode_prescription_initiation <- dplyr::select(
       tblz_bridge_episode_prescription_initiation,
-      patient_id,
-      encounter_id,
-      episode_number,
-      prescription_id,
-      DOT,
-      DDD_prescribed
+      "patient_id",
+      "encounter_id",
+      "episode_number",
+      "prescription_id",
+      "antiinfective_type",
+      "DOT",
+      "DDD_prescribed"
     )
   } else {
-    tblz_bridge_episode_prescription_initiation <- dplyr::transmute(
+    tblz_bridge_episode_prescription_initiation <- dplyr::select(
       tblz_bridge_episode_prescription_initiation,
-      patient_id,
-      encounter_id,
-      episode_number,
-      prescription_id,
-      DOT
+      "patient_id",
+      "encounter_id",
+      "episode_number",
+      "prescription_id",
+      "antiinfective_type",
+      "DOT"
     )
   }
   
@@ -1505,21 +1532,23 @@ bridge_episode_prescription_initiation <- function(conn,
 #' @name bridge_tables
 #' @export
 bridge_encounter_therapy_overlap <- function(conn, 
-                                         overwrite = FALSE) {
+                                             overwrite = FALSE) {
   stopifnot(is.logical(overwrite))
   stopifnot(is(conn, "duckdb_connection") || is(conn, "PqConnection"))
   
   tblz_encounters <- tbl(conn, "inpatient_episodes") %>% 
-    dplyr::distinct(patient_id, encounter_id, admission_date, discharge_date)
+    dplyr::distinct(.data$patient_id, 
+                    .data$encounter_id, 
+                    .data$admission_date, 
+                    .data$discharge_date)
   tblz_therapies <- tbl(conn, "drug_therapy_episodes")
   
   tblz_bridge_encounter_therapy_overlap <- tblz_encounters %>% 
-    dplyr::inner_join(tblz_therapies, 
-                      by = "patient_id") %>% 
+    dplyr::inner_join(tblz_therapies, by = "patient_id") %>% 
     dplyr::filter(
-      dplyr::between(therapy_start, admission_date, discharge_date) |
-        dplyr::between(therapy_end, admission_date, discharge_date) |
-        dplyr::between(admission_date, therapy_start, therapy_end)
+      dplyr::between(.data$therapy_start, .data$admission_date, .data$discharge_date) |
+        dplyr::between(.data$therapy_end, .data$admission_date, .data$discharge_date) |
+        dplyr::between(.data$admission_date, .data$therapy_start, .data$therapy_end)
     )
   
   if( is(conn, "PqConnection") || is(conn, "duckdb_connection") ) {
@@ -1537,12 +1566,13 @@ bridge_encounter_therapy_overlap <- function(conn,
                                         class(conn))
   }
   
-  tblz_bridge_encounter_therapy_overlap <- dplyr::transmute(
+  tblz_bridge_encounter_therapy_overlap <- dplyr::select(
     tblz_bridge_encounter_therapy_overlap,
-    patient_id,
-    encounter_id,
-    therapy_id,
-    LOT
+    "patient_id",
+    "encounter_id",
+    "therapy_id",
+    "antiinfective_type",
+    "LOT"
   )
   
   if (overwrite) {
