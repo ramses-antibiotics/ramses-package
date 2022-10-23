@@ -34,22 +34,22 @@ load_inpatient_diagnoses <- function(conn, diagnoses_data,
   }
   
   reference_icd_infections <- map_infections_abx_indications(
-    df = dplyr::select(diagnoses_lookup, icd_code), 
+    df = dplyr::select(diagnoses_lookup, "icd_code"), 
     icd_column = "icd_code") %>% 
     na.omit()
   
   reference_icd_comorbidity <- map_charlson_comorbidities(
-    df = dplyr::select(diagnoses_lookup, icd_code), 
+    df = dplyr::select(diagnoses_lookup, "icd_code"), 
     icd_column = "icd_code") %>% 
     na.omit()
   
   reference_icd_ccsr <- map_ICD10_CCSR(
-    df = dplyr::select(diagnoses_lookup, icd_code), 
+    df = dplyr::select(diagnoses_lookup, "icd_code"), 
     icd_column = "icd_code") %>% 
     na.omit()
   
   reference_icd_ccs <- map_ICD10_CCS(
-    df = dplyr::select(diagnoses_lookup, icd_code), 
+    df = dplyr::select(diagnoses_lookup, "icd_code"), 
     icd_column = "icd_code") %>% 
     na.omit()
   
@@ -114,7 +114,7 @@ load_inpatient_episodes <- function(conn,
                                     overwrite = TRUE) {
   
   patients_data <- dplyr::arrange(patients_data, 
-                                  patient_id)
+                                  .data$patient_id)
   patients_data <- patients_data[
     , c(
       "patient_id",
@@ -124,7 +124,7 @@ load_inpatient_episodes <- function(conn,
 
   episodes_data <- episodes_data %>% 
     dplyr::mutate(ramses_bed_days = NA_real_) %>% 
-    dplyr::arrange(patient_id, episode_start)
+    dplyr::arrange(.data$patient_id, .data$episode_start)
   
   first_column_names_episodes <- .inpatient_episodes_variables()[["variable_name"]]
   first_column_names_episodes <- c(
@@ -164,7 +164,7 @@ load_inpatient_episodes <- function(conn,
   
   if(!is.null(wards_data)) {
     wards_data <- dplyr::arrange(wards_data,
-                                 patient_id, ward_start)
+                                 .data$patient_id, .data$ward_start)
     first_column_names_wards <- .inpatient_wards_variables()[["variable_name"]]
     first_column_names_wards <- c(
       "id",
@@ -446,7 +446,7 @@ load_medications <- function(
   create_therapy_id <- !exists("therapy_id", prescriptions)
   create_combination_id <- !exists("combination_id", prescriptions)
   
-  prescriptions <- dplyr::arrange(prescriptions, patient_id, prescription_start)
+  prescriptions <- dplyr::arrange(prescriptions, .data$patient_id, .data$prescription_start)
   prescriptions$id <- seq_len(nrow(prescriptions))
 
   if( !is(prescriptions$authoring_date, "POSIXct") ){
@@ -566,7 +566,7 @@ load_medications <- function(
 .create_therapy_id <- function(conn, silent) {
   
   edges_table <- dplyr::select(tbl(conn, "drug_prescriptions_edges"),
-                               from_id, to_id)  
+                               "from_id", "to_id")  
   
   if(!silent) message("Transitive closure of therapy episodes beginning...\n")
   therapy_grps <- .run_transitive_closure(edges_table)
@@ -574,26 +574,26 @@ load_medications <- function(
   therapy_grps <- therapy_grps %>% 
     dplyr::left_join(
       dplyr::select(tbl(conn, "drug_prescriptions"), 
-                    id, prescription_id, prescription_start, drug_name), 
+                    "id", "prescription_id", "prescription_start", "drug_name"), 
       by = c("id" = "id")
     ) %>% 
-    dplyr::group_by(grp) %>% 
+    dplyr::group_by(.data$grp) %>% 
     dplyr::mutate(therapy_rank = dplyr::row_number(
-      paste0(prescription_start, drug_name))) %>% 
+      paste0(.data$prescription_start, .data$drug_name))) %>% 
     dplyr::ungroup() %>% 
     dplyr::compute()
   
   th_ids <- therapy_grps %>% 
-    dplyr::filter(therapy_rank == 1) %>% 
-    dplyr::mutate(therapy_id = prescription_id) %>% 
-    dplyr::select(grp, therapy_id) %>% 
+    dplyr::filter(.data$therapy_rank == 1) %>% 
+    dplyr::mutate(therapy_id = .data$prescription_id) %>% 
+    dplyr::select("grp", "therapy_id") %>% 
     dplyr::compute()
   
   therapy_grps <- dplyr::left_join(
     therapy_grps,
     th_ids,  
     by = c("grp" = "grp")) %>% 
-    dplyr::distinct(id, therapy_id, therapy_rank) %>% 
+    dplyr::distinct(id, .data$therapy_id, .data$therapy_rank) %>% 
     dplyr::compute(name = "ramses_tc_therapy", temporary = FALSE)
   
   therapy_grps
