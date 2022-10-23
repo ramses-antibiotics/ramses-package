@@ -1,7 +1,7 @@
 Package: Ramses
 Type: Package
 Title: R Package for Antimicrobial Stewardship & Surveillance 
-Version: 0.5.2
+Version: 0.6.0
 Authors@R: c(
     person(given = "Peter",
            family = "Dutey-Magni",
@@ -32,6 +32,7 @@ Imports:
     rlang,
     dplyr (>= 1.0.1),
     dbplyr (>= 2.2.0),
+    tidyselect,
     magrittr,
     duckdb (>= 0.4.0),
     Rdpack (>= 0.7),

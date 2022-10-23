@@ -5,7 +5,8 @@
 
 - `validate_inpatient_diagnoses()` now accepts two optional fields `diagnosis_start`
 and `diagnosis_end` to take advantage of clinical systems such as problem lists.
-
+- general code maintenance and adaptation to ongoing changes to the dplyr data masking
+approach [#105](https://github.com/ramses-antibiotics/ramses-package/issues/105) 
 
 # Bug fix
 

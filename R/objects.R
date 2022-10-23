@@ -361,10 +361,10 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
     dplyr::tibble(therapy_id = sort(unique(id))), 
     by = "therapy_id", copy = TRUE
   ) %>% 
-    dplyr::select(.data$patient_id, 
-                  .data$therapy_id, 
-                  .data$therapy_start, 
-                  .data$therapy_end)
+    dplyr::select("patient_id", 
+                  "therapy_id", 
+                  "therapy_start", 
+                  "therapy_end")
 
   if(is(conn, "PqConnection") | is(conn, "duckdb_connection")) {
     tbl(conn, "ramses_tally") %>%
@@ -398,7 +398,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
   
   medication_requests <- dplyr::inner_join(
     tbl(longitudinal_table$src$con, "drug_prescriptions"),
-    dplyr::distinct(longitudinal_table, therapy_id),
+    dplyr::distinct(longitudinal_table, .data$therapy_id),
     by = "therapy_id", copy = TRUE
   )
   
@@ -762,7 +762,7 @@ setMethod("show", "TherapyEpisode", function(object) {
       dplyr::filter(.data$patient_id == !!record$patient_id &
                       .data$therapy_id == !!object@id) %>%
       dplyr::arrange(.data$therapy_rank) %>%
-      dplyr::select(.data$prescription_text) %>%
+      dplyr::select("prescription_text") %>%
       dplyr::collect()
     cat("Patient:  ", record$patient_id, "\n")
     cat("Start:    ", format(record$therapy_start, format = "%Y-%m-%d %H:%M:%S %Z"), "\n")

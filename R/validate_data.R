@@ -872,10 +872,10 @@ validate_prescriptions <- function(data) {
         "except for one-off prescriptions\n",
         .print_and_capture(utils::head(
           dplyr::select(dplyr::filter(
-            data, is.na(prescription_end) & 
-              daily_frequency != -1 &
-              prescription_status == "completed"),
-            patient_id, daily_frequency, prescription_end)))
+            data, is.na(.data$prescription_end) & 
+              .data$daily_frequency != -1 &
+              .data$prescription_status == "completed"),
+            "patient_id", "daily_frequency", "prescription_end")))
     )))
   }
   
@@ -912,9 +912,9 @@ validate_prescriptions <- function(data) {
   }
   
   duplicates <- data %>% 
-    dplyr::group_by(patient_id, drug_code, dose, route, prescription_start) %>% 
+    dplyr::group_by(.data$patient_id, .data$drug_code, .data$dose, .data$route, .data$prescription_start) %>% 
     dplyr::summarise(n = dplyr::n()) %>% 
-    dplyr::filter(n > 1)
+    dplyr::filter(.data$n > 1)
   duplicates <- merge(data, duplicates)
   
   if( nrow(duplicates) > 0 ) {
@@ -923,11 +923,17 @@ validate_prescriptions <- function(data) {
     )
     warning(simpleWarning(
       .print_and_capture(utils::head(
-        dplyr::select(dplyr::arrange(duplicates, 
-                              patient_id, drug_code, prescription_start),
-               patient_id, prescription_id, 
-               prescription_text, prescription_start))
-    )))
+        dplyr::select(
+          dplyr::arrange(duplicates, 
+                         .data$patient_id, 
+                         .data$drug_code, 
+                         .data$prescription_start),
+          "patient_id", 
+          "prescription_id", 
+          "prescription_text", 
+          "prescription_start"
+        )
+      ))))
   }
   
   NULL
@@ -1055,9 +1061,9 @@ validate_administrations <- function(data) {
   }
   
   duplicates <- data %>% 
-    dplyr::group_by(patient_id, drug_code, dose, route, administration_date) %>% 
+    dplyr::group_by(.data$patient_id, .data$drug_code, .data$dose, .data$route, .data$administration_date) %>% 
     dplyr::summarise(n = dplyr::n()) %>% 
-    dplyr::filter(n > 1)
+    dplyr::filter(.data$n > 1)
   duplicates <- merge(data, duplicates)
   
   if( nrow(duplicates) > 0 ) {
@@ -1066,11 +1072,18 @@ validate_administrations <- function(data) {
     )
     warning(simpleWarning(
       .print_and_capture(utils::head(
-        dplyr::select(dplyr::arrange(duplicates, 
-                              patient_id, drug_code, administration_date),
-               patient_id, prescription_id, administration_id,
-               administration_text, administration_date))
-      )))
+        dplyr::select(
+          dplyr::arrange(duplicates, 
+                         .data$patient_id, 
+                         .data$drug_code, 
+                         .data$administration_date),
+          "patient_id", 
+          "prescription_id", 
+          "administration_id", 
+          "administration_text",
+          "administration_date"
+        )
+    ))))
   }
   
   NULL
