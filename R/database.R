@@ -1345,6 +1345,15 @@ bridge_episode_prescription_overlap <- function(conn,
                                   "draft",
                                   "cancelled",
                                   "unknown")
+    ) %>% 
+    dplyr::select(
+      tidyselect::all_of(c(
+        "patient_id",
+        "prescription_id",
+        "prescription_start",
+        "prescription_end"
+      )),
+      tidyselect::any_of("DDD")
     )
   DDD_present <- "DDD" %in% colnames(tblz_prescriptions)
   
@@ -1433,6 +1442,16 @@ bridge_episode_prescription_initiation <- function(conn,
                                         "draft",
                                         "cancelled",
                                         "unknown")
+    ) %>% 
+    dplyr::select(
+      tidyselect::all_of(c(
+        "patient_id",
+        "prescription_id",
+        "prescription_start",
+        "prescription_end",
+        "authoring_date"
+      )),
+      tidyselect::any_of("DDD")
     )
   DDD_present <- "DDD" %in% colnames(tblz_prescriptions)
   
