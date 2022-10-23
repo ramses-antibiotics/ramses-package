@@ -47,7 +47,7 @@ setMethod(
     
     # Retrieve prescription records  
     medication_requests_inclusion <- tbl(input_patient@conn, "drug_prescriptions") %>%
-      dplyr::filter(patient_id == !!input_patient@id & 
+      dplyr::filter(.data$patient_id == !!input_patient@id & 
                       !.data$prescription_status %in% c("cancelled", "draft", "in-error")) %>%
       dplyr::left_join(tbl(input_patient@conn, "drug_therapy_episodes"), 
                        by = c("patient_id", "therapy_id")) %>%
@@ -327,7 +327,7 @@ setMethod(
         .data$prescription_start, ", ",
         dplyr::if_else(
           .data$daily_frequency < 0, "",
-          dplyr::if_else(duration < 24*3600,
+          dplyr::if_else(.data$duration < 24*3600,
                          paste(trunc(.data$duration/3600), "hours, "),
                          paste(trunc(.data$duration/3600/24), "days, "))
         ),

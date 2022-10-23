@@ -426,10 +426,10 @@ validate_inpatient_episodes <- function(patients,
   wards <- merge(
     wards, 
     dplyr::distinct(episodes, 
-                    patient_id, 
-                    encounter_id, 
-                    admission_date, 
-                    discharge_date), 
+                    .data$patient_id, 
+                    .data$encounter_id, 
+                    .data$admission_date, 
+                    .data$discharge_date), 
     all.x = TRUE)
   
   .validate_inpatient_episode_dates(data = wards,
@@ -525,15 +525,21 @@ validate_inpatient_episodes <- function(patients,
     validation_result <- FALSE
   }
   
-  BD_encounter <-  BD_episode <-  nextepistart <-  NULL
-  
   episodes <- data.table::as.data.table(data)
+  
+  end <- start <- patient_id <- encounter_id <- admission_date <- NULL
+  discharge_date <- BD_encounter <- BD_episode <- nextepistart <- NULL
   
   bed_day_matching <- episodes[,
     list(BD_episode = sum(difftime(end, start, units = "secs"))), 
-    by = list(patient_id, encounter_id, admission_date, discharge_date)
+    by = list(patient_id, 
+              encounter_id, 
+              admission_date, 
+              discharge_date)
     ]
-  bed_day_matching[, BD_encounter := difftime(discharge_date, admission_date, units = "secs")]
+  bed_day_matching[, BD_encounter := difftime(discharge_date, 
+                                              admission_date,
+                                              units = "secs")]
   
   if (nrow(bed_day_matching[abs(BD_episode - BD_encounter) > 5]) > 0) {
     warning(simpleWarning(paste0(
@@ -710,6 +716,7 @@ validate_inpatient_diagnoses <- function(diagnoses_data, diagnoses_lookup) {
     action = "error"
   )
   
+  icd_code <- NULL
   diagnoses_data <- data.table::data.table(diagnoses_data)
   diagnoses_data <- unique(diagnoses_data[, list(icd_code)])
   diagnoses_lookup <- data.table::data.table(diagnoses_lookup)[, list(icd_code)]

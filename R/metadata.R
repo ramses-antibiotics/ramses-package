@@ -533,7 +533,7 @@ compute_DDDs <- function(ATC_code, ATC_administration, dose, unit, silent = FALS
       colnames(atc_page) <- gsub("^ddd$", "ddd_value", colnames(atc_page))
       
       atc_page$ATC_code <- search_ATC[i]
-      reference_DDD[[i]] <- dplyr::select(atc_page, -name, -note)
+      reference_DDD[[i]] <- dplyr::select(atc_page, -tidyselect::all_of(c("name", "note")))
     }
   }
   
@@ -545,6 +545,7 @@ compute_DDDs <- function(ATC_code, ATC_administration, dose, unit, silent = FALS
     unit = unit
   )
   
+  ddd_value <- DDD <- NULL
   x <- merge(x, reference_DDD, all.x = T, sort = F)
   x$DDD <- NA_real_
   u = NULL

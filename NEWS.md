@@ -1,6 +1,8 @@
 
 # Ramses 0.6.0
 
+*23 October 2022* 
+
 ## Improvements
 
 - `validate_inpatient_diagnoses()` now accepts two optional fields `diagnosis_start`
@@ -8,7 +10,7 @@ and `diagnosis_end` to take advantage of clinical systems such as problem lists.
 - general code maintenance and adaptation to ongoing changes to the dplyr data masking
 approach [#105](https://github.com/ramses-antibiotics/ramses-package/issues/105) 
 
-# Bug fix
+## Bug fix
 
 - `therapy_timeline()` now operates with or without `diagnosis_start` and `diagnosis_end`
 variables. The `inpatient_diagnoses` mock dataset no longer contains those fields.

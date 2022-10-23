@@ -593,7 +593,7 @@ load_medications <- function(
     therapy_grps,
     th_ids,  
     by = c("grp" = "grp")) %>% 
-    dplyr::distinct(id, .data$therapy_id, .data$therapy_rank) %>% 
+    dplyr::distinct(.data$id, .data$therapy_id, .data$therapy_rank) %>% 
     dplyr::compute(name = "ramses_tc_therapy", temporary = FALSE)
   
   therapy_grps
@@ -952,7 +952,8 @@ create_mock_database <- function(file,
   .build_tally_table(mock_db)
   dplyr::copy_to(
     dest = mock_db,
-    df = dplyr::filter(Ramses::reference_aware, version == "England" & year == "2019"),
+    df = dplyr::filter(Ramses::reference_aware, 
+                       .data$version == "England" & .data$year == "2019"),
     name = "reference_aware",
     temporary = FALSE,
     overwrite = TRUE
@@ -1222,6 +1223,7 @@ create_mock_database <- function(file,
     vapply(graph_list, length, FUN.VALUE = integer(1)) > 1
   ]
   
+  id <- grp <- NULL
   rames_tc_groups_dt <- data.table::data.table(
     id = graph_list,
     grp = as.integer(names(graph_list))
