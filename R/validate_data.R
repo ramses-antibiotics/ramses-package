@@ -622,8 +622,10 @@ validate_inpatient_episodes <- function(patients,
 #' and \code{diagnosis_end} should be used to store this information.
 #' 
 #' \describe{
-#'   \item{\code{diagnosis_start}}{a patient identifier with no missing value}
-#'   \item{\code{diagnosis_end}}{a hospital encounter identifier with no missing value}
+#'   \item{\code{diagnosis_start}}{a vector of \code{POSIXct} timestamps when 
+#'   the clinical problems were first noted or manifested}
+#'   \item{\code{diagnosis_end}}{a vector of \code{POSIXct} timestamp when the
+#'   clinical problems were considered resolved}
 #' }
 #' 
 #' If no data are provided, Ramses functions such as \code{\link[Ramses]{therapy_timeline}}
