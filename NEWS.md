@@ -5,17 +5,16 @@
 
 ## Improvements
 
-- `validate_inpatient_diagnoses()` now accepts two optional fields `diagnosis_start`
-and `diagnosis_end` to take advantage of clinical systems such as problem lists.
-- general code maintenance and adaptation to ongoing changes to the dplyr data masking
-approach [#105](https://github.com/ramses-antibiotics/ramses-package/issues/105) 
-- bridge tables now include a field `antiinfective_type` for ease [#76](https://github.com/ramses-antibiotics/ramses-package/issues/76) and 
-generation is improved [#104](https://github.com/ramses-antibiotics/ramses-package/issues/104).
-
-## Bug fix
-
-- `therapy_timeline()` now operates with or without `diagnosis_start` and `diagnosis_end`
-variables. The `inpatient_diagnoses` mock dataset no longer contains those fields.
+- Changed `validate_inpatient_diagnoses()` to accept two optional fields `diagnosis_start`
+and `diagnosis_end` and take advantage of clinical systems such as problem lists
+- Changed `therapy_timeline()` to take advantage of `diagnosis_start` and `diagnosis_end`
+variables if present
+- Changed the `inpatient_diagnoses` mock dataset to removed episode start and end fields [#103](https://github.com/ramses-antibiotics/ramses-package/issues/103) which 
+duplicated information in `inpatient_episodes`
+- Changed bridge table functions to include a field `antiinfective_type`  [#76](https://github.com/ramses-antibiotics/ramses-package/issues/76) and 
+prevent some issues [#104](https://github.com/ramses-antibiotics/ramses-package/issues/104)
+- General code maintenance and adaptation to ongoing changes to the `dplyr` data masking
+approach [#105](https://github.com/ramses-antibiotics/ramses-package/issues/105).
 
 
 # Ramses 0.5.2
