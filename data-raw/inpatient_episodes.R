@@ -48,7 +48,9 @@ inpatient_episodes <- dplyr::select(
   -surname,
   -sex,
   -ethnic_group,
-  -age_on_admission
+  -age_on_admission,
+  -date_of_birth,
+  -date_of_death
 )
 
 for (i in which(vapply(inpatient_episodes, is, class2 = "POSIXct", FUN.VALUE = logical(1)))) {

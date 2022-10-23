@@ -11,8 +11,8 @@ and `diagnosis_end` and take advantage of clinical systems such as problem lists
 variables if present
 - Changed the `inpatient_diagnoses` mock dataset to removed episode start and end fields [#103](https://github.com/ramses-antibiotics/ramses-package/issues/103) which 
 duplicated information in `inpatient_episodes`
-- Changed bridge table functions to include a field `antiinfective_type`  [#76](https://github.com/ramses-antibiotics/ramses-package/issues/76) and 
-prevent some issues [#104](https://github.com/ramses-antibiotics/ramses-package/issues/104)
+- Changed `bridge_*()` functions to add a field `antiinfective_type` to bridge tables [#76](https://github.com/ramses-antibiotics/ramses-package/issues/76) and prevent 
+unrelated generation issues [#104](https://github.com/ramses-antibiotics/ramses-package/issues/104)
 - General code maintenance and adaptation to ongoing changes to the `dplyr` data masking
 approach [#105](https://github.com/ramses-antibiotics/ramses-package/issues/105).
 

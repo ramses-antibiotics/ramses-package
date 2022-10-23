@@ -66,7 +66,7 @@ will use episode start and end dates from the \code{inpatient_episodes} table in
   \item{\code{category_description}}{full text descriptions of three-character heading codes}
 }
 
-*Note*: \code{\link[Ramses]{import_icd}()} can produce this lookup data frame from
+\strong{Note}: \code{\link[Ramses]{import_icd}()} can produce this lookup data frame from
 a standard ICD release archive file.
 }
 

@@ -648,7 +648,7 @@ validate_inpatient_episodes <- function(patients,
 #'   \item{\code{category_description}}{full text descriptions of three-character heading codes}
 #' }
 #' 
-#' *Note*: \code{\link[Ramses]{import_icd}()} can produce this lookup data frame from
+#' \strong{Note}: \code{\link[Ramses]{import_icd}()} can produce this lookup data frame from
 #' a standard ICD release archive file.
 #' 
 #' @return A logical value indicating success
