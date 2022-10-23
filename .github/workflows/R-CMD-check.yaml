@@ -8,7 +8,7 @@ on:
       - 'bugfix/**'
   schedule:
     # run release on the 8th of every month to detect problems with new packages/R releases
-    cron:  '19 3 8 * *'
+    - cron:  '19 3 8 * *'
 
 name: R-CMD-check
 
