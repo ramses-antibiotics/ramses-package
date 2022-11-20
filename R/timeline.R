@@ -409,6 +409,11 @@ setMethod(
       dplyr::mutate(className = dplyr::if_else(is.na(.data$organism_code),
                                                "micro-report-no-growth", 
                                                "micro-report")) %>% 
+      dplyr::mutate(isolation_datetime = dplyr::if_else(
+        is.na(.data$isolation_datetime),
+        .data$specimen_datetime,
+        .data$isolation_datetime
+      )) %>% 
       dplyr::group_by(.data$specimen_id, .data$className) %>% 
       dplyr::summarise(
         id = paste0("Specimen ID:",
