@@ -25,7 +25,7 @@ BugReports: https://github.com/ramses-antibiotics/ramses-package/issues
 Encoding: UTF-8
 LazyData: true
 Depends: 
-    R (>= 3.6.0),
+    R (>= 4.0.0),
     AMR (>= 1.8.0)
 Imports: 
     DBI,
