@@ -30,8 +30,8 @@ Depends:
 Imports: 
     DBI,
     rlang,
-    dplyr (>= 1.0.1),
-    dbplyr (<= 2.2.1),
+    dplyr (>= 1.1.0),
+    dbplyr (>= 2.3.2),
     tidyselect,
     magrittr,
     duckdb (>= 0.4.0),

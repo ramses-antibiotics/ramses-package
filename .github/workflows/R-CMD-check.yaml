@@ -6,6 +6,7 @@ on:
       - 'feature/**'
       - 'bug_fix/**'
       - 'bugfix/**'
+      - 'maint/**'
   schedule:
     # run release on the 8th of every month to detect problems with new packages/R releases
     - cron:  '19 3 8 * *'

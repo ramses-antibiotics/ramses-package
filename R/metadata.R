@@ -30,8 +30,9 @@ download_icd10cm <- function(silent = FALSE) {
   icd_source$level <- nchar(icd_source$icd_code)
   
   icd3 <- dplyr::filter(icd_source, .data$level == 3) %>% 
-    dplyr::transmute(category_code = .data$icd_code,
-                     category_description = .data$icd_description)
+    dplyr::mutate(category_code = .data$icd_code,
+                  category_description = .data$icd_description,
+                  .keep = "none")
   
   icd5 <- dplyr::filter(icd_source, .data$header_indicator == 1) %>% 
     dplyr::mutate(category_code = substring(.data$icd_code, 0, 3))
@@ -113,8 +114,9 @@ import_icd <- function(archive, version) {
   icd_source$level <- nchar(icd_source[["alt_code"]])
   
   icd3 <- dplyr::filter(icd_source, .data$level == 3) %>% 
-    dplyr::transmute(category_code = .data$alt_code,
-                     category_description = .data$description)
+    dplyr::mutate(category_code = .data$alt_code,
+                  category_description = .data$description,
+                  .keep = "none")
   
   icd5 <- dplyr::filter(icd_source, .data$level > 3) %>% 
     dplyr::mutate(category_code = substring(.data$alt_code, 0, 3))
@@ -127,9 +129,9 @@ import_icd <- function(archive, version) {
   icd$edition <- version
   
   icd <- dplyr::rename(icd,
-                       icd_display = .data$code,
-                       icd_code = .data$alt_code,
-                       icd_description = .data$description)
+                       icd_display = "code",
+                       icd_code = "alt_code",
+                       icd_description = "description")
   icd <- arrange_variables(icd, 
                            first_column_names = c(
                              "icd_code",

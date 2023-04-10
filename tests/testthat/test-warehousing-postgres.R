@@ -50,7 +50,7 @@ test_that(".create_sql_index on Postgres", {
   expect_equal(
     DBI::dbGetQuery(pq_conn, "SELECT * FROM pg_catalog.pg_indexes") %>% 
       dplyr::filter(.data$tablename == "test_table") %>% 
-      dplyr::select(.data$tablename, .data$indexname) %>% 
+      dplyr::select("tablename", "indexname") %>% 
       dplyr::collect(),
     data.frame(
       tablename = "test_table",
@@ -152,8 +152,8 @@ test_that("drug_prescriptions_edges on Postgres", {
   load_medications(pq_conn, records_rx, overwrite = T)
   
   output <- dplyr::distinct(tbl(pq_conn, "drug_prescriptions_edges"), 
-                            patient_id, edge_type, relation_type) %>% 
-    dplyr::arrange(patient_id) %>% 
+                            .data$patient_id, .data$edge_type, .data$relation_type) %>% 
+    dplyr::arrange(.data$patient_id) %>% 
     dplyr::collect()
   
   records_edges <- read.csv(system.file("test_cases", "prescription_linkage_edges_classes.csv", 
@@ -253,8 +253,8 @@ test_that("Ramses on PosgreSQL (system test)", {
     dplyr::filter(prescription_id %in% c("592a738e4c2afcae6f625c01856151e0", 
                                          "89ac870bc1c1e4b2a37cec79d188cb08",
                                          "0bf9ea7732dd6e904ab670a407382d95")) %>% 
-    dplyr::select(prescription_id, combination_id, therapy_id) %>% 
-    dplyr::arrange(therapy_id, prescription_id) %>% 
+    dplyr::select("prescription_id", "combination_id", "therapy_id") %>% 
+    dplyr::arrange(.data$therapy_id, .data$prescription_id) %>% 
     dplyr::collect()
   expect_equal(
     test_output, 

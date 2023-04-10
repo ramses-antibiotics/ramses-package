@@ -790,7 +790,9 @@ test_that("Encounter..constructor", {
     fake_db_conn, 
     dplyr::tibble(
       patient_id = "9",
-      encounter_id = "999999"
+      encounter_id = "999999", 
+      admission_date = Sys.Date(), 
+      discharge_date = Sys.Date()
     ),
     "inpatient_episodes", 
     temporary = FALSE
@@ -812,7 +814,9 @@ test_that("Encounter..constructor", {
     fake_db_conn, 
     dplyr::tibble(
       patient_id = 9,
-      encounter_id = 999999
+      encounter_id = 999999,
+      admission_date = Sys.Date(), 
+      discharge_date = Sys.Date()
     ),
     "inpatient_episodes", 
     temporary = FALSE
@@ -828,7 +832,9 @@ test_that("Encounter..constructor", {
     fake_db_conn, 
     dplyr::tibble(
       patient_id = 9L,
-      encounter_id = 999999L
+      encounter_id = 999999L,
+      admission_date = Sys.Date(), 
+      discharge_date = Sys.Date()
     ),
     "inpatient_episodes", 
     temporary = FALSE
