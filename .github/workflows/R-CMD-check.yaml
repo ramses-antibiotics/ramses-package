@@ -6,6 +6,7 @@ on:
       - 'feature/**'
       - 'bug_fix/**'
       - 'bugfix/**'
+      - 'maint/**'
   schedule:
     # run release on the 8th of every month to detect problems with new packages/R releases
     - cron:  '19 3 8 * *'
@@ -37,7 +38,7 @@ jobs:
           # container action is not supported on windows or macOS
           # - {os: windows-latest, r: 'release'}
           # - {os: macOS-latest, r: 'release'}
-          - {os: ubuntu-20.04, r: '3.6', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"}
+          - {os: ubuntu-20.04, r: '4.0.0', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"}
           - {os: ubuntu-20.04, r: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"}
           - {os: ubuntu-20.04, r: 'devel', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"}
 
@@ -82,6 +83,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          remotes::install_github("msberends/AMR", build = TRUE)
           remotes::install_deps(dependencies = TRUE)
           remotes::install_cran("rcmdcheck")
         shell: Rscript {0}
@@ -89,7 +91,8 @@ jobs:
       - name: Check
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
-        run: rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "warning", check_dir = "check")
+        run: |
+          rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "warning", check_dir = "check")
         shell: Rscript {0}
 
       - name: Code coverage

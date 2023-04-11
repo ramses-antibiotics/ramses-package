@@ -185,7 +185,7 @@ Encounter <- function(conn, id, extend_table_start = NULL) {
   if(is(conn, "PqConnection") | is(conn, "duckdb_connection")) {
     tbl(conn, "ramses_tally") %>%
       dplyr::mutate(t = .data$t - as.integer(extend_table_start)) %>% 
-      dplyr::full_join(longitudinal_table, by = character()) %>%
+      dplyr::cross_join(longitudinal_table) %>%
       dplyr::mutate(t_start = dplyr::sql("admission_date + interval '1h' * t ")) %>% 
       dplyr::filter(.data$t_start < .data$discharge_date) %>% 
       dplyr::mutate(t_end = dplyr::sql("admission_date + interval '1h' * (t + 1)")) %>% 
@@ -369,7 +369,7 @@ setGeneric(name = "TherapyEpisode", def = TherapyEpisode)
   if(is(conn, "PqConnection") | is(conn, "duckdb_connection")) {
     tbl(conn, "ramses_tally") %>%
       dplyr::mutate(t = .data$t - as.integer(extend_table_start)) %>% 
-      dplyr::full_join(longitudinal_table, by = character()) %>%
+      dplyr::cross_join(longitudinal_table) %>%
       dplyr::mutate(t_start = dplyr::sql("therapy_start + interval '1h' * t "))%>% 
       dplyr::filter(.data$t_start < .data$therapy_end) %>% 
       dplyr::mutate(t_end = dplyr::sql("therapy_start + interval '1h' * (t + 1)")) %>% 

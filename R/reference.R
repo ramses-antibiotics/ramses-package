@@ -205,7 +205,6 @@
 #'     \item{\code{pt_term}}{SNOMED CT Preferred Term}
 #'     \item{\code{snomed_release_version}}{SNOMED CT RF2 release date}
 #' }
-#' @seealso \url{https://snomedizer.web.app}
 #' @format A data frame.
 #' @docType data
 #' @name reference_specimen_type

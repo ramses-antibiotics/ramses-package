@@ -1,4 +1,14 @@
 
+# Ramses 0.7.0
+
+*11 April 2023* 
+
+## Changed
+
+- Now requires minimum R v4.0.0, `dplyr` v1.1.0, `dbplyr` v2.3.2 and `tidyselect` v1.2.0.
+- Internal code maintenance in line with new tidy programming practice.
+
+
 # Ramses 0.6.0
 
 *23 October 2022* 

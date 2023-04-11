@@ -1,7 +1,7 @@
 Package: Ramses
 Type: Package
 Title: R Package for Antimicrobial Stewardship & Surveillance 
-Version: 0.6.0
+Version: 0.7.0
 Authors@R: c(
     person(given = "Peter",
            family = "Dutey-Magni",
@@ -25,14 +25,14 @@ BugReports: https://github.com/ramses-antibiotics/ramses-package/issues
 Encoding: UTF-8
 LazyData: true
 Depends: 
-    R (>= 3.6.0),
+    R (>= 4.0.0),
     AMR (>= 1.8.0)
 Imports: 
     DBI,
     rlang,
-    dplyr (>= 1.0.1),
-    dbplyr (>= 2.2.0),
-    tidyselect,
+    dplyr (>= 1.1.0),
+    dbplyr (>= 2.3.2),
+    tidyselect (>= 1.2.0),
     magrittr,
     duckdb (>= 0.4.0),
     Rdpack (>= 0.7),

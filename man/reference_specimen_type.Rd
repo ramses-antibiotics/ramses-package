@@ -32,7 +32,4 @@ This data frame contains 5 variables:
 data("reference_specimen_type")
 head(reference_specimen_type)
 }
-\seealso{
-\url{https://snomedizer.web.app}
-}
 \keyword{datasets}
