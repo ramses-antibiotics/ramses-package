@@ -1,4 +1,17 @@
 
+# Ramses 0.7.0
+
+*11 April 2023* 
+
+## Changed
+
+- Now requires minimum R v4.0.0, `dplyr` v1.1.0, `dbplyr` v2.3.2 and `tidyselect` v1.2.0.
+- Internal code maintenance in line with new tidy programming practice.
+- Tolerance built into the timeline for handling of no growth results. Ramses does not 
+currently prescribe whether no growth should be loaded into `microbiology_isolates` or not ([#108](https://github.com/ramses-antibiotics/ramses-package/issues/108)).
+The timeline will now show specimens without an isolate record at the time of collection.
+
+
 # Ramses 0.6.0
 
 *23 October 2022* 
