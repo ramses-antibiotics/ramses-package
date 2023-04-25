@@ -12,7 +12,7 @@ name: "Legacy DuckDB versions"
 jobs:
   DuckDB:
     runs-on: ${{ matrix.config.os }}
-    name: ${{ matrix.config.duckdb_version }})
+    name: DuckDB v${{ matrix.config.duckdb_version }}
     strategy:
       fail-fast: false
       matrix:
