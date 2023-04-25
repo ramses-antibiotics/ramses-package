@@ -12,7 +12,7 @@ name: "Legacy DuckDB versions"
 jobs:
   DuckDB:
     runs-on: ${{ matrix.config.os }}
-    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+    name: ${{ matrix.config.duckdb_version }})
     strategy:
       fail-fast: false
       matrix:
@@ -63,13 +63,15 @@ jobs:
           remotes::install_github("msberends/AMR", build = TRUE)
           remotes::install_deps(dependencies = TRUE)
           remotes::install_cran("rcmdcheck")
-          remotes::install_github("cran/duckdb", ref = paste0("@", Sys.getenv("DUCKDB_VERSION")))
+          remotes::install_github("cran/duckdb", ref = Sys.getenv("DUCKDB_VERSION"))
         shell: Rscript {0}
         env: 
           DUCKDB_VERSION: (${{ matrix.config.duckdb_version }})
           
       - name: DuckDB unit tests
         run:  |
-          testthat::test_file(path = "tests/testthat/test-warehousing-duckdb.R", reporter = default_compact_reporter())
+          devtools::load_all()
+          testthat::test_file(path = "tests/testthat/test-warehousing-duckdb.R", reporter = default_compact_reporter(),
+                              stop_on_warning = TRUE, stop_on_failure = TRUE)
         shell: Rscript {0}
 

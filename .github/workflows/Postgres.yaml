@@ -12,7 +12,7 @@ name: "Legacy Postgres versions"
 jobs:
   Postgres:
     runs-on: ${{ matrix.config.os }}
-    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+    name: ${{ matrix.config.postgres_image }} 
     services:
       postgres:
         image: ${{ matrix.config.postgres_image }} 
@@ -83,6 +83,7 @@ jobs:
       - name: Postgres unit tests
         run:  |
           devtools::load_all()
-          testthat::test_file(path = "tests/testthat/test-warehousing-postgres.R", reporter = default_compact_reporter())
+          testthat::test_file(path = "tests/testthat/test-warehousing-postgres.R", reporter = default_compact_reporter(),
+                              stop_on_warning = TRUE, stop_on_failure = TRUE)
         shell: Rscript {0}
 
