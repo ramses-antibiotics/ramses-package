@@ -949,7 +949,7 @@ create_mock_database <- function(file,
                             dbdir = file, 
                             timezone_out = timezone,
                             tz_out_convert = "with")
-  
+
   .build_tally_table(mock_db)
   dplyr::copy_to(
     dest = mock_db,
@@ -1663,4 +1663,72 @@ bridge_encounter_therapy_overlap <- function(conn,
     episode_end::TIMESTAMP - episode_start::TIMESTAMP )) 
     / ( 24.0 * 3600.0 );"
   )
+}
+
+
+
+
+create_metric_tbl_1 <- function(conn) {
+  
+  olap_dimensions <- c(
+    "drug_code", 
+    "antiinfective_type", 
+    "prescription_context",
+    "prescription_status"
+  )
+  
+  rx_expanded <- dplyr::tbl(conn, "drug_prescriptions") %>% 
+    dplyr::filter(
+      .data$prescription_status %in% c("active",
+                                       "stopped",
+                                       "completed")
+    ) %>% 
+    dplyr::select(!!c("prescription_id", 
+                      "prescription_start", 
+                      "prescription_end",
+                      olap_dimensions))
+  
+  if (is(conn, "duckdb_connection")) {
+    rx_expanded <- rx_expanded %>% 
+      dplyr::mutate(
+        date = dplyr::sql("unlist(generate_series(prescription_start, prescription_end, interval '1 day'))::date")
+      )
+  } else if (is(conn, "PqConnection")) {
+    rx_expanded <- rx_expanded %>% 
+      dplyr::mutate(
+        date = dplyr::sql("generate_series(prescription_start, prescription_end, interval '1 day')::date")
+      )
+  }
+  
+  rx_expanded <- rx_expanded %>% 
+    dplyr::mutate(
+      dot = dplyr::sql(
+        "CASE WHEN prescription_start::date = date THEN 3600.0*24.0 - EXTRACT(epoch from CAST(prescription_start::TIMESTAMP as TIME))
+      WHEN prescription_end::date = date THEN EXTRACT(epoch FROM CAST(prescription_end::TIMESTAMP as TIME))
+      ELSE 3600*24 END
+      ")
+    ) %>% 
+    dplyr::distinct(!!!syms(c("prescription_id", "date", "dot", olap_dimensions))) %>% 
+    dplyr::compute()
+  
+  
+  olap_dimensions <- c(olap_dimensions, "date")
+  
+  if (DBI::dbExistsTable(conn, "ramses_metrics")) {
+    DBI::dbRemoveTable(conn, "ramses_metrics")
+  }
+  
+  DBI::dbExecute(
+    conn = conn,
+    statement = paste(
+      "SELECT 'dot_totals' AS metric,",
+      paste(olap_dimensions, collapse = ", "), ", ",
+      "sum(DOT) as numerator",
+      "INTO ramses_metrics",
+      "FROM", dbplyr::remote_name(rx_expanded),
+      "GROUP BY CUBE (", paste(c(olap_dimensions), collapse = ", "), ");"
+    )
+  )
+
+  dplyr::tbl(conn, "ramses_metrics")
 }
