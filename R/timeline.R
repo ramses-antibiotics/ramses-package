@@ -32,8 +32,13 @@ setMethod(
            date1 = NULL, date2 = NULL,
            load_timevis_dependencies = FALSE) {
     
-    stopifnot( is.null(date1) | is(date1, "Date") | is(date1, "POSIXct") )
-    stopifnot( is.null(date2) | is(date2, "Date") | is(date2, "POSIXct") )
+    if( !(is.null(date1) | is(date1, "Date") | is(date1, "POSIXct")) ){
+      "`date1` must be a Date or POSIXct. Please convert using `as.Date()` or `as.POSIXct()`."
+    }
+    if( !(is.null(date1) | is(date2, "Date") | is(date2, "POSIXct")) ){
+      "`date2` must be a Date or POSIXct. Please convert using `as.Date()` or `as.POSIXct()`."
+    }
+    
     input_patient <- x
     if( nrow(collect(input_patient)) == 0 ) {
       stop("Patient not found in the database")
@@ -63,21 +68,21 @@ setMethod(
         medication_requests_inclusion, 
         dplyr::between(.data$therapy_start, date1, date2) |
           dplyr::between(.data$therapy_end, date1, date2) |
-          (.data$therapy_start <= date1 & date1 <= .data$therapy_end)) %>%
+          (.data$therapy_start - date1 <= 0 & date1 - .data$therapy_end <= 0)) %>%
         dplyr::summarise(left_date = min(.data$therapy_start, na.rm = T), 
                          right_date = max(.data$therapy_end, na.rm = T))
     } else if( !is.null(date2) ) {
       date2 <- as.POSIXct(date2)
       date_window <- dplyr::filter(
         medication_requests_inclusion, 
-        .data$therapy_start <= date2 ) %>%
+        .data$therapy_start - date2 <= 0) %>%
         dplyr::summarise(left_date = min(.data$therapy_start, na.rm = T), 
                          right_date = max(.data$therapy_end, na.rm = T)) 
     } else if( !is.null(date1) ) {
       date1 <- as.POSIXct(date1)
       date_window <- dplyr::filter(
         medication_requests_inclusion, 
-        .data$therapy_end >= date1 ) %>%
+        .data$therapy_end - date1 >= 0) %>%
         dplyr::summarise(left_date = min(.data$therapy_start, na.rm = T), 
                          right_date = max(.data$therapy_end, na.rm = T)) 
     } else {
