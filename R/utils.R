@@ -14,3 +14,33 @@
     collapse = "\n"
   ))
 }
+
+.compute_date_dimensions <- function(date_min, date_max) {
+  # Generate the sequence between two dates
+  # and compute derived variables
+  stopifnot(length(date_min) == 1 & is(date_min, "Date") & !is.na(date_min))
+  stopifnot(length(date_max) == 1 & is(date_max, "Date") & !is.na(date_max))
+  
+  data.frame(date = seq(date_min, date_max, 1)) %>% 
+    dplyr::mutate(
+      date_string_iso = format(.data$date, format = "%F"),
+      date_string_dd_mm_yyyy = format(.data$date, format = "%d/%m/%Y"),
+      date_string_dd_mm_yy = format(.data$date, format = "%d/%m/%y"),
+      date_string_full = trimws(format(.data$date, format = "%e %B %Y")),
+      calendar_year = as.integer(format(.data$date, "%Y")),
+      calendar_quarter = paste0("Q", as.POSIXlt(.data$date)$mon%/%3L + 1),
+      calendar_month = as.integer(format(.data$date, format = "%m")),
+      calendar_month_name = format(.data$date, format = "%B"),
+      calendar_month_short = format(.data$date, format = "%b"),
+      day = as.integer(format(.data$date, format = "%d")),
+      day_name = format(.data$date, format = "%A"),
+      day_name_short = format(.data$date, format = "%a"),
+      week_day_numeric = as.integer(format(.data$date, format = "%u")),
+      week_starting = .data$date - .data$week_day_numeric + 1,
+      week_ending = .data$date + 7 - .data$week_day_numeric,
+      financial_year_uk = paste0(.data$calendar_year - (.data$calendar_month < 4), "/",
+                                 substr(.data$calendar_year - (.data$calendar_month < 4) + 1, 3, 4)),
+      financial_quarter_uk = paste0("Q", (.data$calendar_month - 1) %/% 3L + 4 * (.data$calendar_month < 4)),
+      financial_year_quarter_uk = paste(.data$financial_year_uk, .data$financial_quarter_uk)
+   )
+}

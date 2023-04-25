@@ -268,7 +268,7 @@ consumption_aware_episodes_num <- tbl(ramses_db, "drug_prescriptions") %>%
  
 consumption_aware_episodes_denom <- study_pop %>% 
   group_by(calendar_year, calendar_month) %>% 
-  summarise(bed_days =  sum(coalesce(ramses_bed_days, 0.0))) 
+  summarise(bed_days = sum(coalesce(ramses_bed_days, 0.0))) 
 
 consumption_aware_episodes <- left_join(
   consumption_aware_episodes_denom,

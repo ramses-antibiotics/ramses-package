@@ -335,6 +335,7 @@ load_inpatient_microbiology <- function(conn,
   }
 }
 
+
 # Medication records ------------------------------------------------------
 
 
@@ -1005,6 +1006,55 @@ create_mock_database <- function(file,
   
   return(mock_db)
 }
+
+
+.create_date_dimension <- function(conn) {
+  # Build table to use as dimension for dates if it does not already exist
+  
+  if (!DBI::dbExistsTable(conn, "reference_dimension_date")) {
+    if (is(conn, "duckdb_connection")) {
+      # STORED generated columns are not yet implemented in DuckDB
+      statement <- gsub(
+        pattern = "STORED", 
+        replacement = "VIRTUAL", 
+        x = .read_sql_syntax("date_dimension_PostgreSQL.sql")
+      )
+    } else if (is(conn, "PqConnection")) {
+      statement <- .read_sql_syntax("date_dimension_PostgreSQL.sql")
+    } else {
+      .throw_error_method_not_implemented(".create_date_dimension()", class_name = class(conn))
+    }
+    
+    load_errors <- try({
+      DBI::dbExecute(conn, statement)
+    })
+    
+    if ( is(load_errors, "try-error") ) {
+      warning(load_errors)
+      warning("The date_dimension table did not load successfully")
+    }
+  }
+}
+
+.update_date_dimension <- function(conn, date_min, date_max) {
+  # Add dates to `reference_dimension_date` if they are not already loaded
+  
+  .create_date_dimension(conn)
+  
+  date_df <- .compute_date_dimensions(date_min, date_max) %>% 
+    dplyr::anti_join(
+      dplyr::tbl(conn, "reference_dimension_date"),
+      by = "date", 
+      copy = TRUE
+    )
+  
+  DBI::dbAppendTable(
+    conn = conn, 
+    name = "reference_dimension_date", 
+    value = date_df
+  )
+}
+
 
 .build_tally_table <- function(conn) {
   # Build table to use in joins to create therapy tables

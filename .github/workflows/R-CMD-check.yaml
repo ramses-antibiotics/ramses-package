@@ -47,6 +47,7 @@ jobs:
       RSPM: ${{ matrix.config.rspm }}
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       CODECOVETOKEN: ${{ secrets.CODECOVETOKEN }}
+      CI_Postgres: true
 
     steps:
       - uses: actions/checkout@v2

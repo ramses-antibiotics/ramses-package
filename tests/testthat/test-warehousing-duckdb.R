@@ -55,6 +55,50 @@ test_that(".build_tally_table on DuckDB", {
   )
 })
 
+test_that(".update_date_dimension on DuckDB", {
+  db_conn <- DBI::dbConnect(duckdb::duckdb(), dbdir = "test.duckdb")
+  on.exit({
+    DBI::dbDisconnect(db_conn, shutdown = TRUE)
+    file.remove("test.duckdb") 
+  })
+  
+  expected_df <- dplyr::tibble(
+    date = structure(16242, class = "Date"), 
+    date_string_iso = "2014-06-21", 
+    date_string_dd_mm_yyyy = "21/06/2014", 
+    date_string_dd_mm_yy = "21/06/14", 
+    date_string_full = "21 June 2014", 
+    calendar_year = 2014, 
+    calendar_quarter = "Q2",
+    calendar_month = 6, 
+    calendar_month_name = "June", 
+    calendar_month_short = "Jun", 
+    day = 21, 
+    day_name = "Saturday",
+    day_name_short = "Sat", 
+    week_day_numeric = 6, 
+    week_starting = "2014-06-16", 
+    week_ending = "2014-06-22",
+    financial_year_uk = "2014/15",
+    financial_quarter_uk = "Q1",
+    financial_year_quarter_uk = "2014/15 Q1"
+  )
+  
+  .update_date_dimension(db_conn, as.Date("2014-06-21"), as.Date("2014-06-21"))
+  expect_true(DBI::dbExistsTable(db_conn, "reference_dimension_date"))
+  expect_equal(
+    dplyr::collect(dplyr::tbl(db_conn, "reference_dimension_date")),
+    expected_df
+  )
+  
+  # Test robustness against violating primary key constraint
+  .update_date_dimension(db_conn, as.Date("2014-06-21"), as.Date("2014-06-21"))
+  expect_equal(
+    dplyr::collect(dplyr::tbl(db_conn, "reference_dimension_date")),
+    expected_df
+  )
+})
+
 test_that(".run_transitive_closure on DuckDB", {
   
   test_edges <- dplyr::tibble(

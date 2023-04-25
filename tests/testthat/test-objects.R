@@ -90,8 +90,8 @@ test_that("Patient..interface_methods DuckDB", {
 
 test_that("Patient..interface_methods Postgres", {
   
-  if (!identical(Sys.getenv("CI"), "true")) {
-    skip("Test only on Travis")
+  if (!identical(Sys.getenv("CI_Postgres"), "true")) {
+    skip("CI_Postgres is set to false")
   }
   
   conPostgreSQL <- DBI::dbConnect(RPostgres::Postgres(),
@@ -316,8 +316,8 @@ test_that("MedicationRequest..interface_methods DuckDB", {
 
 test_that("MedicationRequest..interface_methods Postgres", {
   
-  if (!identical(Sys.getenv("CI"), "true")) {
-    skip("Test only on Travis")
+  if (!identical(Sys.getenv("CI_Postgres"), "true")) {
+    skip("CI_Postgres is set to false")
   }
   
   conPostgreSQL <- DBI::dbConnect(RPostgres::Postgres(),
@@ -616,8 +616,8 @@ test_that("TherapyEpisode..interface_methods DuckDB", {
 
 test_that("TherapyEpisode..interface_methods Postgres", {
   
-  if (!identical(Sys.getenv("CI"), "true")) {
-    skip("Test only on Travis")
+  if (!identical(Sys.getenv("CI_Postgres"), "true")) {
+    skip("CI_Postgres is set to false")
   }
   
   conPostgreSQL <- DBI::dbConnect(RPostgres::Postgres(),
@@ -1008,8 +1008,8 @@ test_that("Encounter..interface_methods DuckDB", {
 
 test_that("Encounter..interface_methods Postgres", {
   
-  if (!identical(Sys.getenv("CI"), "true")) {
-    skip("Test only on Travis")
+  if (!identical(Sys.getenv("CI_Postgres"), "true")) {
+    skip("CI_Postgres is set to false")
   }
   
   conPostgreSQL <- DBI::dbConnect(RPostgres::Postgres(),

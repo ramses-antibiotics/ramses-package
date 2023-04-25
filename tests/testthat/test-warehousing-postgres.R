@@ -2,8 +2,8 @@
 # PostgreSQL --------------------------------------------------------------
 
 test_that(".create_sql_primary_key on Postgres", {
-  if (!identical(Sys.getenv("CI"), "true")) {
-    skip("Test only on GitHub Actions")
+  if (!identical(Sys.getenv("CI_Postgres"), "true")) {
+    skip("CI_Postgres is set to false")
   }
   
   pq_conn <- DBI::dbConnect(RPostgres::Postgres(),
@@ -29,8 +29,8 @@ test_that(".create_sql_primary_key on Postgres", {
 })
 
 test_that(".create_sql_index on Postgres", {
-  if (!identical(Sys.getenv("CI"), "true")) {
-    skip("Test only on GitHub Actions")
+  if (!identical(Sys.getenv("CI_Postgres"), "true")) {
+    skip("CI_Postgres is set to false")
   }
   
   pq_conn <- DBI::dbConnect(RPostgres::Postgres(),
@@ -60,9 +60,65 @@ test_that(".create_sql_index on Postgres", {
   )
 })
 
+
+test_that(".create_date_dimension on Postgres", {
+  if (!identical(Sys.getenv("CI_Postgres"), "true")) {
+    skip("CI_Postgres is set to false")
+  }
+  
+  db_conn <- DBI::dbConnect(RPostgres::Postgres(),
+                            user = "user", 
+                            password = "password",
+                            host = "localhost", 
+                            dbname="RamsesDB",
+                            timezone = "Europe/London")
+  on.exit({
+    .remove_db_tables(conn = db_conn,
+                      DBI::dbListTables(db_conn))
+    DBI::dbDisconnect(db_conn)
+  })
+  
+  expected_df <- dplyr::tibble(
+    date = structure(16242, class = "Date"), 
+    date_string_iso = "2014-06-21", 
+    date_string_dd_mm_yyyy = "21/06/2014", 
+    date_string_dd_mm_yy = "21/06/14", 
+    date_string_full = "21 June 2014", 
+    calendar_year = 2014, 
+    calendar_quarter = "Q2",
+    calendar_month = 6, 
+    calendar_month_name = "June", 
+    calendar_month_short = "Jun", 
+    day = 21, 
+    day_name = "Saturday",
+    day_name_short = "Sat", 
+    week_day_numeric = 6, 
+    week_starting = "2014-06-16", 
+    week_ending = "2014-06-22",
+    financial_year_uk = "2014/15",
+    financial_quarter_uk = "Q1",
+    financial_year_quarter_uk = "2014/15 Q1"
+  )
+  
+  .update_date_dimension(db_conn, as.Date("2014-06-21"), as.Date("2014-06-21"))
+  expect_true(DBI::dbExistsTable(db_conn, "reference_dimension_date"))
+  expect_equal(
+    dplyr::collect(dplyr::tbl(db_conn, "reference_dimension_date")),
+    expected_df
+  )
+  
+  # Test robustness against violating primary key constraint
+  .update_date_dimension(db_conn, as.Date("2014-06-21"), as.Date("2014-06-21"))
+  expect_equal(
+    dplyr::collect(dplyr::tbl(db_conn, "reference_dimension_date")),
+    expected_df
+  )
+})
+
+
 test_that(".build_tally_table on Postgres", {
-  if (!identical(Sys.getenv("CI"), "true")) {
-    skip("Test only on GitHub Actions")
+  if (!identical(Sys.getenv("CI_Postgres"), "true")) {
+    skip("CI_Postgres is set to false")
   }
   
   pq_conn <- DBI::dbConnect(RPostgres::Postgres(),
@@ -85,8 +141,8 @@ test_that(".build_tally_table on Postgres", {
 
 test_that(".run_transitive_closure on Postgres", {
   
-  if (!identical(Sys.getenv("CI"), "true")) {
-    skip("Test only on GitHub Actions")
+  if (!identical(Sys.getenv("CI_Postgres"), "true")) {
+    skip("CI_Postgres is set to false")
   }
   
   test_edges <- dplyr::tibble(
@@ -128,8 +184,8 @@ test_that(".run_transitive_closure on Postgres", {
 
 test_that("drug_prescriptions_edges on Postgres", {
   
-  if (!identical(Sys.getenv("CI"), "true")) {
-    skip("Test only on GitHub Actions")
+  if (!identical(Sys.getenv("CI_Postgres"), "true")) {
+    skip("CI_Postgres is set to false")
   }
   
   pq_conn <- DBI::dbConnect(RPostgres::Postgres(),
@@ -169,8 +225,8 @@ test_that("drug_prescriptions_edges on Postgres", {
 
 test_that("Ramses on PosgreSQL (system test)", {
   
-  if (!identical(Sys.getenv("CI"), "true")) {
-    skip("Test only on GitHub Actions")
+  if (!identical(Sys.getenv("CI_Postgres"), "true")) {
+    skip("CI_Postgres is set to false")
   }
 
   pq_conn <- DBI::dbConnect(RPostgres::Postgres(),
@@ -883,8 +939,8 @@ test_that("Ramses on PosgreSQL (system test)", {
 
 test_that("Encounter class on Postgres", {
   
-  if (!identical(Sys.getenv("CI"), "true")) {
-    skip("Test only on GitHub Actions")
+  if (!identical(Sys.getenv("CI_Postgres"), "true")) {
+    skip("CI_Postgres is set to false")
   }
   
   pq_conn <- DBI::dbConnect(RPostgres::Postgres(),
