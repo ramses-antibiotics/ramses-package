@@ -33,10 +33,10 @@ setMethod(
            load_timevis_dependencies = FALSE) {
     
     if( !(is.null(date1) | is(date1, "Date") | is(date1, "POSIXct")) ){
-      "`date1` must be a Date or POSIXct. Please convert using `as.Date()` or `as.POSIXct()`."
+      stop("`date1` must be a Date or POSIXct. Please convert using `as.Date()` or `as.POSIXct()`.")
     }
     if( !(is.null(date1) | is(date2, "Date") | is(date2, "POSIXct")) ){
-      "`date2` must be a Date or POSIXct. Please convert using `as.Date()` or `as.POSIXct()`."
+      stop("`date2` must be a Date or POSIXct. Please convert using `as.Date()` or `as.POSIXct()`.")
     }
     
     input_patient <- x
