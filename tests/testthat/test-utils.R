@@ -14,6 +14,15 @@ test_that(".compute_date_dimensions", {
     .compute_date_dimensions(date_min = as.Date("1957-03-25"), date_max = 2)
   )
   expect_error(
+    .compute_date_dimensions(date_min = as.Date(NA), date_max = as.Date("1957-03-25"))
+  )
+  expect_error(
+    .compute_date_dimensions(date_min = "1957-03-25", date_max = as.Date("1957-03-25"))
+  )
+  expect_error(
+    .compute_date_dimensions(date_min = 2, date_max = as.Date("1957-03-25"))
+  )
+  expect_error(
     .compute_date_dimensions(date_min = as.Date("1957-03-25"), date_max = c(as.Date("1957-03-25"), as.Date("1957-03-26")))
   )
   expect_error(

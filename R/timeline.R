@@ -35,7 +35,7 @@ setMethod(
     if( !(is.null(date1) | is(date1, "Date") | is(date1, "POSIXct")) ){
       stop("`date1` must be a Date or POSIXct. Please convert using `as.Date()` or `as.POSIXct()`.")
     }
-    if( !(is.null(date1) | is(date2, "Date") | is(date2, "POSIXct")) ){
+    if( !(is.null(date2) | is(date2, "Date") | is(date2, "POSIXct")) ){
       stop("`date2` must be a Date or POSIXct. Please convert using `as.Date()` or `as.POSIXct()`.")
     }
     
