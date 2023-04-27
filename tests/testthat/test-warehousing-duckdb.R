@@ -131,6 +131,59 @@ test_that(".run_transitive_closure on DuckDB", {
                test_solution) 
 })
 
+test_that(".tbl_add_demographics on DuckDB", {
+  
+  db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
+  on.exit({
+    DBI::dbDisconnect(db_conn, shutdown = TRUE)
+  })
+  DBI::dbWriteTable(conn = db_conn,
+                    name = "bad_table", 
+                    value = data.frame(nokey = 1L))
+  DBI::dbWriteTable(conn = db_conn,
+                    name = "good_table", 
+                    value = data.frame(patient_id = 1L,
+                                       variable = "a"))
+  
+  expect_error(.tbl_add_demographics(data.frame(not_remote_tbl = 1)))
+  expect_error(.tbl_add_demographics(dplyr::tbl(db_conn, "bad_table")))
+  expect_equal(dplyr::collect(.tbl_add_demographics(dplyr::tbl(db_conn, "good_table"))),
+               dplyr::collect(dplyr::tbl(db_conn, "good_table")))
+  
+  # Now add demographics to use the full function
+  DBI::dbWriteTable(conn = db_conn,
+                    name = "patients", 
+                    value = data.frame(patient_id = 1L,
+                                       sex = 1L))
+  expect_equal(dplyr::collect(.tbl_add_demographics(dplyr::tbl(db_conn, "good_table"))),
+               dplyr::tibble(patient_id = 1L,
+                             variable = "a",
+                             sex = 1L))
+  DBI::dbWriteTable(conn = db_conn,
+                    name = "patients", 
+                    value = data.frame(patient_id = 1L,
+                                       date_of_birth = as.Date("1957-03-25")), 
+                    overwrite = TRUE)
+  expect_equal(dplyr::collect(.tbl_add_demographics(dplyr::tbl(db_conn, "good_table"))),
+               dplyr::tibble(patient_id = 1L,
+                             variable = "a",
+                             date_of_birth = as.Date("1957-03-25")))
+  DBI::dbWriteTable(conn = db_conn,
+                    name = "patients", 
+                    value = data.frame(patient_id = 1L,
+                                       sex = 1L,
+                                       date_of_birth = as.Date("1957-03-25"),
+                                       ethnic_category_UK = "A"), 
+                    overwrite = TRUE)
+  expect_equal(dplyr::collect(.tbl_add_demographics(dplyr::tbl(db_conn, "good_table"))),
+               dplyr::tibble(patient_id = 1L,
+                             variable = "a",
+                             date_of_birth = as.Date("1957-03-25"),
+                             sex = 1L,
+                             ethnic_category_UK = "A"))
+  
+})
+
 test_that("drug_prescriptions_edges on DuckDB", {
   
   db_conn <- suppressWarnings(connect_local_database("test.duckdb"))

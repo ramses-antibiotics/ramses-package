@@ -1420,6 +1420,8 @@ bridge_episode_prescription_overlap <- function(conn,
   if( is(conn, "PqConnection") || is(conn, "duckdb_connection") ) {
     tblz_bridge_episode_prescriptions_overlap <- dplyr::mutate(
       tblz_bridge_episode_prescriptions_overlap,
+      start_dt = dplyr::sql("LEAST(prescription_end::TIMESTAMP, episode_end::TIMESTAMP)"),
+      end_dt = dplyr::sql("GREATEST(prescription_start::TIMESTAMP, episode_start::TIMESTAMP)"),
       DOT = dplyr::sql(
         "EXTRACT(EPOCH FROM (
            LEAST(prescription_end::TIMESTAMP, episode_end::TIMESTAMP) -
@@ -1452,6 +1454,8 @@ bridge_episode_prescription_overlap <- function(conn,
       "episode_number",
       "prescription_id",
       "antiinfective_type",
+      "start_dt",
+      "end_dt",
       "DOT",
       "DDD_prescribed"
     )
@@ -1463,6 +1467,8 @@ bridge_episode_prescription_overlap <- function(conn,
       "episode_number",
       "prescription_id",
       "antiinfective_type",
+      "start_dt",
+      "end_dt",
       "DOT"
     )
   }
@@ -1666,69 +1672,160 @@ bridge_encounter_therapy_overlap <- function(conn,
 }
 
 
+#' Add demographics to a remote table with a "patient_id" key
+#'
+#' @param x a remote `tbl` object
+#'
+#' @return a remote `tbl` object enriched with any variables available from the
+#' `patients` table out of: `date_of_birth`, `sex`, `ethnic_category_UK`, if it 
+#' exists. Otherwise, return `x` untransformed.
+#' @noRd
+.tbl_add_demographics <- function(x) {
+  # Verify if sex, dob and ethnicity are available. If they are, add them to the table
+  
+  if (!("patient_id" %in% colnames(x))) {
+    stop("`x` does not contain a `patient_id` field.")
+  }
+  
+  if (DBI::dbExistsTable(x$src$con, "patients")) {
+    x <- dplyr::compute(x)
+    pt_demog <- dplyr::tbl(x$src$con, "patients") 
+    
+    demog_selection <- character(0)
+    if ("date_of_birth" %in% colnames(pt_demog)) demog_selection <- c(demog_selection, "date_of_birth")
+    if ("sex" %in% colnames(pt_demog)) demog_selection <- c(demog_selection, "sex")
+    if ("ethnic_category_UK" %in% colnames(pt_demog)) demog_selection <- c(demog_selection, "ethnic_category_UK")
+    
+    pt_demog <- dplyr::select(pt_demog, "patient_id", dplyr::all_of(demog_selection))
+    
+    x <- dplyr::left_join(
+      x,
+      pt_demog,
+      by = "patient_id"
+    )
+  }
+
+  x
+}
 
 
 create_metric_tbl_1 <- function(conn) {
   
+  message("DOTs include active, stopped and completed inpatient prescriptions only")
+  # Set grouping set IDs
   olap_dimensions <- c(
-    "drug_code", 
-    "antiinfective_type", 
-    "prescription_context",
-    "prescription_status"
+    "drug_code"
   )
   
   rx_expanded <- dplyr::tbl(conn, "drug_prescriptions") %>% 
     dplyr::filter(
       .data$prescription_status %in% c("active",
                                        "stopped",
-                                       "completed")
+                                       "completed") &
+      .data$prescription_context == "inpatient"
     ) %>% 
     dplyr::select(!!c("prescription_id", 
                       "prescription_start", 
                       "prescription_end",
-                      olap_dimensions))
+                      olap_dimensions)) 
+
+  rx_expanded <- tbl(conn, "bridge_episode_prescription_overlap") %>% 
+    dplyr::inner_join(rx_expanded, by = c("prescription_id")) %>% 
+    dplyr::left_join(
+      dplyr::select(
+        dplyr::tbl(conn, "inpatient_episodes"),
+        "patient_id", "encounter_id", "episode_number", "main_specialty_code", "admission_method"
+      ),
+      by = c("patient_id", "encounter_id", "episode_number")
+    ) %>% 
+    .tbl_add_demographics()
+  
+  age_enabled <- "date_of_birth" %in% colnames(rx_expanded)
+  sex_enabled <- "sex" %in% colnames(rx_expanded)
+  ethnic_enabled <- "ethnic_category_UK" %in% colnames(rx_expanded)
+  
+  olap_dimensions <- c(olap_dimensions, "antiinfective_type", "admission_method", "main_specialty_code")
+  if (age_enabled) olap_dimensions <- c(olap_dimensions, "age")
+  if (sex_enabled) olap_dimensions <- c(olap_dimensions, "sex")
+  if (ethnic_enabled) olap_dimensions <- c(olap_dimensions, "ethnic_category_UK")
   
   if (is(conn, "duckdb_connection")) {
     rx_expanded <- rx_expanded %>% 
       dplyr::mutate(
-        date = dplyr::sql("unlist(generate_series(prescription_start, prescription_end, interval '1 day'))::date")
+        date = dplyr::sql("unlist(generate_series(start_dt, end_dt, interval '1 day'))::date")
       )
   } else if (is(conn, "PqConnection")) {
     rx_expanded <- rx_expanded %>% 
       dplyr::mutate(
-        date = dplyr::sql("generate_series(prescription_start, prescription_end, interval '1 day')::date")
+        date = dplyr::sql("generate_series(start_dt, end_dt, interval '1 day')::date")
       )
   }
-  
+  if (age_enabled) {
+    rx_expanded <- rx_expanded %>% 
+      dplyr::mutate(
+        age = dplyr::sql("date_part('year', age(date, date_of_birth))")
+      ) %>% 
+      dplyr::select(-"date_of_birth")
+  }
+
   rx_expanded <- rx_expanded %>% 
     dplyr::mutate(
-      dot = dplyr::sql(
-        "CASE WHEN prescription_start::date = date THEN 3600.0*24.0 - EXTRACT(epoch from CAST(prescription_start::TIMESTAMP as TIME))
-      WHEN prescription_end::date = date THEN EXTRACT(epoch FROM CAST(prescription_end::TIMESTAMP as TIME))
-      ELSE 3600*24 END
+      dot_prescribed = dplyr::sql(
+        "CASE WHEN start_dt::date = date THEN 3600.0*24.0 - EXTRACT(epoch from CAST(start_dt::TIMESTAMP as TIME))
+      WHEN end_dt::date = date THEN EXTRACT(epoch FROM CAST(end_dt::TIMESTAMP as TIME))
+      ELSE 3600*24 END / 3600.0 / 24.0
       ")
     ) %>% 
-    dplyr::distinct(!!!syms(c("prescription_id", "date", "dot", olap_dimensions))) %>% 
+    dplyr::distinct(!!!dplyr::syms(c("prescription_id", "date", "dot_prescribed", olap_dimensions))) %>% 
     dplyr::compute()
   
   
-  olap_dimensions <- c(olap_dimensions, "date")
-  
-  if (DBI::dbExistsTable(conn, "ramses_metrics")) {
-    DBI::dbRemoveTable(conn, "ramses_metrics")
+  ip_expanded <- tbl(conn, "inpatient_episodes") %>% 
+    dplyr::select("episode_start", "episode_end", "main_specialty_code", "admission_method")
+    
+  if (is(conn, "duckdb_connection")) {
+    ip_expanded <- ip_expanded %>% 
+      dplyr::mutate(
+        date = dplyr::sql("unlist(generate_series(episode_start, episode_end, interval '1 day'))::date")
+      )
+  } else if (is(conn, "PqConnection")) {
+    ip_expanded <- ip_expanded %>% 
+      dplyr::mutate(
+        date = dplyr::sql("generate_series(episode_start, episode_end, interval '1 day')::date")
+      )
   }
   
-  DBI::dbExecute(
+  ip_expanded <- ip_expanded%>% 
+    dplyr::mutate(
+      bed_days = dplyr::sql(
+        "CASE WHEN episode_start::date = date THEN 3600.0*24.0 - EXTRACT(epoch from CAST(episode_start::TIMESTAMP as TIME))
+      WHEN episode_end::date = date THEN EXTRACT(epoch FROM CAST(episode_end::TIMESTAMP as TIME))
+      ELSE 3600*24 END / 3600.0 / 24.0
+      ")
+    ) %>% 
+    dplyr::select("date", "bed_days", "main_specialty_code", "admission_method") %>% 
+    dplyr::compute()
+  
+  olap_dimensions <- c(olap_dimensions, "date")
+
+  final_dt <- dplyr::full_join(
+    ip_expanded,
+    rx_expanded,
+    by = c("date", "main_specialty_code", "admission_method")
+  ) %>% 
+    dplyr::compute()
+  
+  x <- DBI::dbGetQuery(
     conn = conn,
     statement = paste(
-      "SELECT 'dot_totals' AS metric,",
+      "SELECT 'inpatient_dot_totals' AS metric,",
       paste(olap_dimensions, collapse = ", "), ", ",
-      "sum(DOT) as numerator",
-      "INTO ramses_metrics",
-      "FROM", dbplyr::remote_name(rx_expanded),
+      "sum(dot_prescribed) as dot_prescribed,",
+      "sum(bed_days) as bed_days",
+      "FROM", dbplyr::remote_name(final_dt),
       "GROUP BY CUBE (", paste(c(olap_dimensions), collapse = ", "), ");"
     )
   )
-
-  dplyr::tbl(conn, "ramses_metrics")
+  
+  x
 }
