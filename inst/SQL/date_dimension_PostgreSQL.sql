@@ -1,5 +1,5 @@
 -- Tied to the Ramses utily function .compute_date_dimensions()
-CREATE TABLE reference_dimension_date (
+CREATE TABLE dimension_date (
     date DATE NOT NULL,
     date_string_iso VARCHAR,
     date_string_dd_mm_yyyy VARCHAR,

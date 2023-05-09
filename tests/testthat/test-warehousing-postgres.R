@@ -61,7 +61,7 @@ test_that(".create_sql_index on Postgres", {
 })
 
 
-test_that(".create_date_dimension on Postgres", {
+test_that(".create_dimension_date on Postgres", {
   if (!identical(Sys.getenv("CI_Postgres"), "true")) {
     skip("CI_Postgres is set to false")
   }
@@ -100,18 +100,25 @@ test_that(".create_date_dimension on Postgres", {
     financial_year_quarter_uk = "2014/15 Q1"
   )
   
-  .update_date_dimension(db_conn, as.Date("2014-06-21"), as.Date("2014-06-21"))
-  expect_true(DBI::dbExistsTable(db_conn, "reference_dimension_date"))
+  .update_dimension_date(db_conn, as.Date("2014-06-21"), as.Date("2014-06-21"))
+  expect_true(DBI::dbExistsTable(db_conn, "dimension_date"))
   expect_equal(
-    dplyr::collect(dplyr::tbl(db_conn, "reference_dimension_date")),
+    dplyr::collect(dplyr::tbl(db_conn, "dimension_date")),
     expected_df
   )
   
   # Test robustness against violating primary key constraint
-  .update_date_dimension(db_conn, as.Date("2014-06-21"), as.Date("2014-06-21"))
+  .update_dimension_date(db_conn, as.Date("2014-06-21"), as.Date("2014-06-21"))
   expect_equal(
-    dplyr::collect(dplyr::tbl(db_conn, "reference_dimension_date")),
+    dplyr::collect(dplyr::tbl(db_conn, "dimension_date")),
     expected_df
+  )
+  
+  .update_dimension_date(db_conn, as.Date("2014-06-22"), as.Date("2014-06-25"))
+  
+  expect_equal(
+    dplyr::collect(dplyr::tbl(db_conn, "dimension_date"))$date,
+    seq(as.Date("2014-06-21"),  as.Date("2014-06-25"), 1)
   )
 })
 
@@ -322,7 +329,7 @@ test_that("Ramses on PosgreSQL (system test)", {
     dplyr::collect()
   expect_equal(
     sort(test_tables$table_name),
-    c("drug_administrations", "drug_prescriptions", 
+    c("dimension_date", "drug_administrations", "drug_prescriptions", 
       "drug_prescriptions_edges", "drug_therapy_episodes")
   )
   
@@ -363,6 +370,11 @@ test_that("Ramses on PosgreSQL (system test)", {
       .ramses_mock_dataset$micro$susceptibilities,
       overwrite = TRUE
     )
+  )
+  
+  expect_equal(
+    sort(dplyr::collect(dplyr::tbl(pq_conn, "dimension_date"))[["date"]]),
+    seq(as.Date("2014-06-19"), as.Date("2018-01-02"), 1)
   )
   
   test_therapy_rank <- tbl(pq_conn, "drug_prescriptions") %>% 
@@ -439,7 +451,7 @@ test_that("Ramses on PosgreSQL (system test)", {
     dplyr::filter(patient_id == "99999999999" & 
                     prescription_id == "89094c5dffaad0e56073adaddf286e73") %>% 
     dplyr::collect()
-  expect_equal(round(sum(test_bridge_overlap$DOT), 1), 2.0)
+  expect_equal(round(sum(test_bridge_overlap$DOT_prescribed), 1), 2.0)
   expect_equal(round(sum(test_bridge_overlap$DDD_prescribed), 1), 1.3)
   
   # bridge_episode_prescription_initiation
@@ -450,7 +462,7 @@ test_that("Ramses on PosgreSQL (system test)", {
     dplyr::filter(patient_id == "99999999999" & 
                     prescription_id == "89094c5dffaad0e56073adaddf286e73") %>% 
     dplyr::collect()
-  expect_equal(round(test_bridge_init$DOT, 1), 2.0)
+  expect_equal(round(test_bridge_init$DOT_prescribed, 1), 2.0)
   expect_equal(round(test_bridge_init$DDD_prescribed, 1), 1.3)
   
   # bridge_encounter_therapy_overlap

@@ -55,4 +55,8 @@ test_that(".compute_date_dimensions", {
     .compute_date_dimensions(date_min = as.Date("1957-03-25"), date_max = as.Date("1957-03-25")),
     expected_df
   )
+  expect_equal(
+    .compute_date_dimensions(date_min = as.POSIXct("1957-03-25 20:00:00"), date_max = as.POSIXct("1957-03-25 23:00:00")),
+    expected_df
+  )
 })

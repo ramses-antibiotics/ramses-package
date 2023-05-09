@@ -18,8 +18,11 @@
 .compute_date_dimensions <- function(date_min, date_max) {
   # Generate the sequence between two dates
   # and compute derived variables
-  stopifnot(length(date_min) == 1 & is(date_min, "Date") & !is.na(date_min))
-  stopifnot(length(date_max) == 1 & is(date_max, "Date") & !is.na(date_max))
+  stopifnot(length(date_min) == 1 & !is.na(date_min) & ( is(date_min, "Date") | is(date_min, "POSIXt") ))
+  stopifnot(length(date_max) == 1 & !is.na(date_max) & ( is(date_max, "Date") | is(date_max, "POSIXt") ))
+  if(is(date_min, "POSIXt")) date_min <- as.Date(date_min)
+  if(is(date_max, "POSIXt")) date_max <- as.Date(date_max)
+  
   
   data.frame(date = seq(date_min, date_max, 1)) %>% 
     dplyr::mutate(

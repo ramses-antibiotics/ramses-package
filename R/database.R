@@ -161,6 +161,11 @@ load_inpatient_episodes <- function(conn,
       "main_specialty_code"
     ))
   .compute_bed_days(conn = conn)
+  .update_dimension_date(
+    conn = conn, 
+    date_min = min(episodes_data$episode_start, na.rm = TRUE), 
+    date_max = max(episodes_data$episode_end, na.rm = TRUE)
+  )
   
   if(!is.null(wards_data)) {
     wards_data <- dplyr::arrange(wards_data,
@@ -251,6 +256,12 @@ load_inpatient_investigations <- function(conn, investigations_data, overwrite =
       )
     )
     
+    .update_dimension_date(
+      conn = conn, 
+      date_min = min(investigations_data$observation_datetime, na.rm = TRUE), 
+      date_max = max(investigations_data$observation_datetime, na.rm = TRUE)
+    )
+    
   })
 
   if ( is(load_errors, "try-error") ) {
@@ -328,6 +339,19 @@ load_inpatient_microbiology <- function(conn,
       temporary = FALSE,
       indexes = list("patient_id", "isolate_id", "specimen_id", 
                      "organism_code", "agent_code"))
+    
+    .update_dimension_date(
+      conn = conn, 
+      date_min = pmin(
+        min(specimens$specimen_datetime, na.rm = TRUE),
+        min(isolates$isolation_datetime, na.rm = TRUE)
+      ), 
+      date_max = pmax(
+        max(specimens$specimen_datetime, na.rm = TRUE),
+        max(isolates$isolation_datetime, na.rm = TRUE)
+      )
+    )
+    
   })
   
   if ( is(load_errors, "try-error") ) {
@@ -486,6 +510,21 @@ load_medications <- function(
     df = dplyr::tibble(prescriptions),
     temporary = FALSE,
     overwrite = overwrite
+  )
+  
+  .update_dimension_date(
+    conn = conn, 
+    date_min =  pmin(
+      min(prescriptions$authoring_date, na.rm = TRUE), 
+      min(prescriptions$prescription_end, na.rm = TRUE),
+      min(prescriptions$prescription_start, na.rm = TRUE),
+      na.rm = TRUE
+    ),
+    date_max = pmax(
+      max(prescriptions$prescription_end, na.rm = TRUE),
+      max(prescriptions$prescription_start, na.rm = TRUE),
+      na.rm = TRUE
+    )
   )
   
   if (create_therapy_id | create_combination_id) {
@@ -848,6 +887,12 @@ create_therapy_episodes <- function(
         "administration_date"
       )
     )
+    
+    .update_dimension_date(
+      conn = conn, 
+      date_min = min(administrations$administration_date, na.rm = TRUE),
+      date_max = max(administrations$administration_date, na.rm = TRUE)
+    )
   })
   
   if(is(load_output, "try-error")) {
@@ -1008,10 +1053,10 @@ create_mock_database <- function(file,
 }
 
 
-.create_date_dimension <- function(conn) {
+.create_dimension_date <- function(conn) {
   # Build table to use as dimension for dates if it does not already exist
   
-  if (!DBI::dbExistsTable(conn, "reference_dimension_date")) {
+  if (!DBI::dbExistsTable(conn, "dimension_date")) {
     if (is(conn, "duckdb_connection")) {
       # STORED generated columns are not yet implemented in DuckDB
       statement <- gsub(
@@ -1022,7 +1067,7 @@ create_mock_database <- function(file,
     } else if (is(conn, "PqConnection")) {
       statement <- .read_sql_syntax("date_dimension_PostgreSQL.sql")
     } else {
-      .throw_error_method_not_implemented(".create_date_dimension()", class_name = class(conn))
+      .throw_error_method_not_implemented(".create_dimension_date()", class_name = class(conn))
     }
     
     load_errors <- try({
@@ -1031,26 +1076,26 @@ create_mock_database <- function(file,
     
     if ( is(load_errors, "try-error") ) {
       warning(load_errors)
-      warning("The date_dimension table did not load successfully")
+      warning("The `dimension_date` table did not load successfully")
     }
   }
 }
 
-.update_date_dimension <- function(conn, date_min, date_max) {
+.update_dimension_date <- function(conn, date_min, date_max) {
   # Add dates to `reference_dimension_date` if they are not already loaded
   
-  .create_date_dimension(conn)
+  .create_dimension_date(conn)
   
   date_df <- .compute_date_dimensions(date_min, date_max) %>% 
     dplyr::anti_join(
-      dplyr::tbl(conn, "reference_dimension_date"),
+      dplyr::tbl(conn, "dimension_date"),
       by = "date", 
       copy = TRUE
     )
   
   DBI::dbAppendTable(
     conn = conn, 
-    name = "reference_dimension_date", 
+    name = "dimension_date", 
     value = date_df
   )
 }
@@ -1420,58 +1465,36 @@ bridge_episode_prescription_overlap <- function(conn,
   if( is(conn, "PqConnection") || is(conn, "duckdb_connection") ) {
     tblz_bridge_episode_prescriptions_overlap <- dplyr::mutate(
       tblz_bridge_episode_prescriptions_overlap,
-      start_dt = dplyr::sql("LEAST(prescription_end::TIMESTAMP, episode_end::TIMESTAMP)"),
-      end_dt = dplyr::sql("GREATEST(prescription_start::TIMESTAMP, episode_start::TIMESTAMP)"),
-      DOT = dplyr::sql(
-        "EXTRACT(EPOCH FROM (
-           LEAST(prescription_end::TIMESTAMP, episode_end::TIMESTAMP) -
-           GREATEST(prescription_start::TIMESTAMP, episode_start::TIMESTAMP) ))
-         / ( 3600.0 * 24.0 )"
-      )
-    )
-    
-    if ( DDD_present ) {
-      tblz_bridge_episode_prescriptions_overlap <- dplyr::mutate(
-        tblz_bridge_episode_prescriptions_overlap,
-        DDD_prescribed = dplyr::sql(
-          "EXTRACT(EPOCH FROM (
-           LEAST(prescription_end::TIMESTAMP, episode_end::TIMESTAMP) -
-           GREATEST(prescription_start::TIMESTAMP, episode_start::TIMESTAMP) ))
-         / ( 3600.0 * 24.0 ) * \"DDD\""
+      t_start = dplyr::sql("GREATEST(prescription_start::TIMESTAMP, episode_start::TIMESTAMP)"), 
+      t_end = dplyr::sql("LEAST(prescription_end::TIMESTAMP, episode_end::TIMESTAMP)")) %>%
+      dplyr::mutate(
+      DOT_prescribed = dplyr::sql("EXTRACT(EPOCH FROM (t_end - t_start)) / ( 3600.0 * 24.0 )"),
+      DDD_prescribed = if ( DDD_present ) {
+        dplyr::sql(
+          "EXTRACT(EPOCH FROM (t_end - t_start)) / ( 3600.0 * 24.0 ) * \"DDD\""
         )
-      )
-    }
+      } else {
+        NULL
+      }
+    )
       
   } else {
     .throw_error_method_not_implemented("bridge_episode_prescription_overlap()",
                                         class(conn))
   }
-  if ( DDD_present ) {
-    tblz_bridge_episode_prescriptions_overlap <- dplyr::select(
-      tblz_bridge_episode_prescriptions_overlap,
-      "patient_id",
-      "encounter_id",
-      "episode_number",
-      "prescription_id",
-      "antiinfective_type",
-      "start_dt",
-      "end_dt",
-      "DOT",
-      "DDD_prescribed"
-    )
-  } else {
-    tblz_bridge_episode_prescriptions_overlap <- dplyr::select(
-      tblz_bridge_episode_prescriptions_overlap,
-      "patient_id",
-      "encounter_id",
-      "episode_number",
-      "prescription_id",
-      "antiinfective_type",
-      "start_dt",
-      "end_dt",
-      "DOT"
-    )
-  }
+  
+  tblz_bridge_episode_prescriptions_overlap <- dplyr::select(
+    tblz_bridge_episode_prescriptions_overlap,
+    "patient_id",
+    "encounter_id",
+    "episode_number",
+    "prescription_id",
+    "antiinfective_type",
+    "t_start",
+    "t_end",
+    "DOT_prescribed",
+    if(DDD_present) "DDD_prescribed" else NULL
+  )
   
   if (overwrite) {
     if(DBI::dbExistsTable(conn, "bridge_episode_prescription_overlap")) {
@@ -1525,7 +1548,7 @@ bridge_episode_prescription_initiation <- function(conn,
   if( is(conn, "PqConnection") || is(conn, "duckdb_connection") ) {
     tblz_bridge_episode_prescription_initiation <- dplyr::mutate(
       tblz_bridge_episode_prescription_initiation,
-      DOT = dplyr::sql(
+      DOT_prescribed = dplyr::sql(
         "EXTRACT(EPOCH FROM (
            prescription_end::TIMESTAMP -
            prescription_start::TIMESTAMP ))
@@ -1557,7 +1580,7 @@ bridge_episode_prescription_initiation <- function(conn,
       "episode_number",
       "prescription_id",
       "antiinfective_type",
-      "DOT",
+      "DOT_prescribed",
       "DDD_prescribed"
     )
   } else {
@@ -1568,7 +1591,7 @@ bridge_episode_prescription_initiation <- function(conn,
       "episode_number",
       "prescription_id",
       "antiinfective_type",
-      "DOT"
+      "DOT_prescribed"
     )
   }
   
