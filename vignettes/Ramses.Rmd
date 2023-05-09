@@ -264,7 +264,7 @@ consumption_aware_episodes_num <- tbl(ramses_db, "drug_prescriptions") %>%
   left_join(tbl(ramses_db, "bridge_episode_prescription_overlap")) %>% 
   inner_join(study_pop) %>% 
   group_by(calendar_year, calendar_month, aware_category) %>% 
-  summarise(DOT_prescribed = sum(coalesce(DOT, 0.0))) 
+  summarise(DOT_prescribed = sum(coalesce(DOT_prescribed, 0.0))) 
  
 consumption_aware_episodes_denom <- study_pop %>% 
   group_by(calendar_year, calendar_month) %>% 
