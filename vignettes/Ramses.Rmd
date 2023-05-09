@@ -143,7 +143,7 @@ study_pop <- tbl(ramses_db, "inpatient_episodes") %>%
 consumption_num <- study_pop %>% 
   left_join(tbl(ramses_db, "bridge_episode_prescription_overlap")) %>% 
   group_by(calendar_year, calendar_month, main_specialty_code) %>% 
-  summarise(DOT_prescribed = sum(coalesce(DOT, 0.0)),
+  summarise(DOT_prescribed = sum(coalesce(DOT_prescribed, 0.0)),
             DDD_prescribed = sum(coalesce(DDD_prescribed, 0.0))) 
 
 consumption_denom <- study_pop %>% 
@@ -179,7 +179,7 @@ Alternatively, consumption can be attributed to the episode when prescriptions a
 consumption_num_init <- study_pop %>% 
   left_join(tbl(ramses_db, "bridge_episode_prescription_initiation")) %>% 
   group_by(calendar_year, calendar_month, main_specialty_code) %>% 
-  summarise(DOT_prescribed = sum(coalesce(DOT, 0.0)),
+  summarise(DOT_prescribed = sum(coalesce(DOT_prescribed, 0.0)),
             DDD_prescribed = sum(coalesce(DDD_prescribed, 0.0))) 
 
 consumption_denom_init <- study_pop %>% 
