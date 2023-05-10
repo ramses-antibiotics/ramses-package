@@ -13,7 +13,7 @@ test_that(".sql_generate_date_series on Postgres", {
                             dbname="RamsesDB",
                             timezone = "Europe/London") 
   on.exit({
-    .remove_db_tables(conn = pq_conn,
+    .remove_db_tables(conn = db_conn,
                       DBI::dbListTables(db_conn))
     DBI::dbDisconnect(db_conn)
   })
