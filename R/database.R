@@ -1360,6 +1360,37 @@ create_mock_database <- function(file,
 }
 
 
+#' Interface for SQL generate_series() function
+#'
+#' @param x a `tbl_sql` object (remote table)
+#' @param start_dt character string of name of a timestamp or date field
+#' @param end_dt character string of name of a timestamp or date field
+#'
+#' @return
+#' @noRd
+.sql_generate_date_series <- function(x, start_dt, end_dt) {
+  stopifnot(is.character(start_dt) & length(start_dt) == 1)
+  stopifnot(is.character(end_dt) & length(end_dt) == 1)
+  
+  start_dt <- dbplyr::sql_quote(start_dt, '"')
+  end_dt <- dbplyr::sql_quote(end_dt, '"')
+  
+  if (is(x$src$con, "duckdb_connection")) {
+    dplyr::mutate(
+      x,
+      date = dplyr::sql(paste0("unlist(generate_series(", start_dt, "::DATE, ", end_dt, "::DATE, INTERVAL '1 day'))::DATE"))
+    )
+  } else if (is(x$src$con, "PqConnection")) {
+    dplyr::mutate(
+      x,
+      date = dplyr::sql(paste0("generate_series(", start_dt, "::DATE, ", end_dt, "::DATE, INTERVAL '1 day')::DATE"))
+    )
+  } else {
+    .throw_error_method_not_implemented(".sql_generate_date_series")
+  }
+}
+
+
 #' Create database bridge tables
 #'
 #' @description Create or re-create bridge tables to facilitate linking prescribing

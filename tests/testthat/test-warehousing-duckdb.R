@@ -19,6 +19,47 @@ test_that(".create_sql_primary_key on DuckDB", {
   )
 })
 
+test_that(".sql_generate_date_series on DuckDB", {
+  db_conn <- connect_local_database(file = "test.duckdb")
+  on.exit({
+    DBI::dbDisconnect(db_conn, shutdown = TRUE)
+    file.remove("test.duckdb") 
+  })
+  
+  DBI::dbWriteTable(conn = db_conn, 
+                    name = "test_table", 
+                    value = data.frame(start = as.Date("2014-06-16"), 
+                                       end = as.Date("2014-06-22"),
+                                       starttime = as.POSIXct("2014-06-16 16:00:00"),
+                                       endtime = as.POSIXct("2014-06-22 10:00:00")))
+  
+  output <- dplyr::tbl(db_conn, "test_table") %>% 
+    .sql_generate_date_series(start_dt = "start", end_dt = "end") %>% 
+    dplyr::collect()
+  
+  expect_equal(
+    dplyr::select(output, "start", "end", "date"),
+    dplyr::tibble(
+      start = as.Date("2014-06-16"), 
+      end = as.Date("2014-06-22"),
+      date = seq(as.Date("2014-06-16"), as.Date("2014-06-22"), 1)
+    )
+  )
+  
+  output <- dplyr::tbl(db_conn, "test_table") %>% 
+    .sql_generate_date_series(start_dt = "starttime", end_dt = "endtime") %>% 
+    dplyr::collect()
+  
+  expect_equal(
+    dplyr::select(output, "start", "end", "date"),
+    dplyr::tibble(
+      start = as.Date("2014-06-16"), 
+      end = as.Date("2014-06-22"),
+      date = seq(as.Date("2014-06-16"), as.Date("2014-06-22"), 1)
+    )
+  )
+})
+
 test_that(".create_sql_index on DuckDB", {
   db_conn <- connect_local_database(file = "test.duckdb")
   on.exit({

@@ -1,6 +1,58 @@
 
 # PostgreSQL --------------------------------------------------------------
 
+test_that(".sql_generate_date_series on Postgres", {
+  if (!identical(Sys.getenv("CI_Postgres"), "true")) {
+    skip("CI_Postgres is set to false")
+  }
+  
+  db_conn <- DBI::dbConnect(RPostgres::Postgres(),
+                            user = "user", 
+                            password = "password",
+                            host = "localhost", 
+                            dbname="RamsesDB",
+                            timezone = "Europe/London") 
+  on.exit({
+    .remove_db_tables(conn = pq_conn,
+                      DBI::dbListTables(db_conn))
+    DBI::dbDisconnect(db_conn)
+  })
+  
+  DBI::dbWriteTable(conn = db_conn, 
+                    name = "test_table", 
+                    value = data.frame(start = as.Date("2014-06-16"), 
+                                       end = as.Date("2014-06-22"),
+                                       starttime = as.POSIXct("2014-06-16 16:00:00"),
+                                       endtime = as.POSIXct("2014-06-22 10:00:00")))
+  
+  output <- dplyr::tbl(db_conn, "test_table") %>% 
+    .sql_generate_date_series(start_dt = "start", end_dt = "end") %>% 
+    dplyr::collect()
+  
+  expect_equal(
+    dplyr::select(output, "start", "end", "date"),
+    dplyr::tibble(
+      start = as.Date("2014-06-16"), 
+      end = as.Date("2014-06-22"),
+      date = seq(as.Date("2014-06-16"), as.Date("2014-06-22"), 1)
+    )
+  )
+  
+  output <- dplyr::tbl(db_conn, "test_table") %>% 
+    .sql_generate_date_series(start_dt = "starttime", end_dt = "endtime") %>% 
+    dplyr::collect()
+  
+  expect_equal(
+    dplyr::select(output, "start", "end", "date"),
+    dplyr::tibble(
+      start = as.Date("2014-06-16"), 
+      end = as.Date("2014-06-22"),
+      date = seq(as.Date("2014-06-16"), as.Date("2014-06-22"), 1)
+    )
+  )
+})
+
+
 test_that(".create_sql_primary_key on Postgres", {
   if (!identical(Sys.getenv("CI_Postgres"), "true")) {
     skip("CI_Postgres is set to false")
