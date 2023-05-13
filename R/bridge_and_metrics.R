@@ -295,13 +295,7 @@ bridge_inpatient_episodes_date <- function(conn, overwrite = FALSE) {
   
   ip_dates <- tbl(conn, "inpatient_episodes") %>%
     .sql_generate_date_series("episode_start", "episode_end") %>%
-    dplyr::mutate(
-      bed_days = dplyr::sql(
-        "CASE WHEN episode_start::date = date THEN 3600.0*24.0 - EXTRACT(epoch from CAST(episode_start::TIMESTAMP as TIME))
-      WHEN episode_end::date = date THEN EXTRACT(epoch FROM CAST(episode_end::TIMESTAMP as TIME))
-      ELSE 3600*24 END / 3600.0 / 24.0
-      ")
-    ) %>%
+    dplyr::mutate(bed_days = .data$date_weight) %>%
     dplyr::select("patient_id", "encounter_id", "episode_number", "date", "bed_days") %>% 
     dplyr::compute(
       name = "bridge_inpatient_episodes_date",
@@ -341,13 +335,7 @@ bridge_drug_prescriptions_date <- function(conn, overwrite = FALSE) {
                                        "completed")
     ) %>%
     .sql_generate_date_series("prescription_start", "prescription_end") %>% 
-    dplyr::mutate(
-      DOT_prescribed_all = dplyr::sql(
-        "CASE WHEN prescription_start::date = date THEN 3600.0 * 24.0 - EXTRACT(epoch from CAST(prescription_start::TIMESTAMP as TIME))
-      WHEN prescription_end::date = date THEN EXTRACT(epoch FROM CAST(prescription_end::TIMESTAMP as TIME))
-      ELSE 3600*24 END / 3600.0 / 24.0
-      ")
-    )
+    dplyr::mutate(DOT_prescribed_all = .data$date_weight)
   
   if (DDD_enabled) {
     rx_all <- rx_all %>%
@@ -364,13 +352,7 @@ bridge_drug_prescriptions_date <- function(conn, overwrite = FALSE) {
   
   rx_ip_only <- dplyr::tbl(conn, "bridge_episode_prescription_overlap") %>% 
     .sql_generate_date_series("t_start", "t_end") %>% 
-    dplyr::mutate(
-      DOT_prescribed_IP_only = dplyr::sql(
-        "CASE WHEN t_start::date = date THEN 3600.0 * 24.0 - EXTRACT(epoch from CAST(t_start::TIMESTAMP as TIME))
-      WHEN t_end::date = date THEN EXTRACT(epoch FROM CAST(t_end::TIMESTAMP as TIME))
-      ELSE 3600*24 END / 3600.0 / 24.0
-      ")
-    )
+    dplyr::mutate(DOT_prescribed_IP_only = .data$date_weight)
   
   if (DDD_enabled) {
     rx_DDDs <- dplyr::tbl(conn, "drug_prescriptions") %>% 
