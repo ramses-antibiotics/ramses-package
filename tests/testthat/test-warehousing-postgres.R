@@ -49,8 +49,8 @@ test_that(".sql_generate_date_series on Postgres", {
                     name = "test_table", 
                     value = data.frame(start = as.Date("2014-06-16"), 
                                        end = as.Date("2014-06-22"),
-                                       starttime = as.POSIXct("2014-06-16 16:00:00"),
-                                       endtime = as.POSIXct("2014-06-22 10:00:00")))
+                                       starttime = as.POSIXct("2014-06-16 16:00:00", tz = "UTC"),
+                                       endtime = as.POSIXct("2014-06-22 10:00:00", tz = "UTC")))
   
   output <- dplyr::tbl(db_conn, "test_table") %>% 
     .sql_generate_date_series(start_dt = "start", end_dt = "end") %>% 
@@ -74,7 +74,7 @@ test_that(".sql_generate_date_series on Postgres", {
       start = as.Date("2014-06-16"), 
       end = as.Date("2014-06-22"),
       date = seq(as.Date("2014-06-16"), as.Date("2014-06-22"), 1),
-      date_weight = c(0.375,1,1,1,1,1,0.375)
+      date_weight = c(0.333333333333333,1,1,1,1,1,0.416666666666667)
     )
   )
 })
