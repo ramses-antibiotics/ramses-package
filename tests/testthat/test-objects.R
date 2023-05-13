@@ -98,7 +98,7 @@ test_that("Patient..interface_methods Postgres", {
                                   user = "user", 
                                   password = "password",
                                   host = "localhost", 
-                                  dbname="RamsesDB",
+                                  dbname="RamsesDB_testing",
                                   timezone = "UTC")
   on.exit({
     .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
@@ -324,7 +324,7 @@ test_that("MedicationRequest..interface_methods Postgres", {
                                   user = "user", 
                                   password = "password",
                                   host = "localhost", 
-                                  dbname="RamsesDB",
+                                  dbname="RamsesDB_testing",
                                   timezone = "UTC")
   on.exit({
     .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
@@ -624,7 +624,7 @@ test_that("TherapyEpisode..interface_methods Postgres", {
                                   user = "user", 
                                   password = "password",
                                   host = "localhost", 
-                                  dbname="RamsesDB",
+                                  dbname="RamsesDB_testing",
                                   timezone = "UTC")
   on.exit({
     .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))
@@ -1016,7 +1016,7 @@ test_that("Encounter..interface_methods Postgres", {
                                   user = "user", 
                                   password = "password",
                                   host = "localhost", 
-                                  dbname="RamsesDB",
+                                  dbname="RamsesDB_testing",
                                   timezone = "UTC")
   on.exit({
     .remove_db_tables(conPostgreSQL, DBI::dbListTables(conPostgreSQL))

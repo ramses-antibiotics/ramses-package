@@ -2,7 +2,7 @@
 # DuckDB ------------------------------------------------------------------
 
 test_that(".create_sql_primary_key on DuckDB", {
-  db_conn <- connect_local_database(file = "test.duckdb", timezone = "Europe/London")
+  db_conn <- connect_local_database(file = "test.duckdb")
   on.exit({
     DBI::dbDisconnect(db_conn, shutdown = TRUE)
     file.remove("test.duckdb") 
@@ -36,26 +36,26 @@ test_that(".sql_generate_date_series on DuckDB", {
   output <- dplyr::tbl(db_conn, "test_table") %>% 
     .sql_generate_date_series(start_dt = "start", end_dt = "end") %>% 
     dplyr::collect()
-  
   expect_equal(
-    dplyr::select(output, "start", "end", "date"),
+    dplyr::select(output, "start", "end", "date", "date_weight"),
     dplyr::tibble(
       start = as.Date("2014-06-16"), 
       end = as.Date("2014-06-22"),
-      date = seq(as.Date("2014-06-16"), as.Date("2014-06-22"), 1)
+      date = seq(as.Date("2014-06-16"), as.Date("2014-06-22"), 1),
+      date_weight = c(1,1,1,1,1,1,0)
     )
   )
   
   output <- dplyr::tbl(db_conn, "test_table") %>% 
     .sql_generate_date_series(start_dt = "starttime", end_dt = "endtime") %>% 
     dplyr::collect()
-  
   expect_equal(
-    dplyr::select(output, "start", "end", "date"),
+    dplyr::select(output, "start", "end", "date", "date_weight"),
     dplyr::tibble(
       start = as.Date("2014-06-16"), 
       end = as.Date("2014-06-22"),
-      date = seq(as.Date("2014-06-16"), as.Date("2014-06-22"), 1)
+      date = seq(as.Date("2014-06-16"), as.Date("2014-06-22"), 1),
+      date_weight = c(0.375,1,1,1,1,1,0.375)
     )
   )
 })
@@ -94,6 +94,70 @@ test_that(".build_tally_table on DuckDB", {
     DBI::dbReadTable(db_conn, "ramses_tally"),
     data.frame(t = 0:50000)
   )
+})
+
+
+
+test_that(".run_transitive_closure on DuckDB", {
+  
+  test_edges <- dplyr::tibble(
+    from_id = as.integer(c(1,1,2,5,6,7)),
+    to_id = as.integer(c(2,3,4,6,7,8))
+  )
+  test_solution <- dplyr::tibble(
+    id =  as.integer(c(1,2,3,4,5,6,7,8)),
+    grp = as.integer(c(1,1,1,1,2,2,2,2))
+  )
+  
+  db_conn <- suppressWarnings(connect_local_database("test.duckdb"))
+  on.exit({
+    DBI::dbDisconnect(db_conn, shutdown = TRUE)
+    file.remove("test.duckdb") 
+  })
+  
+  dplyr::copy_to(
+    dest = db_conn,
+    name = "ramses_test_edges",
+    df = test_edges,
+    temporary = FALSE,
+    overwrite = TRUE)
+  
+  test_output <- tbl(db_conn,"ramses_test_edges") %>% 
+    Ramses:::.run_transitive_closure() %>% 
+    dplyr::collect()
+  
+  expect_equal(test_output,
+               test_solution) 
+})
+
+test_that("drug_prescriptions_edges on DuckDB", {
+  
+  db_conn <- suppressWarnings(connect_local_database("test.duckdb"))
+  on.exit({
+    DBI::dbDisconnect(db_conn, shutdown = TRUE)
+    file.remove("test.duckdb") 
+  })
+  
+  records_rx <- read.csv(system.file("test_cases", "prescription_linkage_prescriptions.csv", 
+                                     package = "Ramses"),
+                         colClasses = c("character", "character", "numeric", 
+                                        "POSIXct", "POSIXct", "POSIXct", "character", "character", 
+                                        "character", "character", "character", "character", "character"))
+  load_medications(db_conn, records_rx, overwrite = T)
+  
+  output <- dplyr::distinct(tbl(db_conn, "drug_prescriptions_edges"), 
+                            .data$patient_id, .data$edge_type, .data$relation_type) %>%
+    dplyr::arrange(.data$patient_id) %>% 
+    dplyr::collect()
+  
+  records_edges <- read.csv(system.file("test_cases", "prescription_linkage_edges_classes.csv", 
+                                        package = "Ramses"),
+                            colClasses = c("character", "character")) %>% 
+    dplyr::filter(edge_type != "not an edge") %>% 
+    dplyr::mutate(relation_type = substr(patient_id, 0, 1)) %>% 
+    dplyr::tibble()
+  
+  expect_equal(output,  records_edges)
 })
 
 test_that(".update_dimension_date on DuckDB", {
@@ -147,123 +211,8 @@ test_that(".update_dimension_date on DuckDB", {
   )
 })
 
-test_that(".run_transitive_closure on DuckDB", {
-  
-  test_edges <- dplyr::tibble(
-    from_id = as.integer(c(1,1,2,5,6,7)),
-    to_id = as.integer(c(2,3,4,6,7,8))
-  )
-  test_solution <- dplyr::tibble(
-    id =  as.integer(c(1,2,3,4,5,6,7,8)),
-    grp = as.integer(c(1,1,1,1,2,2,2,2))
-  )
-  
-  db_conn <- suppressWarnings(connect_local_database("test.duckdb"))
-  on.exit({
-    DBI::dbDisconnect(db_conn, shutdown = TRUE)
-    file.remove("test.duckdb") 
-  })
-  
-  dplyr::copy_to(
-    dest = db_conn,
-    name = "ramses_test_edges",
-    df = test_edges,
-    temporary = FALSE,
-    overwrite = TRUE)
-  
-  test_output <- tbl(db_conn,"ramses_test_edges") %>% 
-    Ramses:::.run_transitive_closure() %>% 
-    dplyr::collect()
-  
-  expect_equal(test_output,
-               test_solution) 
-})
-
-test_that(".tbl_add_demographics on DuckDB", {
-  
-  db_conn <- DBI::dbConnect(duckdb::duckdb(), ":memory:")
-  on.exit({
-    DBI::dbDisconnect(db_conn, shutdown = TRUE)
-  })
-  DBI::dbWriteTable(conn = db_conn,
-                    name = "bad_table", 
-                    value = data.frame(nokey = 1L))
-  DBI::dbWriteTable(conn = db_conn,
-                    name = "good_table", 
-                    value = data.frame(patient_id = 1L,
-                                       variable = "a"))
-  
-  expect_error(.tbl_add_demographics(data.frame(not_remote_tbl = 1)))
-  expect_error(.tbl_add_demographics(dplyr::tbl(db_conn, "bad_table")))
-  expect_equal(dplyr::collect(.tbl_add_demographics(dplyr::tbl(db_conn, "good_table"))),
-               dplyr::collect(dplyr::tbl(db_conn, "good_table")))
-  
-  # Now add demographics to use the full function
-  DBI::dbWriteTable(conn = db_conn,
-                    name = "patients", 
-                    value = data.frame(patient_id = 1L,
-                                       sex = 1L))
-  expect_equal(dplyr::collect(.tbl_add_demographics(dplyr::tbl(db_conn, "good_table"))),
-               dplyr::tibble(patient_id = 1L,
-                             variable = "a",
-                             sex = 1L))
-  DBI::dbWriteTable(conn = db_conn,
-                    name = "patients", 
-                    value = data.frame(patient_id = 1L,
-                                       date_of_birth = as.Date("1957-03-25")), 
-                    overwrite = TRUE)
-  expect_equal(dplyr::collect(.tbl_add_demographics(dplyr::tbl(db_conn, "good_table"))),
-               dplyr::tibble(patient_id = 1L,
-                             variable = "a",
-                             date_of_birth = as.Date("1957-03-25")))
-  DBI::dbWriteTable(conn = db_conn,
-                    name = "patients", 
-                    value = data.frame(patient_id = 1L,
-                                       sex = 1L,
-                                       date_of_birth = as.Date("1957-03-25"),
-                                       ethnic_category_UK = "A"), 
-                    overwrite = TRUE)
-  expect_equal(dplyr::collect(.tbl_add_demographics(dplyr::tbl(db_conn, "good_table"))),
-               dplyr::tibble(patient_id = 1L,
-                             variable = "a",
-                             date_of_birth = as.Date("1957-03-25"),
-                             sex = 1L,
-                             ethnic_category_UK = "A"))
-  
-})
-
-test_that("drug_prescriptions_edges on DuckDB", {
-  
-  db_conn <- suppressWarnings(connect_local_database("test.duckdb"))
-  on.exit({
-    DBI::dbDisconnect(db_conn, shutdown = TRUE)
-    file.remove("test.duckdb") 
-  })
-  
-  records_rx <- read.csv(system.file("test_cases", "prescription_linkage_prescriptions.csv", 
-                                     package = "Ramses"),
-                         colClasses = c("character", "character", "numeric", 
-                                        "POSIXct", "POSIXct", "POSIXct", "character", "character", 
-                                        "character", "character", "character", "character", "character"))
-  load_medications(db_conn, records_rx, overwrite = T)
-  
-  output <- dplyr::distinct(tbl(db_conn, "drug_prescriptions_edges"), 
-                            .data$patient_id, .data$edge_type, .data$relation_type) %>%
-    dplyr::arrange(.data$patient_id) %>% 
-    dplyr::collect()
-  
-  records_edges <- read.csv(system.file("test_cases", "prescription_linkage_edges_classes.csv", 
-                                        package = "Ramses"),
-                            colClasses = c("character", "character")) %>% 
-    dplyr::filter(edge_type != "not an edge") %>% 
-    dplyr::mutate(relation_type = substr(patient_id, 0, 1)) %>% 
-    dplyr::tibble()
-  
-  expect_equal(output,  records_edges)
-})
-
 test_that("create_mock_database on DuckDB", {
-
+  
   db_conn <- create_mock_database(file = "test.duckdb", silent = TRUE)
   on.exit({
     DBI::dbDisconnect(db_conn, shutdown = TRUE)
@@ -271,7 +220,7 @@ test_that("create_mock_database on DuckDB", {
   })
   
   expect_true(is(db_conn, "duckdb_connection"))
-
+  
   expect_equal(
     sort(dplyr::collect(dplyr::tbl(db_conn, "dimension_date"))[["date"]]),
     seq(as.Date("2014-06-19"), as.Date("2018-01-02"), 1)
@@ -297,7 +246,6 @@ test_that("create_mock_database on DuckDB", {
                                  "89ac870bc1c1e4b2a37cec79d188cb08")))
   expect_equal(.nrow_sql_table(db_conn, "ramses_tally"), 50001)
 })
-
 
 test_that("Ramses on DuckDB (system test)", {
   
@@ -437,35 +385,77 @@ test_that("Ramses on DuckDB (system test)", {
   test_bridge_overlap <- tbl(
     db_conn,
     "bridge_episode_prescription_overlap") %>% 
-    dplyr::filter(patient_id == "99999999999" & 
-                    prescription_id == "89094c5dffaad0e56073adaddf286e73") %>% 
-    dplyr::collect()
-  expect_equal(round(sum(test_bridge_overlap$DOT_prescribed), 1), 2.0)
-  expect_equal(round(sum(test_bridge_overlap$DDD_prescribed), 1), 1.3)
+    dplyr::filter(encounter_id == "3968305736") %>% 
+    dplyr::collect() %>% 
+    dplyr::arrange(dplyr::desc(prescription_id))
+  expect_equal(
+    test_bridge_overlap,
+    dplyr::tibble(
+      patient_id = "99999999999",
+      encounter_id = "3968305736",  
+      episode_number = c(1,2,1,2), 
+      prescription_id = c("89094c5dffaad0e56073adaddf286e73", "89094c5dffaad0e56073adaddf286e73", 
+                          "4d611fc8886c23ab047ad5f74e5080d7", "39a786cdb8fd3387a9340928bbaf513f"), 
+      t_start = structure(c(1487019600, 1487088000, 1486991220, 1487195760), 
+                          class = c("POSIXct", "POSIXt"), tzone = "Europe/London"), 
+      t_end = structure(c(1487088000, 1487193360, 1487077620, 1487631360), 
+                        class = c("POSIXct", "POSIXt"), tzone = "Europe/London")
+    )
+  )
   
   # bridge_episode_prescription_initiation
   expect_true(bridge_episode_prescription_initiation(db_conn))
   expect_error(bridge_episode_prescription_initiation(db_conn))
   expect_true(bridge_episode_prescription_initiation(db_conn, overwrite = TRUE))
   test_bridge_init <- tbl(db_conn, "bridge_episode_prescription_initiation") %>% 
+    dplyr::filter(encounter_id == "3968305736") %>% 
+    dplyr::collect()
+  expect_equal(
+    test_bridge_init,
+    dplyr::tibble(
+      patient_id = "99999999999",
+      encounter_id = "3968305736",  
+      episode_number = c(1L, 1L, 2L), 
+      prescription_id = c("89094c5dffaad0e56073adaddf286e73", 
+                          "4d611fc8886c23ab047ad5f74e5080d7", 
+                          "39a786cdb8fd3387a9340928bbaf513f")
+    )
+  )
+  
+  # bridge_episode_therapy_overlap
+  expect_true(bridge_episode_therapy_overlap(db_conn))
+  expect_error(bridge_episode_therapy_overlap(db_conn))
+  expect_true(bridge_episode_therapy_overlap(db_conn, overwrite = TRUE))
+  test_bridge_th_overlap <- tbl(db_conn, "bridge_episode_therapy_overlap") %>% 
+    dplyr::filter(encounter_id == "3968305736") %>% 
+    dplyr::collect() %>% 
+    dplyr::arrange(.data$episode_number)
+  expect_equal(
+    test_bridge_th_overlap,
+    dplyr::tibble(
+      patient_id = "99999999999", 
+      encounter_id = "3968305736", 
+      episode_number = 1:2,
+      therapy_id = "4d611fc8886c23ab047ad5f74e5080d7",
+      t_start = structure(c(1486991220, 1487088000), 
+                          class = c("POSIXct", "POSIXt"), tzone = "Europe/London"), 
+      t_end = structure(c(1487088000, 1487631360), 
+                        class = c("POSIXct", "POSIXt"), tzone = "Europe/London")
+    )
+  )
+  
+  # bridge_drug_prescriptions_date
+  expect_true(bridge_drug_prescriptions_date(db_conn))
+  expect_error(bridge_drug_prescriptions_date(db_conn))
+  expect_true(bridge_drug_prescriptions_date(db_conn, overwrite = TRUE))
+  test_bridge_rx_date <- tbl(db_conn, "bridge_drug_prescriptions_date") %>% 
     dplyr::filter(patient_id == "99999999999" & 
                     prescription_id == "89094c5dffaad0e56073adaddf286e73") %>% 
     dplyr::collect()
-  expect_equal(round(test_bridge_init$DOT_prescribed, 1), 2.0)
-  expect_equal(round(test_bridge_init$DDD_prescribed, 1), 1.3)
+  expect_equal(round(sum(test_bridge_rx_date$DOT_prescribed_IP_only), 1), 2.0)
+  expect_equal(round(sum(test_bridge_rx_date$DDD_prescribed_IP_only), 1), 1.3)
   
-  # bridge_encounter_therapy_overlap
-  expect_true(bridge_encounter_therapy_overlap(db_conn))
-  expect_error(bridge_encounter_therapy_overlap(db_conn))
-  expect_true(bridge_encounter_therapy_overlap(db_conn, overwrite = TRUE))
-  test_bridge_th_overlap <- tbl(
-    db_conn,
-    "bridge_encounter_therapy_overlap") %>% 
-    dplyr::filter(patient_id == "99999999999" &
-                    therapy_id == "4d611fc8886c23ab047ad5f74e5080d7") %>% 
-    dplyr::collect()
-  expect_equal(round(sum(test_bridge_th_overlap$LOT), 1), 7.4)
-  
+  # all bridges
   expect_true(bridge_tables(conn = db_conn, overwrite = TRUE))
   
   # date and datetime casting -----------------------------------------------

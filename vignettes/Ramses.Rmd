@@ -88,6 +88,10 @@ library(Ramses)
 library(ggplot2)
 library(dplyr)
 ramses_db <- create_mock_database("ramses-db.duckdb")
+
+invisible(create_reporting_inpatient(ramses_db))
+invisible(create_reporting_med_prescribing(ramses_db))
+
 ```
 
 ## Visualisation
@@ -105,6 +109,11 @@ therapy_timeline(Patient(conn = ramses_db,
 
 ## Data model
 
+```{r clear_tmp_tbls, include=FALSE}
+# clear temporary tables (dbplyr_XXX)
+Ramses:::.remove_db_tables(ramses_db, grep("^dbplyr_", DBI::dbListTables(ramses_db), value = TRUE))
+```
+
 ```{r list_tables}
 DBI::dbListTables(ramses_db)
 ```
@@ -116,11 +125,99 @@ DBI::dbListTables(ramses_db)
 
 Three main metrics are used to describe antimicrobial consumption in hospitals: Defined Daily Doses, Days on Therapy, and Length of Therapy. Definitions given by @StanicBenic2018 are reproduced below:
 
-- **Defined Daily Doses (DDDs)** designate "the assumed average maintenance dose per day for a drug used for its main indication in adults" as defined by the WHO Collaborating Centre for Drug Statistics Methodology (@WHO-ATC2020).
-- **Days of Therapy (DOTs)** designate	"the number of days that a patient receives antibiotics regardless of the dose. When a patient receives more than one antibiotic, more than one DOT may be counted".
-- **Length of Therapy (LOT)** designate "the number of days that a patient receives systemic antimicrobial agents, irrespective of the number of different antibiotics. Therefore, LOT will be lower than or equal to days of therapy (DOT) because the DOT is calculated for each antibiotic".
+- **Defined Daily Doses (DDDs)** designate "the assumed average maintenance dose per day for a drug used for its main indication in adults" as defined by the WHO Collaborating Centre for Drug Statistics Methodology (@WHO-ATC2020). DDDs may not be a relevant benchmark for children and patients with impaired kidney or liver function.
+- **Days of Therapy (DOTs)** designate "the number of days that a patient receives antibiotics regardless of the dose. When a patient receives more than one antibiotic, more than one DOT may be counted".
+- **Length of Therapy (LOT)** designates "the number of days that a patient receives systemic antimicrobial agents, irrespective of the number of different antibiotics. Therefore, LOT will be lower than or equal to days of therapy (DOT) because the DOT is calculated for each antibiotic".
 
 Formulae are available from @Ibrahim2014 along with a discussion of rates which can be derived from these metrics (eg per 1,000 admissions, per 1,000 bed-days). Statistical adjustment of these metrics is discussed by @VanSanten2018 and @Yu2018.
+
+Ramses facilitates the computation and aggregation of metrics by providing various bridge and reporting tables.
+
+
+### Prescribing reporting table
+
+```{r v_metrics_prescribing}
+tbl(ramses_db, "metrics_prescribing") %>% 
+  dplyr::glimpse()
+```
+
+The `metrics_prescribing` table is built by splitting prescriptions by calendar dates and computing the DOT and DDD metrics (provided that DDDs were loaded into the `drug_prescriptions` table). This table is build for all prescriptions that were in fact administered. Prescriptions with a `prescription_status` marked as "cancelled", "on-hold" or "unknown" are not included in this table but remain in the `drug_prescriptions` table. A number of reporting dimensions are included:
+
+- medication dimensions: drug type (antibacterial, antifungal, ...), name, group, and ATC category
+- demographics available from the `patients` table, such as sex or age, calculated from `date_of_birth` automatically
+- route of administration: `ATC_route`, binary `parenteral` versus oral classification
+- other dimensions may be fetched by joining with other tables, chiefly `dimension_date` or `reference_aware`
+
+You may not need to use dimensions and aggregate over the entire set:
+
+```{r rx_metrics_overall_DOT_hidden, include=FALSE}
+rx_metrics_overall_DOT <- tbl(ramses_db, "metrics_prescribing") %>% 
+  summarise(DOT_prescribed_all = sum(DOT_prescribed_all, na.rm = TRUE),
+            DOT_prescribed_IP_only = sum(DOT_prescribed_IP_only, na.rm = TRUE)) %>% 
+  collect()
+```
+
+```{r rx_metrics_overall_DOT}
+tbl(ramses_db, "metrics_prescribing") %>% 
+  summarise(DOT_prescribed_all = sum(DOT_prescribed_all, na.rm = TRUE),
+            DOT_prescribed_IP_only = sum(DOT_prescribed_IP_only, na.rm = TRUE))
+```
+
+This tables indicates that the data warehouse contains information for a cumulative `r formatC(rx_metrics_overall_DOT$DOT_prescribed_all, format = "fg", digits = 0, big.mark = ",")` days of therapy, including `r formatC(rx_metrics_overall_DOT$DOT_prescribed_IP_only, format = "fg", digits = 0, big.mark = ",")` days of therapy during an inpatient stay.
+
+It is also possible to aggregate the tables over certain dimensions, for example financial quarter.
+
+```{r rx_metrics_overall_DOT_plot}
+crude_IP_DOTs <- tbl(ramses_db, "metrics_prescribing") %>% 
+  filter(antiinfective_type == "antibacterial") %>% 
+  right_join(tbl(ramses_db, "dimension_date")) %>% 
+  group_by(financial_year_quarter_uk) %>% 
+  summarise(DOT_prescribed_IP_only = sum(DOT_prescribed_IP_only, na.rm = TRUE)) %>% 
+  collect() %>% 
+  arrange(financial_year_quarter_uk)
+
+ggplot(data = crude_IP_DOTs, 
+       mapping = aes(x = financial_year_quarter_uk, y = DOT_prescribed_IP_only)) +
+  geom_col() +
+  scale_y_continuous("Crude total inpatient Days of Therapy", breaks = seq(0, 200, 20)) +
+  scale_x_discrete(name = NULL) +
+  theme(axis.text.x = element_text(angle = 45,  hjust=1))
+```
+
+
+### Inpatient reporting table
+
+To calculate rates of prescribing, inpatient bed days are available in a similar table with a daily resolution:
+
+```{r}
+tbl(ramses_db, "metrics_inpatient") %>% 
+  glimpse()
+```
+
+```{r, warning=FALSE, message=FALSE}
+crude_IP_bed_days <- tbl(ramses_db, "metrics_inpatient") %>% 
+  right_join(tbl(ramses_db, "dimension_date")) %>% 
+  group_by(financial_year_quarter_uk) %>% 
+  summarise(bed_days = sum(bed_days, na.rm = TRUE)) %>% 
+  collect() %>% 
+  arrange(financial_year_quarter_uk)
+
+crude_IP_prescribing_rates <- left_join(crude_IP_bed_days, crude_IP_DOTs) %>% 
+  mutate(DOT_1000 = tidyr::replace_na(DOT_prescribed_IP_only, 0) / bed_days * 1000)
+
+ggplot(data = crude_IP_prescribing_rates, 
+       mapping = aes(x = financial_year_quarter_uk, y = DOT_1000)) +
+  geom_col() +
+  scale_y_continuous("DOT per 1,000 inpatient bed days", breaks = seq(0, 2000, 100)) +
+  scale_x_discrete(name = NULL) +
+  theme(axis.text.x = element_text(angle = 45,  hjust=1))
+```
+
+
+
+### DOTs/DDDs based on the episode of administration 
+
+
 
 The approach to create tables of antimicrobial consumption follows three steps:
 
@@ -129,44 +226,43 @@ The approach to create tables of antimicrobial consumption follows three steps:
 3. compute the metrics by aggregation.
 
 
-### DOTs/DDDs based on the episode of administration 
-
 Consumption can be attributed to specialty based on the specialty of the episode during which the antibiotic is administered. In this case, the appropriate bridge table is `bridge_episode_prescription_overlap`.
 
 ```{r AC1, paged.print=FALSE}
-study_pop <- tbl(ramses_db, "inpatient_episodes") %>% 
-  filter(main_specialty_code %in% c("100", "101", "300") &
-           discharge_date >= "2016-01-01") %>% 
-  mutate(calendar_year = year(discharge_date),
-         calendar_month = month(discharge_date))  
 
-consumption_num <- study_pop %>% 
-  left_join(tbl(ramses_db, "bridge_episode_prescription_overlap")) %>% 
-  group_by(calendar_year, calendar_month, main_specialty_code) %>% 
-  summarise(DOT_prescribed = sum(coalesce(DOT_prescribed, 0.0)),
-            DDD_prescribed = sum(coalesce(DDD_prescribed, 0.0))) 
-
-consumption_denom <- study_pop %>% 
-  group_by(calendar_year, calendar_month, main_specialty_code) %>% 
-  summarise(bed_days = sum(ramses_bed_days))
-
-consumption_rates <- full_join(consumption_denom, consumption_num) %>% 
-  collect() %>% 
-  mutate(month_starting = as.Date(paste0(calendar_year, "/", calendar_month, "/01")))
-
-head(consumption_rates)
+# study_pop <- tbl(ramses_db, "inpatient_episodes") %>% 
+#   filter(main_specialty_code %in% c("100", "101", "300") &
+#            discharge_date >= "2016-01-01") %>% 
+#   mutate(calendar_year = year(discharge_date),
+#          calendar_month = month(discharge_date))  
+# 
+# consumption_num <- study_pop %>% 
+#   left_join(tbl(ramses_db, "bridge_episode_prescription_overlap")) %>% 
+#   group_by(calendar_year, calendar_month, main_specialty_code) %>% 
+#   summarise(DOT_prescribed = sum(coalesce(DOT_prescribed, 0.0)),
+#             DDD_prescribed = sum(coalesce(DDD_prescribed, 0.0))) 
+# 
+# consumption_denom <- study_pop %>% 
+#   group_by(calendar_year, calendar_month, main_specialty_code) %>% 
+#   summarise(bed_days = sum(ramses_bed_days))
+# 
+# consumption_rates <- full_join(consumption_denom, consumption_num) %>% 
+#   collect() %>% 
+#   mutate(month_starting = as.Date(paste0(calendar_year, "/", calendar_month, "/01")))
+# 
+# head(consumption_rates)
 ```
 
 ```{r plot_AC1,  width = 10}
-ggplot(consumption_rates, 
-       aes(x = month_starting,
-           y = DOT_prescribed/bed_days*1000, 
-           group = main_specialty_code,
-           color = main_specialty_code)) +
-  geom_line() +
-  scale_x_date(date_labels = "%b %Y") +
-  xlab("Month") +
-  ylab("Days of Therapy (DOTs)\nper 1,000 bed-days")
+# ggplot(consumption_rates, 
+#        aes(x = month_starting,
+#            y = DOT_prescribed/bed_days*1000, 
+#            group = main_specialty_code,
+#            color = main_specialty_code)) +
+#   geom_line() +
+#   scale_x_date(date_labels = "%b %Y") +
+#   xlab("Month") +
+#   ylab("Days of Therapy (DOTs)\nper 1,000 bed-days")
 ```
 
 
@@ -176,34 +272,34 @@ Alternatively, consumption can be attributed to the episode when prescriptions a
  
 
 ```{r AC2}
-consumption_num_init <- study_pop %>% 
-  left_join(tbl(ramses_db, "bridge_episode_prescription_initiation")) %>% 
-  group_by(calendar_year, calendar_month, main_specialty_code) %>% 
-  summarise(DOT_prescribed = sum(coalesce(DOT_prescribed, 0.0)),
-            DDD_prescribed = sum(coalesce(DDD_prescribed, 0.0))) 
-
-consumption_denom_init <- study_pop %>% 
-  group_by(calendar_year, calendar_month, main_specialty_code) %>% 
-  summarise(
-    bed_days = sum(ramses_bed_days),
-    total_admissions = n_distinct(paste0(patient_id, encounter_id))
-  )
-
-consumption_rates_init <- full_join(consumption_denom_init, consumption_num_init) %>% 
-  collect() %>% 
-  mutate(month_starting = as.Date(paste0(calendar_year, "/", calendar_month, "/01")))
+# consumption_num_init <- study_pop %>% 
+#   left_join(tbl(ramses_db, "bridge_episode_prescription_initiation")) %>% 
+#   group_by(calendar_year, calendar_month, main_specialty_code) %>% 
+#   summarise(DOT_prescribed = sum(coalesce(DOT_prescribed, 0.0)),
+#             DDD_prescribed = sum(coalesce(DDD_prescribed, 0.0))) 
+# 
+# consumption_denom_init <- study_pop %>% 
+#   group_by(calendar_year, calendar_month, main_specialty_code) %>% 
+#   summarise(
+#     bed_days = sum(ramses_bed_days),
+#     total_admissions = n_distinct(paste0(patient_id, encounter_id))
+#   )
+# 
+# consumption_rates_init <- full_join(consumption_denom_init, consumption_num_init) %>% 
+#   collect() %>% 
+#   mutate(month_starting = as.Date(paste0(calendar_year, "/", calendar_month, "/01")))
 ```
 
 ```{r plot_AC2}
-ggplot(consumption_rates_init, 
-       aes(x = month_starting,
-           y = DOT_prescribed/total_admissions*1000, 
-           group = main_specialty_code,
-           color = main_specialty_code)) +
-  geom_line() +
-  scale_x_date(date_labels = "%b %Y") +
-  xlab("Month") +
-  ylab("Days of Therapy (DOTs)\nper 1,000 admissions")
+# ggplot(consumption_rates_init, 
+#        aes(x = month_starting,
+#            y = DOT_prescribed/total_admissions*1000, 
+#            group = main_specialty_code,
+#            color = main_specialty_code)) +
+#   geom_line() +
+#   scale_x_date(date_labels = "%b %Y") +
+#   xlab("Month") +
+#   ylab("Days of Therapy (DOTs)\nper 1,000 admissions")
 ```
 
 ### Length of therapy
@@ -211,37 +307,37 @@ ggplot(consumption_rates_init,
 Length of Therapy is the time elapsed during a prescribing episodes (sequence of antimicrobial prescriptions separated by at the most 36 hours by default). To measure it, the bridge table `bridge_encounter_therapy_overlap` is available. It calculate the total LOT during between admission and discharge (excluding to-take-home medications).
 
 ```{r message=FALSE, results='asis'}
-length_therapy_by_encounter <- study_pop %>% 
-  distinct(patient_id, encounter_id, admission_method) %>% 
-  left_join(tbl(ramses_db, "bridge_encounter_therapy_overlap")) %>% 
-  group_by(patient_id, encounter_id, admission_method) %>% 
-  summarise(LOT = sum(LOT, na.rm = T)) %>% 
-  collect()
-
-length_therapy_by_encounter %>% 
-  group_by(admission_method) %>% 
-  summarise(
-    `Total admissions` = n(),
-    `Total admissions with therapy` = sum(!is.na(LOT)),
-    `Mean LOT` = mean(LOT, na.rm = T),
-    `Median LOT` = median(LOT, na.rm = T),
-    percentile25 = quantile(x = LOT, probs = .25, na.rm = T),
-    percentile75 = quantile(x = LOT, probs = .75, na.rm = T)
-    ) %>% 
-  transmute(
-    `Admission method` = case_when(
-      admission_method == 1 ~ "Elective",
-      admission_method == 2 ~ "Emergency"),
-    `Total admissions`,
-    `Mean LOT`,
-    `Median LOT`,
-    `Inter-quartile range` = paste0(
-      formatC(percentile25, format = "f", digits = 1),
-      "-",
-      formatC(percentile75, format = "f", digits = 1)
-    )
-  ) %>% 
-  knitr::kable(digits = 1)
+# length_therapy_by_encounter <- study_pop %>% 
+#   distinct(patient_id, encounter_id, admission_method) %>% 
+#   left_join(tbl(ramses_db, "bridge_encounter_therapy_overlap")) %>% 
+#   group_by(patient_id, encounter_id, admission_method) %>% 
+#   summarise(LOT = sum(LOT, na.rm = T)) %>% 
+#   collect()
+# 
+# length_therapy_by_encounter %>% 
+#   group_by(admission_method) %>% 
+#   summarise(
+#     `Total admissions` = n(),
+#     `Total admissions with therapy` = sum(!is.na(LOT)),
+#     `Mean LOT` = mean(LOT, na.rm = T),
+#     `Median LOT` = median(LOT, na.rm = T),
+#     percentile25 = quantile(x = LOT, probs = .25, na.rm = T),
+#     percentile75 = quantile(x = LOT, probs = .75, na.rm = T)
+#     ) %>% 
+#   transmute(
+#     `Admission method` = case_when(
+#       admission_method == 1 ~ "Elective",
+#       admission_method == 2 ~ "Emergency"),
+#     `Total admissions`,
+#     `Mean LOT`,
+#     `Median LOT`,
+#     `Inter-quartile range` = paste0(
+#       formatC(percentile25, format = "f", digits = 1),
+#       "-",
+#       formatC(percentile75, format = "f", digits = 1)
+#     )
+#   ) %>% 
+#   knitr::kable(digits = 1)
 ```
 
 
@@ -256,49 +352,49 @@ Unlike before, this task takes three steps:
 3. join tables
 
 ```{r}
-consumption_aware_episodes_num <- tbl(ramses_db, "drug_prescriptions") %>% 
-  select(patient_id, prescription_id, ATC_code, ATC_route) %>% 
-  left_join(tbl(ramses_db, "reference_aware"), 
-            by = c("ATC_code", "ATC_route")) %>% 
-  select(patient_id, prescription_id, aware_category) %>% 
-  left_join(tbl(ramses_db, "bridge_episode_prescription_overlap")) %>% 
-  inner_join(study_pop) %>% 
-  group_by(calendar_year, calendar_month, aware_category) %>% 
-  summarise(DOT_prescribed = sum(coalesce(DOT_prescribed, 0.0))) 
- 
-consumption_aware_episodes_denom <- study_pop %>% 
-  group_by(calendar_year, calendar_month) %>% 
-  summarise(bed_days = sum(coalesce(ramses_bed_days, 0.0))) 
-
-consumption_aware_episodes <- left_join(
-  consumption_aware_episodes_denom,
-  consumption_aware_episodes_num
-) %>% 
-  collect() %>% 
-  mutate(month_starting = as.Date(paste0(calendar_year, "/", calendar_month, "/01")),
-         aware_category = factor(aware_category, 
-                                    levels = c("Access", "Watch", "Reserve")))
+# consumption_aware_episodes_num <- tbl(ramses_db, "drug_prescriptions") %>% 
+#   select(patient_id, prescription_id, ATC_code, ATC_route) %>% 
+#   left_join(tbl(ramses_db, "reference_aware"), 
+#             by = c("ATC_code", "ATC_route")) %>% 
+#   select(patient_id, prescription_id, aware_category) %>% 
+#   left_join(tbl(ramses_db, "bridge_episode_prescription_overlap")) %>% 
+#   inner_join(study_pop) %>% 
+#   group_by(calendar_year, calendar_month, aware_category) %>% 
+#   summarise(DOT_prescribed = sum(coalesce(DOT_prescribed, 0.0))) 
+#  
+# consumption_aware_episodes_denom <- study_pop %>% 
+#   group_by(calendar_year, calendar_month) %>% 
+#   summarise(bed_days = sum(coalesce(ramses_bed_days, 0.0))) 
+# 
+# consumption_aware_episodes <- left_join(
+#   consumption_aware_episodes_denom,
+#   consumption_aware_episodes_num
+# ) %>% 
+#   collect() %>% 
+#   mutate(month_starting = as.Date(paste0(calendar_year, "/", calendar_month, "/01")),
+#          aware_category = factor(aware_category, 
+#                                     levels = c("Access", "Watch", "Reserve")))
 
 ```
 
 ```{r}
-aware_colours <- c(
-  "Access" = "#1cb1d1", 
-  "Watch" = "#008ab1", 
-  "Reserve" = "#ff9667"
-  )
-
-ggplot(consumption_aware_episodes, 
-       aes(x = month_starting,
-           y = DOT_prescribed/bed_days*1000, 
-           group = aware_category,
-           color = aware_category)) +
-  geom_line() +
-  scale_x_date(date_labels = "%b %Y") +
-  scale_color_manual(name = "AWaRe category", 
-                     values = aware_colours) +
-  xlab("Month") +
-  ylab("Days of Therapy (DOTs)\nper 1,000 bed-days")
+# aware_colours <- c(
+#   "Access" = "#1cb1d1", 
+#   "Watch" = "#008ab1", 
+#   "Reserve" = "#ff9667"
+#   )
+# 
+# ggplot(consumption_aware_episodes, 
+#        aes(x = month_starting,
+#            y = DOT_prescribed/bed_days*1000, 
+#            group = aware_category,
+#            color = aware_category)) +
+#   geom_line() +
+#   scale_x_date(date_labels = "%b %Y") +
+#   scale_color_manual(name = "AWaRe category", 
+#                      values = aware_colours) +
+#   xlab("Month") +
+#   ylab("Days of Therapy (DOTs)\nper 1,000 bed-days")
 ```
 
 

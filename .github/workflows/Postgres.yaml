@@ -17,7 +17,7 @@ jobs:
       postgres:
         image: ${{ matrix.config.postgres_image }} 
         env:
-          POSTGRES_DB: RamsesDB
+          POSTGRES_DB: RamsesDB_testing
           POSTGRES_USER: user
           POSTGRES_PASSWORD: password
         ports:

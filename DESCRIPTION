@@ -63,11 +63,12 @@ Suggests:
 Remotes: 
     ramses-antibiotics/snomedizer
 RdMacros: Rdpack    
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.1
 VignetteBuilder: knitr,rmarkdown
 Collate: 
     'Ramses-deprecated.R'
     'Ramses-package.R'
+    'bridge_and_metrics.R'
     'objects.R'
     'clinical_features.R'
     'database.R'

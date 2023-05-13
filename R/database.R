@@ -1362,11 +1362,11 @@ create_mock_database <- function(file,
 
 #' Interface for SQL generate_series() function
 #'
-#' @param x a `tbl_sql` object (remote table)
+#' @param x a \code{tbl_sql} object (remote table)
 #' @param start_dt character string of name of a timestamp or date field
 #' @param end_dt character string of name of a timestamp or date field
 #'
-#' @return
+#' @return \code{x} with an additional variate \code{date}
 #' @noRd
 .sql_generate_date_series <- function(x, start_dt, end_dt) {
   stopifnot(is.character(start_dt) & length(start_dt) == 1)
@@ -1376,326 +1376,34 @@ create_mock_database <- function(file,
   end_dt <- dbplyr::sql_quote(end_dt, '"')
   
   if (is(x$src$con, "duckdb_connection")) {
-    dplyr::mutate(
+    tbl_expanded <- dplyr::mutate(
       x,
       date = dplyr::sql(paste0("unlist(generate_series(", start_dt, "::DATE, ", end_dt, "::DATE, INTERVAL '1 day'))::DATE"))
     )
   } else if (is(x$src$con, "PqConnection")) {
-    dplyr::mutate(
+    tbl_expanded <- dplyr::mutate(
       x,
       date = dplyr::sql(paste0("generate_series(", start_dt, "::DATE, ", end_dt, "::DATE, INTERVAL '1 day')::DATE"))
     )
   } else {
     .throw_error_method_not_implemented(".sql_generate_date_series")
   }
-}
-
-
-#' Create database bridge tables
-#'
-#' @description Create or re-create bridge tables to facilitate linking prescribing
-#' events with encounters or episodes of care. Bridge tables are used when computing
-#' rates of prescribing per admission or per 1,000 bed-days. Examples are available
-#' from the \link[Ramses]{Ramses} vignette: \code{browseVignettes("Ramses")}.
-#' The resulting tables on the database are named \itemize{
-#'   \item \code{bridge_episode_prescription_overlap}
-#'   \item \code{bridge_episode_prescription_initiation}
-#'   \item \code{bridge_encounter_therapy_overlap}.
-#' }
-#' @param conn a database connection
-#' @param overwrite if \code{TRUE}, the function will overwrite any existing
-#' bridge table on the database. The default is \code{FALSE}
-#' @param silent if \code{TRUE}, the progress bar will be hidden. The default is 
-#' \code{FALSE}.
-#' @details 
-#' 
-#' Prescriptions with status \code{"entered-in-error"}, \code{"draft"}, 
-#' \code{"cancelled"}, or \code{"unknown"} are not taken into account.
-#' \describe{
-#'    \item{\code{bridge_tables()}}{Generates all bridge tables.}
-#'    \item{\code{bridge_episode_prescription_overlap()}}{Links prescriptions
-#'    with inpatient episodes when they were administered. The resulting 
-#'    table is the natural join of \code{inpatient_episodes} and 
-#'    \code{drug_prescriptions} based on matching patient identifiers 
-#'    and a time overlap between prescriptions and inpatient episodes.}
-#'    \item{\code{bridge_episode_prescription_initiation()}}{Links prescriptions
-#'    with inpatient episodes when they were authored. The resulting table 
-#'    differs from {\code{bridge_episode_prescription_overlap}}: it links prescriptions 
-#'    to the episode referencing the clinical team who prescribed them, rather
-#'    that episodes during which the prescription was administered. The resulting
-#'    table is the natural join of \code{inpatient_episodes} and 
-#'    \code{drug_prescriptions} based on matching patient identifiers 
-#'    and the prescription authoring date being comprised between the episode 
-#'    start and end dates.}
-#'    \item{\code{bridge_encounter_therapy_overlap()}}{Links therapy episodes
-#'    with inpatient encounters during which they were administered. The resulting 
-#'    table is the natural join of \code{inpatient_episodes} and 
-#'    \code{drug_therapy_episodes} based on matching patient identifiers 
-#'    and a time overlap between therapy episodes and hospital stays.}
-#' } 
-#' @return \code{TRUE} if tables were successfully created
-#' @seealso \code{browseVignettes("Ramses")}
-#' @name bridge_tables
-#' @export
-bridge_tables <- function(conn,
-                          overwrite = FALSE,
-                          silent = FALSE) {
-  x <- vector()
-  if( !silent ) {
-    progress_bar <- progress::progress_bar$new(
-      format = "  building bridge tables [:bar] :percent",
-      total = 3)
-    progress_bar$tick(0)
-  }
-  x[1] <- bridge_episode_prescription_overlap(conn, overwrite)
-  if( !silent ) progress_bar$tick()
-  x[2] <- bridge_episode_prescription_initiation(conn, overwrite)
-  if( !silent ) progress_bar$tick()
-  x[3] <- bridge_encounter_therapy_overlap(conn, overwrite)
-  if( !silent ) progress_bar$tick()
   
-  return(all(x))
-}
-
-#' @export
-#' @name bridge_tables
-bridge_episode_prescription_overlap <- function(conn, 
-                                                overwrite = FALSE) {
-  stopifnot(is.logical(overwrite))
-  stopifnot(is(conn, "duckdb_connection") || is(conn, "PqConnection"))
-
-  tblz_episodes <- tbl(conn, "inpatient_episodes")
-  tblz_prescriptions <- tbl(conn, "drug_prescriptions") %>% 
-    dplyr::filter(
-      !.data$prescription_status %in% c("entered-in-error",
-                                  "draft",
-                                  "cancelled",
-                                  "unknown")
-    ) %>% 
-    dplyr::select(
-      tidyselect::all_of(c(
-        "patient_id",
-        "prescription_id",
-        "prescription_start",
-        "prescription_end",
-        "antiinfective_type"
-      )),
-      tidyselect::any_of("DDD")
-    )
-  DDD_present <- "DDD" %in% colnames(tblz_prescriptions)
   
-  tblz_bridge_episode_prescriptions_overlap <- tblz_episodes %>% 
-    dplyr::inner_join(tblz_prescriptions, 
-                     by = "patient_id") %>% 
-    dplyr::filter(
-      dplyr::between(.data$prescription_start, .data$episode_start, .data$episode_end) |
-        dplyr::between(.data$prescription_end, .data$episode_start, .data$episode_end) |
-        dplyr::between(.data$episode_start, .data$prescription_start, .data$prescription_end)
-    )
-  
-  if( is(conn, "PqConnection") || is(conn, "duckdb_connection") ) {
-    tblz_bridge_episode_prescriptions_overlap <- dplyr::mutate(
-      tblz_bridge_episode_prescriptions_overlap,
-      t_start = dplyr::sql("GREATEST(prescription_start::TIMESTAMP, episode_start::TIMESTAMP)"), 
-      t_end = dplyr::sql("LEAST(prescription_end::TIMESTAMP, episode_end::TIMESTAMP)")) %>%
-      dplyr::mutate(
-      DOT_prescribed = dplyr::sql("EXTRACT(EPOCH FROM (t_end - t_start)) / ( 3600.0 * 24.0 )"),
-      DDD_prescribed = if ( DDD_present ) {
-        dplyr::sql(
-          "EXTRACT(EPOCH FROM (t_end - t_start)) / ( 3600.0 * 24.0 ) * \"DDD\""
-        )
-      } else {
-        NULL
-      }
-    )
-      
-  } else {
-    .throw_error_method_not_implemented("bridge_episode_prescription_overlap()",
-                                        class(conn))
-  }
-  
-  tblz_bridge_episode_prescriptions_overlap <- dplyr::select(
-    tblz_bridge_episode_prescriptions_overlap,
-    "patient_id",
-    "encounter_id",
-    "episode_number",
-    "prescription_id",
-    "antiinfective_type",
-    "t_start",
-    "t_end",
-    "DOT_prescribed",
-    if(DDD_present) "DDD_prescribed" else NULL
+  tbl_expanded <- dplyr::mutate(
+    tbl_expanded,
+    date_weight = dplyr::sql(paste0(
+      "CASE WHEN ", start_dt, "::date = date ", 
+      "THEN 3600.0*24.0 - EXTRACT(epoch from CAST(", start_dt, "::TIMESTAMP as TIME))", 
+      "WHEN ", end_dt, "::date = date ",
+      "THEN EXTRACT(epoch FROM CAST(", end_dt,"::TIMESTAMP as TIME)) ",
+      "ELSE 3600*24 END / 3600.0 / 24.0"
+    ))
   )
   
-  if (overwrite) {
-    if(DBI::dbExistsTable(conn, "bridge_episode_prescription_overlap")) {
-      DBI::dbRemoveTable(conn, "bridge_episode_prescription_overlap")
-      }
-  }
-  
-  dplyr::compute(tblz_bridge_episode_prescriptions_overlap, 
-                 name = "bridge_episode_prescription_overlap", 
-                 temporary = FALSE)
-  
-  return(TRUE)
+  tbl_expanded
 }
 
-#' @export
-#' @name bridge_tables
-bridge_episode_prescription_initiation <- function(conn, 
-                                                   overwrite = FALSE) {
-  
-  stopifnot(is.logical(overwrite))
-  stopifnot(is(conn, "duckdb_connection") || is(conn, "PqConnection"))
-  
-  tblz_episodes <- tbl(conn, "inpatient_episodes")
-  tblz_prescriptions <- tbl(conn, "drug_prescriptions") %>% 
-    dplyr::filter(
-      !.data$prescription_status %in% c("entered-in-error",
-                                        "draft",
-                                        "cancelled",
-                                        "unknown")
-    ) %>% 
-    dplyr::select(
-      tidyselect::all_of(c(
-        "patient_id",
-        "prescription_id",
-        "antiinfective_type",
-        "prescription_start",
-        "prescription_end",
-        "authoring_date"
-      )),
-      tidyselect::any_of("DDD")
-    )
-  DDD_present <- "DDD" %in% colnames(tblz_prescriptions)
-  
-  tblz_bridge_episode_prescription_initiation <- tblz_episodes %>% 
-    dplyr::inner_join(tblz_prescriptions, 
-                     by = "patient_id") %>% 
-    dplyr::filter(
-      dplyr::between(.data$authoring_date, .data$episode_start, .data$episode_end) 
-    )
-  
-  if( is(conn, "PqConnection") || is(conn, "duckdb_connection") ) {
-    tblz_bridge_episode_prescription_initiation <- dplyr::mutate(
-      tblz_bridge_episode_prescription_initiation,
-      DOT_prescribed = dplyr::sql(
-        "EXTRACT(EPOCH FROM (
-           prescription_end::TIMESTAMP -
-           prescription_start::TIMESTAMP ))
-         / ( 3600.0 * 24.0 )"
-      )
-    )
-    
-    if ( DDD_present ) {
-      tblz_bridge_episode_prescription_initiation <- dplyr::mutate(
-        tblz_bridge_episode_prescription_initiation,
-        DDD_prescribed = dplyr::sql(
-          "EXTRACT(EPOCH FROM (
-           prescription_end::TIMESTAMP -
-           prescription_start::TIMESTAMP ))
-         / ( 3600.0 * 24.0 ) * \"DDD\"")
-      )
-    }
-    
-  } else {
-    .throw_error_method_not_implemented("bridge_episode_prescription_initiation()",
-                                        class(conn))
-  }
-  
-  if ( DDD_present ) {
-    tblz_bridge_episode_prescription_initiation <- dplyr::select(
-      tblz_bridge_episode_prescription_initiation,
-      "patient_id",
-      "encounter_id",
-      "episode_number",
-      "prescription_id",
-      "antiinfective_type",
-      "DOT_prescribed",
-      "DDD_prescribed"
-    )
-  } else {
-    tblz_bridge_episode_prescription_initiation <- dplyr::select(
-      tblz_bridge_episode_prescription_initiation,
-      "patient_id",
-      "encounter_id",
-      "episode_number",
-      "prescription_id",
-      "antiinfective_type",
-      "DOT_prescribed"
-    )
-  }
-  
-  if (overwrite) {
-    if(DBI::dbExistsTable(conn, "bridge_episode_prescription_initiation")) {
-      DBI::dbRemoveTable(conn, "bridge_episode_prescription_initiation")
-    }
-  }
-  
-  silence <- dplyr::compute(tblz_bridge_episode_prescription_initiation, 
-                            name = "bridge_episode_prescription_initiation", 
-                            temporary = FALSE)
-  
-  return(TRUE)
-}
-
-#' @name bridge_tables
-#' @export
-bridge_encounter_therapy_overlap <- function(conn, 
-                                             overwrite = FALSE) {
-  stopifnot(is.logical(overwrite))
-  stopifnot(is(conn, "duckdb_connection") || is(conn, "PqConnection"))
-  
-  tblz_encounters <- tbl(conn, "inpatient_episodes") %>% 
-    dplyr::distinct(.data$patient_id, 
-                    .data$encounter_id, 
-                    .data$admission_date, 
-                    .data$discharge_date)
-  tblz_therapies <- tbl(conn, "drug_therapy_episodes")
-  
-  tblz_bridge_encounter_therapy_overlap <- tblz_encounters %>% 
-    dplyr::inner_join(tblz_therapies, by = "patient_id") %>% 
-    dplyr::filter(
-      dplyr::between(.data$therapy_start, .data$admission_date, .data$discharge_date) |
-        dplyr::between(.data$therapy_end, .data$admission_date, .data$discharge_date) |
-        dplyr::between(.data$admission_date, .data$therapy_start, .data$therapy_end)
-    )
-  
-  if( is(conn, "PqConnection") || is(conn, "duckdb_connection") ) {
-    tblz_bridge_encounter_therapy_overlap <- dplyr::mutate(
-      tblz_bridge_encounter_therapy_overlap,
-      LOT = dplyr::sql(
-        "EXTRACT(EPOCH FROM (
-           LEAST(therapy_end::TIMESTAMP, discharge_date::TIMESTAMP) -
-           GREATEST(therapy_start::TIMESTAMP, admission_date::TIMESTAMP) ))
-         / ( 3600.0 * 24.0 )"
-      )
-    )
-  } else {
-    .throw_error_method_not_implemented("bridge_encounter_therapy_overlap()",
-                                        class(conn))
-  }
-  
-  tblz_bridge_encounter_therapy_overlap <- dplyr::select(
-    tblz_bridge_encounter_therapy_overlap,
-    "patient_id",
-    "encounter_id",
-    "therapy_id",
-    "antiinfective_type",
-    "LOT"
-  )
-  
-  if (overwrite) {
-    if(DBI::dbExistsTable(conn, "bridge_encounter_therapy_overlap")) {
-      DBI::dbRemoveTable(conn, "bridge_encounter_therapy_overlap")
-    }
-  }
-  
-  silence <- dplyr::compute(tblz_bridge_encounter_therapy_overlap, 
-                            name = "bridge_encounter_therapy_overlap", 
-                            temporary = FALSE)
-  return(TRUE)
-}
 
 #' Compute episode bed days in inpatient_episodes table
 #' 
@@ -1723,163 +1431,4 @@ bridge_encounter_therapy_overlap <- function(conn,
     episode_end::TIMESTAMP - episode_start::TIMESTAMP )) 
     / ( 24.0 * 3600.0 );"
   )
-}
-
-
-#' Add demographics to a remote table with a "patient_id" key
-#'
-#' @param x a remote `tbl` object
-#'
-#' @return a remote `tbl` object enriched with any variables available from the
-#' `patients` table out of: `date_of_birth`, `sex`, `ethnic_category_UK`, if it 
-#' exists. Otherwise, return `x` untransformed.
-#' @noRd
-.tbl_add_demographics <- function(x) {
-  # Verify if sex, dob and ethnicity are available. If they are, add them to the table
-  
-  if (!("patient_id" %in% colnames(x))) {
-    stop("`x` does not contain a `patient_id` field.")
-  }
-  
-  if (DBI::dbExistsTable(x$src$con, "patients")) {
-    x <- dplyr::compute(x)
-    pt_demog <- dplyr::tbl(x$src$con, "patients") 
-    
-    demog_selection <- character(0)
-    if ("date_of_birth" %in% colnames(pt_demog)) demog_selection <- c(demog_selection, "date_of_birth")
-    if ("sex" %in% colnames(pt_demog)) demog_selection <- c(demog_selection, "sex")
-    if ("ethnic_category_UK" %in% colnames(pt_demog)) demog_selection <- c(demog_selection, "ethnic_category_UK")
-    
-    pt_demog <- dplyr::select(pt_demog, "patient_id", dplyr::all_of(demog_selection))
-    
-    x <- dplyr::left_join(
-      x,
-      pt_demog,
-      by = "patient_id"
-    )
-  }
-
-  x
-}
-
-
-create_metric_tbl_1 <- function(conn) {
-  
-  message("DOTs include active, stopped and completed inpatient prescriptions only")
-  # Set grouping set IDs
-  olap_dimensions <- c(
-    "drug_code"
-  )
-  
-  rx_expanded <- dplyr::tbl(conn, "drug_prescriptions") %>% 
-    dplyr::filter(
-      .data$prescription_status %in% c("active",
-                                       "stopped",
-                                       "completed") &
-      .data$prescription_context == "inpatient"
-    ) %>% 
-    dplyr::select(!!c("prescription_id", 
-                      "prescription_start", 
-                      "prescription_end",
-                      olap_dimensions)) 
-
-  rx_expanded <- tbl(conn, "bridge_episode_prescription_overlap") %>% 
-    dplyr::inner_join(rx_expanded, by = c("prescription_id")) %>% 
-    dplyr::left_join(
-      dplyr::select(
-        dplyr::tbl(conn, "inpatient_episodes"),
-        "patient_id", "encounter_id", "episode_number", "main_specialty_code", "admission_method"
-      ),
-      by = c("patient_id", "encounter_id", "episode_number")
-    ) %>% 
-    .tbl_add_demographics()
-  
-  age_enabled <- "date_of_birth" %in% colnames(rx_expanded)
-  sex_enabled <- "sex" %in% colnames(rx_expanded)
-  ethnic_enabled <- "ethnic_category_UK" %in% colnames(rx_expanded)
-  
-  olap_dimensions <- c(olap_dimensions, "antiinfective_type", "admission_method", "main_specialty_code")
-  if (age_enabled) olap_dimensions <- c(olap_dimensions, "age")
-  if (sex_enabled) olap_dimensions <- c(olap_dimensions, "sex")
-  if (ethnic_enabled) olap_dimensions <- c(olap_dimensions, "ethnic_category_UK")
-  
-  if (is(conn, "duckdb_connection")) {
-    rx_expanded <- rx_expanded %>% 
-      dplyr::mutate(
-        date = dplyr::sql("unlist(generate_series(start_dt, end_dt, interval '1 day'))::date")
-      )
-  } else if (is(conn, "PqConnection")) {
-    rx_expanded <- rx_expanded %>% 
-      dplyr::mutate(
-        date = dplyr::sql("generate_series(start_dt, end_dt, interval '1 day')::date")
-      )
-  }
-  if (age_enabled) {
-    rx_expanded <- rx_expanded %>% 
-      dplyr::mutate(
-        age = dplyr::sql("date_part('year', age(date, date_of_birth))")
-      ) %>% 
-      dplyr::select(-"date_of_birth")
-  }
-
-  rx_expanded <- rx_expanded %>% 
-    dplyr::mutate(
-      dot_prescribed = dplyr::sql(
-        "CASE WHEN start_dt::date = date THEN 3600.0*24.0 - EXTRACT(epoch from CAST(start_dt::TIMESTAMP as TIME))
-      WHEN end_dt::date = date THEN EXTRACT(epoch FROM CAST(end_dt::TIMESTAMP as TIME))
-      ELSE 3600*24 END / 3600.0 / 24.0
-      ")
-    ) %>% 
-    dplyr::distinct(!!!dplyr::syms(c("prescription_id", "date", "dot_prescribed", olap_dimensions))) %>% 
-    dplyr::compute()
-  
-  
-  ip_expanded <- tbl(conn, "inpatient_episodes") %>% 
-    dplyr::select("episode_start", "episode_end", "main_specialty_code", "admission_method")
-    
-  if (is(conn, "duckdb_connection")) {
-    ip_expanded <- ip_expanded %>% 
-      dplyr::mutate(
-        date = dplyr::sql("unlist(generate_series(episode_start, episode_end, interval '1 day'))::date")
-      )
-  } else if (is(conn, "PqConnection")) {
-    ip_expanded <- ip_expanded %>% 
-      dplyr::mutate(
-        date = dplyr::sql("generate_series(episode_start, episode_end, interval '1 day')::date")
-      )
-  }
-  
-  ip_expanded <- ip_expanded%>% 
-    dplyr::mutate(
-      bed_days = dplyr::sql(
-        "CASE WHEN episode_start::date = date THEN 3600.0*24.0 - EXTRACT(epoch from CAST(episode_start::TIMESTAMP as TIME))
-      WHEN episode_end::date = date THEN EXTRACT(epoch FROM CAST(episode_end::TIMESTAMP as TIME))
-      ELSE 3600*24 END / 3600.0 / 24.0
-      ")
-    ) %>% 
-    dplyr::select("date", "bed_days", "main_specialty_code", "admission_method") %>% 
-    dplyr::compute()
-  
-  olap_dimensions <- c(olap_dimensions, "date")
-
-  final_dt <- dplyr::full_join(
-    ip_expanded,
-    rx_expanded,
-    by = c("date", "main_specialty_code", "admission_method")
-  ) %>% 
-    dplyr::compute()
-  
-  x <- DBI::dbGetQuery(
-    conn = conn,
-    statement = paste(
-      "SELECT 'inpatient_dot_totals' AS metric,",
-      paste(olap_dimensions, collapse = ", "), ", ",
-      "sum(dot_prescribed) as dot_prescribed,",
-      "sum(bed_days) as bed_days",
-      "FROM", dbplyr::remote_name(final_dt),
-      "GROUP BY CUBE (", paste(c(olap_dimensions), collapse = ", "), ");"
-    )
-  )
-  
-  x
 }
