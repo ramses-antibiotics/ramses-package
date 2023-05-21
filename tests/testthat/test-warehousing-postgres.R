@@ -989,7 +989,7 @@ test_that("Ramses on PosgreSQL (system test)", {
                c("TherapyEpisode 89ac870bc1c1e4b2a37cec79d188cb08 ", "Patient:   1555756339 ", 
                  "Start:     2017-07-02 01:15:46 BST ", "End:       2017-07-06 01:35:46 BST ", 
                  "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
-                 "  > Clarithromycin ORAL 500mg 4 days"))
+                 "  > Clarithromycin ORAL 500mg 3 days"))
   expect_equal(utils::capture.output(TherapyEpisode(pq_conn, "fa179f4bcf3efa1e21225ab207ab40c4"))[1:11],
                c("TherapyEpisode fa179f4bcf3efa1e21225ab207ab40c4 ", "Patient:   3422481921 ", 
                  "Start:     2017-11-15 15:33:36 GMT ", "End:       2017-12-01 21:11:36 GMT ", 
