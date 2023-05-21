@@ -1,356 +1,356 @@
 "patient_id","prescription_id","rxsummary","authoring_date","prescription_start","prescription_end","tr_DESC","route","dose","units","frequency","duration"
-"5124578766","66cac1c5eab88d72c8b7687966357f5b","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-08-04 13:07:16,2015-08-04 14:45:16,2015-08-07 14:45:16,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"4874231672","8ccd67f4730b62ceafb8bcb27996c10c","Ciprofloxacin ORAL 500 mg BD",2017-07-06 09:49:31,2017-07-06 10:26:31,2017-07-07 22:26:31,"Ciprofloxacin","ORAL","500","mg","BD",1.5
-"6292626973","72cf4b592b0f4e2143b4bb9d7c569c97","Flucloxacillin ORAL 500 mg 6H",2017-01-13 17:34:41,2017-01-13 18:48:41,2017-01-17 18:48:41,"Flucloxacillin","ORAL","500","mg","6H",4
-"6292626973","806c86b55cf50505a20b722f081c4075","Metronidazole ORAL 400 mg TDS",2017-11-12 09:09:13,2017-11-12 09:44:13,2017-11-14 09:44:13,"Metronidazole","ORAL","400","mg","TDS",2
-"7243963233","9d3963c069cdab56f6871798c7e6e5f0","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-08-17 13:58:38,2017-08-17 15:37:38,2017-08-21 15:37:38,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"7243963233","ff52052337836ff7dc35fb54c442ffd8","Amoxicillin ORAL 500 mg 8H",2017-08-21 15:37:38,2017-08-21 17:11:38,2017-08-24 17:11:38,"Amoxicillin","ORAL","500","mg","8H",3
-"2637563516","098a01f0bfeb913cbbac246f6f55849a","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-02-19 12:54:01,2016-02-19 13:40:01,2016-02-22 13:40:01,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"2637563516","2a74f8fa8d9b1c261348c4487829ad71","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-05-06 20:05:57,2017-05-06 21:08:57,2017-05-08 21:08:57,"Piperacillin / Tazobactam","IV","4.5","g","TDS",2
-"4693467658","1b7476fa87d069dc761cff576cfaefd5","Clindamycin ORAL 600 mg QDS",2015-12-25 07:23:49,2015-12-25 08:22:49,2015-12-26 08:22:49,"Clindamycin","ORAL","600","mg","QDS",1
-"4693467658","e4d64acf29b90b26593937edb9430302","Flucloxacillin IVI 2 g 6H",2015-12-26 08:22:49,2015-12-26 10:26:49,2015-12-28 10:26:49,"Flucloxacillin","IV","2","g","6H",2
-"4693467658","cfe1b7f5d4ae18c54c90eaec4bb24231","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-12-29 08:18:26,2015-12-29 09:55:26,2016-01-01 09:55:26,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"2824187744","1a1af69ea673f7d53483339e5194e37b","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-02-27 00:38:25,2015-02-27 01:16:25,2015-03-03 01:16:25,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"2824187744","8e001a93992c9887fe9dc9200a6edec1","Co-amoxiclav IVI 1.2 g TDS",2015-03-03 01:16:25,2015-03-03 02:13:25,2015-03-05 02:13:25,"Coamoxiclav","IV","1.2","g","TDS",2
-"2824187744","8f3356320f5ea3d523e0ba22cb5d4e04","Co-amoxiclav ORAL 625 mg TDS",2015-03-05 02:13:25,2015-03-05 04:07:25,2015-03-08 04:07:25,"Coamoxiclav","ORAL","625","mg","TDS",3
-"3587324687","f926c810c9b4e5d9bc46e0766e500f14","Flucloxacillin ORAL 500 mg 6H",2016-02-28 21:10:17,2016-02-28 22:05:17,2016-03-02 22:05:17,"Flucloxacillin","ORAL","500","mg","6H",3
-"6378147283","ba0d2a4a24f16227e84e155671be165e","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-01-18 02:31:29,2017-01-18 03:22:29,2017-01-22 03:22:29,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"6378147283","ba02653f259baf38416064a996de72d1","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-01-22 03:22:29,2017-01-22 05:02:29,2017-01-26 05:02:29,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"6378147283","e413d9471817dfcb7da07bad416fbc0b","Co-amoxiclav ORAL 625 mg TDS",2017-01-26 05:02:29,2017-01-26 06:45:29,2017-01-29 06:45:29,"Coamoxiclav","ORAL","625","mg","TDS",3
-"7381233393","69fdcef1da22a6ee28d24cd7069d8c4d","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2015-09-03 02:46:24,2015-09-03 03:57:24,2015-09-07 03:57:24,"Clarithromycin","ORAL","500","mg","BD",4
-"7381233393","39662bebbb6080cefd3d19f7f43d9ee4","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2015-09-03 03:52:24,2015-09-03 05:31:24,2015-09-05 05:31:24,"Coamoxiclav","IV","1.2","g","TDS",2
-"3462786743","f2ad3cf56c66f831c188de8804ee78a0","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-03-28 11:27:45,2017-03-28 12:40:45,2017-03-31 12:40:45,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"3462786743","73ff731e3a0b280a80cab0d2088f9c77","Co-amoxiclav ORAL 625 mg TDS",2017-03-31 12:40:45,2017-03-31 14:04:45,2017-04-02 14:04:45,"Coamoxiclav","ORAL","625","mg","TDS",2
-"3462786743","a094fad22985020999e6a1773dfc87e3","Meropenem IVI 1 g TDS",2017-04-02 14:04:45,2017-04-02 15:20:45,2017-04-06 15:20:45,"Meropenem","IV","1","g","TDS",4
-"4372752483","a78d0f02868e8adb75944c025d6d8c3d","Co-amoxiclav ORAL 625 mg TDS",2016-03-26 21:46:27,2016-03-26 23:11:27,2016-03-29 23:11:27,"Coamoxiclav","ORAL","625","mg","TDS",3
-"4418729346","e9156a98920e2bb9d6811250f94205e5","Co-amoxiclav IVI 1.2 g TDS",2016-01-11 20:56:41,2016-01-11 22:46:41,2016-01-12 22:46:41,"Coamoxiclav","IV","1.2","g","TDS",1
-"5418384162","f0d5a762f34574f90dd245ce1bee1185","Amoxicillin ORAL 500 mg 8H",2016-04-22 07:39:01,2016-04-22 07:55:01,2016-04-25 07:55:01,"Amoxicillin","ORAL","500","mg","8H",3
-"5418384162","4a6ff4624472f21d38c98106fd007269","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-02-25 21:33:34,2017-02-25 22:21:34,2017-02-28 22:21:34,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"4962397166","897ada36e7acbb2037b3bd06470cc48b","Co-amoxiclav ORAL 625 mg TDS",2017-09-26 18:39:22,2017-09-26 18:52:22,2017-09-29 18:52:22,"Coamoxiclav","ORAL","625","mg","TDS",3
-"4962397166","456714cb1813ae17a4bbed7c73b3fdde","Co-amoxiclav ORAL 625 mg TDS",2017-09-29 18:52:22,2017-09-29 20:07:22,2017-10-02 20:07:22,"Coamoxiclav","ORAL","625","mg","TDS",3
-"8335182445","520c02c6f88a2ba7f65153b04bbf9419","Co-amoxiclav ORAL 625 mg TDS",2016-07-04 18:54:07,2016-07-04 19:55:07,2016-07-06 19:55:07,"Coamoxiclav","ORAL","625","mg","TDS",2
-"5311213769","d99239867198c358f49be00efa7be3a8","Amoxicillin ORAL 500 mg 8H",2016-01-22 14:19:01,2016-01-22 14:40:01,2016-01-25 14:40:01,"Amoxicillin","ORAL","500","mg","8H",3
-"8498654723","fb8c1e6ea30d05c0debd75d5be0470b7","Co-amoxiclav IVI 1.2 g TDS",2015-02-02 09:37:01,2015-02-02 11:18:01,2015-02-04 11:18:01,"Coamoxiclav","IV","1.2","g","TDS",2
-"7231532848","770dcb4fb904cc0e6ae650d1ca3297e2","Co-amoxiclav ORAL 625 mg TDS",2017-12-17 18:23:37,2017-12-17 19:59:37,2017-12-18 07:59:37,"Coamoxiclav","ORAL","625","mg","TDS",0.5
-"6427543853","0086ca46fdeebe3327c7b5ae7fec5b6f","Co-amoxiclav ORAL 625 mg TDS",2017-04-09 09:44:51,2017-04-09 11:15:51,2017-04-10 11:15:51,"Coamoxiclav","ORAL","625","mg","TDS",1
-"4618532339","edff1a3f02f4f940cd485718650d89f1","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-05-30 00:53:34,2017-05-30 01:46:34,2017-06-01 01:46:34,"Piperacillin / Tazobactam","IV","4.5","g","TDS",2
-"3424977235","17988dad5b9a94b4cd10b0f2dcbd855b","Co-amoxiclav IVI 1.2 g TDS",2016-09-22 01:21:45,2016-09-22 01:47:45,2016-09-24 01:47:45,"Coamoxiclav","IV","1.2","g","TDS",2
-"3424977235","b2bd6dee7b7e9a9062b6d6e66d85775d","Co-amoxiclav IVI 1.2 g TDS",2016-09-24 01:47:45,2016-09-24 03:49:45,2016-09-26 03:49:45,"Coamoxiclav","IV","1.2","g","TDS",2
-"3424977235","105a0e6df7595da44f571cca1a5ee223","Co-amoxiclav ORAL 625 mg TDS",2016-09-26 03:49:45,2016-09-26 06:37:45,2016-09-29 06:37:45,"Coamoxiclav","ORAL","625","mg","TDS",3
-"2687416426","b468e795b34d0723e64c564cc5c8cc5d","Co-amoxiclav ORAL 625 mg TDS",2016-03-02 19:06:56,2016-03-02 19:51:56,2016-03-05 19:51:56,"Coamoxiclav","ORAL","625","mg","TDS",3
-"2687416426","d41aa6bc9b3720e021a0061876e78617","Co-amoxiclav IVI 1.2 g TDS",2016-03-05 19:51:56,2016-03-05 20:50:56,2016-03-07 20:50:56,"Coamoxiclav","IV","1.2","g","TDS",2
-"1253675584","9a2268f40e891b22611c9912c834cb52","Co-amoxiclav ORAL 625 mg TDS",2015-02-26 19:26:55,2015-02-26 20:09:55,2015-03-01 20:09:55,"Coamoxiclav","ORAL","625","mg","TDS",3
-"1253675584","c2a0dbfcad344affedd13481f872b47d","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-03-01 20:09:55,2015-03-01 21:47:55,2015-03-05 21:47:55,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"2823178788","ca9b512b7e50303d3dc0f4d35162b529","Co-amoxiclav IVI 1.2 g TDS",2016-09-25 16:13:31,2016-09-25 16:52:31,2016-09-27 16:52:31,"Coamoxiclav","IV","1.2","g","TDS",2
-"5538985852","6c84b05b4f9e0584fe8a5d7049121c06","Co-amoxiclav ORAL 625 mg TDS",2016-05-01 20:29:37,2016-05-01 21:31:37,2016-05-04 21:31:37,"Coamoxiclav","ORAL","625","mg","TDS",3
-"5538985852","75c771f75269c8ee41f1c9ade8f2f3ba","Amoxicillin ORAL 500 mg 8H",2016-05-04 21:31:37,2016-05-04 23:58:37,2016-05-07 23:58:37,"Amoxicillin","ORAL","500","mg","8H",3
-"5538985852","394dcf232b20390beaa4e3058a3f7a04","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-05-07 23:58:37,2016-05-08 01:30:37,2016-05-12 01:30:37,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"5538985852","822b3f7f351b16d409673abadc71b7cb","Co-amoxiclav ORAL 625 mg TDS",2016-07-23 14:35:49,2016-07-23 15:58:49,2016-07-24 15:58:49,"Coamoxiclav","ORAL","625","mg","TDS",1
-"7833894153","37f20f356d451b728fcd1a21622a2d92","Metronidazole ORAL 400 mg TDS",2017-04-10 15:53:31,2017-04-10 16:49:31,2017-04-14 16:49:31,"Metronidazole","ORAL","400","mg","TDS",4
-"2328559279","e2b73d58267db5a0593b9fac607f21a8","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-06-30 17:30:44,2017-06-30 18:50:44,2017-07-04 18:50:44,"Clarithromycin","ORAL","500","mg","BD",4
-"2328559279","e2b0c55a1021acb1161e459abedd10d5","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-06-30 18:11:44,2017-06-30 19:22:44,2017-07-02 19:22:44,"Coamoxiclav","IV","1.2","g","TDS",2
-"2464667326","7b86ed4752203aabe2ed51fe00ca9082","Trimethoprim ORAL 200 mg BD",2016-10-16 10:25:01,2016-10-16 11:02:01,2016-10-19 11:02:01,"Trimethoprim","ORAL","200","mg","BD",3
-"2464667326","aec57adebb49df94be7fbc3c79b82b2c","Co-amoxiclav ORAL 625 mg TDS",2016-12-25 12:55:37,2016-12-25 14:18:37,2016-12-26 14:18:37,"Coamoxiclav","ORAL","625","mg","TDS",1
-"3422481921","fa179f4bcf3efa1e21225ab207ab40c4","Co-amoxiclav IVI 1.2 g TDS",2017-11-15 15:31:36,2017-11-15 15:33:36,2017-11-17 15:33:36,"Coamoxiclav","IV","1.2","g","TDS",2
-"3422481921","16b5ebd74c9e0521f6ab9b0c89e742db","Co-amoxiclav IVI 1.2 g TDS",2017-11-17 15:33:36,2017-11-17 16:46:36,2017-11-19 16:46:36,"Coamoxiclav","IV","1.2","g","TDS",2
-"3422481921","e3db24baa57cafac6961c528fbf3d5bb","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-11-19 16:46:36,2017-11-19 17:17:36,2017-11-23 17:17:36,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"3422481921","6ddfc9b087eaee7d00035f9c5411697b","Co-amoxiclav IVI 1.2 g TDS",2017-11-23 17:17:36,2017-11-23 19:12:36,2017-11-25 19:12:36,"Coamoxiclav","IV","1.2","g","TDS",2
-"3422481921","48dab9096a4cf8d35fa266373c46ab81","Co-amoxiclav IVI 1.2 g TDS",2017-11-25 19:12:36,2017-11-25 20:15:36,2017-11-27 20:15:36,"Coamoxiclav","IV","1.2","g","TDS",2
-"3422481921","4909e16280bce736a9e9e4275d4686e7","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-11-27 20:15:36,2017-11-27 21:11:36,2017-12-01 21:11:36,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"4475466893","59a07d350b40ed26bbdfdba252aa929e","Flucloxacillin IVI 2 g 6H",2015-03-01 09:20:37,2015-03-01 10:37:37,2015-03-04 10:37:37,"Flucloxacillin","IV","2","g","6H",3
-"4475466893","a834f34a9ad1d74914363e38dca15960","Co-amoxiclav ORAL 625 mg TDS",2015-09-08 00:12:19,2015-09-08 00:45:19,2015-09-11 00:45:19,"Coamoxiclav","ORAL","625","mg","TDS",3
-"4475466893","7a321fe2b7016759726aef4096b8a96d","Co-amoxiclav ORAL 625 mg TDS",2015-09-11 00:45:19,2015-09-11 02:05:19,2015-09-14 02:05:19,"Coamoxiclav","ORAL","625","mg","TDS",3
-"4475466893","9d6dc0873fd9d50e6493830951957dd6","Co-amoxiclav ORAL 625 mg TDS",2015-11-06 03:48:02,2015-11-06 04:39:02,2015-11-08 04:39:02,"Coamoxiclav","ORAL","625","mg","TDS",2
-"4475466893","88f7556d5b802f2a37c6e9e9a7d28c4b","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2015-11-08 04:39:02,2015-11-08 07:10:02,2015-11-12 07:10:02,"Clarithromycin","ORAL","500","mg","BD",4
-"4475466893","cf5daacb23fb35b58101ce15e792a7ed","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2015-11-08 04:39:02,2015-11-08 05:47:02,2015-11-10 05:47:02,"Coamoxiclav","IV","1.2","g","TDS",2
-"4475466893","fe4168a04986283583ea2b192a758db1","Ciprofloxacin ORAL 500 mg BD",2015-11-14 20:41:31,2015-11-14 20:59:31,2015-11-15 20:59:31,"Ciprofloxacin","ORAL","500","mg","BD",1
-"3883623324","66c5a402f246a2420442b5a06a8406b6","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-10-11 20:01:57,2017-10-11 20:41:57,2017-10-14 20:41:57,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"9769364816","40bd7589e261192c3e7f724c31482707","Co-amoxiclav ORAL 625 mg TDS",2016-08-12 19:32:07,2016-08-12 20:26:07,2016-08-15 20:26:07,"Coamoxiclav","ORAL","625","mg","TDS",3
-"6365433225","2a2b6da3b67f6f495f4cedafb029f631","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-05-05 18:41:59,2017-05-05 19:46:59,2017-05-08 19:46:59,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"6365433225","10ee0f6f1392a8e2c378fca0d5271950","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-05-08 19:46:59,2017-05-08 20:57:59,2017-05-11 20:57:59,"Clarithromycin","ORAL","500","mg","BD",3
-"6365433225","74f53415b602d4128862aa272aa5ba78","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-05-08 19:46:59,2017-05-08 21:42:59,2017-05-11 21:42:59,"Coamoxiclav","IV","1.2","g","TDS",3
-"6365433225","0464f3dc37d17102ad1acb2fc4ba6eec","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-05-11 21:42:59,2017-05-11 23:07:59,2017-05-14 23:07:59,"Clarithromycin","ORAL","500","mg","BD",3
-"6365433225","b656c17a2ca24d5f3307898586b2b475","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-05-11 21:42:59,2017-05-11 23:28:59,2017-05-14 23:28:59,"Coamoxiclav","IV","1.2","g","TDS",3
-"6365433225","ea5f9e80dd506d5f4a97a8237626f032","Co-amoxiclav ORAL 625 mg TDS",2017-05-14 23:28:59,2017-05-14 23:40:59,2017-05-16 23:40:59,"Coamoxiclav","ORAL","625","mg","TDS",2
-"6365433225","3e6d402eb6748987ab8c581578d8372c","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-05-16 23:40:59,2017-05-17 01:58:59,2017-05-20 01:58:59,"Clarithromycin","ORAL","500","mg","BD",3
-"6365433225","ed93b998a6ccc8e4844b249aebfb9735","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-05-16 23:40:59,2017-05-17 00:37:59,2017-05-20 00:37:59,"Coamoxiclav","IV","1.2","g","TDS",3
-"8357537668","61ec5f6768b4c5b0e62253d76885ad77","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2015-06-09 22:11:41,2015-06-09 23:42:41,2015-06-13 23:42:41,"Clarithromycin","ORAL","500","mg","BD",4
-"8357537668","c880812e678ca2b1b0ce8255f1de9cf9","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2015-06-09 22:29:41,2015-06-09 23:04:41,2015-06-11 23:04:41,"Coamoxiclav","IV","1.2","g","TDS",2
-"5568726447","46ed34b53050c248c9c9222e8b117ac7","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2016-04-15 13:23:37,2016-04-15 13:37:37,2016-04-19 13:37:37,"Clarithromycin","ORAL","500","mg","BD",4
-"5568726447","901806d26c7e442ba54803c3d6bd2137","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2016-04-15 12:36:37,2016-04-15 14:25:37,2016-04-17 14:25:37,"Coamoxiclav","IV","1.2","g","TDS",2
-"6955637268","185fc3a969a38b18aaf2d31d180da63d","Trimethoprim ORAL 200 mg BD",2017-04-03 18:31:17,2017-04-03 19:47:17,2017-04-06 19:47:17,"Trimethoprim","ORAL","200","mg","BD",3
-"6955637268","e7244c36825f1b8142b58c9e73a3226f","Co-amoxiclav ORAL 625 mg TDS",2017-04-06 19:47:17,2017-04-06 21:18:17,2017-04-09 21:18:17,"Coamoxiclav","ORAL","625","mg","TDS",3
-"6955637268","f82fc05b0f39a32808603c257ba50e0e","Trimethoprim ORAL 200 mg BD",2017-04-09 21:18:17,2017-04-09 22:40:17,2017-04-12 22:40:17,"Trimethoprim","ORAL","200","mg","BD",3
-"6955637268","a7dbc978d1ba4fa6fa42a6c3cbd53dcd","Co-amoxiclav ORAL 625 mg TDS",2017-04-12 22:40:17,2017-04-12 23:34:17,2017-04-15 23:34:17,"Coamoxiclav","ORAL","625","mg","TDS",3
-"6955637268","99da3ce2a60986d2e6c9b43c519b50bc","Co-amoxiclav ORAL 625 mg TDS",2017-04-15 23:34:17,2017-04-16 00:11:17,2017-04-19 00:11:17,"Coamoxiclav","ORAL","625","mg","TDS",3
-"6375135268","bb18b85ba5c86f99e07fb0cf7847a5f3","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2016-03-12 12:15:53,2016-03-12 12:44:53,2016-03-16 12:44:53,"Clarithromycin","ORAL","500","mg","BD",4
-"6375135268","bebb9604f2fec4f682772680f4b4c949","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2016-03-12 10:44:53,2016-03-12 12:13:53,2016-03-14 12:13:53,"Coamoxiclav","IV","1.2","g","TDS",2
-"7236162845","6b10726c9f2157ec6c3eb9f0cac78bb4","Co-amoxiclav ORAL 625 mg TDS",2017-08-26 14:39:51,2017-08-26 15:36:51,2017-08-28 15:36:51,"Coamoxiclav","ORAL","625","mg","TDS",2
-"5749447252","c9af108c6ddd01f4c8d065241a3f3cc7","Amoxicillin ORAL 500 mg 8H",2017-04-20 15:02:41,2017-04-20 15:33:41,2017-04-23 15:33:41,"Amoxicillin","ORAL","500","mg","8H",3
-"2137425833","7d30fd8223e3032c12cb779fdd1e0a6b","Co-amoxiclav ORAL 625 mg TDS",2017-11-23 11:21:07,2017-11-23 12:23:07,2017-11-26 12:23:07,"Coamoxiclav","ORAL","625","mg","TDS",3
-"2137425833","92976f1a03fe24b67cff5d3951abcb7c","Flucloxacillin ORAL 500 mg 6H",2017-11-26 12:23:07,2017-11-26 14:04:07,2017-11-29 14:04:07,"Flucloxacillin","ORAL","500","mg","6H",3
-"5869769954","7f9919dd41fd3365d0ef36569b4a4154","Co-amoxiclav IVI 1.2 g TDS",2017-01-04 07:32:05,2017-01-04 08:57:05,2017-01-06 08:57:05,"Coamoxiclav","IV","1.2","g","TDS",2
-"5869769954","2c7f4297e6de0b4b984b8ce75348b995","Co-amoxiclav ORAL 625 mg TDS",2017-01-06 08:57:05,2017-01-06 11:35:05,2017-01-09 11:35:05,"Coamoxiclav","ORAL","625","mg","TDS",3
-"5869769954","5045006d4dbe644c79ee97c26ad29a80","Co-amoxiclav IVI 1.2 g TDS",2017-01-09 11:35:05,2017-01-09 14:04:05,2017-01-11 14:04:05,"Coamoxiclav","IV","1.2","g","TDS",2
-"5869769954","1a6b55bd8d25fb2e2901644ac9172c49","Co-amoxiclav ORAL 625 mg TDS",2017-01-11 14:04:05,2017-01-11 15:18:05,2017-01-14 15:18:05,"Coamoxiclav","ORAL","625","mg","TDS",3
-"5869769954","ae5506c4f553daef13975ed671bd5eef","Co-amoxiclav ORAL 625 mg TDS",2017-01-14 15:18:05,2017-01-14 16:23:05,2017-01-17 16:23:05,"Coamoxiclav","ORAL","625","mg","TDS",3
-"3734493853","d92d3af74aabae1e2d599b67adac9016","Doxycycline ORAL 100 mg OD",2015-03-20 16:10:01,2015-03-20 17:17:01,2015-03-24 17:17:01,"Doxycycline","ORAL","100","mg","OD",4
-"3734493853","29d914a31300de1d3131f0e677891caa","Flucloxacillin ORAL 500 mg 6H",2017-07-03 22:43:49,2017-07-04 00:08:49,2017-07-05 00:08:49,"Flucloxacillin","ORAL","500","mg","6H",1
-"2361769316","afd5cbac008a092088b1b198be42d3d1","Vancomycin protocol IVI 500-2000 mg TTW",2016-10-20 00:16:33,2016-10-20 01:50:33,2016-10-24 01:50:33,"Vancomycin protocol","IV","500-2000","mg","TTW",4
-"2361769316","607596780a080f9bec7abe0679a9a132","Amoxicillin ORAL 500 mg 8H",2016-12-09 09:12:00,2016-12-09 10:48:00,2016-12-12 10:48:00,"Amoxicillin","ORAL","500","mg","8H",3
-"8258333156","f770855cf9d424c76fdfbc9786d508ac","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-10-07 18:34:13,2015-10-07 18:43:13,2015-10-10 18:43:13,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"8258333156","22873c8a490ad87e49eb785be6ca7e18","Co-amoxiclav ORAL 625 mg TDS",2015-10-10 18:43:13,2015-10-10 21:22:13,2015-10-12 21:22:13,"Coamoxiclav","ORAL","625","mg","TDS",2
-"8258333156","1be77966209d3efdfa443ef7e578b7e2","Trimethoprim ORAL 200 mg BD",2017-10-24 06:49:11,2017-10-24 07:28:11,2017-10-27 07:28:11,"Trimethoprim","ORAL","200","mg","BD",3
-"5398867882","b9975abd3be9b90bc38cf2e3dc33cb78","Co-amoxiclav ORAL 625 mg TDS",2015-05-30 13:36:28,2015-05-30 14:01:28,2015-06-02 14:01:28,"Coamoxiclav","ORAL","625","mg","TDS",3
-"5398867882","470c9f38992102b1b071fb29d2c27bf1","Co-amoxiclav ORAL 625 mg TDS",2015-06-03 10:38:06,2015-06-03 11:51:06,2015-06-06 11:51:06,"Coamoxiclav","ORAL","625","mg","TDS",3
-"4728918366","ae7c5159e91cce12a9a67bc81a0e76a5","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-03-01 16:59:51,2016-03-01 17:16:51,2016-03-03 17:16:51,"Piperacillin / Tazobactam","IV","4.5","g","TDS",2
-"4728918366","e14d9e851c5588b2ac4c55dc95917ee7","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-03-16 14:53:20,2016-03-16 16:15:20,2016-03-18 16:15:20,"Piperacillin / Tazobactam","IV","4.5","g","TDS",2
-"5117273865","b5526ca1a27c860db8ad94cc0a5d31ff","Co-amoxiclav ORAL 625 mg TDS",2015-01-31 17:52:01,2015-01-31 19:19:01,2015-02-03 19:19:01,"Coamoxiclav","ORAL","625","mg","TDS",3
-"5117273865","e42ebb9e9901d5ff21216cab1321c1ae","Co-amoxiclav ORAL 625 mg TDS",2015-02-03 19:19:01,2015-02-03 21:05:01,2015-02-06 21:05:01,"Coamoxiclav","ORAL","625","mg","TDS",3
-"5117273865","b95963bbae799c6bdfcbc7b7fda5625c","Nitrofurantoin ORAL 50 mg QDS",2015-02-06 21:05:01,2015-02-06 23:11:01,2015-02-09 23:11:01,"Nitrofurantoin","ORAL","50","mg","QDS",3
-"5117273865","45a3db0eb9fe8f99d9f5672ad0890fd0","Co-amoxiclav ORAL 625 mg TDS",2015-02-09 23:11:01,2015-02-09 23:46:01,2015-02-12 23:46:01,"Coamoxiclav","ORAL","625","mg","TDS",3
-"5117273865","df6c88c4a6a1cd60d3c8f3dd9b94f8d8","Co-amoxiclav ORAL 625 mg TDS",2017-07-08 03:21:39,2017-07-08 04:25:39,2017-07-09 04:25:39,"Coamoxiclav","ORAL","625","mg","TDS",1
-"8672976758","06189b4e2e07235e281fc0313344a8c1","Co-amoxiclav ORAL 625 mg TDS",2017-02-06 09:28:37,2017-02-06 10:03:37,2017-02-09 10:03:37,"Coamoxiclav","ORAL","625","mg","TDS",3
-"8672976758","fe1010feacf137dee8e61635fb816f67","Co-amoxiclav IVI 1.2 g TDS",2017-02-09 10:03:37,2017-02-09 10:50:37,2017-02-11 10:50:37,"Coamoxiclav","IV","1.2","g","TDS",2
-"8672976758","d71658ba6d065690be67e83edfaef49f","Co-amoxiclav ORAL 625 mg TDS",2017-02-11 10:50:37,2017-02-11 13:23:37,2017-02-14 13:23:37,"Coamoxiclav","ORAL","625","mg","TDS",3
-"8672976758","7d876af547d3cb649d548e97f14785cf","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-02-15 18:53:38,2017-02-15 20:02:38,2017-02-19 20:02:38,"Clarithromycin","ORAL","500","mg","BD",4
-"8672976758","95f79deb50a277f7f66f3a36d5226b0f","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-02-15 18:10:38,2017-02-15 18:32:38,2017-02-17 18:32:38,"Coamoxiclav","IV","1.2","g","TDS",2
-"8736361368","0e45bfc6d1e03e14715c8e3d14cdce99","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2015-11-29 10:44:34,2015-11-29 12:06:34,2015-12-03 12:06:34,"Clarithromycin","ORAL","500","mg","BD",4
-"8736361368","870dba8e368bc1404aaba951fefa56ef","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2015-11-29 11:14:34,2015-11-29 12:44:34,2015-12-01 12:44:34,"Coamoxiclav","IV","1.2","g","TDS",2
-"8736361368","0b724b8c3cd924442234c8233f21da5a","Meropenem IVI 1 g TDS",2016-01-25 16:20:36,2016-01-25 17:04:36,2016-01-30 17:04:36,"Meropenem","IV","1","g","TDS",5
-"4767224862","f276a0a7ba4f5d98d2beca24cd5a7584","Co-amoxiclav ORAL 625 mg TDS",2016-07-19 14:25:41,2016-07-19 14:35:41,2016-07-21 14:35:41,"Coamoxiclav","ORAL","625","mg","TDS",2
-"4767224862","e7c4b48978459c50a3c470e1f62bc529","Flucloxacillin ORAL 500 mg 6H",2016-08-03 11:55:19,2016-08-03 12:10:19,2016-08-04 12:10:19,"Flucloxacillin","ORAL","500","mg","6H",1
-"4767224862","ff76a916f339153ba8eb707c0f0dbd7a","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-01-05 22:57:21,2017-01-05 23:40:21,2017-01-08 23:40:21,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"4767224862","d7bada9fac3a9efadcf17f51d9ca1145","Meropenem IVB 1 g TDS",2017-01-08 23:40:21,2017-01-09 01:36:21,2017-01-13 01:36:21,"Meropenem","IV","1","g","TDS",4
-"4767224862","b02d13a2d57bb42ddef3ff1542906ca1","Meropenem IVI 1 g TDS",2017-01-13 01:36:21,2017-01-13 02:18:21,2017-01-19 02:18:21,"Meropenem","IV","1","g","TDS",6
-"4767224862","6f3686285656f9f875eab124e93b90c4","Meropenem IVI 1 g TDS",2017-01-19 02:18:21,2017-01-19 04:43:21,2017-01-25 04:43:21,"Meropenem","IV","1","g","TDS",6
-"4767224862","718b7314b8550757c11440746f2ad2d2","Co-amoxiclav ORAL 625 mg TDS",2017-07-16 09:56:11,2017-07-16 10:55:11,2017-07-18 10:55:11,"Coamoxiclav","ORAL","625","mg","TDS",2
-"4767224862","5b7b1b7e7f151e0ee8ae80b41a672ce7","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-09-24 07:13:37,2017-09-24 08:06:37,2017-09-27 08:06:37,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"4767224862","6aab2b053bae54c330deefa6414eb3a7","Co-amoxiclav ORAL 625 mg TDS",2017-09-29 14:47:57,2017-09-29 16:01:57,2017-10-01 16:01:57,"Coamoxiclav","ORAL","625","mg","TDS",2
-"3293433785","0d4ceb5161c23609abfe70fbc0001d24","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-01-03 14:07:26,2016-01-03 15:01:26,2016-01-08 15:01:26,"Piperacillin / Tazobactam","IV","4.5","g","TDS",5
-"3293433785","f4be225e2c1c89bafe3efbd6be12b04f","Ciprofloxacin ORAL 500 mg BD",2016-01-08 15:01:26,2016-01-08 17:43:26,2016-01-10 17:43:26,"Ciprofloxacin","ORAL","500","mg","BD",2
-"3293433785","406caa9c9ebee6085a2d83a63aa427d2","Co-amoxiclav ORAL 625 mg TDS",2016-01-10 17:43:26,2016-01-10 19:12:26,2016-01-11 19:12:26,"Coamoxiclav","ORAL","625","mg","TDS",1
-"3293433785","35ab129691dd8bec72c5b7af9d54cb83","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-02-03 12:01:04,2017-02-03 12:15:04,2017-02-06 12:15:04,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"3293433785","aacc7a2a150d487e33a0125a16f597b3","Metronidazole ORAL 400 mg TDS",2017-02-09 12:10:39,2017-02-09 13:05:39,2017-02-13 13:05:39,"Metronidazole","ORAL","400","mg","TDS",4
-"3293433785","f7684e12f5c375e49369be60b2d644dd","Meropenem IVI 1 g TDS",2017-08-02 17:52:05,2017-08-02 18:18:05,2017-08-08 18:18:05,"Meropenem","IV","1","g","TDS",6
-"3293433785","22d2915c31d2dc97412d0dc3d7585896","Meropenem IVB 1 g TDS",2017-08-08 18:18:05,2017-08-08 19:50:05,2017-08-12 19:50:05,"Meropenem","IV","1","g","TDS",4
-"3293433785","3d5bf2c1bd9fd8f3a78573271b37df95","Meropenem IVI 1 g TDS",2017-08-12 19:50:05,2017-08-12 21:13:05,2017-08-18 21:13:05,"Meropenem","IV","1","g","TDS",6
-"3293433785","7625349b0688d8d95efb967fc35c810e","Co-amoxiclav ORAL 625 mg TDS",2017-09-30 03:27:52,2017-09-30 04:46:52,2017-10-02 04:46:52,"Coamoxiclav","ORAL","625","mg","TDS",2
-"4793546841","66ac992053f0f2d9d6b460543aa25c66","Co-amoxiclav ORAL 625 mg TDS",2016-02-13 04:56:31,2016-02-13 06:43:31,2016-02-14 06:43:31,"Coamoxiclav","ORAL","625","mg","TDS",1
-"5596465465","cafcb67e586c04b0a6b1379d82f8fe08","Flucloxacillin ORAL 500 mg 6H",2017-06-27 10:47:05,2017-06-27 12:13:05,2017-06-30 12:13:05,"Flucloxacillin","ORAL","500","mg","6H",3
-"6496778614","cab4de19086eebcf6abf8499c82a6dfe","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-05-14 02:16:29,2016-05-14 02:45:29,2016-05-18 02:45:29,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"1544452743","7e7df0c2e6575a0d852be359b30cee27","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-12-02 19:59:01,2017-12-02 21:08:01,2017-12-05 21:08:01,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"6884551715","0938e3a65897df84a86073a4d590b23c","Doxycycline ORAL 100 mg BD + Metronidazole ORAL 400 mg BD",2016-12-14 12:52:13,2016-12-14 13:58:13,2016-12-16 13:58:13,"Doxycycline","ORAL","100","mg","BD",2
-"6884551715","36ab0bfd4e0562d8a17c6ab0315e416f","Doxycycline ORAL 100 mg BD + Metronidazole ORAL 400 mg BD",2016-12-14 14:42:13,2016-12-14 15:42:13,2016-12-16 15:42:13,"Metronidazole","ORAL","400","mg","BD",2
-"4332344471","4f640544ee943af9a7df139dc08a03a4","Co-amoxiclav ORAL 625 mg TDS",2017-11-05 01:46:50,2017-11-05 02:30:50,2017-11-06 02:30:50,"Coamoxiclav","ORAL","625","mg","TDS",1
-"4741155813","6e133c05cde639041d73fbe7e1f7ec36","Co-amoxiclav IVI 1.2 g TDS",2017-11-16 09:59:25,2017-11-16 10:15:25,2017-11-18 10:15:25,"Coamoxiclav","IV","1.2","g","TDS",2
-"9529765216","76d4afdab71ea99b5207f4e985670f99","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-07-11 02:30:21,2015-07-11 03:17:21,2015-07-14 03:17:21,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"2757547383","8c905f70f68385a3012a98ca5f524a60","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-09-29 06:30:05,2017-09-29 08:20:05,2017-10-03 08:20:05,"Clarithromycin","ORAL","500","mg","BD",4
-"2757547383","c61f6deffbbedf499b4c3eb0180a1baa","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-09-29 05:44:05,2017-09-29 06:10:05,2017-10-01 06:10:05,"Coamoxiclav","IV","1.2","g","TDS",2
-"3118232645","57badcdb3d49e7078c88a32693dcec8b","Co-amoxiclav ORAL 625 mg TDS",2017-07-27 06:23:03,2017-07-27 07:50:03,2017-07-30 07:50:03,"Coamoxiclav","ORAL","625","mg","TDS",3
-"3118232645","7bd554a1917d4465bec75abc008a3cec","Ciprofloxacin ORAL 500 mg BD",2017-11-20 14:20:37,2017-11-20 16:03:37,2017-11-23 16:03:37,"Ciprofloxacin","ORAL","500","mg","BD",3
-"3617323538","75a29a48097dffdfbf0627d796115a5f","Co-amoxiclav IVI 1.2 g TDS",2015-03-29 04:31:19,2015-03-29 06:12:19,2015-04-01 06:12:19,"Coamoxiclav","IV","1.2","g","TDS",3
-"3617323538","a781a13a707dc8a269766d6268b36f21","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-10-08 16:53:02,2015-10-08 17:58:02,2015-10-12 17:58:02,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"3617323538","3f41e2c21c9cbb58a3193f56ff8ee8fc","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-10-12 17:58:02,2015-10-12 19:17:02,2015-10-16 19:17:02,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"3617323538","f5e2adfe4f606d5e2811d977453633aa","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-10-16 19:17:02,2015-10-16 20:53:02,2015-10-20 20:53:02,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"2448324326","0a71e6a628ed4ba4c24671ca0395e230","Flucloxacillin ORAL 500 mg 6H",2017-06-27 18:32:01,2017-06-27 19:15:01,2017-06-28 19:15:01,"Flucloxacillin","ORAL","500","mg","6H",1
-"5715463797","a4b842ba762994f48e0fa93927c96072","Metronidazole ORAL 400 mg TDS",2017-05-09 17:58:49,2017-05-09 18:15:49,2017-05-13 18:15:49,"Metronidazole","ORAL","400","mg","TDS",4
-"5715463797","d855fe21012b7725874b690ad5877ebd","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-05-13 18:15:49,2017-05-13 19:52:49,2017-05-16 19:52:49,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"5715463797","29b1dca0a402aa954d9da9c4c5f9c327","Co-amoxiclav ORAL 625 mg TDS",2017-05-16 19:52:49,2017-05-16 21:07:49,2017-05-18 21:07:49,"Coamoxiclav","ORAL","625","mg","TDS",2
-"5715463797","85ece1d5c324020afb6c4821435ee314","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-08-17 09:50:58,2017-08-17 11:25:58,2017-08-19 11:25:58,"Piperacillin / Tazobactam","IV","4.5","g","TDS",2
-"3876798489","662d7b8f9ec9b8a46fa16ba521b568ca","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-12-06 15:51:21,2015-12-06 17:00:21,2015-12-09 17:00:21,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"3876798489","26aa006282c82c5f68bfb3dedb59e4c1","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-12-28 20:32:07,2016-12-28 21:31:07,2017-01-02 09:31:07,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4.5
-"3876798489","34043a521ad1f5417a8f59a0c381290f","Co-amoxiclav ORAL 625 mg TDS",2017-01-21 07:08:01,2017-01-21 07:25:01,2017-01-23 07:25:01,"Coamoxiclav","ORAL","625","mg","TDS",2
-"1674333962","ce339a3f1e3491af48a54e3abb13e797","Co-amoxiclav ORAL 625 mg TDS",2016-07-02 14:17:22,2016-07-02 15:46:22,2016-07-04 15:46:22,"Coamoxiclav","ORAL","625","mg","TDS",2
-"1674333962","20fd5db35c89a2ff5db1708c3409b91e","Co-amoxiclav ORAL 625 mg TDS",2016-07-04 15:46:22,2016-07-04 18:29:22,2016-07-06 18:29:22,"Coamoxiclav","ORAL","625","mg","TDS",2
-"1674333962","3eb506ead8b4554d8cf104a6b57986b4","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-07-06 18:29:22,2016-07-06 19:55:22,2016-07-09 19:55:22,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"5274773938","f02fc0fc77d72039e3a9ac1fa7d58d97","Co-amoxiclav IVI 1.2 g TDS",2017-02-10 15:47:45,2017-02-10 16:02:45,2017-02-11 16:02:45,"Coamoxiclav","IV","1.2","g","TDS",1
-"5274773938","10287ec5839950dbabf86cd80e60db1b","Co-amoxiclav ORAL 625 mg TDS",2017-02-11 16:02:45,2017-02-11 16:57:45,2017-02-15 16:57:45,"Coamoxiclav","ORAL","625","mg","TDS",4
-"3248658448","f5e725086cf5fd0347ae8ae3b2512222","Doxycycline ORAL 100 mg OD",2016-05-14 20:32:55,2016-05-14 22:03:55,2016-05-15 22:03:55,"Doxycycline","ORAL","100","mg","OD",1
-"7256874632","dee0e7c3a0f1aa9aa34dcdb9e3c51ca7","Doxycycline ORAL 100 mg OD",2017-05-14 11:14:31,2017-05-14 11:41:31,2017-05-18 11:41:31,"Doxycycline","ORAL","100","mg","OD",4
-"7347847229","a28e5776c3687b01b634cd982220f16e","Co-amoxiclav ORAL 625 mg TDS",2017-04-20 22:01:47,2017-04-20 23:06:47,2017-04-21 23:06:47,"Coamoxiclav","ORAL","625","mg","TDS",1
-"7347847229","0bea2bc7b311bab5d11738921f48a138","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-05-09 16:55:38,2017-05-09 17:37:38,2017-05-12 17:37:38,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"7347847229","f32c2712b68604134ab28cc276140b2b","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-11-15 20:55:00,2017-11-15 21:32:00,2017-11-17 21:32:00,"Piperacillin / Tazobactam","IV","4.5","g","TDS",2
-"2662362167","50f4b7cb12a09d766014432cc452d18c","Co-amoxiclav IVI 1.2 g TDS",2017-01-05 09:11:25,2017-01-05 10:23:25,2017-01-07 10:23:25,"Coamoxiclav","IV","1.2","g","TDS",2
-"2662362167","4fe59c7fe8d53872e3d69ebc48d759c1","Flucloxacillin ORAL 500 mg 6H",2017-01-12 06:54:32,2017-01-12 08:25:32,2017-01-13 08:25:32,"Flucloxacillin","ORAL","500","mg","6H",1
-"2614395446","176d70b4802320aabb150db3b47c77ed","Trimethoprim ORAL 200 mg BD",2016-02-04 13:03:40,2016-02-04 13:58:40,2016-02-07 13:58:40,"Trimethoprim","ORAL","200","mg","BD",3
-"2614395446","95623ab6a271451f28891536132794de","Co-amoxiclav ORAL 625 mg TDS",2016-02-07 13:58:40,2016-02-07 15:13:40,2016-02-10 15:13:40,"Coamoxiclav","ORAL","625","mg","TDS",3
-"8256632542","1d98d074ce5f0e89833305d77b8fec84","Co-amoxiclav IVI 1.2 g TDS",2017-02-05 16:09:58,2017-02-05 17:34:58,2017-02-07 17:34:58,"Coamoxiclav","IV","1.2","g","TDS",2
-"2473555484","80ec3866da1f8aecce4f021c71109c03","Meropenem IVB 1 g TDS",2015-07-03 02:17:50,2015-07-03 02:33:50,2015-07-07 02:33:50,"Meropenem","IV","1","g","TDS",4
-"2473555484","cafdd0626de8cb6c9159de66da63a68b","Meropenem IVI 1 g TDS",2015-07-07 02:33:50,2015-07-07 02:56:50,2015-07-13 02:56:50,"Meropenem","IV","1","g","TDS",6
-"2473555484","26799ebf2804da3d4efea0a8c5fd85e2","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-07-13 02:56:50,2015-07-13 05:22:50,2015-07-16 05:22:50,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"2473555484","f1cd3b3384e42f9711c3e15b9cd38b97","Meropenem IVB 1 g TDS",2015-07-16 05:22:50,2015-07-16 06:24:50,2015-07-20 06:24:50,"Meropenem","IV","1","g","TDS",4
-"2473555484","e55ebc21744d818567ec2ba866ec4c97","Meropenem IVI 1 g TDS",2015-07-20 06:24:50,2015-07-20 07:13:50,2015-07-26 07:13:50,"Meropenem","IV","1","g","TDS",6
-"2473555484","fc8e0f638c1c4872986664a2eb7aa940","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-07-03 05:33:41,2017-07-03 06:48:41,2017-07-06 06:48:41,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"8138572613","8ec7fde8b6fe3702bd307c05fa63ba5c","Co-amoxiclav ORAL 625 mg TDS",2016-10-12 08:55:13,2016-10-12 10:02:13,2016-10-13 10:02:13,"Coamoxiclav","ORAL","625","mg","TDS",1
-"8138572613","a667d82129a3a8e60869877bad05cd3b","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-08-20 14:08:50,2017-08-20 15:21:50,2017-08-22 15:21:50,"Piperacillin / Tazobactam","IV","4.5","g","TDS",2
-"8138572613","b642349f8dde28a65d66b4707fea8955","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-09-04 00:47:27,2017-09-04 02:17:27,2017-09-08 02:17:27,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"8138572613","6c7a23d0cf2e04c6926de21b21b560c1","Co-amoxiclav ORAL 625 mg TDS",2017-09-08 02:17:27,2017-09-08 04:00:27,2017-09-13 04:00:27,"Coamoxiclav","ORAL","625","mg","TDS",5
-"8138572613","44bdb06d09eca2e53ca6c5c9156d0dac","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-09-13 04:00:27,2017-09-13 06:32:27,2017-09-17 06:32:27,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"8138572613","820b266c6e163d543d30fb7296dabf17","Co-amoxiclav ORAL 625 mg TDS",2017-09-17 06:32:27,2017-09-17 08:54:27,2017-09-22 08:54:27,"Coamoxiclav","ORAL","625","mg","TDS",5
-"8138572613","fb86d2f9a23388e7af8eb8ca7f461e15","Co-amoxiclav ORAL 625 mg TDS",2017-09-22 08:54:27,2017-09-22 11:09:27,2017-09-27 11:09:27,"Coamoxiclav","ORAL","625","mg","TDS",5
-"8268278367","091309ea0b6a522b824522f2a0053983","Co-amoxiclav ORAL 625 mg TDS",2017-05-25 03:20:21,2017-05-25 05:12:21,2017-05-28 05:12:21,"Coamoxiclav","ORAL","625","mg","TDS",3
-"6562857427","14e6a5c71ef3385055da8cc796337e8d","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-10-13 02:48:00,2017-10-13 04:04:00,2017-10-16 04:04:00,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"9498821588","d52347b188cfc63e0c8415e18729bf76","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2016-10-11 19:59:19,2016-10-11 21:12:19,2016-10-15 21:12:19,"Clarithromycin","ORAL","500","mg","BD",4
-"9498821588","875ed851f9c73ad6ea55895f1e3a5e9a","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2016-10-11 19:30:19,2016-10-11 19:43:19,2016-10-13 19:43:19,"Coamoxiclav","IV","1.2","g","TDS",2
-"9498821588","90ba5a37016649a9e9070376713184f3","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2016-10-15 21:12:19,2016-10-15 21:36:19,2016-10-19 21:36:19,"Clarithromycin","ORAL","500","mg","BD",4
-"9498821588","f192298c89e0af84f28cfcc98713dd3e","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2016-10-15 21:12:19,2016-10-15 23:46:19,2016-10-17 23:46:19,"Coamoxiclav","IV","1.2","g","TDS",2
-"3556299788","e91a0114ccc1c73f2d1aa4689cec2153","Trimethoprim ORAL 200 mg BD",2017-06-16 11:53:21,2017-06-16 12:40:21,2017-06-18 12:40:21,"Trimethoprim","ORAL","200","mg","BD",2
-"4629422515","f6f5cd00285d9fbb3495ebb82dd82615","Meropenem IVI 1 g TDS",2015-08-14 22:37:01,2015-08-14 23:46:01,2015-08-17 23:46:01,"Meropenem","IV","1","g","TDS",3
-"6462578863","72bd02e0b5c646e1d2d6d93b7d191f19","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-03-26 15:21:51,2017-03-26 16:23:51,2017-03-30 16:23:51,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"6462578863","2ef2453dac9fb4f1bdb64c475e670092","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-11-15 13:28:42,2017-11-15 14:59:42,2017-11-19 14:59:42,"Clarithromycin","ORAL","500","mg","BD",4
-"6462578863","175cee5796ee6ec7a2b47a34c6f649a3","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-11-15 12:53:42,2017-11-15 13:34:42,2017-11-17 13:34:42,"Coamoxiclav","IV","1.2","g","TDS",2
-"6462578863","94106faf728c147b9019f73e953d7db5","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-11-19 14:59:42,2017-11-19 17:27:42,2017-11-23 17:27:42,"Clarithromycin","ORAL","500","mg","BD",4
-"6462578863","0d46fff8cbcc77b94f924e4024aa343f","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-11-19 14:59:42,2017-11-19 16:41:42,2017-11-21 16:41:42,"Coamoxiclav","IV","1.2","g","TDS",2
-"9585713383","08ec23cbf4ccf8d68ec7155a67be09b4","Co-amoxiclav ORAL 625 mg TDS",2017-06-06 07:44:17,2017-06-06 08:37:17,2017-06-09 08:37:17,"Coamoxiclav","ORAL","625","mg","TDS",3
-"9585713383","0b8628d5ee5ea4e48f72464407a45451","Co-amoxiclav ORAL 625 mg TDS",2017-06-09 08:37:17,2017-06-09 09:15:17,2017-06-12 09:15:17,"Coamoxiclav","ORAL","625","mg","TDS",3
-"9585713383","870b0c61efca0b89e451e5ca94c2a3af","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-06-12 09:15:17,2017-06-12 09:58:17,2017-06-14 21:58:17,"Piperacillin / Tazobactam","IV","4.5","g","TDS",2.5
-"6785517235","3813d9cd83ee08f35709a0ea83c7a3fb","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-12-06 11:42:14,2017-12-06 13:02:14,2017-12-10 13:02:14,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"3377561683","00a65e5f307a03943cf360c778229e4f","Co-amoxiclav ORAL 625 mg TDS",2017-10-12 05:21:18,2017-10-12 05:26:18,2017-10-15 05:26:18,"Coamoxiclav","ORAL","625","mg","TDS",3
-"3377561683","be4e410ec26316b406ed2a7ec09983da","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-11-06 23:37:43,2017-11-07 01:18:43,2017-11-10 01:18:43,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"4191324674","162b42070925611e9fe8dea92b9cd213","Flucloxacillin ORAL 500 mg 6H",2017-11-29 22:45:11,2017-11-30 00:20:11,2017-12-01 00:20:11,"Flucloxacillin","ORAL","500","mg","6H",1
-"7655776216","515cd45cded83d4f1c07a5406320c972","Trimethoprim ORAL 200 mg BD",2015-08-17 03:52:40,2015-08-17 04:59:40,2015-08-19 04:59:40,"Trimethoprim","ORAL","200","mg","BD",2
-"7655776216","fab737775725dbee60758908aa1fcda6","Co-amoxiclav IVI 1.2 g TDS",2016-08-30 19:00:30,2016-08-30 19:24:30,2016-09-01 19:24:30,"Coamoxiclav","IV","1.2","g","TDS",2
-"7655776216","438d5ef457ee1d67a4c0dffa2282c4e4","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-09-01 19:24:30,2016-09-01 20:25:30,2016-09-05 20:25:30,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"7655776216","5abe462d8954138f49270faa046f0d47","Co-amoxiclav IVI 1.2 g TDS",2016-09-05 20:25:30,2016-09-05 22:24:30,2016-09-07 22:24:30,"Coamoxiclav","IV","1.2","g","TDS",2
-"7655776216","349f56a1a7508a6dc691a5cd7ee0462e","Co-amoxiclav IVI 1.2 g TDS",2016-09-07 22:24:30,2016-09-07 23:23:30,2016-09-09 23:23:30,"Coamoxiclav","IV","1.2","g","TDS",2
-"7655776216","1d9c5f2db2460df53288e59c2a28f7f5","Co-amoxiclav ORAL 625 mg TDS",2016-09-09 23:23:30,2016-09-10 00:14:30,2016-09-13 00:14:30,"Coamoxiclav","ORAL","625","mg","TDS",3
-"3475322582","ea94ceb5f471063bbff717472da63b5b","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-10-20 07:06:45,2017-10-20 07:44:45,2017-10-23 07:44:45,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"5341878186","08e4a4a234fb51e3f1e42135dc609cab","Ciprofloxacin ORAL 500 mg BD",2015-03-11 22:59:06,2015-03-12 00:32:06,2015-03-13 00:32:06,"Ciprofloxacin","ORAL","500","mg","BD",1
-"2276562555","f04957d541fa5de94dd723b7f3ef0e2c","Co-amoxiclav ORAL 625 mg TDS",2015-06-22 02:46:08,2015-06-22 03:49:08,2015-06-24 03:49:08,"Coamoxiclav","ORAL","625","mg","TDS",2
-"7765747983","dfbc64d7f1b4982d11b597cea174e734","Co-amoxiclav ORAL 625 mg TDS",2016-08-19 23:39:31,2016-08-20 01:23:31,2016-08-22 01:23:31,"Coamoxiclav","ORAL","625","mg","TDS",2
-"7765747983","2dc6d7d93aa45e31e559421273874bf2","Meropenem IVI 1 g TDS",2016-08-22 01:23:31,2016-08-22 02:54:31,2016-08-26 02:54:31,"Meropenem","IV","1","g","TDS",4
-"6829262735","ac822a8ee5799acb40969c166613e4c4","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-04-05 20:30:06,2015-04-05 21:44:06,2015-04-08 21:44:06,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"6829262735","2350e2b0e8222e8d42fb3694019b6946","Meropenem IVI 1 g TDS",2015-04-08 21:44:06,2015-04-08 23:24:06,2015-04-14 23:24:06,"Meropenem","IV","1","g","TDS",6
-"6829262735","4aad980e65d5a6233852b8b88f203dc9","Meropenem IVB 1 g TDS",2015-04-14 23:24:06,2015-04-15 01:13:06,2015-04-19 01:13:06,"Meropenem","IV","1","g","TDS",4
-"6829262735","428739c57730d24145c51bf9093260e6","Meropenem IVB 1 g TDS",2015-04-19 01:13:06,2015-04-19 01:56:06,2015-04-23 01:56:06,"Meropenem","IV","1","g","TDS",4
-"3894468747","1ab55e515af6b86dde76abbe0bffbd3f","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2015-10-01 21:09:55,2015-10-01 21:38:55,2015-10-05 21:38:55,"Clarithromycin","ORAL","500","mg","BD",4
-"3894468747","815becedda13d297cc5b48386778ee70","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2015-10-01 22:13:55,2015-10-01 22:33:55,2015-10-03 22:33:55,"Coamoxiclav","IV","1.2","g","TDS",2
-"9321535328","5b8004982a8d128ebdc8526c74886572","Trimethoprim ORAL 200 mg BD",2016-11-16 03:43:25,2016-11-16 04:26:25,2016-11-19 04:26:25,"Trimethoprim","ORAL","200","mg","BD",3
-"9321535328","3bff4772960688506c1d637e5e6c8705","Co-amoxiclav ORAL 625 mg TDS",2017-01-25 02:42:04,2017-01-25 03:33:04,2017-01-27 03:33:04,"Coamoxiclav","ORAL","625","mg","TDS",2
-"6374971643","19a1e954f0f927063259d0a3a0716a6e","Co-amoxiclav ORAL 625 mg TDS",2015-04-03 17:17:29,2015-04-03 17:58:29,2015-04-04 17:58:29,"Coamoxiclav","ORAL","625","mg","TDS",1
-"6374971643","f9ed1df2f9e8fcb9145611b37a86e9d5","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-08-15 02:12:19,2015-08-15 03:46:19,2015-08-19 03:46:19,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"8346892319","3d99d2df11495cf7e69924ae7f5ad75a","Trimethoprim ORAL 200 mg BD",2017-05-30 07:57:21,2017-05-30 09:11:21,2017-06-02 09:11:21,"Trimethoprim","ORAL","200","mg","BD",3
-"8346892319","b90c4f7016ac86420b7661ce3ab52c50","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-06-02 09:11:21,2017-06-02 11:32:21,2017-06-05 11:32:21,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"7117459538","906126ee2f76c47e9bfe093d0e98a260","Ciprofloxacin ORAL 500 mg BD",2017-12-19 09:27:50,2017-12-19 10:35:50,2017-12-22 10:35:50,"Ciprofloxacin","ORAL","500","mg","BD",3
-"7881812512","1f256b2c597741a0e2df79b87677ebba","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-09-14 14:35:46,2016-09-14 16:28:46,2016-09-16 16:28:46,"Piperacillin / Tazobactam","IV","4.5","g","TDS",2
-"8812662387","2cf709d1dcd0cad7ac6fb8786a8e7243","Flucloxacillin ORAL 500 mg 6H",2017-06-01 11:00:31,2017-06-01 11:33:31,2017-06-03 11:33:31,"Flucloxacillin","ORAL","500","mg","6H",2
-"8812662387","7f1520f9d237afa44ce3d394a6e0d3f0","Co-amoxiclav IVI 1.2 g TDS",2017-06-03 11:33:31,2017-06-03 12:38:31,2017-06-05 12:38:31,"Coamoxiclav","IV","1.2","g","TDS",2
-"3874985289","e4d78d389e7c7f47a5fc260ed4b9627c","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-01-10 11:30:01,2017-01-10 12:05:01,2017-01-12 12:05:01,"Piperacillin / Tazobactam","IV","4.5","g","TDS",2
-"3874985289","5b522b8599753726ef3d8f0993120fc0","Co-amoxiclav ORAL 625 mg TDS",2017-12-10 10:58:29,2017-12-10 12:03:29,2017-12-13 12:03:29,"Coamoxiclav","ORAL","625","mg","TDS",3
-"3557254262","cfbda43830037aeae2582f99cabd91cb","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-04-13 21:17:40,2016-04-13 22:43:40,2016-04-15 22:43:40,"Piperacillin / Tazobactam","IV","4.5","g","TDS",2
-"3557254262","403dee5b8e2d8dac79a57eaef49e4594","Trimethoprim ORAL 200 mg BD",2016-04-15 22:43:40,2016-04-16 00:03:40,2016-04-18 00:03:40,"Trimethoprim","ORAL","200","mg","BD",2
-"3557254262","4b6afb5776a8249e0d1715d2e4123903","Co-amoxiclav ORAL 625 mg TDS",2016-08-25 20:30:33,2016-08-25 21:44:33,2016-08-27 21:44:33,"Coamoxiclav","ORAL","625","mg","TDS",2
-"4824538342","6737f0433dec085ad9dc479696455e19","Flucloxacillin ORAL 500 mg 6H",2016-07-08 19:21:55,2016-07-08 20:55:55,2016-07-12 20:55:55,"Flucloxacillin","ORAL","500","mg","6H",4
-"4824538342","17e8bb23458aa543224b53dd3c642d64","Co-amoxiclav ORAL 625 mg TDS",2017-06-19 06:47:20,2017-06-19 07:31:20,2017-06-22 07:31:20,"Coamoxiclav","ORAL","625","mg","TDS",3
-"4824538342","6cb85459474a9d85d7d9f5412f0f5a67","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-08-02 08:15:36,2017-08-02 09:32:36,2017-08-06 09:32:36,"Clarithromycin","ORAL","500","mg","BD",4
-"4824538342","230af67873c53f7109b54c78bcd117f9","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-08-02 07:51:36,2017-08-02 08:51:36,2017-08-04 08:51:36,"Coamoxiclav","IV","1.2","g","TDS",2
-"4824538342","d63e78085c12efe1321fb62168308204","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-08-06 09:32:36,2017-08-06 12:05:36,2017-08-10 12:05:36,"Clarithromycin","ORAL","500","mg","BD",4
-"4824538342","6b5c5978b8babed5762d2752746a81cc","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-08-06 09:32:36,2017-08-06 10:59:36,2017-08-08 10:59:36,"Coamoxiclav","IV","1.2","g","TDS",2
-"4357937165","e13a3f6ff28335579648176c6f49cb46","Co-amoxiclav IVI 1.2 g TDS",2017-11-08 21:24:01,2017-11-08 22:06:01,2017-11-10 22:06:01,"Coamoxiclav","IV","1.2","g","TDS",2
-"4357937165","f42784193e91617975dbf29e2d82bc6a","Co-amoxiclav ORAL 625 mg TDS",2017-11-10 22:06:01,2017-11-10 23:37:01,2017-11-13 23:37:01,"Coamoxiclav","ORAL","625","mg","TDS",3
-"6152245944","9b4488566c99ed51f89738cebbb40808","Co-amoxiclav ORAL 625 mg TDS",2015-07-12 11:54:33,2015-07-12 12:30:33,2015-07-14 12:30:33,"Coamoxiclav","ORAL","625","mg","TDS",2
-"8691812214","447363604e35428ac500b7bf00a4fac6","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-05-17 20:15:10,2017-05-17 22:06:10,2017-05-19 22:06:10,"Piperacillin / Tazobactam","IV","4.5","g","TDS",2
-"3524553351","5f78914e5afecc346c897c7ae694cda9","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-05-17 21:26:08,2017-05-17 23:02:08,2017-05-20 23:02:08,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"3524553351","c6bb803e08433f9cb5dcb2ac75b929c0","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-05-20 23:02:08,2017-05-21 01:27:08,2017-05-24 01:27:08,"Clarithromycin","ORAL","500","mg","BD",3
-"3524553351","6b988986b4c801fd3e9dc65f3a4413eb","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-05-20 23:02:08,2017-05-20 23:41:08,2017-05-23 23:41:08,"Coamoxiclav","IV","1.2","g","TDS",3
-"8677843216","de3a5074ec870a46485a9b01781ed439","Co-amoxiclav IVI 1.2 g TDS",2016-01-11 02:42:56,2016-01-11 03:35:56,2016-01-13 03:35:56,"Coamoxiclav","IV","1.2","g","TDS",2
-"8677843216","f720e84ccf459d39baa56af3c020628c","Co-amoxiclav ORAL 625 mg TDS",2016-01-13 03:35:56,2016-01-13 04:37:56,2016-01-16 04:37:56,"Coamoxiclav","ORAL","625","mg","TDS",3
-"4628967432","c0071613aef32b1439a3714b115caee8","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-04-13 04:06:03,2015-04-13 04:37:03,2015-04-16 04:37:03,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"4628967432","a8682d896696e7ad4b14eef794998b6f","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-06-10 12:20:03,2015-06-10 12:44:03,2015-06-15 12:44:03,"Piperacillin / Tazobactam","IV","4.5","g","TDS",5
-"4628967432","5d2c004df2ef6523bb461ef52932da5a","Vancomycin protocol IVI 500-2000 mg TTW",2015-06-15 12:44:03,2015-06-15 14:38:03,2015-06-19 14:38:03,"Vancomycin protocol","IV","500-2000","mg","TTW",4
-"4628967432","0061c3bde046a577456a8c2eb4a14489","Vancomycin protocol IVI 500-2000 mg TTW",2015-06-19 14:38:03,2015-06-19 16:49:03,2015-06-23 16:49:03,"Vancomycin protocol","IV","500-2000","mg","TTW",4
-"4628967432","e0956a18512185bca23cbf82e69628fe","Meropenem IVI 1 g TDS",2015-06-23 16:49:03,2015-06-23 17:42:03,2015-06-28 17:42:03,"Meropenem","IV","1","g","TDS",5
-"3155957712","219a17de6c8f47487747b7f7d687be7a","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-07-31 05:37:37,2016-07-31 05:51:37,2016-08-03 05:51:37,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"9375145644","a77ced9ced77680ad035d389a0ef73b8","Co-amoxiclav ORAL 625 mg TDS",2015-12-11 07:23:01,2015-12-11 07:31:01,2015-12-12 07:31:01,"Coamoxiclav","ORAL","625","mg","TDS",1
-"6872945377","e67823566462e2dd587cc91b79407b6e","Flucloxacillin ORAL 500 mg 6H",2016-07-26 04:17:07,2016-07-26 04:58:07,2016-07-27 04:58:07,"Flucloxacillin","ORAL","500","mg","6H",1
-"6872945377","40269caeb3242254bae0622304a860df","Co-amoxiclav ORAL 625 mg TDS",2017-10-21 14:13:36,2017-10-21 15:16:36,2017-10-24 15:16:36,"Coamoxiclav","ORAL","625","mg","TDS",3
-"6872945377","a820f710dde7d3fe616151c1e7ac6534","Trimethoprim ORAL 200 mg BD",2017-10-24 15:16:36,2017-10-24 15:58:36,2017-10-27 15:58:36,"Trimethoprim","ORAL","200","mg","BD",3
-"5726385525","a028cf950c29ca73c01803b54642d513","Meropenem IVI 1 g TDS",2017-11-29 03:31:13,2017-11-29 03:47:13,2017-12-03 03:47:13,"Meropenem","IV","1","g","TDS",4
-"5726385525","533d158988a771c33d57c050f2e7e1e5","Co-amoxiclav ORAL 625 mg TDS",2017-12-03 03:47:13,2017-12-03 04:27:13,2017-12-05 04:27:13,"Coamoxiclav","ORAL","625","mg","TDS",2
-"5726385525","06bb1a8e680036089f889ec2cf2dc6ee","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-12-05 04:27:13,2017-12-05 06:00:13,2017-12-08 06:00:13,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"5726385525","d1ebf83505c4995991e7f689f8bf8042","Co-amoxiclav ORAL 625 mg TDS",2017-12-08 06:00:13,2017-12-08 06:47:13,2017-12-10 06:47:13,"Coamoxiclav","ORAL","625","mg","TDS",2
-"5726385525","e58f3ddd81ea16aca2550b29a266023e","Co-amoxiclav ORAL 625 mg TDS",2017-12-10 06:47:13,2017-12-10 07:50:13,2017-12-12 07:50:13,"Coamoxiclav","ORAL","625","mg","TDS",2
-"5726385525","47e47c76940d7778afcf11ca57bb7cd1","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-12-12 07:50:13,2017-12-12 10:02:13,2017-12-15 10:02:13,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"3876365773","870343db45e9b0c6cb54413a97eaf341","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-06-08 23:56:31,2015-06-09 00:55:31,2015-06-11 00:55:31,"Piperacillin / Tazobactam","IV","4.5","g","TDS",2
-"3876365773","bc79b9e0579f43ba6e194455921b0905","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-12-07 02:15:04,2015-12-07 03:03:04,2015-12-10 03:03:04,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"3876365773","bc5b6f6dad18197a931659bdc267c7fe","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-01-23 11:47:20,2016-01-23 12:24:20,2016-01-26 12:24:20,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"3876365773","8b87ab04ad0db5295813174ae54ffe69","Amoxicillin ORAL 500 mg 8H",2016-11-20 10:53:07,2016-11-20 11:29:07,2016-11-23 23:29:07,"Amoxicillin","ORAL","500","mg","8H",3.5
-"8754479422","f82a5780a9af7dc98e646747269c38bb","Trimethoprim ORAL 200 mg BD",2016-03-30 14:18:10,2016-03-30 14:42:10,2016-04-01 14:42:10,"Trimethoprim","ORAL","200","mg","BD",2
-"8754479422","e9dc21ea6d24f6f8a2bd258c882b8cdb","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2016-11-28 12:15:35,2016-11-28 13:35:35,2016-12-02 13:35:35,"Clarithromycin","ORAL","500","mg","BD",4
-"8754479422","74e3f378b91c6d7121a0d637bd56c2fa","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2016-11-28 11:37:35,2016-11-28 12:29:35,2016-11-30 12:29:35,"Coamoxiclav","IV","1.2","g","TDS",2
-"9451197337","ca2bf3e6156f6b5a78ec3b6a805c5fc9","Piperacillin / Tazobactam IVI 4.5 g BD",2017-04-22 10:06:25,2017-04-22 11:44:25,2017-04-23 11:44:25,"Piperacillin / Tazobactam","IV","4.5","g","BD",1
-"9451197337","12513fc9265e62d7dff6272f1ec9855d","Vancomycin protocol IVI 500-2000 mg TTW",2017-04-23 11:44:25,2017-04-23 14:38:25,2017-04-27 14:38:25,"Vancomycin protocol","IV","500-2000","mg","TTW",4
-"1555756339","0f241aa35c30ddb44d0ce79879b3daf3","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-01-15 03:41:56,2016-01-15 04:21:56,2016-01-17 04:21:56,"Piperacillin / Tazobactam","IV","4.5","g","TDS",2
-"1555756339","592a738e4c2afcae6f625c01856151e0","Co-amoxiclav ORAL 625 mg TDS",2016-08-01 10:31:19,2016-08-01 11:15:19,2016-08-03 11:15:19,"Coamoxiclav","ORAL","625","mg","TDS",2
-"1555756339","0bf9ea7732dd6e904ab670a407382d95","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-07-02 00:54:46,2017-07-02 01:35:46,2017-07-06 01:35:46,"Clarithromycin","ORAL","500","mg","BD",4
-"1555756339","89ac870bc1c1e4b2a37cec79d188cb08","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-07-02 00:39:46,2017-07-02 01:15:46,2017-07-04 01:15:46,"Coamoxiclav","IV","1.2","g","TDS",2
-"2365757716","dec8544f9d3f75c9d4086dc5ef8144d3","Co-amoxiclav ORAL 625 mg TDS",2016-07-08 01:14:13,2016-07-08 02:21:13,2016-07-11 02:21:13,"Coamoxiclav","ORAL","625","mg","TDS",3
-"2365757716","86e5a95250253168abf4009db966f6c8","Co-amoxiclav ORAL 625 mg TDS",2016-07-11 02:21:13,2016-07-11 03:07:13,2016-07-14 03:07:13,"Coamoxiclav","ORAL","625","mg","TDS",3
-"2365757716","05015663612f83786ef423816a3bfe64","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-07-14 03:07:13,2016-07-14 03:43:13,2016-07-17 03:43:13,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"2365757716","52acc3671b2f3e48faaa677cc9c604f9","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-07-17 03:43:13,2016-07-17 03:51:13,2016-07-20 03:51:13,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"2326393627","07047485e56ef06ed67f2f827c2cdac2","Trimethoprim ORAL 200 mg BD",2017-05-12 16:50:07,2017-05-12 17:39:07,2017-05-15 17:39:07,"Trimethoprim","ORAL","200","mg","BD",3
-"2326393627","2e63cc49f95777afe5b3fa1bd0ed6fc1","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-05-15 17:39:07,2017-05-15 19:10:07,2017-05-18 19:10:07,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"2326393627","d88dd055940a58b87de3a9463a5f7e5e","Co-amoxiclav ORAL 625 mg TDS",2017-05-18 19:10:07,2017-05-18 19:56:07,2017-05-21 19:56:07,"Coamoxiclav","ORAL","625","mg","TDS",3
-"2326393627","f0e41274bcfec6c677efee86acd94d78","Co-amoxiclav ORAL 625 mg TDS",2017-05-21 19:56:07,2017-05-21 20:40:07,2017-05-24 20:40:07,"Coamoxiclav","ORAL","625","mg","TDS",3
-"4651984575","b209fc21b14f9a1d11c9c61ae84052b3","Flucloxacillin ORAL 500 mg 6H",2017-08-25 16:20:25,2017-08-25 16:44:25,2017-08-28 16:44:25,"Flucloxacillin","ORAL","500","mg","6H",3
-"4335323784","b7c284cf7a75432d749317265eb0877b","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-04-26 22:47:13,2017-04-26 23:29:13,2017-04-30 23:29:13,"Clarithromycin","ORAL","500","mg","BD",4
-"4335323784","778381d7c7073f4d5a94b794df2aeaf8","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-04-26 23:48:13,2017-04-27 00:36:13,2017-04-29 00:36:13,"Coamoxiclav","IV","1.2","g","TDS",2
-"8356292548","f8a5c8a8610d8bd7c2dca75b3f47fcf2","Co-amoxiclav ORAL 625 mg TDS",2016-08-26 18:05:51,2016-08-26 19:08:51,2016-08-27 19:08:51,"Coamoxiclav","ORAL","625","mg","TDS",1
-"8356292548","f18b770ae7078a03f30e17a79c57e103","Co-amoxiclav IVI 1.2 g TDS",2016-08-27 19:08:51,2016-08-27 21:02:51,2016-08-29 21:02:51,"Coamoxiclav","IV","1.2","g","TDS",2
-"8356292548","34ba3cf1f277c13b1b8e13c38b4e9a34","Co-amoxiclav ORAL 625 mg TDS",2017-03-16 03:14:14,2017-03-16 04:20:14,2017-03-17 16:20:14,"Coamoxiclav","ORAL","625","mg","TDS",1.5
-"1714857374","5d0ee2efdce29aa5367c00bbb81ee19d","Flucloxacillin ORAL 500 mg 6H",2017-11-26 11:00:25,2017-11-26 11:33:25,2017-11-27 11:33:25,"Flucloxacillin","ORAL","500","mg","6H",1
-"1714857374","2d0cb3ceaae90673c2c4192cfb84f5a5","Flucloxacillin ORAL 500 mg 6H",2017-11-27 11:33:25,2017-11-27 12:56:25,2017-11-28 12:56:25,"Flucloxacillin","ORAL","500","mg","6H",1
-"2638771692","1591af78f8a6d70cfa4bdfba86be9d78","Trimethoprim ORAL 200 mg BD",2015-10-04 14:04:02,2015-10-04 14:30:02,2015-10-06 14:30:02,"Trimethoprim","ORAL","200","mg","BD",2
-"4588212532","578e39eeebbafebfe07fc33ae6f6fef8","Co-amoxiclav ORAL 625 mg TDS",2016-06-15 07:13:17,2016-06-15 08:24:17,2016-06-16 08:24:17,"Coamoxiclav","ORAL","625","mg","TDS",1
-"5192242274","74afc3c45a5372b37f85d0f5875b56c7","Co-amoxiclav IVI 1.2 g TDS",2016-10-23 06:30:16,2016-10-23 08:09:16,2016-10-25 08:09:16,"Coamoxiclav","IV","1.2","g","TDS",2
-"5515655796","58f500861d8603b1b43a8bb26d974c66","Trimethoprim ORAL 200 mg BD",2015-08-12 03:18:56,2015-08-12 03:38:56,2015-08-14 03:38:56,"Trimethoprim","ORAL","200","mg","BD",2
-"4675148323","89ab29ba2977c8a1678c653dd477c3fa","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-11-06 14:36:55,2016-11-06 15:49:55,2016-11-10 15:49:55,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"4675148323","8b644678bb8dcb82103f304ddd8404bc","Co-amoxiclav IVI 1.2 g TDS",2016-11-10 15:49:55,2016-11-10 17:11:55,2016-11-12 17:11:55,"Coamoxiclav","IV","1.2","g","TDS",2
-"4675148323","23fc82027bad4e970b5eaec42ae2aa32","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-11-12 17:11:55,2016-11-12 19:56:55,2016-11-16 19:56:55,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"4675148323","9222e4be860c14918a0131dca80175ea","Co-amoxiclav ORAL 625 mg TDS",2017-05-05 11:13:14,2017-05-05 12:15:14,2017-05-06 12:15:14,"Coamoxiclav","ORAL","625","mg","TDS",1
-"4538292524","4f9e2f6b4a2d327641928af9347cbc64","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-02-24 10:04:37,2017-02-24 11:05:37,2017-02-28 11:05:37,"Clarithromycin","ORAL","500","mg","BD",4
-"4538292524","1d3834409d0642d24f35ea70dd995e37","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-02-24 11:01:37,2017-02-24 12:44:37,2017-02-26 12:44:37,"Coamoxiclav","IV","1.2","g","TDS",2
-"4538292524","9126a40b4bb6bc64af6ec3e4bf02aed2","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-02-28 11:05:37,2017-02-28 13:31:37,2017-03-03 13:31:37,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"4538292524","e2133fe75e6d7385b341d911314e7e40","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-03-03 13:31:37,2017-03-03 15:42:37,2017-03-07 15:42:37,"Clarithromycin","ORAL","500","mg","BD",4
-"4538292524","593d7ae45e5311f54b739b666f4924aa","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-03-03 13:31:37,2017-03-03 14:27:37,2017-03-05 14:27:37,"Coamoxiclav","IV","1.2","g","TDS",2
-"4538292524","cc14249eba315bccd7fc53069ae6d502","Co-amoxiclav ORAL 625 mg TDS",2017-03-08 18:03:10,2017-03-08 18:12:10,2017-03-11 18:12:10,"Coamoxiclav","ORAL","625","mg","TDS",3
-"7677527327","93b50f9fad27dd6c4de542e4c6df7627","Meropenem IV 1 g TDS",2015-11-02 22:37:01,2015-11-02 23:29:01,2015-11-07 11:29:01,"Meropenem","IV","1","g","TDS",4.5
-"7677527327","29240d9e43f2d66486cdcb8cedf8e99f","Meropenem IV 1 g TDS",2015-11-07 11:29:01,2015-11-07 12:40:01,2015-11-12 00:40:01,"Meropenem","IV","1","g","TDS",4.5
-"7677527327","bf1fd3fe75c559b0b7d760c75e824071","Meropenem IVB 1 g TDS",2015-11-12 00:40:01,2015-11-12 01:13:01,2015-11-17 01:13:01,"Meropenem","IV","1","g","TDS",5
-"3647234769","cbf196340b4af04e55e1cfff739ce7d7","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-10-15 05:02:49,2017-10-15 05:33:49,2017-10-20 05:33:49,"Piperacillin / Tazobactam","IV","4.5","g","TDS",5
-"7656852665","04bb897a3bc987076ef88b619e12b908","Amoxicillin ORAL 500 mg 8H",2017-05-30 03:41:37,2017-05-30 05:36:37,2017-05-31 05:36:37,"Amoxicillin","ORAL","500","mg","8H",1
-"8115477437","ec5f09c996f2740d535b83693335128e","Doxycycline ORAL 100 mg OD",2015-07-09 07:12:16,2015-07-09 08:29:16,2015-07-13 08:29:16,"Doxycycline","ORAL","100","mg","OD",4
-"8115477437","bc06252fffba61e57db9cc0526efc91f","Co-amoxiclav ORAL 625 mg TDS",2016-07-25 07:13:45,2016-07-25 09:03:45,2016-07-28 09:03:45,"Coamoxiclav","ORAL","625","mg","TDS",3
-"8115477437","68af1ed6dae829182cb9f10c28ad7832","Co-amoxiclav IVI 1.2 g TDS",2016-07-28 09:03:45,2016-07-28 10:39:45,2016-07-30 10:39:45,"Coamoxiclav","IV","1.2","g","TDS",2
-"8115477437","9e6b681cfd16ec78baec2732e1f6862b","Co-amoxiclav IVI 1.2 g TDS",2016-07-30 10:39:45,2016-07-30 12:35:45,2016-08-01 12:35:45,"Coamoxiclav","IV","1.2","g","TDS",2
-"8115477437","d0d7f8d987f1138dacf7544f4cec4662","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2016-11-26 17:35:47,2016-11-26 17:53:47,2016-11-30 17:53:47,"Clarithromycin","ORAL","500","mg","BD",4
-"8115477437","b77bd78c580157162ad5173a7399e41e","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2016-11-26 19:05:47,2016-11-26 19:39:47,2016-11-28 19:39:47,"Coamoxiclav","IV","1.2","g","TDS",2
-"8115477437","c5c3627dcd405f898b7df22c528c8051","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-11-30 17:53:47,2016-11-30 19:28:47,2016-12-03 19:28:47,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"8115477437","9765ae2aeab20784b2c1206c142c7e25","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-12-03 19:28:47,2016-12-03 21:15:47,2016-12-06 21:15:47,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"8115477437","a3c0905e489a3b2b9f268fe11f216189","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-12-06 21:15:47,2016-12-06 22:10:47,2016-12-09 22:10:47,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"5662384415","145c6bacb6e61f2799b8f62793f3f285","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-01-19 05:02:07,2015-01-19 06:10:07,2015-01-22 06:10:07,"Piperacillin / Tazobactam","IV","4.5","g","TDS",3
-"5662384415","86957ff8ffba4c0deb713260cf8ad3a7","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-01-27 18:12:54,2015-01-27 18:29:54,2015-01-29 18:29:54,"Piperacillin / Tazobactam","IV","4.5","g","TDS",2
-"5662384415","6f790781857381793a5901fb1ac995c1","Piperacillin / Tazobactam IVI 4.5 g TDS",2015-01-29 18:29:54,2015-01-29 20:56:54,2015-01-31 20:56:54,"Piperacillin / Tazobactam","IV","4.5","g","TDS",2
-"5662384415","0a65d1e3e4818b53d887fe935c30e5d8","Flucloxacillin ORAL 1000 mg 6H",2015-01-31 20:56:54,2015-01-31 22:24:54,2015-02-01 22:24:54,"Flucloxacillin","ORAL","1000","mg","6H",1
-"2442454272","989810ade2852d8e859263b87b2d5cd2","Co-amoxiclav IVI 1.2 g TDS",2015-07-12 05:21:28,2015-07-12 06:02:28,2015-07-14 06:02:28,"Coamoxiclav","IV","1.2","g","TDS",2
-"2442454272","cee776a28b931bfcfefa0621e116814a","Benzylpenicillin IVB 1.2 g 6H",2015-10-04 10:35:39,2015-10-04 11:17:39,2015-10-05 11:17:39,"Benzylpenicillin","IV","1.2","g","6H",1
-"8554647294","da8f884f14f552bd71d0f70cb6e27047","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2015-10-16 07:54:41,2015-10-16 09:03:41,2015-10-20 09:03:41,"Clarithromycin","ORAL","500","mg","BD",4
-"8554647294","aa3b518ae4735b2c48bd644ecb75c00d","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2015-10-16 09:36:41,2015-10-16 10:15:41,2015-10-18 10:15:41,"Coamoxiclav","IV","1.2","g","TDS",2
-"8554647294","9e1d29ac976a0de71bf7b8252c394756","Co-amoxiclav ORAL 625 mg TDS",2015-10-20 09:03:41,2015-10-20 10:45:41,2015-10-22 10:45:41,"Coamoxiclav","ORAL","625","mg","TDS",2
-"3458873836","b90b6f295504cac5ba0810834bb7ad16","Benzylpenicillin IVB 1.2 g 6H",2017-09-01 17:52:46,2017-09-01 18:40:46,2017-09-02 18:40:46,"Benzylpenicillin","IV","1.2","g","6H",1
-"3458873836","c8c77f543e55da0538dc4f1c71f0044d","Piperacillin / Tazobactam IVI 4.5 g TDS",2017-11-15 21:14:52,2017-11-15 22:57:52,2017-11-19 22:57:52,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"9669687362","ab5c01fa193cb3a7167cc641731c8df3","Co-amoxiclav IVI 1.2 g TDS",2016-09-11 13:03:06,2016-09-11 13:26:06,2016-09-13 13:26:06,"Coamoxiclav","IV","1.2","g","TDS",2
-"5472642383","5a5b88ee177143f5cab7e3039ae6e252","Co-amoxiclav IVI 1.2 g TDS",2016-08-10 15:02:47,2016-08-10 15:43:47,2016-08-12 15:43:47,"Coamoxiclav","IV","1.2","g","TDS",2
-"5472642383","44a64dffd1a7e848c8e9e34438f13267","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-08-12 15:43:47,2016-08-12 17:36:47,2016-08-16 17:36:47,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"5472642383","986b9880df659eb083636021ffb4a934","Piperacillin / Tazobactam IVI 4.5 g TDS",2016-08-16 17:36:47,2016-08-16 18:40:47,2016-08-20 18:40:47,"Piperacillin / Tazobactam","IV","4.5","g","TDS",4
-"5472642383","3013b0547f8b89a9acee7affb6d2bbe3","Co-amoxiclav IVI 1.2 g TDS",2016-08-20 18:40:47,2016-08-20 19:33:47,2016-08-22 19:33:47,"Coamoxiclav","IV","1.2","g","TDS",2
-"8843337876","7cad0db09bcfa9cfc0f0c320f5f64e89","Co-amoxiclav ORAL 625 mg TDS",2015-02-15 09:18:49,2015-02-15 10:18:49,2015-02-17 10:18:49,"Coamoxiclav","ORAL","625","mg","TDS",2
-"8843337876","501ed1cae07cb79c6d99858a577153c1","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2015-02-17 10:18:49,2015-02-17 11:36:49,2015-02-21 11:36:49,"Clarithromycin","ORAL","500","mg","BD",4
-"8843337876","077b6ab07f9cd4ffb680437d113bd614","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2015-02-17 10:18:49,2015-02-17 12:24:49,2015-02-19 12:24:49,"Coamoxiclav","IV","1.2","g","TDS",2
-"5867476521","16d82e7ff08ce76c9e7d5d43bdecf93a","Ciprofloxacin ORAL 500 mg BD",2015-03-11 08:46:29,2015-03-11 09:48:29,2015-03-12 09:48:29,"Ciprofloxacin","ORAL","500","mg","BD",1
-"5867476521","a8c41a9e01a6aeed8ae68ef8121573d8","Meropenem IVI 1 g TDS",2016-08-23 16:41:32,2016-08-23 18:07:32,2016-08-28 18:07:32,"Meropenem","IV","1","g","TDS",5
-"5867476521","a93bfb471523270f51360c272d3d5c07","Vancomycin protocol IVI 500-2000 mg TTW",2016-08-28 18:07:32,2016-08-28 21:02:32,2016-09-01 21:02:32,"Vancomycin protocol","IV","500-2000","mg","TTW",4
-"5867476521","1cfd8575fb78eee21478c8b19a54f59f","Vancomycin protocol IVI 500-2000 mg TTW",2016-09-01 21:02:32,2016-09-01 23:14:32,2016-09-04 22:39:00,"Vancomycin protocol","IV","500-2000","mg","TTW",4
-"5867476521","0ba2fe114628f5fad67875bd46f0a7e5","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-01-22 14:33:48,2017-01-22 15:34:48,2017-01-26 15:34:48,"Clarithromycin","ORAL","500","mg","BD",4
-"5867476521","836d9443c693d476efcb215ca1d34300","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS",2017-01-22 15:46:48,2017-01-22 17:17:48,2017-01-24 17:17:48,"Coamoxiclav","IV","1.2","g","TDS",2
+5124578766,"66cac1c5eab88d72c8b7687966357f5b","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-08-04 13:07:16","2015-08-04 14:45:16","2015-08-07 14:45:16","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+4874231672,"8ccd67f4730b62ceafb8bcb27996c10c","Ciprofloxacin ORAL 500 mg BD","2017-07-06 09:49:31","2017-07-06 10:26:31","2017-07-07 22:26:31","Ciprofloxacin","ORAL","500","mg","BD",1.5
+6292626973,"72cf4b592b0f4e2143b4bb9d7c569c97","Flucloxacillin ORAL 500 mg 6H","2017-01-13 17:34:41","2017-01-13 18:48:41","2017-01-17 16:27:15","Flucloxacillin","ORAL","500","mg","6H",4
+6292626973,"806c86b55cf50505a20b722f081c4075","Metronidazole ORAL 400 mg TDS","2017-11-12 09:09:13","2017-11-12 09:44:13","2017-11-14 09:44:13","Metronidazole","ORAL","400","mg","TDS",2
+7243963233,"9d3963c069cdab56f6871798c7e6e5f0","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-08-17 13:58:38","2017-08-17 15:37:38","2017-08-21 15:37:38","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+7243963233,"ff52052337836ff7dc35fb54c442ffd8","Amoxicillin ORAL 500 mg 8H","2017-08-21 15:37:38","2017-08-21 17:11:38","2017-08-24 05:04:48","Amoxicillin","ORAL","500","mg","8H",3
+2637563516,"098a01f0bfeb913cbbac246f6f55849a","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-02-19 12:54:01","2016-02-19 13:40:01","2016-02-22 13:40:01","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+2637563516,"2a74f8fa8d9b1c261348c4487829ad71","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-05-06 20:05:57","2017-05-06 21:08:57","2017-05-08 09:47:56","Piperacillin / Tazobactam","IV","4.5","g","TDS",2
+4693467658,"1b7476fa87d069dc761cff576cfaefd5","Clindamycin ORAL 600 mg QDS","2015-12-25 07:23:49","2015-12-25 08:22:49","2015-12-26 08:22:49","Clindamycin","ORAL","600","mg","QDS",1
+4693467658,"e4d64acf29b90b26593937edb9430302","Flucloxacillin IVI 2 g 6H","2015-12-26 08:22:49","2015-12-26 10:26:49","2015-12-28 10:26:49","Flucloxacillin","IV","2","g","6H",2
+4693467658,"cfe1b7f5d4ae18c54c90eaec4bb24231","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-12-29 08:18:26","2015-12-29 09:55:26","2016-01-01 09:55:26","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+2824187744,"1a1af69ea673f7d53483339e5194e37b","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-02-27 00:38:25","2015-02-27 01:16:25","2015-03-03 01:16:25","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+2824187744,"8e001a93992c9887fe9dc9200a6edec1","Co-amoxiclav IVI 1.2 g TDS","2015-03-03 01:16:25","2015-03-03 02:13:25","2015-03-05 02:13:25","Coamoxiclav","IV","1.2","g","TDS",2
+2824187744,"8f3356320f5ea3d523e0ba22cb5d4e04","Co-amoxiclav ORAL 625 mg TDS","2015-03-05 02:13:25","2015-03-05 04:07:25","2015-03-07 02:56:34","Coamoxiclav","ORAL","625","mg","TDS",3
+3587324687,"f926c810c9b4e5d9bc46e0766e500f14","Flucloxacillin ORAL 500 mg 6H","2016-02-28 21:10:17","2016-02-28 22:05:17","2016-02-29 16:27:23","Flucloxacillin","ORAL","500","mg","6H",3
+6378147283,"ba0d2a4a24f16227e84e155671be165e","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-01-18 02:31:29","2017-01-18 03:22:29","2017-01-22 03:22:29","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+6378147283,"ba02653f259baf38416064a996de72d1","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-01-22 03:22:29","2017-01-22 05:02:29","2017-01-26 05:02:29","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+6378147283,"e413d9471817dfcb7da07bad416fbc0b","Co-amoxiclav ORAL 625 mg TDS","2017-01-26 05:02:29","2017-01-26 06:45:29","2017-01-28 18:10:31","Coamoxiclav","ORAL","625","mg","TDS",3
+7381233393,"69fdcef1da22a6ee28d24cd7069d8c4d","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2015-09-03 02:46:24","2015-09-03 03:57:24","2015-09-05 05:25:55","Clarithromycin","ORAL","500","mg","BD",4
+7381233393,"39662bebbb6080cefd3d19f7f43d9ee4","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2015-09-03 03:52:24","2015-09-03 05:31:24","2015-09-05 05:25:55","Coamoxiclav","IV","1.2","g","TDS",2
+3462786743,"f2ad3cf56c66f831c188de8804ee78a0","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-03-28 11:27:45","2017-03-28 12:40:45","2017-03-31 12:40:45","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+3462786743,"73ff731e3a0b280a80cab0d2088f9c77","Co-amoxiclav ORAL 625 mg TDS","2017-03-31 12:40:45","2017-03-31 14:04:45","2017-04-02 14:04:45","Coamoxiclav","ORAL","625","mg","TDS",2
+3462786743,"a094fad22985020999e6a1773dfc87e3","Meropenem IVI 1 g TDS","2017-04-02 14:04:45","2017-04-02 15:20:45","2017-04-06 15:20:45","Meropenem","IV","1","g","TDS",4
+4372752483,"a78d0f02868e8adb75944c025d6d8c3d","Co-amoxiclav ORAL 625 mg TDS","2016-03-26 21:46:27","2016-03-26 23:11:27","2016-03-29 23:11:27","Coamoxiclav","ORAL","625","mg","TDS",3
+4418729346,"e9156a98920e2bb9d6811250f94205e5","Co-amoxiclav IVI 1.2 g TDS","2016-01-11 20:56:41","2016-01-11 22:46:41","2016-01-12 22:46:41","Coamoxiclav","IV","1.2","g","TDS",1
+5418384162,"f0d5a762f34574f90dd245ce1bee1185","Amoxicillin ORAL 500 mg 8H","2016-04-22 07:39:01","2016-04-22 07:55:01","2016-04-24 15:19:03","Amoxicillin","ORAL","500","mg","8H",3
+5418384162,"4a6ff4624472f21d38c98106fd007269","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-02-25 21:33:34","2017-02-25 22:21:34","2017-02-26 20:24:35","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+4962397166,"897ada36e7acbb2037b3bd06470cc48b","Co-amoxiclav ORAL 625 mg TDS","2017-09-26 18:39:22","2017-09-26 18:52:22","2017-09-29 18:52:22","Coamoxiclav","ORAL","625","mg","TDS",3
+4962397166,"456714cb1813ae17a4bbed7c73b3fdde","Co-amoxiclav ORAL 625 mg TDS","2017-09-29 18:52:22","2017-09-29 20:07:22","2017-10-02 20:07:22","Coamoxiclav","ORAL","625","mg","TDS",3
+8335182445,"520c02c6f88a2ba7f65153b04bbf9419","Co-amoxiclav ORAL 625 mg TDS","2016-07-04 18:54:07","2016-07-04 19:55:07","2016-07-05 15:09:12","Coamoxiclav","ORAL","625","mg","TDS",2
+5311213769,"d99239867198c358f49be00efa7be3a8","Amoxicillin ORAL 500 mg 8H","2016-01-22 14:19:01","2016-01-22 14:40:01","2016-01-25 11:47:59","Amoxicillin","ORAL","500","mg","8H",3
+8498654723,"fb8c1e6ea30d05c0debd75d5be0470b7","Co-amoxiclav IVI 1.2 g TDS","2015-02-02 09:37:01","2015-02-02 11:18:01","2015-02-04 11:18:01","Coamoxiclav","IV","1.2","g","TDS",2
+7231532848,"770dcb4fb904cc0e6ae650d1ca3297e2","Co-amoxiclav ORAL 625 mg TDS","2017-12-17 18:23:37","2017-12-17 19:59:37","2017-12-18 07:59:37","Coamoxiclav","ORAL","625","mg","TDS",0.5
+6427543853,"0086ca46fdeebe3327c7b5ae7fec5b6f","Co-amoxiclav ORAL 625 mg TDS","2017-04-09 09:44:51","2017-04-09 11:15:51","2017-04-09 20:09:53","Coamoxiclav","ORAL","625","mg","TDS",1
+4618532339,"edff1a3f02f4f940cd485718650d89f1","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-05-30 00:53:34","2017-05-30 01:46:34","2017-05-31 14:58:52","Piperacillin / Tazobactam","IV","4.5","g","TDS",2
+3424977235,"17988dad5b9a94b4cd10b0f2dcbd855b","Co-amoxiclav IVI 1.2 g TDS","2016-09-22 01:21:45","2016-09-22 01:47:45","2016-09-24 01:47:45","Coamoxiclav","IV","1.2","g","TDS",2
+3424977235,"b2bd6dee7b7e9a9062b6d6e66d85775d","Co-amoxiclav IVI 1.2 g TDS","2016-09-24 01:47:45","2016-09-24 03:49:45","2016-09-26 03:49:45","Coamoxiclav","IV","1.2","g","TDS",2
+3424977235,"105a0e6df7595da44f571cca1a5ee223","Co-amoxiclav ORAL 625 mg TDS","2016-09-26 03:49:45","2016-09-26 06:37:45","2016-09-28 04:16:31","Coamoxiclav","ORAL","625","mg","TDS",3
+2687416426,"b468e795b34d0723e64c564cc5c8cc5d","Co-amoxiclav ORAL 625 mg TDS","2016-03-02 19:06:56","2016-03-02 19:51:56","2016-03-05 19:51:56","Coamoxiclav","ORAL","625","mg","TDS",3
+2687416426,"d41aa6bc9b3720e021a0061876e78617","Co-amoxiclav IVI 1.2 g TDS","2016-03-05 19:51:56","2016-03-05 20:50:56","2016-03-07 20:50:56","Coamoxiclav","IV","1.2","g","TDS",2
+1253675584,"9a2268f40e891b22611c9912c834cb52","Co-amoxiclav ORAL 625 mg TDS","2015-02-26 19:26:55","2015-02-26 20:09:55","2015-03-01 20:09:55","Coamoxiclav","ORAL","625","mg","TDS",3
+1253675584,"c2a0dbfcad344affedd13481f872b47d","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-03-01 20:09:55","2015-03-01 21:47:55","2015-03-05 21:47:55","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+2823178788,"ca9b512b7e50303d3dc0f4d35162b529","Co-amoxiclav IVI 1.2 g TDS","2016-09-25 16:13:31","2016-09-25 16:52:31","2016-09-26 17:09:45","Coamoxiclav","IV","1.2","g","TDS",2
+5538985852,"6c84b05b4f9e0584fe8a5d7049121c06","Co-amoxiclav ORAL 625 mg TDS","2016-05-01 20:29:37","2016-05-01 21:31:37","2016-05-04 21:31:37","Coamoxiclav","ORAL","625","mg","TDS",3
+5538985852,"75c771f75269c8ee41f1c9ade8f2f3ba","Amoxicillin ORAL 500 mg 8H","2016-05-04 21:31:37","2016-05-04 23:58:37","2016-05-07 23:58:37","Amoxicillin","ORAL","500","mg","8H",3
+5538985852,"394dcf232b20390beaa4e3058a3f7a04","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-05-07 23:58:37","2016-05-08 01:30:37","2016-05-12 01:30:37","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+5538985852,"822b3f7f351b16d409673abadc71b7cb","Co-amoxiclav ORAL 625 mg TDS","2016-07-23 14:35:49","2016-07-23 15:58:49","2016-07-24 15:58:49","Coamoxiclav","ORAL","625","mg","TDS",1
+7833894153,"37f20f356d451b728fcd1a21622a2d92","Metronidazole ORAL 400 mg TDS","2017-04-10 15:53:31","2017-04-10 16:49:31","2017-04-12 03:02:26","Metronidazole","ORAL","400","mg","TDS",4
+2328559279,"e2b73d58267db5a0593b9fac607f21a8","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-06-30 17:30:44","2017-06-30 18:50:44","2017-07-04 03:36:14","Clarithromycin","ORAL","500","mg","BD",4
+2328559279,"e2b0c55a1021acb1161e459abedd10d5","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-06-30 18:11:44","2017-06-30 19:22:44","2017-07-02 19:22:44","Coamoxiclav","IV","1.2","g","TDS",2
+2464667326,"7b86ed4752203aabe2ed51fe00ca9082","Trimethoprim ORAL 200 mg BD","2016-10-16 10:25:01","2016-10-16 11:02:01","2016-10-18 17:17:59","Trimethoprim","ORAL","200","mg","BD",3
+2464667326,"aec57adebb49df94be7fbc3c79b82b2c","Co-amoxiclav ORAL 625 mg TDS","2016-12-25 12:55:37","2016-12-25 14:18:37","2016-12-26 12:31:05","Coamoxiclav","ORAL","625","mg","TDS",1
+3422481921,"fa179f4bcf3efa1e21225ab207ab40c4","Co-amoxiclav IVI 1.2 g TDS","2017-11-15 15:31:36","2017-11-15 15:33:36","2017-11-17 15:33:36","Coamoxiclav","IV","1.2","g","TDS",2
+3422481921,"16b5ebd74c9e0521f6ab9b0c89e742db","Co-amoxiclav IVI 1.2 g TDS","2017-11-17 15:33:36","2017-11-17 16:46:36","2017-11-19 16:46:36","Coamoxiclav","IV","1.2","g","TDS",2
+3422481921,"e3db24baa57cafac6961c528fbf3d5bb","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-11-19 16:46:36","2017-11-19 17:17:36","2017-11-23 17:17:36","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+3422481921,"6ddfc9b087eaee7d00035f9c5411697b","Co-amoxiclav IVI 1.2 g TDS","2017-11-23 17:17:36","2017-11-23 19:12:36","2017-11-25 19:12:36","Coamoxiclav","IV","1.2","g","TDS",2
+3422481921,"48dab9096a4cf8d35fa266373c46ab81","Co-amoxiclav IVI 1.2 g TDS","2017-11-25 19:12:36","2017-11-25 20:15:36","2017-11-27 20:15:36","Coamoxiclav","IV","1.2","g","TDS",2
+3422481921,"4909e16280bce736a9e9e4275d4686e7","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-11-27 20:15:36","2017-11-27 21:11:36","2017-12-01 09:58:28","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+4475466893,"59a07d350b40ed26bbdfdba252aa929e","Flucloxacillin IVI 2 g 6H","2015-03-01 09:20:37","2015-03-01 10:37:37","2015-03-03 13:53:27","Flucloxacillin","IV","2","g","6H",3
+4475466893,"a834f34a9ad1d74914363e38dca15960","Co-amoxiclav ORAL 625 mg TDS","2015-09-08 00:12:19","2015-09-08 00:45:19","2015-09-11 00:45:19","Coamoxiclav","ORAL","625","mg","TDS",3
+4475466893,"7a321fe2b7016759726aef4096b8a96d","Co-amoxiclav ORAL 625 mg TDS","2015-09-11 00:45:19","2015-09-11 02:05:19","2015-09-14 02:05:19","Coamoxiclav","ORAL","625","mg","TDS",3
+4475466893,"9d6dc0873fd9d50e6493830951957dd6","Co-amoxiclav ORAL 625 mg TDS","2015-11-06 03:48:02","2015-11-06 04:39:02","2015-11-08 04:39:02","Coamoxiclav","ORAL","625","mg","TDS",2
+4475466893,"88f7556d5b802f2a37c6e9e9a7d28c4b","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2015-11-08 04:39:02","2015-11-08 07:10:02","2015-11-11 01:12:02","Clarithromycin","ORAL","500","mg","BD",4
+4475466893,"cf5daacb23fb35b58101ce15e792a7ed","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2015-11-08 04:39:02","2015-11-08 05:47:02","2015-11-10 05:47:02","Coamoxiclav","IV","1.2","g","TDS",2
+4475466893,"fe4168a04986283583ea2b192a758db1","Ciprofloxacin ORAL 500 mg BD","2015-11-14 20:41:31","2015-11-14 20:59:31","2015-11-15 08:17:21","Ciprofloxacin","ORAL","500","mg","BD",1
+3883623324,"66c5a402f246a2420442b5a06a8406b6","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-10-11 20:01:57","2017-10-11 20:41:57","2017-10-14 20:41:57","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+9769364816,"40bd7589e261192c3e7f724c31482707","Co-amoxiclav ORAL 625 mg TDS","2016-08-12 19:32:07","2016-08-12 20:26:07","2016-08-15 20:26:07","Coamoxiclav","ORAL","625","mg","TDS",3
+6365433225,"2a2b6da3b67f6f495f4cedafb029f631","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-05-05 18:41:59","2017-05-05 19:46:59","2017-05-08 19:46:59","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+6365433225,"10ee0f6f1392a8e2c378fca0d5271950","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-05-08 19:46:59","2017-05-08 20:57:59","2017-05-11 20:57:59","Clarithromycin","ORAL","500","mg","BD",3
+6365433225,"74f53415b602d4128862aa272aa5ba78","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-05-08 19:46:59","2017-05-08 21:42:59","2017-05-11 21:42:59","Coamoxiclav","IV","1.2","g","TDS",3
+6365433225,"0464f3dc37d17102ad1acb2fc4ba6eec","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-05-11 21:42:59","2017-05-11 23:07:59","2017-05-14 23:07:59","Clarithromycin","ORAL","500","mg","BD",3
+6365433225,"b656c17a2ca24d5f3307898586b2b475","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-05-11 21:42:59","2017-05-11 23:28:59","2017-05-14 23:28:59","Coamoxiclav","IV","1.2","g","TDS",3
+6365433225,"ea5f9e80dd506d5f4a97a8237626f032","Co-amoxiclav ORAL 625 mg TDS","2017-05-14 23:28:59","2017-05-14 23:40:59","2017-05-16 23:40:59","Coamoxiclav","ORAL","625","mg","TDS",2
+6365433225,"3e6d402eb6748987ab8c581578d8372c","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-05-16 23:40:59","2017-05-17 01:58:59","2017-05-20 01:58:59","Clarithromycin","ORAL","500","mg","BD",3
+6365433225,"ed93b998a6ccc8e4844b249aebfb9735","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-05-16 23:40:59","2017-05-17 00:37:59","2017-05-20 00:37:59","Coamoxiclav","IV","1.2","g","TDS",3
+8357537668,"61ec5f6768b4c5b0e62253d76885ad77","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2015-06-09 22:11:41","2015-06-09 23:42:41","2015-06-13 23:42:41","Clarithromycin","ORAL","500","mg","BD",4
+8357537668,"c880812e678ca2b1b0ce8255f1de9cf9","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2015-06-09 22:29:41","2015-06-09 23:04:41","2015-06-11 23:04:41","Coamoxiclav","IV","1.2","g","TDS",2
+5568726447,"46ed34b53050c248c9c9222e8b117ac7","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2016-04-15 13:23:37","2016-04-15 13:37:37","2016-04-19 13:37:37","Clarithromycin","ORAL","500","mg","BD",4
+5568726447,"901806d26c7e442ba54803c3d6bd2137","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2016-04-15 12:36:37","2016-04-15 14:25:37","2016-04-17 14:25:37","Coamoxiclav","IV","1.2","g","TDS",2
+6955637268,"185fc3a969a38b18aaf2d31d180da63d","Trimethoprim ORAL 200 mg BD","2017-04-03 18:31:17","2017-04-03 19:47:17","2017-04-06 19:47:17","Trimethoprim","ORAL","200","mg","BD",3
+6955637268,"e7244c36825f1b8142b58c9e73a3226f","Co-amoxiclav ORAL 625 mg TDS","2017-04-06 19:47:17","2017-04-06 21:18:17","2017-04-09 21:18:17","Coamoxiclav","ORAL","625","mg","TDS",3
+6955637268,"f82fc05b0f39a32808603c257ba50e0e","Trimethoprim ORAL 200 mg BD","2017-04-09 21:18:17","2017-04-09 22:40:17","2017-04-12 22:40:17","Trimethoprim","ORAL","200","mg","BD",3
+6955637268,"a7dbc978d1ba4fa6fa42a6c3cbd53dcd","Co-amoxiclav ORAL 625 mg TDS","2017-04-12 22:40:17","2017-04-12 23:34:17","2017-04-15 23:34:17","Coamoxiclav","ORAL","625","mg","TDS",3
+6955637268,"99da3ce2a60986d2e6c9b43c519b50bc","Co-amoxiclav ORAL 625 mg TDS","2017-04-15 23:34:17","2017-04-16 00:11:17","2017-04-19 00:11:17","Coamoxiclav","ORAL","625","mg","TDS",3
+6375135268,"bb18b85ba5c86f99e07fb0cf7847a5f3","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2016-03-12 12:15:53","2016-03-12 12:44:53","2016-03-13 11:22:20","Clarithromycin","ORAL","500","mg","BD",4
+6375135268,"bebb9604f2fec4f682772680f4b4c949","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2016-03-12 10:44:53","2016-03-12 12:13:53","2016-03-13 11:22:20","Coamoxiclav","IV","1.2","g","TDS",2
+7236162845,"6b10726c9f2157ec6c3eb9f0cac78bb4","Co-amoxiclav ORAL 625 mg TDS","2017-08-26 14:39:51","2017-08-26 15:36:51","2017-08-28 08:41:10","Coamoxiclav","ORAL","625","mg","TDS",2
+5749447252,"c9af108c6ddd01f4c8d065241a3f3cc7","Amoxicillin ORAL 500 mg 8H","2017-04-20 15:02:41","2017-04-20 15:33:41","2017-04-23 15:33:41","Amoxicillin","ORAL","500","mg","8H",3
+2137425833,"7d30fd8223e3032c12cb779fdd1e0a6b","Co-amoxiclav ORAL 625 mg TDS","2017-11-23 11:21:07","2017-11-23 12:23:07","2017-11-26 12:23:07","Coamoxiclav","ORAL","625","mg","TDS",3
+2137425833,"92976f1a03fe24b67cff5d3951abcb7c","Flucloxacillin ORAL 500 mg 6H","2017-11-26 12:23:07","2017-11-26 14:04:07","2017-11-29 14:04:07","Flucloxacillin","ORAL","500","mg","6H",3
+5869769954,"7f9919dd41fd3365d0ef36569b4a4154","Co-amoxiclav IVI 1.2 g TDS","2017-01-04 07:32:05","2017-01-04 08:57:05","2017-01-06 08:57:05","Coamoxiclav","IV","1.2","g","TDS",2
+5869769954,"2c7f4297e6de0b4b984b8ce75348b995","Co-amoxiclav ORAL 625 mg TDS","2017-01-06 08:57:05","2017-01-06 11:35:05","2017-01-09 11:35:05","Coamoxiclav","ORAL","625","mg","TDS",3
+5869769954,"5045006d4dbe644c79ee97c26ad29a80","Co-amoxiclav IVI 1.2 g TDS","2017-01-09 11:35:05","2017-01-09 14:04:05","2017-01-11 14:04:05","Coamoxiclav","IV","1.2","g","TDS",2
+5869769954,"1a6b55bd8d25fb2e2901644ac9172c49","Co-amoxiclav ORAL 625 mg TDS","2017-01-11 14:04:05","2017-01-11 15:18:05","2017-01-14 15:18:05","Coamoxiclav","ORAL","625","mg","TDS",3
+5869769954,"ae5506c4f553daef13975ed671bd5eef","Co-amoxiclav ORAL 625 mg TDS","2017-01-14 15:18:05","2017-01-14 16:23:05","2017-01-17 16:23:05","Coamoxiclav","ORAL","625","mg","TDS",3
+3734493853,"d92d3af74aabae1e2d599b67adac9016","Doxycycline ORAL 100 mg OD","2015-03-20 16:10:01","2015-03-20 17:17:01","2015-03-20 19:14:09","Doxycycline","ORAL","100","mg","OD",4
+3734493853,"29d914a31300de1d3131f0e677891caa","Flucloxacillin ORAL 500 mg 6H","2017-07-03 22:43:49","2017-07-04 00:08:49","2017-07-05 00:08:49","Flucloxacillin","ORAL","500","mg","6H",1
+2361769316,"afd5cbac008a092088b1b198be42d3d1","Vancomycin protocol IVI 500-2000 mg TTW","2016-10-20 00:16:33","2016-10-20 01:50:33","2016-10-24 01:50:33","Vancomycin protocol","IV","500-2000","mg","TTW",4
+2361769316,"607596780a080f9bec7abe0679a9a132","Amoxicillin ORAL 500 mg 8H","2016-12-09 09:12:00","2016-12-09 10:48:00","2016-12-12 10:48:00","Amoxicillin","ORAL","500","mg","8H",3
+8258333156,"f770855cf9d424c76fdfbc9786d508ac","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-10-07 18:34:13","2015-10-07 18:43:13","2015-10-10 18:43:13","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+8258333156,"22873c8a490ad87e49eb785be6ca7e18","Co-amoxiclav ORAL 625 mg TDS","2015-10-10 18:43:13","2015-10-10 21:22:13","2015-10-12 21:22:13","Coamoxiclav","ORAL","625","mg","TDS",2
+8258333156,"1be77966209d3efdfa443ef7e578b7e2","Trimethoprim ORAL 200 mg BD","2017-10-24 06:49:11","2017-10-24 07:28:11","2017-10-27 07:28:11","Trimethoprim","ORAL","200","mg","BD",3
+5398867882,"b9975abd3be9b90bc38cf2e3dc33cb78","Co-amoxiclav ORAL 625 mg TDS","2015-05-30 13:36:28","2015-05-30 14:01:28","2015-06-01 13:39:29","Coamoxiclav","ORAL","625","mg","TDS",3
+5398867882,"470c9f38992102b1b071fb29d2c27bf1","Co-amoxiclav ORAL 625 mg TDS","2015-06-03 10:38:06","2015-06-03 11:51:06","2015-06-06 11:51:06","Coamoxiclav","ORAL","625","mg","TDS",3
+4728918366,"ae7c5159e91cce12a9a67bc81a0e76a5","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-03-01 16:59:51","2016-03-01 17:16:51","2016-03-02 09:56:14","Piperacillin / Tazobactam","IV","4.5","g","TDS",2
+4728918366,"e14d9e851c5588b2ac4c55dc95917ee7","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-03-16 14:53:20","2016-03-16 16:15:20","2016-03-18 14:39:30","Piperacillin / Tazobactam","IV","4.5","g","TDS",2
+5117273865,"b5526ca1a27c860db8ad94cc0a5d31ff","Co-amoxiclav ORAL 625 mg TDS","2015-01-31 17:52:01","2015-01-31 19:19:01","2015-02-03 19:19:01","Coamoxiclav","ORAL","625","mg","TDS",3
+5117273865,"e42ebb9e9901d5ff21216cab1321c1ae","Co-amoxiclav ORAL 625 mg TDS","2015-02-03 19:19:01","2015-02-03 21:05:01","2015-02-06 21:05:01","Coamoxiclav","ORAL","625","mg","TDS",3
+5117273865,"b95963bbae799c6bdfcbc7b7fda5625c","Nitrofurantoin ORAL 50 mg QDS","2015-02-06 21:05:01","2015-02-06 23:11:01","2015-02-09 23:11:01","Nitrofurantoin","ORAL","50","mg","QDS",3
+5117273865,"45a3db0eb9fe8f99d9f5672ad0890fd0","Co-amoxiclav ORAL 625 mg TDS","2015-02-09 23:11:01","2015-02-09 23:46:01","2015-02-12 23:46:01","Coamoxiclav","ORAL","625","mg","TDS",3
+5117273865,"df6c88c4a6a1cd60d3c8f3dd9b94f8d8","Co-amoxiclav ORAL 625 mg TDS","2017-07-08 03:21:39","2017-07-08 04:25:39","2017-07-09 04:25:39","Coamoxiclav","ORAL","625","mg","TDS",1
+8672976758,"06189b4e2e07235e281fc0313344a8c1","Co-amoxiclav ORAL 625 mg TDS","2017-02-06 09:28:37","2017-02-06 10:03:37","2017-02-09 10:03:37","Coamoxiclav","ORAL","625","mg","TDS",3
+8672976758,"fe1010feacf137dee8e61635fb816f67","Co-amoxiclav IVI 1.2 g TDS","2017-02-09 10:03:37","2017-02-09 10:50:37","2017-02-11 10:50:37","Coamoxiclav","IV","1.2","g","TDS",2
+8672976758,"d71658ba6d065690be67e83edfaef49f","Co-amoxiclav ORAL 625 mg TDS","2017-02-11 10:50:37","2017-02-11 13:23:37","2017-02-14 13:23:37","Coamoxiclav","ORAL","625","mg","TDS",3
+8672976758,"7d876af547d3cb649d548e97f14785cf","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-02-15 18:53:38","2017-02-15 20:02:38","2017-02-18 18:12:04","Clarithromycin","ORAL","500","mg","BD",4
+8672976758,"95f79deb50a277f7f66f3a36d5226b0f","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-02-15 18:10:38","2017-02-15 18:32:38","2017-02-17 18:32:38","Coamoxiclav","IV","1.2","g","TDS",2
+8736361368,"0e45bfc6d1e03e14715c8e3d14cdce99","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2015-11-29 10:44:34","2015-11-29 12:06:34","2015-12-03 12:06:34","Clarithromycin","ORAL","500","mg","BD",4
+8736361368,"870dba8e368bc1404aaba951fefa56ef","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2015-11-29 11:14:34","2015-11-29 12:44:34","2015-12-01 12:44:34","Coamoxiclav","IV","1.2","g","TDS",2
+8736361368,"0b724b8c3cd924442234c8233f21da5a","Meropenem IVI 1 g TDS","2016-01-25 16:20:36","2016-01-25 17:04:36","2016-01-27 17:23:51","Meropenem","IV","1","g","TDS",5
+4767224862,"f276a0a7ba4f5d98d2beca24cd5a7584","Co-amoxiclav ORAL 625 mg TDS","2016-07-19 14:25:41","2016-07-19 14:35:41","2016-07-21 14:35:41","Coamoxiclav","ORAL","625","mg","TDS",2
+4767224862,"e7c4b48978459c50a3c470e1f62bc529","Flucloxacillin ORAL 500 mg 6H","2016-08-03 11:55:19","2016-08-03 12:10:19","2016-08-04 12:10:19","Flucloxacillin","ORAL","500","mg","6H",1
+4767224862,"ff76a916f339153ba8eb707c0f0dbd7a","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-01-05 22:57:21","2017-01-05 23:40:21","2017-01-08 23:40:21","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+4767224862,"d7bada9fac3a9efadcf17f51d9ca1145","Meropenem IVB 1 g TDS","2017-01-08 23:40:21","2017-01-09 01:36:21","2017-01-13 01:36:21","Meropenem","IV","1","g","TDS",4
+4767224862,"b02d13a2d57bb42ddef3ff1542906ca1","Meropenem IVI 1 g TDS","2017-01-13 01:36:21","2017-01-13 02:18:21","2017-01-19 02:18:21","Meropenem","IV","1","g","TDS",6
+4767224862,"6f3686285656f9f875eab124e93b90c4","Meropenem IVI 1 g TDS","2017-01-19 02:18:21","2017-01-19 04:43:21","2017-01-22 19:51:21","Meropenem","IV","1","g","TDS",6
+4767224862,"718b7314b8550757c11440746f2ad2d2","Co-amoxiclav ORAL 625 mg TDS","2017-07-16 09:56:11","2017-07-16 10:55:11","2017-07-16 21:47:09","Coamoxiclav","ORAL","625","mg","TDS",2
+4767224862,"5b7b1b7e7f151e0ee8ae80b41a672ce7","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-09-24 07:13:37","2017-09-24 08:06:37","2017-09-27 08:06:37","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+4767224862,"6aab2b053bae54c330deefa6414eb3a7","Co-amoxiclav ORAL 625 mg TDS","2017-09-29 14:47:57","2017-09-29 16:01:57","2017-10-01 05:58:15","Coamoxiclav","ORAL","625","mg","TDS",2
+3293433785,"0d4ceb5161c23609abfe70fbc0001d24","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-01-03 14:07:26","2016-01-03 15:01:26","2016-01-08 15:01:26","Piperacillin / Tazobactam","IV","4.5","g","TDS",5
+3293433785,"f4be225e2c1c89bafe3efbd6be12b04f","Ciprofloxacin ORAL 500 mg BD","2016-01-08 15:01:26","2016-01-08 17:43:26","2016-01-10 17:43:26","Ciprofloxacin","ORAL","500","mg","BD",2
+3293433785,"406caa9c9ebee6085a2d83a63aa427d2","Co-amoxiclav ORAL 625 mg TDS","2016-01-10 17:43:26","2016-01-10 19:12:26","2016-01-11 19:12:26","Coamoxiclav","ORAL","625","mg","TDS",1
+3293433785,"35ab129691dd8bec72c5b7af9d54cb83","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-02-03 12:01:04","2017-02-03 12:15:04","2017-02-06 11:34:05","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+3293433785,"aacc7a2a150d487e33a0125a16f597b3","Metronidazole ORAL 400 mg TDS","2017-02-09 12:10:39","2017-02-09 13:05:39","2017-02-09 20:51:26","Metronidazole","ORAL","400","mg","TDS",4
+3293433785,"f7684e12f5c375e49369be60b2d644dd","Meropenem IVI 1 g TDS","2017-08-02 17:52:05","2017-08-02 18:18:05","2017-08-08 18:18:05","Meropenem","IV","1","g","TDS",6
+3293433785,"22d2915c31d2dc97412d0dc3d7585896","Meropenem IVB 1 g TDS","2017-08-08 18:18:05","2017-08-08 19:50:05","2017-08-12 19:50:05","Meropenem","IV","1","g","TDS",4
+3293433785,"3d5bf2c1bd9fd8f3a78573271b37df95","Meropenem IVI 1 g TDS","2017-08-12 19:50:05","2017-08-12 21:13:05","2017-08-18 21:13:05","Meropenem","IV","1","g","TDS",6
+3293433785,"7625349b0688d8d95efb967fc35c810e","Co-amoxiclav ORAL 625 mg TDS","2017-09-30 03:27:52","2017-09-30 04:46:52","2017-10-01 17:52:10","Coamoxiclav","ORAL","625","mg","TDS",2
+4793546841,"66ac992053f0f2d9d6b460543aa25c66","Co-amoxiclav ORAL 625 mg TDS","2016-02-13 04:56:31","2016-02-13 06:43:31","2016-02-13 08:42:23","Coamoxiclav","ORAL","625","mg","TDS",1
+5596465465,"cafcb67e586c04b0a6b1379d82f8fe08","Flucloxacillin ORAL 500 mg 6H","2017-06-27 10:47:05","2017-06-27 12:13:05","2017-06-30 12:13:05","Flucloxacillin","ORAL","500","mg","6H",3
+6496778614,"cab4de19086eebcf6abf8499c82a6dfe","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-05-14 02:16:29","2016-05-14 02:45:29","2016-05-15 04:59:39","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+1544452743,"7e7df0c2e6575a0d852be359b30cee27","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-12-02 19:59:01","2017-12-02 21:08:01","2017-12-04 14:17:04","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+6884551715,"0938e3a65897df84a86073a4d590b23c","Doxycycline ORAL 100 mg BD + Metronidazole ORAL 400 mg BD","2016-12-14 12:52:13","2016-12-14 13:58:13","2016-12-15 10:31:52","Doxycycline","ORAL","100","mg","BD",2
+6884551715,"36ab0bfd4e0562d8a17c6ab0315e416f","Doxycycline ORAL 100 mg BD + Metronidazole ORAL 400 mg BD","2016-12-14 14:42:13","2016-12-14 15:42:13","2016-12-15 10:31:52","Metronidazole","ORAL","400","mg","BD",2
+4332344471,"4f640544ee943af9a7df139dc08a03a4","Co-amoxiclav ORAL 625 mg TDS","2017-11-05 01:46:50","2017-11-05 02:30:50","2017-11-06 02:30:50","Coamoxiclav","ORAL","625","mg","TDS",1
+4741155813,"6e133c05cde639041d73fbe7e1f7ec36","Co-amoxiclav IVI 1.2 g TDS","2017-11-16 09:59:25","2017-11-16 10:15:25","2017-11-18 10:15:25","Coamoxiclav","IV","1.2","g","TDS",2
+9529765216,"76d4afdab71ea99b5207f4e985670f99","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-07-11 02:30:21","2015-07-11 03:17:21","2015-07-14 03:17:21","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+2757547383,"8c905f70f68385a3012a98ca5f524a60","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-09-29 06:30:05","2017-09-29 08:20:05","2017-10-02 04:01:42","Clarithromycin","ORAL","500","mg","BD",4
+2757547383,"c61f6deffbbedf499b4c3eb0180a1baa","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-09-29 05:44:05","2017-09-29 06:10:05","2017-10-01 06:10:05","Coamoxiclav","IV","1.2","g","TDS",2
+3118232645,"57badcdb3d49e7078c88a32693dcec8b","Co-amoxiclav ORAL 625 mg TDS","2017-07-27 06:23:03","2017-07-27 07:50:03","2017-07-30 01:20:05","Coamoxiclav","ORAL","625","mg","TDS",3
+3118232645,"7bd554a1917d4465bec75abc008a3cec","Ciprofloxacin ORAL 500 mg BD","2017-11-20 14:20:37","2017-11-20 16:03:37","2017-11-23 16:03:37","Ciprofloxacin","ORAL","500","mg","BD",3
+3617323538,"75a29a48097dffdfbf0627d796115a5f","Co-amoxiclav IVI 1.2 g TDS","2015-03-29 04:31:19","2015-03-29 06:12:19","2015-04-01 06:12:19","Coamoxiclav","IV","1.2","g","TDS",3
+3617323538,"a781a13a707dc8a269766d6268b36f21","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-10-08 16:53:02","2015-10-08 17:58:02","2015-10-12 17:58:02","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+3617323538,"3f41e2c21c9cbb58a3193f56ff8ee8fc","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-10-12 17:58:02","2015-10-12 19:17:02","2015-10-16 19:17:02","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+3617323538,"f5e2adfe4f606d5e2811d977453633aa","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-10-16 19:17:02","2015-10-16 20:53:02","2015-10-19 07:54:06","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+2448324326,"0a71e6a628ed4ba4c24671ca0395e230","Flucloxacillin ORAL 500 mg 6H","2017-06-27 18:32:01","2017-06-27 19:15:01","2017-06-28 16:02:40","Flucloxacillin","ORAL","500","mg","6H",1
+5715463797,"a4b842ba762994f48e0fa93927c96072","Metronidazole ORAL 400 mg TDS","2017-05-09 17:58:49","2017-05-09 18:15:49","2017-05-13 18:15:49","Metronidazole","ORAL","400","mg","TDS",4
+5715463797,"d855fe21012b7725874b690ad5877ebd","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-05-13 18:15:49","2017-05-13 19:52:49","2017-05-16 19:52:49","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+5715463797,"29b1dca0a402aa954d9da9c4c5f9c327","Co-amoxiclav ORAL 625 mg TDS","2017-05-16 19:52:49","2017-05-16 21:07:49","2017-05-18 21:07:49","Coamoxiclav","ORAL","625","mg","TDS",2
+5715463797,"85ece1d5c324020afb6c4821435ee314","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-08-17 09:50:58","2017-08-17 11:25:58","2017-08-19 09:27:50","Piperacillin / Tazobactam","IV","4.5","g","TDS",2
+3876798489,"662d7b8f9ec9b8a46fa16ba521b568ca","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-12-06 15:51:21","2015-12-06 17:00:21","2015-12-08 11:43:27","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+3876798489,"26aa006282c82c5f68bfb3dedb59e4c1","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-12-28 20:32:07","2016-12-28 21:31:07","2017-01-02 09:31:07","Piperacillin / Tazobactam","IV","4.5","g","TDS",4.5
+3876798489,"34043a521ad1f5417a8f59a0c381290f","Co-amoxiclav ORAL 625 mg TDS","2017-01-21 07:08:01","2017-01-21 07:25:01","2017-01-23 07:25:01","Coamoxiclav","ORAL","625","mg","TDS",2
+1674333962,"ce339a3f1e3491af48a54e3abb13e797","Co-amoxiclav ORAL 625 mg TDS","2016-07-02 14:17:22","2016-07-02 15:46:22","2016-07-04 15:46:22","Coamoxiclav","ORAL","625","mg","TDS",2
+1674333962,"20fd5db35c89a2ff5db1708c3409b91e","Co-amoxiclav ORAL 625 mg TDS","2016-07-04 15:46:22","2016-07-04 18:29:22","2016-07-06 18:29:22","Coamoxiclav","ORAL","625","mg","TDS",2
+1674333962,"3eb506ead8b4554d8cf104a6b57986b4","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-07-06 18:29:22","2016-07-06 19:55:22","2016-07-09 19:55:22","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+5274773938,"f02fc0fc77d72039e3a9ac1fa7d58d97","Co-amoxiclav IVI 1.2 g TDS","2017-02-10 15:47:45","2017-02-10 16:02:45","2017-02-11 16:02:45","Coamoxiclav","IV","1.2","g","TDS",1
+5274773938,"10287ec5839950dbabf86cd80e60db1b","Co-amoxiclav ORAL 625 mg TDS","2017-02-11 16:02:45","2017-02-11 16:57:45","2017-02-15 16:57:45","Coamoxiclav","ORAL","625","mg","TDS",4
+3248658448,"f5e725086cf5fd0347ae8ae3b2512222","Doxycycline ORAL 100 mg OD","2016-05-14 20:32:55","2016-05-14 22:03:55","2016-05-15 22:03:55","Doxycycline","ORAL","100","mg","OD",1
+7256874632,"dee0e7c3a0f1aa9aa34dcdb9e3c51ca7","Doxycycline ORAL 100 mg OD","2017-05-14 11:14:31","2017-05-14 11:41:31","2017-05-16 00:37:22","Doxycycline","ORAL","100","mg","OD",4
+7347847229,"a28e5776c3687b01b634cd982220f16e","Co-amoxiclav ORAL 625 mg TDS","2017-04-20 22:01:47","2017-04-20 23:06:47","2017-04-21 18:32:49","Coamoxiclav","ORAL","625","mg","TDS",1
+7347847229,"0bea2bc7b311bab5d11738921f48a138","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-05-09 16:55:38","2017-05-09 17:37:38","2017-05-12 17:37:38","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+7347847229,"f32c2712b68604134ab28cc276140b2b","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-11-15 20:55:00","2017-11-15 21:32:00","2017-11-16 22:01:11","Piperacillin / Tazobactam","IV","4.5","g","TDS",2
+2662362167,"50f4b7cb12a09d766014432cc452d18c","Co-amoxiclav IVI 1.2 g TDS","2017-01-05 09:11:25","2017-01-05 10:23:25","2017-01-06 16:48:11","Coamoxiclav","IV","1.2","g","TDS",2
+2662362167,"4fe59c7fe8d53872e3d69ebc48d759c1","Flucloxacillin ORAL 500 mg 6H","2017-01-12 06:54:32","2017-01-12 08:25:32","2017-01-13 08:25:32","Flucloxacillin","ORAL","500","mg","6H",1
+2614395446,"176d70b4802320aabb150db3b47c77ed","Trimethoprim ORAL 200 mg BD","2016-02-04 13:03:40","2016-02-04 13:58:40","2016-02-07 13:58:40","Trimethoprim","ORAL","200","mg","BD",3
+2614395446,"95623ab6a271451f28891536132794de","Co-amoxiclav ORAL 625 mg TDS","2016-02-07 13:58:40","2016-02-07 15:13:40","2016-02-10 11:24:41","Coamoxiclav","ORAL","625","mg","TDS",3
+8256632542,"1d98d074ce5f0e89833305d77b8fec84","Co-amoxiclav IVI 1.2 g TDS","2017-02-05 16:09:58","2017-02-05 17:34:58","2017-02-07 01:07:13","Coamoxiclav","IV","1.2","g","TDS",2
+2473555484,"80ec3866da1f8aecce4f021c71109c03","Meropenem IVB 1 g TDS","2015-07-03 02:17:50","2015-07-03 02:33:50","2015-07-07 02:33:50","Meropenem","IV","1","g","TDS",4
+2473555484,"cafdd0626de8cb6c9159de66da63a68b","Meropenem IVI 1 g TDS","2015-07-07 02:33:50","2015-07-07 02:56:50","2015-07-13 02:56:50","Meropenem","IV","1","g","TDS",6
+2473555484,"26799ebf2804da3d4efea0a8c5fd85e2","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-07-13 02:56:50","2015-07-13 05:22:50","2015-07-16 05:22:50","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+2473555484,"f1cd3b3384e42f9711c3e15b9cd38b97","Meropenem IVB 1 g TDS","2015-07-16 05:22:50","2015-07-16 06:24:50","2015-07-20 06:24:50","Meropenem","IV","1","g","TDS",4
+2473555484,"e55ebc21744d818567ec2ba866ec4c97","Meropenem IVI 1 g TDS","2015-07-20 06:24:50","2015-07-20 07:13:50","2015-07-25 04:30:41","Meropenem","IV","1","g","TDS",6
+2473555484,"fc8e0f638c1c4872986664a2eb7aa940","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-07-03 05:33:41","2017-07-03 06:48:41","2017-07-06 06:48:41","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+8138572613,"8ec7fde8b6fe3702bd307c05fa63ba5c","Co-amoxiclav ORAL 625 mg TDS","2016-10-12 08:55:13","2016-10-12 10:02:13","2016-10-13 10:02:13","Coamoxiclav","ORAL","625","mg","TDS",1
+8138572613,"a667d82129a3a8e60869877bad05cd3b","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-08-20 14:08:50","2017-08-20 15:21:50","2017-08-22 15:21:50","Piperacillin / Tazobactam","IV","4.5","g","TDS",2
+8138572613,"b642349f8dde28a65d66b4707fea8955","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-09-04 00:47:27","2017-09-04 02:17:27","2017-09-08 02:17:27","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+8138572613,"6c7a23d0cf2e04c6926de21b21b560c1","Co-amoxiclav ORAL 625 mg TDS","2017-09-08 02:17:27","2017-09-08 04:00:27","2017-09-13 04:00:27","Coamoxiclav","ORAL","625","mg","TDS",5
+8138572613,"44bdb06d09eca2e53ca6c5c9156d0dac","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-09-13 04:00:27","2017-09-13 06:32:27","2017-09-17 06:32:27","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+8138572613,"820b266c6e163d543d30fb7296dabf17","Co-amoxiclav ORAL 625 mg TDS","2017-09-17 06:32:27","2017-09-17 08:54:27","2017-09-22 08:54:27","Coamoxiclav","ORAL","625","mg","TDS",5
+8138572613,"fb86d2f9a23388e7af8eb8ca7f461e15","Co-amoxiclav ORAL 625 mg TDS","2017-09-22 08:54:27","2017-09-22 11:09:27","2017-09-27 11:09:27","Coamoxiclav","ORAL","625","mg","TDS",5
+8268278367,"091309ea0b6a522b824522f2a0053983","Co-amoxiclav ORAL 625 mg TDS","2017-05-25 03:20:21","2017-05-25 05:12:21","2017-05-28 05:12:21","Coamoxiclav","ORAL","625","mg","TDS",3
+6562857427,"14e6a5c71ef3385055da8cc796337e8d","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-10-13 02:48:00","2017-10-13 04:04:00","2017-10-15 09:49:28","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+9498821588,"d52347b188cfc63e0c8415e18729bf76","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2016-10-11 19:59:19","2016-10-11 21:12:19","2016-10-15 21:12:19","Clarithromycin","ORAL","500","mg","BD",4
+9498821588,"875ed851f9c73ad6ea55895f1e3a5e9a","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2016-10-11 19:30:19","2016-10-11 19:43:19","2016-10-13 19:43:19","Coamoxiclav","IV","1.2","g","TDS",2
+9498821588,"90ba5a37016649a9e9070376713184f3","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2016-10-15 21:12:19","2016-10-15 21:36:19","2016-10-18 03:32:41","Clarithromycin","ORAL","500","mg","BD",4
+9498821588,"f192298c89e0af84f28cfcc98713dd3e","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2016-10-15 21:12:19","2016-10-15 23:46:19","2016-10-17 23:46:19","Coamoxiclav","IV","1.2","g","TDS",2
+3556299788,"e91a0114ccc1c73f2d1aa4689cec2153","Trimethoprim ORAL 200 mg BD","2017-06-16 11:53:21","2017-06-16 12:40:21","2017-06-18 12:40:21","Trimethoprim","ORAL","200","mg","BD",2
+4629422515,"f6f5cd00285d9fbb3495ebb82dd82615","Meropenem IVI 1 g TDS","2015-08-14 22:37:01","2015-08-14 23:46:01","2015-08-17 16:18:23","Meropenem","IV","1","g","TDS",3
+6462578863,"72bd02e0b5c646e1d2d6d93b7d191f19","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-03-26 15:21:51","2017-03-26 16:23:51","2017-03-30 16:23:51","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+6462578863,"2ef2453dac9fb4f1bdb64c475e670092","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-11-15 13:28:42","2017-11-15 14:59:42","2017-11-19 14:59:42","Clarithromycin","ORAL","500","mg","BD",4
+6462578863,"175cee5796ee6ec7a2b47a34c6f649a3","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-11-15 12:53:42","2017-11-15 13:34:42","2017-11-17 13:34:42","Coamoxiclav","IV","1.2","g","TDS",2
+6462578863,"94106faf728c147b9019f73e953d7db5","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-11-19 14:59:42","2017-11-19 17:27:42","2017-11-22 06:50:02","Clarithromycin","ORAL","500","mg","BD",4
+6462578863,"0d46fff8cbcc77b94f924e4024aa343f","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-11-19 14:59:42","2017-11-19 16:41:42","2017-11-21 16:41:42","Coamoxiclav","IV","1.2","g","TDS",2
+9585713383,"08ec23cbf4ccf8d68ec7155a67be09b4","Co-amoxiclav ORAL 625 mg TDS","2017-06-06 07:44:17","2017-06-06 08:37:17","2017-06-09 08:37:17","Coamoxiclav","ORAL","625","mg","TDS",3
+9585713383,"0b8628d5ee5ea4e48f72464407a45451","Co-amoxiclav ORAL 625 mg TDS","2017-06-09 08:37:17","2017-06-09 09:15:17","2017-06-12 09:15:17","Coamoxiclav","ORAL","625","mg","TDS",3
+9585713383,"870b0c61efca0b89e451e5ca94c2a3af","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-06-12 09:15:17","2017-06-12 09:58:17","2017-06-14 21:58:17","Piperacillin / Tazobactam","IV","4.5","g","TDS",2.5
+6785517235,"3813d9cd83ee08f35709a0ea83c7a3fb","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-12-06 11:42:14","2017-12-06 13:02:14","2017-12-10 10:50:53","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+3377561683,"00a65e5f307a03943cf360c778229e4f","Co-amoxiclav ORAL 625 mg TDS","2017-10-12 05:21:18","2017-10-12 05:26:18","2017-10-15 05:26:18","Coamoxiclav","ORAL","625","mg","TDS",3
+3377561683,"be4e410ec26316b406ed2a7ec09983da","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-11-06 23:37:43","2017-11-07 01:18:43","2017-11-10 01:18:43","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+4191324674,"162b42070925611e9fe8dea92b9cd213","Flucloxacillin ORAL 500 mg 6H","2017-11-29 22:45:11","2017-11-30 00:20:11","2017-12-01 00:20:11","Flucloxacillin","ORAL","500","mg","6H",1
+7655776216,"515cd45cded83d4f1c07a5406320c972","Trimethoprim ORAL 200 mg BD","2015-08-17 03:52:40","2015-08-17 04:59:40","2015-08-19 04:59:40","Trimethoprim","ORAL","200","mg","BD",2
+7655776216,"fab737775725dbee60758908aa1fcda6","Co-amoxiclav IVI 1.2 g TDS","2016-08-30 19:00:30","2016-08-30 19:24:30","2016-09-01 19:24:30","Coamoxiclav","IV","1.2","g","TDS",2
+7655776216,"438d5ef457ee1d67a4c0dffa2282c4e4","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-09-01 19:24:30","2016-09-01 20:25:30","2016-09-05 20:25:30","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+7655776216,"5abe462d8954138f49270faa046f0d47","Co-amoxiclav IVI 1.2 g TDS","2016-09-05 20:25:30","2016-09-05 22:24:30","2016-09-07 22:24:30","Coamoxiclav","IV","1.2","g","TDS",2
+7655776216,"349f56a1a7508a6dc691a5cd7ee0462e","Co-amoxiclav IVI 1.2 g TDS","2016-09-07 22:24:30","2016-09-07 23:23:30","2016-09-09 23:23:30","Coamoxiclav","IV","1.2","g","TDS",2
+7655776216,"1d9c5f2db2460df53288e59c2a28f7f5","Co-amoxiclav ORAL 625 mg TDS","2016-09-09 23:23:30","2016-09-10 00:14:30","2016-09-12 05:34:28","Coamoxiclav","ORAL","625","mg","TDS",3
+3475322582,"ea94ceb5f471063bbff717472da63b5b","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-10-20 07:06:45","2017-10-20 07:44:45","2017-10-23 07:44:45","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+5341878186,"08e4a4a234fb51e3f1e42135dc609cab","Ciprofloxacin ORAL 500 mg BD","2015-03-11 22:59:06","2015-03-12 00:32:06","2015-03-13 00:32:06","Ciprofloxacin","ORAL","500","mg","BD",1
+2276562555,"f04957d541fa5de94dd723b7f3ef0e2c","Co-amoxiclav ORAL 625 mg TDS","2015-06-22 02:46:08","2015-06-22 03:49:08","2015-06-22 14:07:47","Coamoxiclav","ORAL","625","mg","TDS",2
+7765747983,"dfbc64d7f1b4982d11b597cea174e734","Co-amoxiclav ORAL 625 mg TDS","2016-08-19 23:39:31","2016-08-20 01:23:31","2016-08-22 01:23:31","Coamoxiclav","ORAL","625","mg","TDS",2
+7765747983,"2dc6d7d93aa45e31e559421273874bf2","Meropenem IVI 1 g TDS","2016-08-22 01:23:31","2016-08-22 02:54:31","2016-08-26 02:54:31","Meropenem","IV","1","g","TDS",4
+6829262735,"ac822a8ee5799acb40969c166613e4c4","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-04-05 20:30:06","2015-04-05 21:44:06","2015-04-08 21:44:06","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+6829262735,"2350e2b0e8222e8d42fb3694019b6946","Meropenem IVI 1 g TDS","2015-04-08 21:44:06","2015-04-08 23:24:06","2015-04-14 23:24:06","Meropenem","IV","1","g","TDS",6
+6829262735,"4aad980e65d5a6233852b8b88f203dc9","Meropenem IVB 1 g TDS","2015-04-14 23:24:06","2015-04-15 01:13:06","2015-04-19 01:13:06","Meropenem","IV","1","g","TDS",4
+6829262735,"428739c57730d24145c51bf9093260e6","Meropenem IVB 1 g TDS","2015-04-19 01:13:06","2015-04-19 01:56:06","2015-04-23 01:56:06","Meropenem","IV","1","g","TDS",4
+3894468747,"1ab55e515af6b86dde76abbe0bffbd3f","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2015-10-01 21:09:55","2015-10-01 21:38:55","2015-10-04 16:13:46","Clarithromycin","ORAL","500","mg","BD",4
+3894468747,"815becedda13d297cc5b48386778ee70","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2015-10-01 22:13:55","2015-10-01 22:33:55","2015-10-03 22:33:55","Coamoxiclav","IV","1.2","g","TDS",2
+9321535328,"5b8004982a8d128ebdc8526c74886572","Trimethoprim ORAL 200 mg BD","2016-11-16 03:43:25","2016-11-16 04:26:25","2016-11-19 04:26:25","Trimethoprim","ORAL","200","mg","BD",3
+9321535328,"3bff4772960688506c1d637e5e6c8705","Co-amoxiclav ORAL 625 mg TDS","2017-01-25 02:42:04","2017-01-25 03:33:04","2017-01-25 09:23:36","Coamoxiclav","ORAL","625","mg","TDS",2
+6374971643,"19a1e954f0f927063259d0a3a0716a6e","Co-amoxiclav ORAL 625 mg TDS","2015-04-03 17:17:29","2015-04-03 17:58:29","2015-04-04 17:58:29","Coamoxiclav","ORAL","625","mg","TDS",1
+6374971643,"f9ed1df2f9e8fcb9145611b37a86e9d5","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-08-15 02:12:19","2015-08-15 03:46:19","2015-08-18 21:14:11","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+8346892319,"3d99d2df11495cf7e69924ae7f5ad75a","Trimethoprim ORAL 200 mg BD","2017-05-30 07:57:21","2017-05-30 09:11:21","2017-06-02 09:11:21","Trimethoprim","ORAL","200","mg","BD",3
+8346892319,"b90c4f7016ac86420b7661ce3ab52c50","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-06-02 09:11:21","2017-06-02 11:32:21","2017-06-05 11:32:21","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+7117459538,"906126ee2f76c47e9bfe093d0e98a260","Ciprofloxacin ORAL 500 mg BD","2017-12-19 09:27:50","2017-12-19 10:35:50","2017-12-22 10:35:50","Ciprofloxacin","ORAL","500","mg","BD",3
+7881812512,"1f256b2c597741a0e2df79b87677ebba","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-09-14 14:35:46","2016-09-14 16:28:46","2016-09-16 15:38:32","Piperacillin / Tazobactam","IV","4.5","g","TDS",2
+8812662387,"2cf709d1dcd0cad7ac6fb8786a8e7243","Flucloxacillin ORAL 500 mg 6H","2017-06-01 11:00:31","2017-06-01 11:33:31","2017-06-03 11:33:31","Flucloxacillin","ORAL","500","mg","6H",2
+8812662387,"7f1520f9d237afa44ce3d394a6e0d3f0","Co-amoxiclav IVI 1.2 g TDS","2017-06-03 11:33:31","2017-06-03 12:38:31","2017-06-05 12:38:31","Coamoxiclav","IV","1.2","g","TDS",2
+3874985289,"e4d78d389e7c7f47a5fc260ed4b9627c","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-01-10 11:30:01","2017-01-10 12:05:01","2017-01-11 18:37:56","Piperacillin / Tazobactam","IV","4.5","g","TDS",2
+3874985289,"5b522b8599753726ef3d8f0993120fc0","Co-amoxiclav ORAL 625 mg TDS","2017-12-10 10:58:29","2017-12-10 12:03:29","2017-12-13 12:03:29","Coamoxiclav","ORAL","625","mg","TDS",3
+3557254262,"cfbda43830037aeae2582f99cabd91cb","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-04-13 21:17:40","2016-04-13 22:43:40","2016-04-15 22:43:40","Piperacillin / Tazobactam","IV","4.5","g","TDS",2
+3557254262,"403dee5b8e2d8dac79a57eaef49e4594","Trimethoprim ORAL 200 mg BD","2016-04-15 22:43:40","2016-04-16 00:03:40","2016-04-17 23:58:50","Trimethoprim","ORAL","200","mg","BD",2
+3557254262,"4b6afb5776a8249e0d1715d2e4123903","Co-amoxiclav ORAL 625 mg TDS","2016-08-25 20:30:33","2016-08-25 21:44:33","2016-08-26 00:01:09","Coamoxiclav","ORAL","625","mg","TDS",2
+4824538342,"6737f0433dec085ad9dc479696455e19","Flucloxacillin ORAL 500 mg 6H","2016-07-08 19:21:55","2016-07-08 20:55:55","2016-07-12 20:55:55","Flucloxacillin","ORAL","500","mg","6H",4
+4824538342,"17e8bb23458aa543224b53dd3c642d64","Co-amoxiclav ORAL 625 mg TDS","2017-06-19 06:47:20","2017-06-19 07:31:20","2017-06-22 03:12:07","Coamoxiclav","ORAL","625","mg","TDS",3
+4824538342,"6cb85459474a9d85d7d9f5412f0f5a67","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-08-02 08:15:36","2017-08-02 09:32:36","2017-08-06 09:32:36","Clarithromycin","ORAL","500","mg","BD",4
+4824538342,"230af67873c53f7109b54c78bcd117f9","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-08-02 07:51:36","2017-08-02 08:51:36","2017-08-04 08:51:36","Coamoxiclav","IV","1.2","g","TDS",2
+4824538342,"d63e78085c12efe1321fb62168308204","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-08-06 09:32:36","2017-08-06 12:05:36","2017-08-09 17:22:59","Clarithromycin","ORAL","500","mg","BD",4
+4824538342,"6b5c5978b8babed5762d2752746a81cc","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-08-06 09:32:36","2017-08-06 10:59:36","2017-08-08 10:59:36","Coamoxiclav","IV","1.2","g","TDS",2
+4357937165,"e13a3f6ff28335579648176c6f49cb46","Co-amoxiclav IVI 1.2 g TDS","2017-11-08 21:24:01","2017-11-08 22:06:01","2017-11-10 22:06:01","Coamoxiclav","IV","1.2","g","TDS",2
+4357937165,"f42784193e91617975dbf29e2d82bc6a","Co-amoxiclav ORAL 625 mg TDS","2017-11-10 22:06:01","2017-11-10 23:37:01","2017-11-13 23:37:01","Coamoxiclav","ORAL","625","mg","TDS",3
+6152245944,"9b4488566c99ed51f89738cebbb40808","Co-amoxiclav ORAL 625 mg TDS","2015-07-12 11:54:33","2015-07-12 12:30:33","2015-07-14 12:30:33","Coamoxiclav","ORAL","625","mg","TDS",2
+8691812214,"447363604e35428ac500b7bf00a4fac6","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-05-17 20:15:10","2017-05-17 22:06:10","2017-05-18 02:56:46","Piperacillin / Tazobactam","IV","4.5","g","TDS",2
+3524553351,"5f78914e5afecc346c897c7ae694cda9","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-05-17 21:26:08","2017-05-17 23:02:08","2017-05-20 23:02:08","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+3524553351,"c6bb803e08433f9cb5dcb2ac75b929c0","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-05-20 23:02:08","2017-05-21 01:27:08","2017-05-24 01:27:08","Clarithromycin","ORAL","500","mg","BD",3
+3524553351,"6b988986b4c801fd3e9dc65f3a4413eb","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-05-20 23:02:08","2017-05-20 23:41:08","2017-05-23 23:41:08","Coamoxiclav","IV","1.2","g","TDS",3
+8677843216,"de3a5074ec870a46485a9b01781ed439","Co-amoxiclav IVI 1.2 g TDS","2016-01-11 02:42:56","2016-01-11 03:35:56","2016-01-13 03:35:56","Coamoxiclav","IV","1.2","g","TDS",2
+8677843216,"f720e84ccf459d39baa56af3c020628c","Co-amoxiclav ORAL 625 mg TDS","2016-01-13 03:35:56","2016-01-13 04:37:56","2016-01-15 18:25:28","Coamoxiclav","ORAL","625","mg","TDS",3
+4628967432,"c0071613aef32b1439a3714b115caee8","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-04-13 04:06:03","2015-04-13 04:37:03","2015-04-16 04:37:03","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+4628967432,"a8682d896696e7ad4b14eef794998b6f","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-06-10 12:20:03","2015-06-10 12:44:03","2015-06-15 12:44:03","Piperacillin / Tazobactam","IV","4.5","g","TDS",5
+4628967432,"5d2c004df2ef6523bb461ef52932da5a","Vancomycin protocol IVI 500-2000 mg TTW","2015-06-15 12:44:03","2015-06-15 14:38:03","2015-06-19 14:38:03","Vancomycin protocol","IV","500-2000","mg","TTW",4
+4628967432,"0061c3bde046a577456a8c2eb4a14489","Vancomycin protocol IVI 500-2000 mg TTW","2015-06-19 14:38:03","2015-06-19 16:49:03","2015-06-23 16:49:03","Vancomycin protocol","IV","500-2000","mg","TTW",4
+4628967432,"e0956a18512185bca23cbf82e69628fe","Meropenem IVI 1 g TDS","2015-06-23 16:49:03","2015-06-23 17:42:03","2015-06-28 17:42:03","Meropenem","IV","1","g","TDS",5
+3155957712,"219a17de6c8f47487747b7f7d687be7a","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-07-31 05:37:37","2016-07-31 05:51:37","2016-08-03 05:51:37","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+9375145644,"a77ced9ced77680ad035d389a0ef73b8","Co-amoxiclav ORAL 625 mg TDS","2015-12-11 07:23:01","2015-12-11 07:31:01","2015-12-12 07:31:01","Coamoxiclav","ORAL","625","mg","TDS",1
+6872945377,"e67823566462e2dd587cc91b79407b6e","Flucloxacillin ORAL 500 mg 6H","2016-07-26 04:17:07","2016-07-26 04:58:07","2016-07-27 04:58:07","Flucloxacillin","ORAL","500","mg","6H",1
+6872945377,"40269caeb3242254bae0622304a860df","Co-amoxiclav ORAL 625 mg TDS","2017-10-21 14:13:36","2017-10-21 15:16:36","2017-10-24 15:16:36","Coamoxiclav","ORAL","625","mg","TDS",3
+6872945377,"a820f710dde7d3fe616151c1e7ac6534","Trimethoprim ORAL 200 mg BD","2017-10-24 15:16:36","2017-10-24 15:58:36","2017-10-27 02:03:40","Trimethoprim","ORAL","200","mg","BD",3
+5726385525,"a028cf950c29ca73c01803b54642d513","Meropenem IVI 1 g TDS","2017-11-29 03:31:13","2017-11-29 03:47:13","2017-12-03 03:47:13","Meropenem","IV","1","g","TDS",4
+5726385525,"533d158988a771c33d57c050f2e7e1e5","Co-amoxiclav ORAL 625 mg TDS","2017-12-03 03:47:13","2017-12-03 04:27:13","2017-12-05 04:27:13","Coamoxiclav","ORAL","625","mg","TDS",2
+5726385525,"06bb1a8e680036089f889ec2cf2dc6ee","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-12-05 04:27:13","2017-12-05 06:00:13","2017-12-08 06:00:13","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+5726385525,"d1ebf83505c4995991e7f689f8bf8042","Co-amoxiclav ORAL 625 mg TDS","2017-12-08 06:00:13","2017-12-08 06:47:13","2017-12-10 06:47:13","Coamoxiclav","ORAL","625","mg","TDS",2
+5726385525,"e58f3ddd81ea16aca2550b29a266023e","Co-amoxiclav ORAL 625 mg TDS","2017-12-10 06:47:13","2017-12-10 07:50:13","2017-12-12 07:50:13","Coamoxiclav","ORAL","625","mg","TDS",2
+5726385525,"47e47c76940d7778afcf11ca57bb7cd1","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-12-12 07:50:13","2017-12-12 10:02:13","2017-12-15 10:02:13","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+3876365773,"870343db45e9b0c6cb54413a97eaf341","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-06-08 23:56:31","2015-06-09 00:55:31","2015-06-10 19:40:28","Piperacillin / Tazobactam","IV","4.5","g","TDS",2
+3876365773,"bc79b9e0579f43ba6e194455921b0905","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-12-07 02:15:04","2015-12-07 03:03:04","2015-12-10 03:03:04","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+3876365773,"bc5b6f6dad18197a931659bdc267c7fe","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-01-23 11:47:20","2016-01-23 12:24:20","2016-01-25 08:55:53","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+3876365773,"8b87ab04ad0db5295813174ae54ffe69","Amoxicillin ORAL 500 mg 8H","2016-11-20 10:53:07","2016-11-20 11:29:07","2016-11-23 23:29:07","Amoxicillin","ORAL","500","mg","8H",3.5
+8754479422,"f82a5780a9af7dc98e646747269c38bb","Trimethoprim ORAL 200 mg BD","2016-03-30 14:18:10","2016-03-30 14:42:10","2016-03-31 17:18:30","Trimethoprim","ORAL","200","mg","BD",2
+8754479422,"e9dc21ea6d24f6f8a2bd258c882b8cdb","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2016-11-28 12:15:35","2016-11-28 13:35:35","2016-11-29 13:46:33","Clarithromycin","ORAL","500","mg","BD",4
+8754479422,"74e3f378b91c6d7121a0d637bd56c2fa","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2016-11-28 11:37:35","2016-11-28 12:29:35","2016-11-29 13:46:33","Coamoxiclav","IV","1.2","g","TDS",2
+9451197337,"ca2bf3e6156f6b5a78ec3b6a805c5fc9","Piperacillin / Tazobactam IVI 4.5 g BD","2017-04-22 10:06:25","2017-04-22 11:44:25","2017-04-23 11:44:25","Piperacillin / Tazobactam","IV","4.5","g","BD",1
+9451197337,"12513fc9265e62d7dff6272f1ec9855d","Vancomycin protocol IVI 500-2000 mg TTW","2017-04-23 11:44:25","2017-04-23 14:38:25","2017-04-27 14:38:25","Vancomycin protocol","IV","500-2000","mg","TTW",4
+1555756339,"0f241aa35c30ddb44d0ce79879b3daf3","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-01-15 03:41:56","2016-01-15 04:21:56","2016-01-17 04:21:56","Piperacillin / Tazobactam","IV","4.5","g","TDS",2
+1555756339,"592a738e4c2afcae6f625c01856151e0","Co-amoxiclav ORAL 625 mg TDS","2016-08-01 10:31:19","2016-08-01 11:15:19","2016-08-01 21:06:17","Coamoxiclav","ORAL","625","mg","TDS",2
+1555756339,"0bf9ea7732dd6e904ab670a407382d95","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-07-02 00:54:46","2017-07-02 01:35:46","2017-07-05 12:23:00","Clarithromycin","ORAL","500","mg","BD",4
+1555756339,"89ac870bc1c1e4b2a37cec79d188cb08","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-07-02 00:39:46","2017-07-02 01:15:46","2017-07-04 01:15:46","Coamoxiclav","IV","1.2","g","TDS",2
+2365757716,"dec8544f9d3f75c9d4086dc5ef8144d3","Co-amoxiclav ORAL 625 mg TDS","2016-07-08 01:14:13","2016-07-08 02:21:13","2016-07-11 02:21:13","Coamoxiclav","ORAL","625","mg","TDS",3
+2365757716,"86e5a95250253168abf4009db966f6c8","Co-amoxiclav ORAL 625 mg TDS","2016-07-11 02:21:13","2016-07-11 03:07:13","2016-07-14 03:07:13","Coamoxiclav","ORAL","625","mg","TDS",3
+2365757716,"05015663612f83786ef423816a3bfe64","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-07-14 03:07:13","2016-07-14 03:43:13","2016-07-17 03:43:13","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+2365757716,"52acc3671b2f3e48faaa677cc9c604f9","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-07-17 03:43:13","2016-07-17 03:51:13","2016-07-20 03:51:13","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+2326393627,"07047485e56ef06ed67f2f827c2cdac2","Trimethoprim ORAL 200 mg BD","2017-05-12 16:50:07","2017-05-12 17:39:07","2017-05-15 17:39:07","Trimethoprim","ORAL","200","mg","BD",3
+2326393627,"2e63cc49f95777afe5b3fa1bd0ed6fc1","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-05-15 17:39:07","2017-05-15 19:10:07","2017-05-18 19:10:07","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+2326393627,"d88dd055940a58b87de3a9463a5f7e5e","Co-amoxiclav ORAL 625 mg TDS","2017-05-18 19:10:07","2017-05-18 19:56:07","2017-05-21 19:56:07","Coamoxiclav","ORAL","625","mg","TDS",3
+2326393627,"f0e41274bcfec6c677efee86acd94d78","Co-amoxiclav ORAL 625 mg TDS","2017-05-21 19:56:07","2017-05-21 20:40:07","2017-05-24 20:40:07","Coamoxiclav","ORAL","625","mg","TDS",3
+4651984575,"b209fc21b14f9a1d11c9c61ae84052b3","Flucloxacillin ORAL 500 mg 6H","2017-08-25 16:20:25","2017-08-25 16:44:25","2017-08-26 15:56:08","Flucloxacillin","ORAL","500","mg","6H",3
+4335323784,"b7c284cf7a75432d749317265eb0877b","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-04-26 22:47:13","2017-04-26 23:29:13","2017-04-30 21:38:17","Clarithromycin","ORAL","500","mg","BD",4
+4335323784,"778381d7c7073f4d5a94b794df2aeaf8","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-04-26 23:48:13","2017-04-27 00:36:13","2017-04-29 00:36:13","Coamoxiclav","IV","1.2","g","TDS",2
+8356292548,"f8a5c8a8610d8bd7c2dca75b3f47fcf2","Co-amoxiclav ORAL 625 mg TDS","2016-08-26 18:05:51","2016-08-26 19:08:51","2016-08-27 19:08:51","Coamoxiclav","ORAL","625","mg","TDS",1
+8356292548,"f18b770ae7078a03f30e17a79c57e103","Co-amoxiclav IVI 1.2 g TDS","2016-08-27 19:08:51","2016-08-27 21:02:51","2016-08-29 21:02:51","Coamoxiclav","IV","1.2","g","TDS",2
+8356292548,"34ba3cf1f277c13b1b8e13c38b4e9a34","Co-amoxiclav ORAL 625 mg TDS","2017-03-16 03:14:14","2017-03-16 04:20:14","2017-03-17 16:20:14","Coamoxiclav","ORAL","625","mg","TDS",1.5
+1714857374,"5d0ee2efdce29aa5367c00bbb81ee19d","Flucloxacillin ORAL 500 mg 6H","2017-11-26 11:00:25","2017-11-26 11:33:25","2017-11-27 11:33:25","Flucloxacillin","ORAL","500","mg","6H",1
+1714857374,"2d0cb3ceaae90673c2c4192cfb84f5a5","Flucloxacillin ORAL 500 mg 6H","2017-11-27 11:33:25","2017-11-27 12:56:25","2017-11-28 12:56:25","Flucloxacillin","ORAL","500","mg","6H",1
+2638771692,"1591af78f8a6d70cfa4bdfba86be9d78","Trimethoprim ORAL 200 mg BD","2015-10-04 14:04:02","2015-10-04 14:30:02","2015-10-06 14:30:02","Trimethoprim","ORAL","200","mg","BD",2
+4588212532,"578e39eeebbafebfe07fc33ae6f6fef8","Co-amoxiclav ORAL 625 mg TDS","2016-06-15 07:13:17","2016-06-15 08:24:17","2016-06-16 08:24:17","Coamoxiclav","ORAL","625","mg","TDS",1
+5192242274,"74afc3c45a5372b37f85d0f5875b56c7","Co-amoxiclav IVI 1.2 g TDS","2016-10-23 06:30:16","2016-10-23 08:09:16","2016-10-24 20:49:02","Coamoxiclav","IV","1.2","g","TDS",2
+5515655796,"58f500861d8603b1b43a8bb26d974c66","Trimethoprim ORAL 200 mg BD","2015-08-12 03:18:56","2015-08-12 03:38:56","2015-08-13 09:46:29","Trimethoprim","ORAL","200","mg","BD",2
+4675148323,"89ab29ba2977c8a1678c653dd477c3fa","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-11-06 14:36:55","2016-11-06 15:49:55","2016-11-10 15:49:55","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+4675148323,"8b644678bb8dcb82103f304ddd8404bc","Co-amoxiclav IVI 1.2 g TDS","2016-11-10 15:49:55","2016-11-10 17:11:55","2016-11-12 17:11:55","Coamoxiclav","IV","1.2","g","TDS",2
+4675148323,"23fc82027bad4e970b5eaec42ae2aa32","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-11-12 17:11:55","2016-11-12 19:56:55","2016-11-16 18:54:42","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+4675148323,"9222e4be860c14918a0131dca80175ea","Co-amoxiclav ORAL 625 mg TDS","2017-05-05 11:13:14","2017-05-05 12:15:14","2017-05-06 12:15:14","Coamoxiclav","ORAL","625","mg","TDS",1
+4538292524,"4f9e2f6b4a2d327641928af9347cbc64","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-02-24 10:04:37","2017-02-24 11:05:37","2017-02-28 11:05:37","Clarithromycin","ORAL","500","mg","BD",4
+4538292524,"1d3834409d0642d24f35ea70dd995e37","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-02-24 11:01:37","2017-02-24 12:44:37","2017-02-26 12:44:37","Coamoxiclav","IV","1.2","g","TDS",2
+4538292524,"9126a40b4bb6bc64af6ec3e4bf02aed2","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-02-28 11:05:37","2017-02-28 13:31:37","2017-03-03 13:31:37","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+4538292524,"e2133fe75e6d7385b341d911314e7e40","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-03-03 13:31:37","2017-03-03 15:42:37","2017-03-07 15:42:37","Clarithromycin","ORAL","500","mg","BD",4
+4538292524,"593d7ae45e5311f54b739b666f4924aa","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-03-03 13:31:37","2017-03-03 14:27:37","2017-03-05 14:27:37","Coamoxiclav","IV","1.2","g","TDS",2
+4538292524,"cc14249eba315bccd7fc53069ae6d502","Co-amoxiclav ORAL 625 mg TDS","2017-03-08 18:03:10","2017-03-08 18:12:10","2017-03-11 18:12:10","Coamoxiclav","ORAL","625","mg","TDS",3
+7677527327,"93b50f9fad27dd6c4de542e4c6df7627","Meropenem IV 1 g TDS","2015-11-02 22:37:01","2015-11-02 23:29:01","2015-11-07 11:29:01","Meropenem","IV","1","g","TDS",4.5
+7677527327,"29240d9e43f2d66486cdcb8cedf8e99f","Meropenem IV 1 g TDS","2015-11-07 11:29:01","2015-11-07 12:40:01","2015-11-12 00:40:01","Meropenem","IV","1","g","TDS",4.5
+7677527327,"bf1fd3fe75c559b0b7d760c75e824071","Meropenem IVB 1 g TDS","2015-11-12 00:40:01","2015-11-12 01:13:01","2015-11-17 01:13:01","Meropenem","IV","1","g","TDS",5
+3647234769,"cbf196340b4af04e55e1cfff739ce7d7","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-10-15 05:02:49","2017-10-15 05:33:49","2017-10-20 05:33:49","Piperacillin / Tazobactam","IV","4.5","g","TDS",5
+7656852665,"04bb897a3bc987076ef88b619e12b908","Amoxicillin ORAL 500 mg 8H","2017-05-30 03:41:37","2017-05-30 05:36:37","2017-05-31 05:36:37","Amoxicillin","ORAL","500","mg","8H",1
+8115477437,"ec5f09c996f2740d535b83693335128e","Doxycycline ORAL 100 mg OD","2015-07-09 07:12:16","2015-07-09 08:29:16","2015-07-11 17:10:09","Doxycycline","ORAL","100","mg","OD",4
+8115477437,"bc06252fffba61e57db9cc0526efc91f","Co-amoxiclav ORAL 625 mg TDS","2016-07-25 07:13:45","2016-07-25 09:03:45","2016-07-28 09:03:45","Coamoxiclav","ORAL","625","mg","TDS",3
+8115477437,"68af1ed6dae829182cb9f10c28ad7832","Co-amoxiclav IVI 1.2 g TDS","2016-07-28 09:03:45","2016-07-28 10:39:45","2016-07-30 10:39:45","Coamoxiclav","IV","1.2","g","TDS",2
+8115477437,"9e6b681cfd16ec78baec2732e1f6862b","Co-amoxiclav IVI 1.2 g TDS","2016-07-30 10:39:45","2016-07-30 12:35:45","2016-08-01 12:35:45","Coamoxiclav","IV","1.2","g","TDS",2
+8115477437,"d0d7f8d987f1138dacf7544f4cec4662","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2016-11-26 17:35:47","2016-11-26 17:53:47","2016-11-30 17:53:47","Clarithromycin","ORAL","500","mg","BD",4
+8115477437,"b77bd78c580157162ad5173a7399e41e","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2016-11-26 19:05:47","2016-11-26 19:39:47","2016-11-28 19:39:47","Coamoxiclav","IV","1.2","g","TDS",2
+8115477437,"c5c3627dcd405f898b7df22c528c8051","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-11-30 17:53:47","2016-11-30 19:28:47","2016-12-03 19:28:47","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+8115477437,"9765ae2aeab20784b2c1206c142c7e25","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-12-03 19:28:47","2016-12-03 21:15:47","2016-12-06 21:15:47","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+8115477437,"a3c0905e489a3b2b9f268fe11f216189","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-12-06 21:15:47","2016-12-06 22:10:47","2016-12-09 00:47:12","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+5662384415,"145c6bacb6e61f2799b8f62793f3f285","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-01-19 05:02:07","2015-01-19 06:10:07","2015-01-19 08:06:12","Piperacillin / Tazobactam","IV","4.5","g","TDS",3
+5662384415,"86957ff8ffba4c0deb713260cf8ad3a7","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-01-27 18:12:54","2015-01-27 18:29:54","2015-01-29 18:29:54","Piperacillin / Tazobactam","IV","4.5","g","TDS",2
+5662384415,"6f790781857381793a5901fb1ac995c1","Piperacillin / Tazobactam IVI 4.5 g TDS","2015-01-29 18:29:54","2015-01-29 20:56:54","2015-01-31 20:56:54","Piperacillin / Tazobactam","IV","4.5","g","TDS",2
+5662384415,"0a65d1e3e4818b53d887fe935c30e5d8","Flucloxacillin ORAL 1000 mg 6H","2015-01-31 20:56:54","2015-01-31 22:24:54","2015-02-01 22:24:54","Flucloxacillin","ORAL","1000","mg","6H",1
+2442454272,"989810ade2852d8e859263b87b2d5cd2","Co-amoxiclav IVI 1.2 g TDS","2015-07-12 05:21:28","2015-07-12 06:02:28","2015-07-14 01:46:32","Coamoxiclav","IV","1.2","g","TDS",2
+2442454272,"cee776a28b931bfcfefa0621e116814a","Benzylpenicillin IVB 1.2 g 6H","2015-10-04 10:35:39","2015-10-04 11:17:39","2015-10-05 11:17:39","Benzylpenicillin","IV","1.2","g","6H",1
+8554647294,"da8f884f14f552bd71d0f70cb6e27047","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2015-10-16 07:54:41","2015-10-16 09:03:41","2015-10-20 09:03:41","Clarithromycin","ORAL","500","mg","BD",4
+8554647294,"aa3b518ae4735b2c48bd644ecb75c00d","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2015-10-16 09:36:41","2015-10-16 10:15:41","2015-10-18 10:15:41","Coamoxiclav","IV","1.2","g","TDS",2
+8554647294,"9e1d29ac976a0de71bf7b8252c394756","Co-amoxiclav ORAL 625 mg TDS","2015-10-20 09:03:41","2015-10-20 10:45:41","2015-10-22 10:45:41","Coamoxiclav","ORAL","625","mg","TDS",2
+3458873836,"b90b6f295504cac5ba0810834bb7ad16","Benzylpenicillin IVB 1.2 g 6H","2017-09-01 17:52:46","2017-09-01 18:40:46","2017-09-02 03:57:49","Benzylpenicillin","IV","1.2","g","6H",1
+3458873836,"c8c77f543e55da0538dc4f1c71f0044d","Piperacillin / Tazobactam IVI 4.5 g TDS","2017-11-15 21:14:52","2017-11-15 22:57:52","2017-11-17 07:09:37","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+9669687362,"ab5c01fa193cb3a7167cc641731c8df3","Co-amoxiclav IVI 1.2 g TDS","2016-09-11 13:03:06","2016-09-11 13:26:06","2016-09-13 03:25:13","Coamoxiclav","IV","1.2","g","TDS",2
+5472642383,"5a5b88ee177143f5cab7e3039ae6e252","Co-amoxiclav IVI 1.2 g TDS","2016-08-10 15:02:47","2016-08-10 15:43:47","2016-08-12 15:43:47","Coamoxiclav","IV","1.2","g","TDS",2
+5472642383,"44a64dffd1a7e848c8e9e34438f13267","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-08-12 15:43:47","2016-08-12 17:36:47","2016-08-16 17:36:47","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+5472642383,"986b9880df659eb083636021ffb4a934","Piperacillin / Tazobactam IVI 4.5 g TDS","2016-08-16 17:36:47","2016-08-16 18:40:47","2016-08-20 18:40:47","Piperacillin / Tazobactam","IV","4.5","g","TDS",4
+5472642383,"3013b0547f8b89a9acee7affb6d2bbe3","Co-amoxiclav IVI 1.2 g TDS","2016-08-20 18:40:47","2016-08-20 19:33:47","2016-08-22 19:33:47","Coamoxiclav","IV","1.2","g","TDS",2
+8843337876,"7cad0db09bcfa9cfc0f0c320f5f64e89","Co-amoxiclav ORAL 625 mg TDS","2015-02-15 09:18:49","2015-02-15 10:18:49","2015-02-17 10:18:49","Coamoxiclav","ORAL","625","mg","TDS",2
+8843337876,"501ed1cae07cb79c6d99858a577153c1","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2015-02-17 10:18:49","2015-02-17 11:36:49","2015-02-21 11:36:49","Clarithromycin","ORAL","500","mg","BD",4
+8843337876,"077b6ab07f9cd4ffb680437d113bd614","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2015-02-17 10:18:49","2015-02-17 12:24:49","2015-02-19 12:24:49","Coamoxiclav","IV","1.2","g","TDS",2
+5867476521,"16d82e7ff08ce76c9e7d5d43bdecf93a","Ciprofloxacin ORAL 500 mg BD","2015-03-11 08:46:29","2015-03-11 09:48:29","2015-03-12 09:48:29","Ciprofloxacin","ORAL","500","mg","BD",1
+5867476521,"a8c41a9e01a6aeed8ae68ef8121573d8","Meropenem IVI 1 g TDS","2016-08-23 16:41:32","2016-08-23 18:07:32","2016-08-28 18:07:32","Meropenem","IV","1","g","TDS",5
+5867476521,"a93bfb471523270f51360c272d3d5c07","Vancomycin protocol IVI 500-2000 mg TTW","2016-08-28 18:07:32","2016-08-28 21:02:32","2016-09-01 21:02:32","Vancomycin protocol","IV","500-2000","mg","TTW",4
+5867476521,"1cfd8575fb78eee21478c8b19a54f59f","Vancomycin protocol IVI 500-2000 mg TTW","2016-09-01 21:02:32","2016-09-01 23:14:32","2016-09-04 22:39:00","Vancomycin protocol","IV","500-2000","mg","TTW",4
+5867476521,"0ba2fe114628f5fad67875bd46f0a7e5","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-01-22 14:33:48","2017-01-22 15:34:48","2017-01-25 11:33:19","Clarithromycin","ORAL","500","mg","BD",4
+5867476521,"836d9443c693d476efcb215ca1d34300","Clarithromycin ORAL 500 mg BD + Co-amoxiclav IVI 1.2 g TDS","2017-01-22 15:46:48","2017-01-22 17:17:48","2017-01-24 17:17:48","Coamoxiclav","IV","1.2","g","TDS",2

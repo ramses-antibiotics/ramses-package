@@ -101,7 +101,7 @@ drug_rx <- drug_rx %>%
                    prescription_start,
                    prescription_end,
                    prescription_status = "completed",
-                   prescription_context = "inpatient",
+                   prescription_context,
                    dose,
                    unit = units,
                    route,

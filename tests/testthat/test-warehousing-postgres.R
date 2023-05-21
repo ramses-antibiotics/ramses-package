@@ -454,6 +454,7 @@ test_that("Ramses on PosgreSQL (system test)", {
   expect_true(bridge_episode_prescription_initiation(pq_conn, overwrite = TRUE))
   test_bridge_init <- tbl(pq_conn, "bridge_episode_prescription_initiation") %>% 
     dplyr::filter(encounter_id == "3968305736") %>% 
+    dplyr::arrange(episode_number) %>% 
     dplyr::collect()
   expect_equal(
     test_bridge_init,
@@ -507,12 +508,16 @@ test_that("Ramses on PosgreSQL (system test)", {
   
   # date and datetime casting -----------------------------------------------
   
-  test_date <- tbl(pq_conn, "inpatient_episodes") %>% 
+  test_dt <- tbl(pq_conn, "inpatient_episodes") %>% 
     dplyr::filter(patient_id == "99999999999") %>% 
     dplyr::collect()
   
-  expect_is(test_date$encounter_id, "character")
-  expect_is(test_date$admission_date, "POSIXt")
+  expect_is(test_dt$encounter_id, "character")
+  expect_is(test_dt$admission_date, "POSIXt")
+  
+  test_date <- tbl(pq_conn, "patients") %>% 
+    dplyr::filter(patient_id == "99999999999") %>% 
+    dplyr::collect()
   expect_equal(test_date$date_of_birth[1], as.Date("1926-08-02"))
   expect_equal(test_date$date_of_death[1], as.Date(NA))
   
@@ -667,7 +672,7 @@ test_that("Ramses on PosgreSQL (system test)", {
   expect_equal(parenteral_changes(TherapyEpisode(pq_conn, 
                                                  c("f770855cf9d424c76fdfbc9786d508ac",
                                                    "74e3f378b91c6d7121a0d637bd56c2fa"))), 
-               list("74e3f378b91c6d7121a0d637bd56c2fa" = list(c(0, 97, 49)),
+               list("74e3f378b91c6d7121a0d637bd56c2fa" = list(c(0, 169, 26)),
                     "f770855cf9d424c76fdfbc9786d508ac" = list(c(0, 122, 74))))
   
   # Three IVPO changes in pt 5726385525 with only one therapy episode
@@ -990,7 +995,7 @@ test_that("Ramses on PosgreSQL (system test)", {
                  "Start:     2017-11-15 15:33:36 GMT ", "End:       2017-12-01 21:11:36 GMT ", 
                  "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
                  "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  > Piperacillin/tazobactam IV 4.5g 4 days", 
-                 "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  ... (2 additional medication requests)"
+                 "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  ... (3 additional medication requests)"
                ))
   expect_equal(
     utils::capture.output(TherapyEpisode(pq_conn, "biduletruc"))[1:5],
@@ -1017,9 +1022,9 @@ test_that("Ramses on PosgreSQL (system test)", {
   )
   expect_equal(
     utils::capture.output(MedicationRequest(pq_conn, "1ab55e515af6b86dde76abbe0bffbd3f"))[1:9],
-    c("MedicationRequest 1ab55e515af6b86dde76abbe0bffbd3f ", "Clarithromycin ORAL 500mg 4 days ", 
+    c("MedicationRequest 1ab55e515af6b86dde76abbe0bffbd3f ", "Clarithromycin ORAL 500mg 3 days ", 
       "Patient:     3894468747 ", "Start:        2015-10-01 21:38:55 BST ", 
-      "End:          2015-10-05 21:38:55 BST ", "Combination:  1ab55e515af6b86dde76abbe0bffbd3f ", 
+      "End:          2015-10-04 16:13:46 BST ", "Combination:  1ab55e515af6b86dde76abbe0bffbd3f ", 
       "Therapy:      1ab55e515af6b86dde76abbe0bffbd3f ", "", "Database connection:"
     )
   )

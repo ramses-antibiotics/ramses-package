@@ -409,6 +409,7 @@ test_that("Ramses on DuckDB (system test)", {
   expect_true(bridge_episode_prescription_initiation(db_conn, overwrite = TRUE))
   test_bridge_init <- tbl(db_conn, "bridge_episode_prescription_initiation") %>% 
     dplyr::filter(encounter_id == "3968305736") %>% 
+    dplyr::arrange(episode_number) %>% 
     dplyr::collect()
   expect_equal(
     test_bridge_init,
@@ -460,14 +461,19 @@ test_that("Ramses on DuckDB (system test)", {
   
   # date and datetime casting -----------------------------------------------
   
-  test_date <- tbl(db_conn, "inpatient_episodes") %>% 
+  test_dt <- tbl(db_conn, "inpatient_episodes") %>% 
     dplyr::filter(patient_id == "99999999999") %>% 
     dplyr::collect( )
   
-  expect_is(test_date$encounter_id, "character")
-  expect_is(test_date$admission_date, "POSIXt")
+  expect_is(test_dt$encounter_id, "character")
+  expect_is(test_dt$admission_date, "POSIXt")
+  
+  test_date <- tbl(db_conn, "patients") %>% 
+    dplyr::filter(patient_id == "99999999999") %>% 
+    dplyr::collect()
   expect_equal(test_date$date_of_birth[1], as.Date("1926-08-02"))
   expect_equal(test_date$date_of_death[1], as.Date(NA))
+  
   
   # TherapyEpisode ------------------------------------------------------------
   
@@ -620,7 +626,7 @@ test_that("Ramses on DuckDB (system test)", {
   expect_equal(parenteral_changes(TherapyEpisode(db_conn, 
                                                  c("f770855cf9d424c76fdfbc9786d508ac",
                                                    "74e3f378b91c6d7121a0d637bd56c2fa"))), 
-               list("74e3f378b91c6d7121a0d637bd56c2fa" = list(c(0, 97, 49)),
+               list("74e3f378b91c6d7121a0d637bd56c2fa" = list(c(0, 169, 26)),
                     "f770855cf9d424c76fdfbc9786d508ac" = list(c(0, 122, 74))))
   
   # Three IVPO changes in pt 5726385525 with only one therapy episode
@@ -922,7 +928,7 @@ test_that("Ramses on DuckDB (system test)", {
              format(as.POSIXct("2017-07-06 01:35:46", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
              " "), 
       "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
-      "  > Clarithromycin ORAL 500mg 4 days"))
+      "  > Clarithromycin ORAL 500mg 3 days"))
   expect_equal(
     utils::capture.output(TherapyEpisode(db_conn, "fa179f4bcf3efa1e21225ab207ab40c4"))[1:11],
     c("TherapyEpisode fa179f4bcf3efa1e21225ab207ab40c4 ", "Patient:   3422481921 ", 
@@ -934,7 +940,7 @@ test_that("Ramses on DuckDB (system test)", {
              " "),
       "", "Medications:", "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", 
       "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  > Piperacillin/tazobactam IV 4.5g 4 days", 
-      "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  ... (2 additional medication requests)"))
+      "  > Amoxicillin/clavulanic acid IV 1.2g 2 days", "  ... (3 additional medication requests)"))
   expect_equal(
     utils::capture.output(TherapyEpisode(db_conn, "biduletruc"))[1:5],
     c("TherapyEpisode biduletruc ", "Record is not available.", "Please check object id is valid", 
@@ -966,13 +972,13 @@ test_that("Ramses on DuckDB (system test)", {
       "", "Database connection:"))
   expect_equal(
     utils::capture.output(MedicationRequest(db_conn, "1ab55e515af6b86dde76abbe0bffbd3f"))[1:9],
-    c("MedicationRequest 1ab55e515af6b86dde76abbe0bffbd3f ", "Clarithromycin ORAL 500mg 4 days ", 
+    c("MedicationRequest 1ab55e515af6b86dde76abbe0bffbd3f ", "Clarithromycin ORAL 500mg 3 days ", 
       "Patient:     3894468747 ", 
       paste0("Start:        ", 
              format(as.POSIXct("2015-10-01 21:38:55", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
              " "), 
       paste0("End:          ", 
-             format(as.POSIXct("2015-10-05 21:38:55", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
+             format(as.POSIXct("2015-10-04 16:13:46", tz = "Europe/London"), tz = "Europe/London", format = "%Y-%m-%d %H:%M:%S %Z"),
              " "),
       "Combination:  1ab55e515af6b86dde76abbe0bffbd3f ", 
       "Therapy:      1ab55e515af6b86dde76abbe0bffbd3f ", "", "Database connection:"
