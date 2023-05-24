@@ -620,8 +620,7 @@ test_that("create_reporting_inpatient on Postgres", {
       admission_method = "2",
       "date" = seq(as.Date("2017-11-23"), as.Date("2017-11-30"), 1) ,
       "bed_days" = c(0.550613425925926, 1, 1, 1, 1, 1, 1, 0.58619212962963),
-      admission_method_name = "Emergency",
-      age = 60
+      admission_method_name = "Emergency"
     )
   )
   
@@ -645,5 +644,155 @@ test_that("create_reporting_inpatient on Postgres", {
       admission_method_name = "Emergency",
       age = 60
     )
+  )
+})
+
+
+test_that("create_reporting_med_prescribing on Postgres", {
+  
+  if (!identical(Sys.getenv("CI_Postgres"), "true")) {
+    skip("CI_Postgres is set to false")
+  }
+  
+  db_conn <- DBI::dbConnect(RPostgres::Postgres(),
+                            user = "user", 
+                            password = "password",
+                            host = "localhost", 
+                            dbname="RamsesDB_testing",
+                            timezone = "UTC")
+  on.exit({
+    .remove_db_tables(conn = db_conn,
+                      DBI::dbListTables(db_conn))
+    DBI::dbDisconnect(db_conn)
+  })
+  
+  db_conn <- DBI::dbConnect(duckdb::duckdb(), dbdir = "test.duckdb")
+  on.exit({
+    DBI::dbDisconnect(db_conn, shutdown = TRUE)
+    file.remove("test.duckdb") 
+  })
+  
+  test_rx <- dplyr::tibble(
+    patient_id = 1, 
+    prescription_id = 1:4, 
+    prescription_text = c("Flucloxacillin IV 2g 3 days", "Flucloxacillin IV 2g 4 days",
+                          "Meropenem", "Meropenem"), 
+    drug_code = c("FLC","FLC", "MEM", "MEM"), 
+    drug_name = c("Flucloxacillin", "Flucloxacillin", "Meropenem", "Meropenem"), 
+    drug_display_name = c("Flucloxacillin", "Flucloxacillin", "Meropenem", "Meropenem"), 
+    drug_group = c("Beta-lactams/penicillins",
+                   "Beta-lactams/penicillins",
+                   "Carbapenems",
+                   "Carbapenems"), 
+    ATC_code = c("J01CF05","J01CF05","J01DH02","J01DH02"),
+    ATC_route = "P",
+    authoring_date = as.POSIXct(c("2017-11-25 12:23:07","2017-11-25 12:23:07", 
+                                  "2015-03-01 09:20:37", "2015-03-01 09:20:37")), 
+    prescription_start = as.POSIXct(c("2017-11-26 14:04:07","2017-12-01 14:04:07",
+                                      "2015-03-01 10:37:37", "2015-03-01 10:37:37")), 
+    prescription_end = as.POSIXct(c("2017-12-01 14:04:07","2017-12-03 14:04:07",
+                                    "2015-03-04 10:37:37", "2015-03-04 10:37:37")), 
+    prescription_status = c("completed", "stopped", "cancelled", NA), 
+    prescription_context = c("inpatient", "outpatient", "inpatient", "inpatient"), 
+    antiinfective_type = "antibacterial",
+    dose = c(500, 400, 2, 2), unit = c("mg", "mg", "g", "g"), 
+    route = c("ORAL", "ORAL", "IV", "IV"), 
+    frequency = c("6H", "BDS", "6H", "6H"), 
+    daily_frequency = c(4, 1, 4, 4), 
+    DDD = c(1, 2, 4, 4)
+  ) 
+  
+  test_ip <- dplyr::tibble(
+    patient_id = 1, encounter_id = 1,
+    admission_method = "2",
+    admission_date = as.POSIXct("2017-11-23 10:47:07"),
+    discharge_date = as.POSIXct("2017-11-30 14:04:07"),
+    episode_start = as.POSIXct("2017-11-23 10:47:07"),
+    episode_end = as.POSIXct("2017-11-30 14:04:07"),
+    episode_number = 1,
+    last_episode_in_encounter = 1,
+    consultant_code = 1,
+    main_specialty_code = 100
+  )
+  test_th <- dplyr::tibble(
+    patient_id = 1, 
+    therapy_id = 1, 
+    therapy_start = as.POSIXct("2017-11-26 14:04:07"), 
+    therapy_end = as.POSIXct("2017-12-03 14:04:07")
+  )
+  test_pt <- dplyr::tibble(
+    patient_id = 1, 
+    date_of_birth = as.Date("1957-03-25")
+  )
+  
+  expect_error(create_reporting_med_prescribing(db_conn))
+  
+  dplyr::copy_to(db_conn, 
+                 df = test_rx,
+                 name = "drug_prescriptions")
+  dplyr::copy_to(db_conn, 
+                 df = test_ip,
+                 name = "inpatient_episodes")
+  dplyr::copy_to(db_conn, 
+                 df = test_th,
+                 name = "drug_therapy_episodes")
+  bridge_tables(db_conn, silent = TRUE)
+  
+  expect_is(create_reporting_med_prescribing(db_conn), "tbl_sql")
+  expect_true(DBI::dbExistsTable(db_conn, "metrics_prescribing"))
+  
+  
+  df_expected <- dplyr::tibble(
+    patient_id = 1,
+    prescription_id = c(rep(1,6), rep(2,3)),
+    antiinfective_type = "antibacterial",
+    prescription_context = c(rep("inpatient",6), rep("outpatient",3)),
+    drug_code = "FLC", 
+    drug_group = "Beta-lactams/penicillins",
+    drug_name = "Flucloxacillin", 
+    drug_display_name = "Flucloxacillin",
+    ATC_code = "J01CF05",
+    ATC_route = "P",
+    parenteral = 1,
+    "date" = c(seq(as.Date("2017-11-26"), as.Date("2017-12-01"), 1),
+               seq(as.Date("2017-12-01"), as.Date("2017-12-03"), 1)), 
+    "DOT_prescribed_all" = c(
+      0.41380787037037, 1, 1, 1, 1, 0.58619212962963, 
+      0.41380787037037, 1, 0.58619212962963
+    ),
+    "DDD_prescribed_all" = c(
+      0.41380787037037, 1, 1, 1, 1, 0.58619212962963, 
+      0.827615740740741, 2, 1.17238425925926
+    ),
+    "DOT_prescribed_IP_only" = c(
+      0.41380787037037, 1, 1, 1, 0.58619212962963, NA, 
+      NA, NA, NA
+    ),
+    "DDD_prescribed_IP_only" = c(
+      0.41380787037037, 1, 1, 1, 0.58619212962963, NA, 
+      NA, NA, NA
+    )
+  )
+  
+  expect_equal(
+    dplyr::arrange(
+      dplyr::collect(tbl(db_conn, "metrics_prescribing")),
+      .data$prescription_id, .data$date
+    ),
+    df_expected
+  )
+  
+  dplyr::copy_to(db_conn, 
+                 df = test_pt,
+                 name = "patients")
+  
+  df_expected$age <- 60
+  expect_is(create_reporting_med_prescribing(db_conn), "tbl_sql")
+  expect_equal(
+    dplyr::arrange(
+      dplyr::collect(tbl(db_conn, "metrics_prescribing")),
+      .data$prescription_id, .data$date
+    ),
+    df_expected
   )
 })
