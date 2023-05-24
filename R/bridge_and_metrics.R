@@ -557,7 +557,7 @@ create_reporting_med_prescribing <- function(conn) {
       dplyr::all_of(dim_cube_rx)
     ) %>%
     dplyr::mutate(
-      parenteral = dplyr::if_else(ATC_route == "P", 1, 0)
+      parenteral = dplyr::if_else(.data$ATC_route == "P", 1, 0)
     ) %>%
     dplyr::inner_join(
       dplyr::tbl(conn, "bridge_drug_prescriptions_date"),
