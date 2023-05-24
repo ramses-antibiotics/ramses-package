@@ -435,7 +435,6 @@ map_ICD10_CCSR <- function(df, icd_column) {
 #' @export
 #' @importFrom units set_units
 #' @importFrom stats na.omit
-#' @importFrom AMR ab_atc
 #' @references With thanks to the AMR package authors.
 #' \insertAllCited{}
 #' @examples

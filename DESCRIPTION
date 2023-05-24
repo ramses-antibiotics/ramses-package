@@ -25,9 +25,9 @@ BugReports: https://github.com/ramses-antibiotics/ramses-package/issues
 Encoding: UTF-8
 LazyData: true
 Depends: 
-    R (>= 4.0.0),
-    AMR (>= 1.8.0)
+    R (>= 4.0.0)
 Imports: 
+    AMR (>= 1.8.0),
     DBI,
     rlang,
     dplyr (>= 1.1.0),
@@ -63,7 +63,7 @@ Suggests:
 Remotes: 
     ramses-antibiotics/snomedizer
 RdMacros: Rdpack    
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 VignetteBuilder: knitr,rmarkdown
 Collate: 
     'Ramses-deprecated.R'
