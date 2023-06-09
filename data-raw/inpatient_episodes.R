@@ -32,7 +32,11 @@ patients <- dplyr::transmute(
   NHS_number,
   forename,
   surname,
-  sex,
+  sex = dplyr::case_when(
+    sex == 1 ~ "male",
+    sex == 2 ~ "female",
+    sex == 9 ~ "other",
+  ),
   ethnic_category_UK = ethnic_group,
   date_of_birth,
   date_of_death
