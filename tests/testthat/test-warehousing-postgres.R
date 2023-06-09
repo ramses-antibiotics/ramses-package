@@ -382,7 +382,7 @@ test_that("Ramses on PosgreSQL (system test)", {
   )
   
   expect_equal(
-    dplyr::collect(dplyr::tbl(db_conn, "dimension_sex"))[["sex"]],
+    dplyr::collect(dplyr::tbl(pq_conn, "dimension_sex"))[["sex"]],
     c("female", "male", "other")
   )
   
