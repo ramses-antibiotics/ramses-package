@@ -497,6 +497,8 @@ create_reporting_inpatient <- function(conn) {
         age = dplyr::sql("date_part('year', age(date, date_of_birth))")
       ) %>%
       dplyr::select(-"date_of_birth")
+    
+    .create_dimension_age(conn)
   }
   
   ip_expanded <- ip_expanded %>% 
@@ -571,6 +573,8 @@ create_reporting_med_prescribing <- function(conn) {
         age = dplyr::sql("date_part('year', age(date, date_of_birth))")
       ) %>%
       dplyr::select(-"date_of_birth")
+    
+    .create_dimension_age(conn)
   }
   
   rx_data <- rx_data %>% 

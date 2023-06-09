@@ -607,6 +607,7 @@ test_that("create_reporting_inpatient on Postgres", {
   
   expect_is(create_reporting_inpatient(db_conn), "tbl_sql")
   expect_true(DBI::dbExistsTable(db_conn, "metrics_inpatient"))
+  expect_false(DBI::dbExistsTable(db_conn, "dimension_age"))
   
   expect_equal(
     dplyr::arrange(
@@ -629,6 +630,8 @@ test_that("create_reporting_inpatient on Postgres", {
                  name = "patients")
   
   expect_is(create_reporting_inpatient(db_conn), "tbl_sql")
+  expect_true(DBI::dbExistsTable(db_conn, "dimension_age"))
+  
   expect_equal(
     dplyr::arrange(
       dplyr::collect(tbl(db_conn, "metrics_inpatient"))
@@ -740,6 +743,7 @@ test_that("create_reporting_med_prescribing on Postgres", {
   
   expect_is(create_reporting_med_prescribing(db_conn), "tbl_sql")
   expect_true(DBI::dbExistsTable(db_conn, "metrics_prescribing"))
+  expect_false(DBI::dbExistsTable(db_conn, "dimension_age"))
   
   
   df_expected <- dplyr::tibble(
@@ -788,6 +792,8 @@ test_that("create_reporting_med_prescribing on Postgres", {
   
   df_expected$age <- 60
   expect_is(create_reporting_med_prescribing(db_conn), "tbl_sql")
+  expect_true(DBI::dbExistsTable(db_conn, "dimension_age"))
+  
   expect_equal(
     dplyr::arrange(
       dplyr::collect(tbl(db_conn, "metrics_prescribing")),

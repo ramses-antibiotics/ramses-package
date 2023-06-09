@@ -211,6 +211,38 @@ test_that(".update_dimension_date on DuckDB", {
   )
 })
 
+test_that(".create_dimension_age on DuckDB", {
+  
+  db_conn <- create_mock_database(file = "test.duckdb", silent = TRUE)
+  on.exit({
+    DBI::dbDisconnect(db_conn, shutdown = TRUE)
+    file.remove("test.duckdb") 
+  })
+  
+  DBI::dbWriteTable(
+    db_conn,
+    name = "dimension_age",
+    value = data.frame(age = 1L:2L)
+  )
+  
+  .create_dimension_age(db_conn)
+  
+  # Check the function doesn't overwrite  
+  # what the user may have elected to load into the DB
+  expect_equal(
+    dplyr::collect(dplyr::tbl(db_conn, "dimension_age")),
+    dplyr::tibble(age = 1L:2L)
+  )
+  
+  .create_dimension_age(db_conn, overwrite = TRUE)
+  
+  expect_equal(
+    dplyr::collect(dplyr::tbl(db_conn, "dimension_age")),
+    dplyr::tibble(age = 0L:150L)
+  )
+  
+})
+
 test_that("create_mock_database on DuckDB", {
   
   db_conn <- create_mock_database(file = "test.duckdb", silent = TRUE)
@@ -290,7 +322,8 @@ test_that("Ramses on DuckDB (system test)", {
                            overwrite = TRUE)))
   expect_true(
     all(
-      c("reference_icd",
+      c("dimension_sex",
+        "reference_icd",
         "reference_icd_comorbidity",
         "reference_icd_infections",
         "reference_icd_ccs",
@@ -298,6 +331,12 @@ test_that("Ramses on DuckDB (system test)", {
       DBI::dbListTables(db_conn)
     )
   )
+  
+  expect_equal(
+    dplyr::collect(dplyr::tbl(db_conn, "dimension_sex"))[["sex"]],
+    c("female", "male", "other")
+  )
+  
   expect_invisible(
     load_inpatient_investigations(
       conn = db_conn,

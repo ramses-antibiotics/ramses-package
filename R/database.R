@@ -145,6 +145,14 @@ load_inpatient_episodes <- function(conn,
   
   dplyr::copy_to(
     dest = conn, 
+    name = "dimension_sex",
+    df = dplyr::arrange(dplyr::distinct(patients_data, .data$sex), .data$sex),
+    temporary = FALSE,
+    overwrite = overwrite
+  )
+  
+  dplyr::copy_to(
+    dest = conn, 
     name = "inpatient_episodes",
     df = dplyr::tibble(episodes_data),
     temporary = FALSE,
@@ -1078,6 +1086,21 @@ create_mock_database <- function(file,
       warning(load_errors)
       warning("The `dimension_date` table did not load successfully")
     }
+  }
+}
+
+.create_dimension_age <- function(conn, overwrite = FALSE) {
+  # Build table to use as dimension for age - do not overwrite by default
+  stopifnot(is.logical(overwrite))
+  
+  if (!DBI::dbExistsTable(conn, "dimension_age") | overwrite) {
+    dim_age <- dplyr::copy_to(
+      dest = conn, 
+      df = dplyr::tibble(age = 0L:150L),
+      name = "dimension_age",
+      overwrite = overwrite,
+      temporary = FALSE
+    )
   }
 }
 
