@@ -143,7 +143,7 @@ load_inpatient_episodes <- function(conn,
     indexes = list("patient_id")
     )
   
-  if ("sex" %in% colnames(patient_data)) {
+  if ("sex" %in% colnames(patients_data)) {
     dplyr::copy_to(
       dest = conn, 
       name = "dimension_sex",
