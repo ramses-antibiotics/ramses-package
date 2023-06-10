@@ -143,13 +143,15 @@ load_inpatient_episodes <- function(conn,
     indexes = list("patient_id")
     )
   
-  dplyr::copy_to(
-    dest = conn, 
-    name = "dimension_sex",
-    df = dplyr::arrange(dplyr::distinct(patients_data, .data$sex), .data$sex),
-    temporary = FALSE,
-    overwrite = overwrite
-  )
+  if ("sex" %in% colnames(patient_data)) {
+    dplyr::copy_to(
+      dest = conn, 
+      name = "dimension_sex",
+      df = dplyr::arrange(dplyr::distinct(patients_data, .data$sex), .data$sex),
+      temporary = FALSE,
+      overwrite = overwrite
+    )
+  }
   
   dplyr::copy_to(
     dest = conn, 
