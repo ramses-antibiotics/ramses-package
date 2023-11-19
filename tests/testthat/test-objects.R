@@ -68,16 +68,14 @@ test_that("Patient..interface_methods DuckDB", {
   expect_equal(capture.output(patient_object)[1],
                "Patient 99999999999 ")
   # COMPUTE 
-  expect_equal(
-    patient_object@record$lazy_query$x$x,
-    structure("patients", class = c("ident", "character"))
-  )
+  expect_is(patient_object@record$lazy_query$x$x, "dbplyr_table_ident")
+  expect_equal(vctrs::field(patient_object@record$lazy_query$x$x, "table"), "patients")
+  
   patient_object_computed <- compute(patient_object)
+  
   expect_true(
     grepl("^dbplyr_", 
-          as.character(
-            patient_object_computed@record$lazy_query$x
-          ))
+          vctrs::field(patient_object_computed@record$lazy_query$x, "table"))
   )
   
   # COLLECT
@@ -119,16 +117,14 @@ test_that("Patient..interface_methods Postgres", {
   expect_equal(capture.output(patient_object)[1],
                "Patient 99999999999 ")
   # COMPUTE 
-  expect_equal(
-    patient_object@record$lazy_query$x$x,
-    structure("patients", class = c("ident", "character"))
-  )
+  expect_is(patient_object@record$lazy_query$x$x, "dbplyr_table_ident")
+  expect_equal(vctrs::field(patient_object@record$lazy_query$x$x, "table"), "patients")
+  
   patient_object_computed <- compute(patient_object)
+  
   expect_true(
     grepl("^dbplyr_", 
-          as.character(
-            patient_object_computed@record$lazy_query$x
-          ))
+          vctrs::field(patient_object_computed@record$lazy_query$x, "table"))
   )
   
   # COLLECT
@@ -278,16 +274,16 @@ test_that("MedicationRequest..interface_methods DuckDB", {
   )
   
   # COMPUTE 
+  expect_is(med_req_object@record$lazy_query$x$x, "dbplyr_table_ident")
   expect_equal(
-    med_req_object@record$lazy_query$x$x,
-    structure("drug_prescriptions", class = c("ident", "character"))
+    vctrs::field(med_req_object@record$lazy_query$x$x, "table"),
+    "drug_prescriptions"
   )
+  
   med_req_object_computed <- compute(med_req_object)
   expect_true(
     grepl("^dbplyr_", 
-          as.character(
-            med_req_object_computed@record$lazy_query$x
-          ))
+          vctrs::field(med_req_object_computed@record$lazy_query$x, "table"))
   )
   
   # COLLECT
@@ -381,16 +377,13 @@ test_that("MedicationRequest..interface_methods Postgres", {
   )
   
   # COMPUTE 
-  expect_equal(
-    med_req_object@record$lazy_query$x$x,
-    structure("drug_prescriptions", class = c("ident", "character"))
-  )
+  expect_is(med_req_object@record$lazy_query$x$x, "dbplyr_table_ident")
+  expect_equal(vctrs::field(med_req_object@record$lazy_query$x$x, "table"), "drug_prescriptions")
+
   med_req_object_computed <- compute(med_req_object)
   expect_true(
     grepl("^dbplyr_", 
-          as.character(
-            med_req_object_computed@record$lazy_query$x
-          ))
+          vctrs::field(med_req_object_computed@record$lazy_query$x, "table"))
   )
   
   # COLLECT
@@ -533,38 +526,31 @@ test_that("TherapyEpisode..interface_methods DuckDB", {
   )
   
   # COMPUTE 
-  expect_equal(
-    therapy_object@record$lazy_query$x$x,
-    structure("drug_therapy_episodes", class = c("ident", "character"))
-  )
+  expect_is(therapy_object@record$lazy_query$x$x, "dbplyr_table_ident")
+  expect_equal(vctrs::field(therapy_object@record$lazy_query$x$x, "table"),
+               "drug_therapy_episodes")
   therapy_object_computed <- compute(therapy_object)
   expect_true(
     grepl("^dbplyr_", 
-          as.character(
-            therapy_object_computed@record$lazy_query$x
-          ))
+          vctrs::field(therapy_object_computed@record$lazy_query$x, "table"))
   )
-  expect_equal(
-    therapy_object_multi@record$lazy_query$x$x,
-    structure("drug_therapy_episodes", class = c("ident", "character"))
-  )
+  
+  expect_is(therapy_object_multi@record$lazy_query$x$x, "dbplyr_table_ident")
+  expect_equal(vctrs::field(therapy_object_multi@record$lazy_query$x$x, "table"), 
+               "drug_therapy_episodes")
   therapy_object_multi_computed <- compute(therapy_object_multi)
   expect_true(
     grepl("^dbplyr_", 
-          as.character(
-            therapy_object_multi_computed@record$lazy_query$x
-          ))
+          vctrs::field(therapy_object_multi_computed@record$lazy_query$x, "table"))
   )
-  expect_equal(
-    therapy_object_multi4@record$lazy_query$x$x,
-    structure("drug_therapy_episodes", class = c("ident", "character"))
-  )
+  
+  expect_is(therapy_object_multi4@record$lazy_query$x$x, "dbplyr_table_ident")
+  expect_equal(vctrs::field(therapy_object_multi4@record$lazy_query$x$x, "table"), 
+               "drug_therapy_episodes")
   therapy_object_multi_computed4 <- compute(therapy_object_multi4)
   expect_true(
     grepl("^dbplyr_", 
-          as.character(
-            therapy_object_multi_computed4@record$lazy_query$x
-          ))
+          vctrs::field(therapy_object_multi_computed4@record$lazy_query$x, "table"))
   )
   
   # COLLECT
@@ -699,38 +685,28 @@ test_that("TherapyEpisode..interface_methods Postgres", {
   )
   
   # COMPUTE 
-  expect_equal(
-    therapy_object@record$lazy_query$x$x,
-    structure("drug_therapy_episodes", class = c("ident", "character"))
-  )
+  expect_is(therapy_object@record$lazy_query$x$x, "dbplyr_table_ident")
+  expect_equal(vctrs::field(therapy_object@record$lazy_query$x$x, "table"), "drug_therapy_episodes")
   therapy_object_computed <- compute(therapy_object)
   expect_true(
     grepl("^dbplyr_", 
-          as.character(
-            therapy_object_computed@record$lazy_query$x
-          ))
+          vctrs::field(therapy_object_computed@record$lazy_query$x, "table"))
   )
-  expect_equal(
-    therapy_object_multi@record$lazy_query$x$x,
-    structure("drug_therapy_episodes", class = c("ident", "character"))
-  )
+  
+  expect_is(therapy_object_multi@record$lazy_query$x$x, "dbplyr_table_ident")
+  expect_equal(vctrs::field(therapy_object_multi@record$lazy_query$x$x, "table"), "drug_therapy_episodes")
   therapy_object_multi_computed <- compute(therapy_object_multi)
   expect_true(
     grepl("^dbplyr_", 
-          as.character(
-            therapy_object_multi_computed@record$lazy_query$x
-          ))
+          vctrs::field(therapy_object_multi_computed@record$lazy_query$x, "table"))
   )
-  expect_equal(
-    therapy_object_multi4@record$lazy_query$x$x,
-    structure("drug_therapy_episodes", class = c("ident", "character"))
-  )
+  
+  expect_is(therapy_object_multi4@record$lazy_query$x$x, "dbplyr_table_ident")
+  expect_equal(vctrs::field(therapy_object_multi4@record$lazy_query$x$x, "table"), "drug_therapy_episodes")
   therapy_object_multi_computed4 <- compute(therapy_object_multi4)
   expect_true(
     grepl("^dbplyr_", 
-          as.character(
-            therapy_object_multi_computed4@record$lazy_query$x
-          ))
+          vctrs::field(therapy_object_multi_computed4@record$lazy_query$x, "table"))
   )
   
   # COLLECT
@@ -898,38 +874,28 @@ test_that("Encounter..interface_methods DuckDB", {
   )
   
   # COMPUTE 
-  expect_equal(
-    encounter_object@record$lazy_query$x$x,
-    structure("inpatient_episodes", class = c("ident", "character"))
-  )
+  expect_is(encounter_object@record$lazy_query$x$x, "dbplyr_table_ident")
+  expect_equal(vctrs::field(encounter_object@record$lazy_query$x$x, "table"), "inpatient_episodes")
   encounter_object_computed <- compute(encounter_object)
   expect_true(
     grepl("^dbplyr_", 
-          as.character(
-            encounter_object_computed@record$lazy_query$x
-          ))
+          vctrs::field(encounter_object_computed@record$lazy_query$x, "table"))
   )
-  expect_equal(
-    encounter_object_multi@record$lazy_query$x$x,
-    structure("inpatient_episodes", class = c("ident", "character"))
-  )
+  
+  expect_is(encounter_object_multi@record$lazy_query$x$x, "dbplyr_table_ident")
+  expect_equal(vctrs::field(encounter_object_multi@record$lazy_query$x$x, "table"), "inpatient_episodes")
   encounter_object_multi_computed <- compute(encounter_object_multi)
   expect_true(
     grepl("^dbplyr_", 
-          as.character(
-            encounter_object_multi_computed@record$lazy_query$x
-          ))
+          vctrs::field(encounter_object_multi_computed@record$lazy_query$x, "table"))
   )
-  expect_equal(
-    encounter_object_multi5@record$lazy_query$x$x,
-    structure("inpatient_episodes", class = c("ident", "character"))
-  )
+  
+  expect_is(encounter_object_multi5@record$lazy_query$x$x, "dbplyr_table_ident")
+  expect_equal(vctrs::field(encounter_object_multi5@record$lazy_query$x$x, "table"), "inpatient_episodes")
   encounter_object_multi5_computed <- compute(encounter_object_multi5)
   expect_true(
     grepl("^dbplyr_", 
-          as.character(
-            encounter_object_multi5_computed@record$lazy_query$x
-          ))
+          vctrs::field(encounter_object_multi5_computed@record$lazy_query$x, "table"))
   )
   
   # COLLECT
@@ -1071,38 +1037,28 @@ test_that("Encounter..interface_methods Postgres", {
   )
   
   # COMPUTE 
-  expect_equal(
-    encounter_object@record$lazy_query$x$x,
-    structure("inpatient_episodes", class = c("ident", "character"))
-  )
+  expect_is(encounter_object@record$lazy_query$x$x, "dbplyr_table_ident")
+  expect_equal(vctrs::field(encounter_object@record$lazy_query$x$x, "table"), "inpatient_episodes")
   encounter_object_computed <- compute(encounter_object)
   expect_true(
     grepl("^dbplyr_", 
-          as.character(
-            encounter_object_computed@record$lazy_query$x
-          ))
+          vctrs::field(encounter_object_computed@record$lazy_query$x, "table"))
   )
-  expect_equal(
-    encounter_object_multi@record$lazy_query$x$x,
-    structure("inpatient_episodes", class = c("ident", "character"))
-  )
+  
+  expect_is(encounter_object_multi@record$lazy_query$x$x, "dbplyr_table_ident")
+  expect_equal(vctrs::field(encounter_object_multi@record$lazy_query$x$x, "table"), "inpatient_episodes")
   encounter_object_multi_computed <- compute(encounter_object_multi)
   expect_true(
     grepl("^dbplyr_", 
-          as.character(
-            encounter_object_multi_computed@record$lazy_query$x
-          ))
+          vctrs::field(encounter_object_multi_computed@record$lazy_query$x, "table"))
   )
-  expect_equal(
-    encounter_object_multi5@record$lazy_query$x$x,
-    structure("inpatient_episodes", class = c("ident", "character"))
-  )
+  
+  expect_is(encounter_object_multi5@record$lazy_query$x$x, "dbplyr_table_ident")
+  expect_equal(vctrs::field(encounter_object_multi5@record$lazy_query$x$x, "table"), "inpatient_episodes")
   encounter_object_multi5_computed <- compute(encounter_object_multi5)
   expect_true(
     grepl("^dbplyr_", 
-          as.character(
-            encounter_object_multi5_computed@record$lazy_query$x
-          ))
+          vctrs::field(encounter_object_multi5_computed@record$lazy_query$x, "table"))
   )
   
   # COLLECT
