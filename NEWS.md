@@ -1,4 +1,14 @@
 
+# Ramses 0.7.1
+
+*19 November 2023* 
+
+## Changed
+
+- Now requires minimum `dbplyr` v2.4.0.
+- Unit test maintenance required by `dbplyr` v2.4.0.
+
+
 # Ramses 0.7.0
 
 *11 April 2023* 
