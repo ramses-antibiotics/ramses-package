@@ -123,7 +123,7 @@ Validate microbial isolates & susceptibility records
   (can be the same as \code{drug_name})}
   \item{\code{rsi_code}}{\code{"R"} (resistant), \code{"S"} (susceptible), 
    or \code{"I"} (intermediate exposure), as determined by the laboratory or by
-  \code{\link[AMR]{as.rsi}()} on the basis of minimum inhibitory concentrations
+  \code{\link[AMR]{as.sir}()} on the basis of minimum inhibitory concentrations
   or disk diffusion diameters}
 }
 }

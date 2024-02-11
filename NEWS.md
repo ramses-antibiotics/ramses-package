@@ -1,4 +1,26 @@
 
+# Ramses 0.7.2
+
+*11 February 2024* 
+
+
+## Changed
+
+- Now requires minimum `AMR` v2.0.0.
+- Updated function calls and documentation following deprecation of `AMR::as.rsi()`.
+
+
+# Ramses 0.7.1
+
+*19 November 2023* 
+
+
+## Changed
+
+- Now requires minimum `dbplyr` v2.4.0.
+- Unit test maintenance required by `dbplyr` v2.4.0.
+
+
 # Ramses 0.7.0
 
 *11 April 2023* 

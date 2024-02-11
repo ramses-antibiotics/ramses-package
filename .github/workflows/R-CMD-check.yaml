@@ -107,13 +107,13 @@ jobs:
 
       - name: Deploy to Firebase
         if: github.ref == 'refs/heads/master' && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release'
-        uses: w9jds/firebase-action@master
+        uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          args: deploy --only hosting
-        env:
-          PROJECT_ID: ramses-antibiotics
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-      
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_RAMSES_ANTIBIOTICS }}'
+          projectId: ramses-antibiotics
+          channelId: live
+
       - uses: r-lib/actions/setup-tinytex@v2
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop') && github.event_name == 'push' && matrix.config.os == 'ubuntu-20.04' &&  matrix.config.r == 'release'
 
