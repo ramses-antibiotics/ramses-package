@@ -580,7 +580,7 @@ be found in `Ramses::reference_specimen_type`.
 Susceptibility testing results in the example dataset are already
 interpreted as Resistant/Increased exposure/Susceptible (RSI). Where
 needed, minimum inhibitory concentrations and disk diffusion diameters
-can be interpreted as RSI using the `as.rsi()` function provided by the
+can be interpreted as RSI using the `as.sir()` function provided by the
 AMR package.
 
 If possible, use the most specific concept available (eg
