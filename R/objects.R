@@ -111,7 +111,7 @@ setGeneric(name = "Patient", def = Patient)
 #' @export
 setClass(
   "Encounter", 
-  slot = c(longitudinal_table = "tbl"),
+  slots = c(longitudinal_table = "tbl"),
   contains = "RamsesObject"
 )
 
@@ -279,7 +279,7 @@ MedicationRequest <- function(conn, id) {
 #' @export
 setClass(
   "TherapyEpisode",
-  slot = c(longitudinal_table = "tbl"),
+  slots = c(longitudinal_table = "tbl"),
   contains = "RamsesObject"
 )
 
