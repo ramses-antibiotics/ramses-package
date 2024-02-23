@@ -115,7 +115,7 @@ test_that("Patient..interface_methods Postgres", {
   expect_table(patient_object@record$lazy_query$x$x, "patients")
   
   patient_object_computed <- compute(patient_object)
-  expect_s3_class(patient_object_computed@record, "tbl_duckdb_connection")
+  expect_s3_class(patient_object_computed@record, "tbl_PqConnection")
 
   # COLLECT
   expect_equal(
@@ -363,7 +363,7 @@ test_that("MedicationRequest..interface_methods Postgres", {
   expect_table(med_req_object@record$lazy_query$x$x, "drug_prescriptions")
 
   med_req_object_computed <- compute(med_req_object)
-  expect_s3_class(med_req_object_computed@record, "tbl_duckdb_connection")
+  expect_s3_class(med_req_object_computed@record, "tbl_PqConnection")
 
   # COLLECT
   expect_equal(
@@ -651,15 +651,15 @@ test_that("TherapyEpisode..interface_methods Postgres", {
   # COMPUTE 
   expect_table(therapy_object@record$lazy_query$x$x, "drug_therapy_episodes")
   therapy_object_computed <- compute(therapy_object)
-  expect_s3_class(therapy_object_computed@record, "tbl_duckdb_connection")
+  expect_s3_class(therapy_object_computed@record, "tbl_PqConnection")
 
   expect_table(therapy_object_multi@record$lazy_query$x$x, "drug_therapy_episodes")
   therapy_object_multi_computed <- compute(therapy_object_multi)
-  expect_s3_class(therapy_object_multi_computed@record, "tbl_duckdb_connection")
+  expect_s3_class(therapy_object_multi_computed@record, "tbl_PqConnection")
   
   expect_table(therapy_object_multi4@record$lazy_query$x$x, "drug_therapy_episodes")
   therapy_object_multi_computed4 <- compute(therapy_object_multi4)
-  expect_s3_class(therapy_object_multi_computed4@record, "tbl_duckdb_connection")
+  expect_s3_class(therapy_object_multi_computed4@record, "tbl_PqConnection")
 
   # COLLECT
   expect_equal(
@@ -979,15 +979,15 @@ test_that("Encounter..interface_methods Postgres", {
   # COMPUTE 
   expect_table(encounter_object@record$lazy_query$x$x, "inpatient_episodes")
   encounter_object_computed <- compute(encounter_object)
-  expect_s3_class(encounter_object_computed@record, "tbl_duckdb_connection")
+  expect_s3_class(encounter_object_computed@record, "tbl_PqConnection")
 
   expect_table(encounter_object_multi@record$lazy_query$x$x, "inpatient_episodes")
   encounter_object_multi_computed <- compute(encounter_object_multi)
-  expect_s3_class(encounter_object_multi_computed@record, "tbl_duckdb_connection")
+  expect_s3_class(encounter_object_multi_computed@record, "tbl_PqConnection")
 
   expect_table(encounter_object_multi5@record$lazy_query$x$x, "inpatient_episodes")
   encounter_object_multi5_computed <- compute(encounter_object_multi5)
-  expect_s3_class(encounter_object_multi5_computed@record, "tbl_duckdb_connection")
+  expect_s3_class(encounter_object_multi5_computed@record, "tbl_PqConnection")
 
   # COLLECT
   expect_equal(
